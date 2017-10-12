@@ -1,0 +1,11 @@
+float64 x
+float64 y
+int64 ntarg
+string coord_sys
+string code_mode
+float64 off_x
+float64 off_y
+string offcoord
+int64 dcos
+string hosei
+float64 lamda

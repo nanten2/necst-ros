@@ -1,0 +1,13 @@
+int64 drive1
+int64 drive2
+int64 drive3
+int64 drive4
+string control_azel
+float64 az
+float64 el
+string dome
+string membrane
+string control_dome
+float64 dome_az
+---
+bool success

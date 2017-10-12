@@ -1,0 +1,6 @@
+int64 drive1
+int64 drive2
+int64 drive3
+int64 drive4
+---
+bool success

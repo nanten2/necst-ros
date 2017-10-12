@@ -1,0 +1,6 @@
+float64[] az_list
+float64[] el_list
+time now
+duration dt
+---
+bool success

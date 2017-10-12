@@ -1,0 +1,66 @@
+offset_Az=0             # horizontal offset az
+offset_El=0             # horizontal offset el
+lambda_on= 0   # x coordinate of on position (deg)
+beta_on=45      # y coordinate of on position (deg)
+lambda_off= 0  # x coordinate of off position (deg)
+beta_off= 45    # y coordinate of off position (deg)
+coordsys="planet"        # coordinate:j2000, b1950, or galactic
+object="planet"       # name of target object
+vlsr=0.                 # Vlsr in km/s
+tuning_vlsr=0.          #
+cosydel= "HORIZONTAL"  # coordinate of map offset:j2000, b1950, galactic, horizontal
+otadel="N"		# correction frag of map offset: Y or N
+start_pos_x=-60.	# x start position (arcsec)
+start_pos_y=-60.	# y start position (arcsec)
+scan_direction=0	# 0:x, 1:y
+exposure=0.6		# >= 0.04 sec , integration time in sec
+otfvel= 15 / exposure	# arcsec/sec
+otflen=exposure*9	# sec
+grid=15			# arcsec
+N=9			# number of scanline
+lamdel_off=0 		# x coordinate of offpoint offset
+betdel_off=0 		# y coordinate of offpoint offset
+otadel_off="N"		# correction frag of offpoint offset: Y or N
+nTest=1			# number of observation sequence
+datanum=otflen/exposure		# number of data
+lamp_pixels=4			# lamp pixels (Josou)
+exposure_off=10.0  		# exposure on offpoint
+observer="amigos"  		# name of observer
+obsmode="LINEOTF"		# observation mode: LINEPSSW, LINEOTF, ... 
+purpose=2		# observation purpose: 0 normal, 1 pointing, 2 calib
+tsys=0 			# system temperature
+acc=10 			# tracking accuracy
+load_interval=5		# load mesurement interval in min
+cold_flag="N"		# cold load mesuremanet flag: "N" or "Y"
+pllref_if=1             # IF1 or IF2
+multiple=12   		# multiplier  
+pllharmonic=1		# multiplier of pll  
+pllsideband=-1  	# pll sideband: 1 or -1  
+pllreffreq=0  		# pll reference frequency in MHz
+restfreq_1=230538.000   # rest frequency in MHz (IF1: 4-8GHz)
+obsfreq_1=restfreq_1    # observed frequency in MHz (IF1:)
+molecule_1="12CO"   	# line identifier of target molecule  
+transiti_1="J=2-1"   	# line identifier of target taransition  
+lo1st_sb_1="U"          # sideband
+if1st_freq_1=4438.0     # IF frequency in MHz
+lo2nd_sb_1="L"          # sideband
+lo3rd_sb_1="L"          # sideband
+lo3rd_freq_1=4100.0     # Frequency of 3rd LO in MHz
+if3rd_freq_1=500.0      # IF frequency in MHz
+start_ch_1=0            # start channel
+end_ch_1=16383          # end channel
+restfreq_2=220398.684   # rest frequency in MHz (IF2: 4-8GHz)
+obsfreq_2=restfreq_2    # observed frequency in MHz (IF2)
+molecule_2="13CO"   	# line identifier of target molecule  
+transiti_2="J=2-1"   	# line identifier of target taransition  
+lo1st_sb_2="L"          # sideband
+if1st_freq_2=5701.3     # IF frequency in MHz
+lo2nd_sb_2="L"          # sideband
+lo3rd_sb_2="L"          # sideband
+lo3rd_freq_2=4100.0     # Frequency of 3rd LO in MHz
+if3rd_freq_2=500.0      # IF frequency in MHz
+start_ch_2=0            # start channel
+end_ch_2=16383          # end channel
+fpga_integtime=100      # FPGA integration time (msec)
+script;200GHz/line_otf_car_rsky.alp   # main script
+

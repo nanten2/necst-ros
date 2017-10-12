@@ -1,0 +1,1 @@
+string hot_position
