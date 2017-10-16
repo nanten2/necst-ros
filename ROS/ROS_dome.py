@@ -6,9 +6,9 @@ import sys
 import rospy
 from std_msgs.msg import String
 from std_msgs.msg import Bool
-from ros_start.msg import Dome_msg
-from ros_start.msg import Status_encoder_msg
-from ros_start.msg import Status_dome_msg
+from necst.msg import Dome_msg
+from necst.msg import Status_encoder_msg
+from necst.msg import Status_dome_msg
 #import dome_pos #DE
 # antenna_enc #DE
 
