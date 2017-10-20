@@ -1,1 +1,0 @@
-string control_dome
