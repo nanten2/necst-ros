@@ -263,7 +263,7 @@ class controller(object):
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_move'
-        pub.publish(dome)
+        self.pub13.publish(dome)
         dome = Dome_msg()
         dome.name = 'target_az'
         dome.value = str(dist)

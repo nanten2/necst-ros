@@ -4,7 +4,7 @@ import math
 import threading
 #import pyinterface### for ROS
 import sys
-
+sys.path.append('./../../lib')
 import dome_pos
 #import antenna_enc### for ROS
 
@@ -154,7 +154,8 @@ class dome_controller(object):
             speed = 'high'
         else:
             speed = 'mid'
-        if dir != 0:
+        #if dir != 0:
+        if not abs(dir) < 0.5:
             global buffer
             self.buffer[1] = 1
             self.do_output(turn, speed)
