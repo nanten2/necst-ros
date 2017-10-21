@@ -5,20 +5,18 @@ from pyslalib import slalib
 import math
 import time
 import sys
+import numpy as np
 sys.path.append("/home/amigos/NECRX_system/base_param")
 #import SG
 
 """
 class doppler(object):
-
     def set_track(self, stime, x, y, coord, offset_x, offset_y, offset_dcos, offset_coord, vlsrs):
         pass
-
     def callibrate_doppler(self, x, y, coord, offset_x=0, offset_y=0,
                            offset_dcos=1, offset_coord="SAME",
                            vlsrs=0., stime=0):
         #ドップラーシフトの補正
-
         vobs = self.doppler.set_track(x, y, coord, vlsrs, offset_x, offset_y,
                                       offset_dcos, offset_coord, stime)
         return vobs[0], vobs[1], vobs[2]
@@ -69,7 +67,6 @@ class doppler_nanten (object):
             #set frequency [GHz]
             "2ndLO1":8.038000000000,
             "2ndLO2":9.301318999999,
-
             #set sg_power [dBm]
             "power_sg21":13.0,
             "power_sg22":13.0,
@@ -112,7 +109,7 @@ class doppler_nanten (object):
         mjd = 40587.0 + time.time()/(24.*3600.)
         vobs_mjd = mjd + stime/24./3600.
         vobs = self.get_vobs(vobs_mjd,math.radians(x),math.radians(y),coord,
-                             offset_x, offset_y, offset_dcos, offset_coord)
+                             math.radians(offset_x), math.radians(offset_y), offset_dcos, offset_coord)
         c = self.dic1["LIGHT_SPEED"]
         for band in range(1, self.dic1["bandnum"]+1):
             if band == 1:
@@ -121,8 +118,8 @@ class doppler_nanten (object):
                 fdiff = vdiff / c * restFreq1
                 freq21 = secondLO1 + firstsb1 * fdiff
                 power21 = self.dic1["power_sg21"]
-                print('vdiff',vdiff,type(vdiff),'fdiff',fdiff,type(fdiff),'secondLO1',secondLO1,type('secondLO1'),'firstsb1',firstsb1,type(firstsb1),'self.dic1["bandnum"]',self.dic1["bandnum"],type(self.dic1["bandnum"]),'band',band,type(band))
-                print("freq21", freq21,type(freq21), "power21", power21,type(power21))
+                #print('vdiff',vdiff,type(vdiff),'fdiff',fdiff,type(fdiff),'secondLO1',secondLO1,type('secondLO1'),'firstsb1',firstsb1,type(firstsb1),'self.dic1["bandnum"]',self.dic1["bandnum"],type(self.dic1["bandnum"]),'band',band,type(band))
+                #print("freq21", freq21,type(freq21), "power21", power21,type(power21))
                 #self.sg2if1.set_sg(freq21, power21)
                 vdiff_21 = vdiff
                 fdiff_21 = fdiff
@@ -135,8 +132,8 @@ class doppler_nanten (object):
                 fdiff = vdiff / c * restFreq2
                 freq22 = secondLO2 + firstsb2 * fdiff
                 power22 = self.dic1["power_sg22"]
-                print('vdiff',vdiff,type(vdiff),'fdiff',fdiff,type(fdiff),'secondLO1',secondLO1,type('secondLO1'),'firstsb1',firstsb1,type(firstsb1),'self.dic1["bandnum"]',self.dic1["bandnum"],type(self.dic1["bandnum"]),'band',band,type(band))
-                print("freq22", freq22,type(freq22), "power22", power22,type(power21))
+                #print('vdiff',vdiff,type(vdiff),'fdiff',fdiff,type(fdiff),'secondLO1',secondLO1,type('secondLO1'),'firstsb1',firstsb1,type(firstsb1),'self.dic1["bandnum"]',self.dic1["bandnum"],type(self.dic1["bandnum"]),'band',band,type(band))
+                #print("freq22", freq22,type(freq22), "power22", power22,type(power21))
                 #self.sg2if2.set_sg(freq22, power22)
                 vdiff_22 = vdiff
                 fdiff_22 = fdiff
@@ -154,7 +151,7 @@ class doppler_nanten (object):
         aaa = 8.038000000000
         bbb = self.dic1["power_sg21"]
         print("aaa=",aaa,"bbb=",bbb)
-        #self.sg2if1.set_sg(aaa,bbb)
+        self.sg2if1.set_sg(aaa,bbb)
 
 
     def set_track_old(self, x, y, vlsr, coord, offset_x, offset_y, offset_dcos, offset_coord, stime, restFreq1, restFreq2, firstsb1, firstsb2, secondLO1, secondLO2, mjd, secofday):
@@ -162,7 +159,7 @@ class doppler_nanten (object):
         setting 2ndLO
         """
         mjd = mjd + secofday / (24.* 3600.)
-        vobs = self.get_vobs(vobs_mjd,math.radians(x),math.radians(y),coord,
+        vobs = self.get_vobs(vobs_mjd,x,y,coord,
                              offset_x, offset_y, offset_dcos, offset_coord)
         c = self.dic1["LIGHT_SPEED"]
         for band in range(1, self.dic1["bandnum"]+1):
@@ -199,9 +196,7 @@ class doppler_nanten (object):
     """
     def get_status(self):
         freq_sg = self.sg.freq_check()
-
         pow_sg =
-
         freq = {"sg":freq_sg, }
         power = {"sg":pow_sg,}
         return {"freq":freq, "power":power}
@@ -210,48 +205,122 @@ class doppler_nanten (object):
 
         mode = mode.lower()
         offmode = offmode.lower()
-        mode = self.coord_dict[mode]
-        offmode = self.coord_dict[offmode]
-        if offmode == self.coord_dict["same"]:
-            ytmp += offy
-            if dcos == 0 :
-                xtmp += offx
-            else :
-                xtmp += offx/math.cos(ytmp)
-        elif offmode == mode :
-            ytmp += offy
-            if dcos == 0 :
-                xtmp += offx
-            else :
-                xtmp += offx/math.cos(ytmp)
-        else :
-            print("error coord != off_coord")
-            pass
-        if mode == self.coord_dict["j2000"] :
+        ### for 'coord == horizontal' skip
+        try :
+            mode = self.coord_dict[mode]
+        except:
             xxtmp = xtmp
             yytmp = ytmp
-        elif mode == self.coord_dict["b1950"] :
-            ret = slalib.sla_fk45z(xtmp, ytmp, 1950)
-            xxtmp = ret[0]
-            yytmp = ret[1]
-        elif mode == self.coord_dict["lb"] :
-            ret = slalib.sla_galeq(xtmp, ytmp)
-            xxtmp = ret[0]
-            yytmp = ret[1]
-        elif mode == self.coord_dict["galactic"] :
-            ret = slalib.sla_galeq(xtmp, ytmp)
-            xxtmp = ret[0]
-            yytmp = ret[1]
-        elif mode == self.coord_dict["gal"] :
-            ret = slalib.sla_galeq(xtmp, ytmp)
-            xxtmp = ret[0]
-            yytmp = ret[1]
-        else :
+        try:
+            offmode = self.coord_dict[offmode]
+        except:
             xxtmp = xtmp
             yytmp = ytmp
 
+        if mode == 1:#j2000
+            if offmode == 0 or offmode == 1:#same or j2000
+                yytmp = ytmp+offy
+                if dcos == 0 :
+                    xxtmp = xtmp+offx
+                else :  
+                    xxtmp = xtmp+offx/math.cos(yytmp)
+                    
+            elif offmode == 2:#b1950
+                ret = slalib.sla_fk54z(xtmp, ytmp, 2000)
+                xtmp_b = ret[0]
+                ytmp_b = ret[1]
+                ytmp_b += offy
+                if dcos == 0 :
+                    xtmp_b += offx
+                else :
+                    xtmp_b += offx/math.cos(ytmp_b)
+                ret_1 = slalib.sla_fk45z(xtmp_b, ytmp_b,1950)
+                xxtmp = ret_1[0]
+                yytmp = ret_1[1]
+                
+            elif offmode == 3:#lb,galactic,gal
+                ret = slalib.sla_eqgal(xtmp,ytmp)
+                xtmp_g = ret[0]
+                ytmp_g = ret[1]
+                ytmp_g += offy
+                if dcos == 0 :
+                    xtmp_g += offx
+                else :
+                    xtmp_g += offx/math.cos(ytmp_g)
+                ret_1 = slalib.sla_galeq(xtmp_g, ytmp_g)
+                xxtmp = ret_1[0]
+                yytmp = ret_1[1]
+                
+        if mode == 2:#b1950
+            if offmode == 1:#j2000
+                ret = slalib.sla_fk45z(xtmp, ytmp, 1950)
+                xtmp_j = ret[0]
+                ytmp_j = ret[1]
+                yytmp = ytmp_j+offy
+                if dcos == 0 :
+                    xxtmp = xtmp_j+offx
+                else :  
+                    xxtmp = xtmp_j+offx/math.cos(ytmp_j)
+                    
+            elif offmode == 2 or offmode ==0:#b1950
+                ytmp += offy
+                if dcos == 0 :
+                    xtmp += offx
+                else:   
+                    xtmp += offx/math.cos(ytmp)
+                ret = slalib.sla_fk45z(xtmp, ytmp, 1950)
+                xxtmp = ret[0]
+                yytmp = ret[1]
+                
+            elif offmode == 3:#lb,galactic,gal
+                ret = slalib.sla_eg50(xtmp,ytmp)
+                xtmp_g = ret[0]
+                ytmp_g = ret[1]
+                ytmp_g += offy
+                if dcos == 0 :
+                    xtmp_g += offx
+                else :  
+                    xtmp_g += offx/math.cos(ytmp_g)
+                ret = slalib.sla_galeq(xtmp_g, ytmp_g)
+                xxtmp = ret[0]
+                yytmp = ret[1]
+                
+        if mode == 3:#lb,galactic,gal
+            if offmode == 1:#j2000
+                ret_2 = slalib.sla_galeq(xtmp, ytmp)
+                xtmp_j = ret_2[0]
+                ytmp_j = ret_2[1]
+                yytmp = ytmp_j+offy
+                if dcos == 0 :
+                    xxtmp = xtmp_j+offx
+                else :
+                    xxtmp = xtmp_j+offx/math.cos(ytmp_j)
+                    
+            elif offmode == 2:#b1950
+                ret = slalib.sla_ge50(xtmp,ytmp)
+                xtmp_b = ret[0]
+                ytmp_b = ret[1]
+                ytmp_b += offy
+                if dcos == 0 :
+                    xtmp_b += offx
+                else :  
+                    xtmp_b += offx/math.cos(ytmp_b)
+                ret = slalib.sla_fk45z(xtmp_b, ytmp_b, 1950)
+                xxtmp = ret[0]
+                yytmp = ret[1]
+                    
+            elif offmode == 0 or offmode == 3:#gal,lb,galactic
+                ytmp += offy
+                if dcos == 0 :
+                    xtmp += offx
+                else :  
+                    xtmp += offx/math.cos(ytmp)
+                ret = slalib.sla_galeq(xtmp, ytmp)
+                xxtmp = ret[0]
+                yytmp = ret[1]
+                
         vobs = self.calc_vobs(mjdtmp+2400000.5, xxtmp, yytmp)
-        print('vobs',vobs,type(vobs))
+        #print('vobs',vobs,type(vobs))
         return vobs
 
     def calc_vobs(self, jd, ra_2000, dec_2000):
@@ -436,11 +505,11 @@ class doppler_nanten (object):
         #print("vobs=%f\n" % vobs)
         """
         if gcalc_flag == 1 :
-        return vobs
+        	return vobs
         else gcalc_flag == 2:
-        return lst
+        	return lst
         """
-        
-	#print('vobs',vobs,type(vobs))
+	    #print('vobs',vobs,type(vobs))
         return vobs
-    
+
+

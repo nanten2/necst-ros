@@ -8,7 +8,7 @@ import threading
 import test_board_abs
 
 from std_msgs.msg import String 
-from ros_start.msg import Status_hot_msg
+from necst.msg import Status_hot_msg
 
 class abs_controller(object):
     #abs = abs.abs_controller()
@@ -19,18 +19,21 @@ class abs_controller(object):
     position = ''
 
 
-    def __init__(self, ndev = 3):
-	#self.board_abs = board_abs.board_abs()
-	self.board_abs = test_board_abs.board()
-	self.get_pos
+    def __init__(self):
         pass
+
+    def open(self):
+        #self.board_abs = board_abs.board()
+        self.board_abs = test_board_abs.board()
+        self.get_pos()
+        return
 
     def start_thread(self):
         th = threading.Thread(target = self.pub_status)
         th.setDaemon(True)
         th.start()
         return
-	
+    
 
     def test(self):
         return
@@ -47,30 +50,30 @@ class abs_controller(object):
     '''
     def pos_tel(self):
         ret = self.board_abs.in_byte('FBIDIO_IN1_8')
-	
-	if ret == 0x02:
+
+if ret == 0x02:
             print('position : IN')
-	elif ret == 0x01:	   
-	    print('position : OUT')
-        elif ret == 0x03:	   
-	    print('position : MOVE')
-	else:
-	    self.print_error('limit error')
+            elif ret == 0x01:   
+                print('position : OUT')
+                elif ret == 0x03:   
+                    print('position : MOVE')
+                    else:
+                        self.print_error('limit error')
             print(ret)
         return
     '''
 
     def get_pos(self):
         ret = self.board_abs.in_byte('FBIDIO_IN1_8')
-	
-	if ret == 0x02:
-	    self.position = 'IN'
-	elif ret == 0x01:
-	    self.position = 'OUT'
+        
+        if ret == 0x02:
+            self.position = 'IN'
+        elif ret == 0x01:
+            self.position = 'OUT'
         elif ret == 0x03:
-	    self.position = 'MOVE'
+            self.position = 'MOVE'
         else:
-	    self.print_error('limit error')
+            self.print_error('limit error')
             return
         return self.position
 
@@ -78,24 +81,24 @@ class abs_controller(object):
 
     def move(self,req):
         print('move start')
-	pos = self.get_pos()
+        pos = self.get_pos()
         print(pos)
-	if pos == req.data:
-	    print('hot is already ' + req.data)
-	    return
+        if pos == req.data:
+            print('hot is already ' + req.data)
+            return
         if req.data == 'IN':
-	    #self.pro = 0x00
-	    self.buff = 0x01
-	elif req.data == 'OUT':
-	    #self.pro = 0x02
-	    self.buff = 0x03
+            #self.pro = 0x00
+            self.buff = 0x01
+        elif req.data == 'OUT':
+            #self.pro = 0x02
+            self.buff = 0x03
         print(req.data)
-	#self.board_abs.out_byte('FBIDIO_OUT1_8', self.pro)
-	#time.sleep(1)
-	self.board_abs.out_byte('FBIDIO_OUT1_8', self.buff)
-	time.sleep(5)
-	self.get_pos()
-	return
+        #self.board_abs.out_byte('FBIDIO_OUT1_8', self.pro)
+        #time.sleep(1)
+        self.board_abs.out_byte('FBIDIO_OUT1_8', self.buff)
+        time.sleep(5)
+        self.get_pos()
+        return
 
     def emergency(self,req):
         rospy.loginfo('!!!emergency!!!')
@@ -112,28 +115,29 @@ class abs_controller(object):
             msg.hot_position =pos
             pub.publish(msg)
             rospy.loginfo(pos)
-	    time.sleep(0.5)
+            time.sleep(0.5)
         return
 
     def move_r(self):
-	self.move('IN')
-	return
+        self.move('IN')
+        return
 
     def move_sky(self):
-	self.move('OUT')
-	return
+        self.move('OUT')
+        return
 
     '''
     def stop(self):
-	self.buff = 0x04
-	self.board_abs.out_byte('FBIDIO_OUT1_8', self.buff)
-	return
+    self.buff = 0x04
+    self.board_abs.out_byte('FBIDIO_OUT1_8', self.buff)
+return
 
     '''
 
 
 if __name__ == '__main__':
     abs = abs_controller()
+    abs.open()
     rospy.init_node('abs_controller')
     rospy.loginfo('waiting publish abs')
     abs.start_thread()
@@ -154,4 +158,3 @@ def start_abs_server(port1 = 6001, port2 = 6002):
     server = pyinterface.server_client_wrapper.server_wrapper(abs,'', port1, port2)
     server.start()
     return server
-

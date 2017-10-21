@@ -4,13 +4,13 @@ import time
 import rospy
 import threading
 from datetime import datetime as dt
-from ros_start.msg import Status_antenna_msg
-from ros_start.msg import Status_weather_msg
-from ros_start.msg import Status_encoder_msg
-from ros_start.msg import Status_dome_msg
-from ros_start.msg import Status_hot_msg
-from ros_start.msg import Status_drive_msg
-from ros_start.msg import Status_m4_msg
+from necst.msg import Status_antenna_msg
+from necst.msg import Status_weather_msg
+from necst.msg import Status_encoder_msg
+from necst.msg import Status_dome_msg
+from necst.msg import Status_hot_msg
+from necst.msg import Status_drive_msg
+from necst.msg import Status_m4_msg
 
 
 class status_main(object):
@@ -114,7 +114,7 @@ class status_main(object):
     
     def callback4(self, req):
         status_box = req.status
-        #rospy.logwarn(status_box)
+        #print(status_box)
         self.param4['move_status'] = status_box[0]
         self.param4['right_act'] = status_box[1]
         self.param4['right_pos'] = status_box[2]
@@ -124,6 +124,7 @@ class status_main(object):
         self.param4['memb_pos'] = status_box[6]
         self.param4['remote_status'] = status_box[7]
         self.param4['dome_pos'] = status_box[8]
+        #print(status_box[8])
         self.param4['dome_pos'] = float(self.param4['dome_pos'])%1296000
         self.param4['dome_pos'] = self.param4['dome_pos']/3600.
         #self.param4['dome_pos'] = str(self.param4['dome_pos'])
@@ -150,7 +151,7 @@ class status_main(object):
 
     def callback7(self,req):
         self.param7['position'] = req.m4_position
-	self.status_check()
+        self.status_check()
         pass
 
     def tel_status(self):
@@ -191,7 +192,7 @@ class status_main(object):
             lst_mm = "{0:02d}".format(lst_mm)
             lst_ss = "{0:02d}".format(lst_ss)
             log = "telescope: %s %s %s %s %s %5.0f %6.1f %s:%s:%s %5.2f %5.2f  dome: door %s  membrane: %s %s %5.2f HOT :%s M4 :%s" %(self.param6["drive"], self.param6["contactor"], 'N', 'N', 'N', mjd, secofday, lst_hh, lst_mm, lst_ss, enc_az, enc_el, doom_door, memb_status, remote_status, dome_enc, hot_position, m4_position)
-            
+            rospy.logdebug(log)
             #f.write(log + "\n")
             print(log)
             
@@ -212,4 +213,3 @@ if __name__ == '__main__':
     sub7 = rospy.Subscriber('status_m4', Status_m4_msg, st.callback7)
     print("Subscribe Start")
     rospy.spin()
-    

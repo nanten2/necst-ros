@@ -1,0 +1,26 @@
+- [UTC] 07:28:17 start : 
+ _otf_2017 --obsfile line_otf_OriKL.obs 
+- [UTC] 07:29:15 start : 
+ _otf_2017 --obsfile line_otf_OriKL.obs 
+- [UTC] 07:30:56 start : 
+ _otf_2017 --obsfile line_otf_OriKL.obs 
+- [UTC] 07:32:08 start : 
+ _otf_2017 --obsfile line_otf_OriKL.obs 
+- [UTC] 07:33:16 start : 
+ _otf_2017 --obsfile line_otf_OriKL.obs 
+- [UTC] 07:33:31 start : 
+ _otf_2017 --obsfile line_otf_OriKL.obs 
+- [UTC] 07:36:18 start : 
+ _otf_2017 --obsfile line_otf_OriKL.obs 
+- [UTC] 07:38:14 start : 
+ _otf_2017 --obsfile line_otf_OriKL.obs 
+- [UTC] 08:25:41 start : 
+ _otf_2017 --obsfile line_otf_OriKL.obs 
+- [UTC] 08:27:13 start : 
+ _otf_2017 --obsfile line_otf_OriKL.obs 
+- [UTC] 08:32:27 start : 
+ _otf_2017 --obsfile line_otf_OriKL.obs 
+- [UTC] 08:36:52 start : 
+ _otf_2017 --obsfile line_otf_OriKL.obs 
+- [UTC] 08:38:35 start : 
+ _otf_2017 --obsfile line_otf_m17sw.obs 

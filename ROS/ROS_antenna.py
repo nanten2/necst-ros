@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 import rospy
-from ros_start.msg import Velocity_mode_msg
-from ros_start.msg import Move_mode_msg
-from ros_start.msg import Otf_mode_msg
-from ros_start.msg import Status_encoder_msg
-from ros_start.msg import Status_weather_msg
-from ros_start.msg import list_azelmsg
+from necst.msg import Velocity_mode_msg
+from necst.msg import Move_mode_msg
+from necst.msg import Otf_mode_msg
+from necst.msg import Status_encoder_msg
+from necst.msg import Status_weather_msg
+from necst.msg import list_azelmsg
 from datetime import datetime as dt
 
 
@@ -91,6 +91,7 @@ class antenna(object):
                                 req.delay, req.lamda, req.hosei, req.code_mode,
                                 req.off_x, req.off_y, req.offcoord,
                                  self.temp, self.press, self.humi)
+        print(ret[0], ret[1])
         self.azel_publish(ret[0], ret[1], ret[2])
         return
 

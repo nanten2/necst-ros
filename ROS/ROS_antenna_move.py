@@ -16,9 +16,9 @@ import numpy as np
 #import antenna_enc
 
 ###ROS/import field
-from ros_start.msg import Status_antenna_msg
-from ros_start.msg import list_azelmsg
-from ros_start.msg import Status_encoder_msg
+from necst.msg import Status_antenna_msg
+from necst.msg import list_azelmsg
+from necst.msg import Status_encoder_msg
 from std_msgs.msg import String
 from std_msgs.msg import Bool
 
@@ -142,7 +142,7 @@ class antenna_move(object):
             return
         rospy.loginfo(self.parameters['start_time'])
         #rospy.loginfo(time.time())
-        print(self.parameters['el_list'])
+        #print(self.parameters['el_list'])
         self.stop_flag = 0
         return
 
@@ -155,7 +155,7 @@ class antenna_move(object):
 
     def limit_check(self):
         for i in range(len(self.parameters['az_list'])):
-            print(self.parameters['az_list'][i],self.parameters['el_list'][i])
+            #print(self.parameters['az_list'][i],self.parameters['el_list'][i])
             if self.parameters['az_list'][i] >= 280*3600 or  self.parameters['az_list'][i] <=-280*3600:#kari
                 rospy.logwarn('!!!limit az!!!')
                 rospy.logwarn(self.parameters['az_list'][i])
@@ -178,11 +178,18 @@ class antenna_move(object):
         st = self.parameters['start_time']
         ct = time.time()
         st_e = float(st) + float(n*0.1)#0.1 <= interval
+        print(n, st, ct, st_e, '####n, st, ct ,st_e')
         ###time check
-        #if st - ct >=0:
+        if st - ct >=0:
+            print(st - ct,'###wait')
+            rospy.logwarn('wait azel list_start_time')
+            time.sleep(st-ct)
         if ct - st_e >=0:
             rospy.loginfo('!!!azel_list is backward!!!')
             self.stop_flag = 1
+            return
+        if st_e - ct >0:
+            print('azel list end')
             return
         else:
             for i in range(len(self.parameters['az_list'])):
@@ -199,6 +206,7 @@ class antenna_move(object):
             y1 = self.parameters['el_list'][num]
             y2 = self.parameters['el_list'][num+1]
             rospy.loginfo('send comp azel')
+            print(x1,x2,y1,y2,st2)
             return (x1,x2,y1,y2,st2)
 
     def act_azel(self):
@@ -225,6 +233,7 @@ class antenna_move(object):
                 self.command_el = tar_el
                 d_t = st - c
                 a_time3=time.time()
+                print(az, el, c, st, tar_az, tar_el,"####az,el,c,st,tar_az,tar_el")
                 #print(a_time3-b_time3,'check#%#%')
                 #rospy.loginfo(d_t)
                 #print(d_t)
@@ -446,7 +455,6 @@ class antenna_move(object):
         self.indaz = az_arcsec
         self.indel = el_arcsec
         
-
         self.enc_az = self.enc_parameter['az_enc']
         self.enc_el = self.enc_parameter['el_enc']
             

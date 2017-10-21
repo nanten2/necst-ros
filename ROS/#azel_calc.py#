@@ -13,6 +13,7 @@ class azel_calc(object):
     latitude = -22.96995611
     longitude = -67.70308139
     height = 4863.85
+    
     #utc_offset = -3. # chile_time
     utc_offset = 0.# nagoya_time
 
@@ -44,7 +45,7 @@ class azel_calc(object):
         #print(num)
         _az = np.radians(ret_azel[0]/3600.)
         _el = np.radians(ret_azel[1]/3600.)
-        ret = self.coord.apply_kisa_test(_az, _el, hosei)
+        ret = self.coord.apply_kisa(_az, _el, hosei)
         target_az = ret_azel[0]+ret[0]
         target_el = ret_azel[1]+ret[1]
         if target_az > 260*3600.:
@@ -155,9 +156,8 @@ class azel_calc(object):
 
         
         print("create_list end")
-        #now = float(now.strftime("%s"))+9*3600. + float(now.strftime("%f"))*1e-6#nagoya
+        now = float(now.strftime("%s"))+9*3600. + float(now.strftime("%f"))*1e-6#nagoya
         #now = float(now.strftime("%s"))-3*3600. + float(now.strftime("%f"))*1e-6#chile
-        now = float(now.strftime("%s")) + float(now.strftime("%f"))*1e-6#utc
         print("az :",az_list[0]/3600.,"el :", el_list[0]/3600., "time : ", now)
         print("list length", len(az_list),len(el_list))
         return[az_list, el_list, now]

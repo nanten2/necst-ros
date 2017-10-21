@@ -1,9 +1,9 @@
 import math
 import time
-from pyslalib import slalib
+#from pyslalib import slalib
 import sys
 import ctypes
-from jplephem.spk import SPK
+#from jplephem.spk import SPK
 #import geomech
 
 
@@ -28,11 +28,11 @@ class coord_calc(object):
     
     
     def __init__(self):
-        self.jpl = SPK.open('./de430.bsp')
+        #self.jpl = SPK.open('./de430.bsp')
         # from https://pypi.python.org/pypi/jplephem
         #self.geomech = geomech.geomech_monitor_client('172.20.0.12',8101)
         pass
-
+    '''
     def calc_jd_utc(self):
         h = time.gmtime()
         ret = slalib.sla_caldj(h.tm_year, h.tm_mon, h.tm_mday) # ret[0] = MJD
@@ -110,7 +110,8 @@ class coord_calc(object):
         tra = slalib.sla_dranrm(ret[0])
         tdec = ret[1]
         return [dist, radi, tra, tdec]
-    '''
+        '''
+    
     def apply_kisa(self, az, el, hosei):
         """ from [coordinate.cpp]
         #kisa parameter
@@ -195,7 +196,7 @@ class coord_calc(object):
         return delta
     
     
-        
+    '''
     def calc_vobs_fk5(self, ra_2000, dec_2000, gcalc_flag):
         x_2000 = x = x1 = v = v_rev = v_rot = v2 = solx = solv = solx1 =[0,0,0]
         jd_utc = self.calc_jd_utc()
@@ -331,7 +332,8 @@ class coord_calc(object):
             return vobs
         elif gcalc_flag == 2:
             return lst
-    
+            '''
+
     def read_kisa_file(self, hosei, num):
         f = open(hosei)
         line = f.readline()
@@ -361,4 +363,3 @@ class coord_calc(object):
         kisa = [kisa[i]+diff[i] for i in range(kisa)]
         """
         return kisa
-        '''

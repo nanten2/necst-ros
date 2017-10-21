@@ -1,6 +1,6 @@
 import rospy
 #import pyinterface
-from ros_start.msg import Test_board_msg
+from necst.msg import Test_board_msg
 
 
 class board(object):

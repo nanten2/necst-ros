@@ -2,7 +2,7 @@
 
 import time
 import os.path
-import urllib2
+import urllib.request
 
 
 # Info
@@ -25,6 +25,7 @@ list = ''
 def day_start():
     daystmp = time.strftime("%Y%m%d")
     if os.path.isfile("./obs_log/"+daystmp+".txt") == False:
+    #if os.path.isfile("/home/amigos/NECST/script/data/obs_log/"+daystmp+".txt") == False:
         print('in')
         f = open("./obs_log/"+daystmp+".txt", "a")
         f.write("*** JST "+time.strftime("%y/%m/%d")+" ***\n")
@@ -36,8 +37,8 @@ def start_script(name, list = ""):
     ut = time.gmtime()
     tstmp = time.strftime("%H:%M:%S", ut)
     daystmp = time.strftime("%Y%m%d")
-    f = open("./obs_log/"+daystmp+".txt", "a")
-    #f = open("./"+daystmp+".txt", "a")
+    #f = open("/home/amigos/NECST/script/data/obs_log/"+daystmp+".txt", "a")
+    f = open("./"+daystmp+".txt", "a")
     if name == "initialize":
         f.write("\n*** Preperation\n")
     elif name == "finalize":
@@ -58,8 +59,8 @@ def end_script(name, file = '', start_tsys_12 = '',start_tsys_13 = '', end_tsys_
     ut = time.gmtime()
     tstmp = time.strftime("%H:%M:%S", ut)
     daystmp = time.strftime("%Y%m%d")
-    f = open("./obs_log/"+daystmp+".txt", "a")
-    #f = open("./"+daystmp+".txt", "a")
+    #f = open("/home/amigos/NECST/script/data/obs_log/"+daystmp+".txt", "a")
+    f = open("./"+daystmp+".txt", "a")
     f.write("-- "+tstmp+" end : "+name+"\n")
     if file:
         f.write("-- datadir : "+file+"\n")
@@ -87,10 +88,10 @@ def weather_log():
     tstmp = time.strftime("%Y/%m/%d %H:%M:%S", ut)
     daystmp = time.strftime("%Y%m%d")
     text = []
-    fp = urllib2.urlopen("http://200.91.8.66/WeatherMonitor/WeatherMenu.html")
+    fp = urllib.request.urlopen("http://200.91.8.66/WeatherMonitor/WeatherMenu.html")
     html = fp.readline()
     while html:
-        html=str(html)
+        html = html.decode('utf-8')
         html.replace(">", " ")
         text.append(html)
         html = fp.readline()
@@ -111,9 +112,10 @@ def weather_log():
     press = text[55].split(">")
     press = press[1].split()
     #radiometer
-    
-    f = open("./obs_log/"+daystmp+".txt", "a")
+
+    #f = open("/home/amigos/NECST/script/data/obs_log/"+daystmp+".txt", "a")
     #f = open("./"+daystmp+".txt", "a")
+    f = open("./obs_log/"+daystmp+".txt", "a")
     f.write("\n")
     f.write("*** Initial Check")
     f.write("- Weather\n")
@@ -130,3 +132,5 @@ def weather_log():
     f.write("\n\n")
     f.close()
 
+
+weather_log()

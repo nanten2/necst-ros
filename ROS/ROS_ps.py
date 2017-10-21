@@ -124,7 +124,8 @@ elif obs['coordsys'].lower() == 'galactic':
     b = obs['beta_on']#on点y座標     
 else:
     print('Error:coordsys')
-    con.tracking_end()
+    con.move_stop()
+    con.dome_stop()
     sys.exit()
 
 if obs['lo1st_sb_1'] == 'U':#後半に似たのがあるけど気にしない()               
@@ -191,7 +192,7 @@ while num < n:
         con.galactic_move(lambda_off, beta_off, off_x=lamdel_off, off_y=betdel_off, offcoord = cosydel)
 
     print("check_track")
-    con.tracking_check()
+    con.antenna_tracking_check()
     con.dome_tracking_check()
     print('tracking OK')
 
@@ -205,7 +206,6 @@ while num < n:
         dp1 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, lamdel_on, betdel_on, dcos, cosydel, 
                            integ_off*2, obs['restfreq_1']/1000., obs['restfreq_2']/1000., 
                            sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
-        print("doppler", dp1[0])
         con.observation("start", integ_off)# getting one_shot_data 
         time.sleep(integ_off)
         """
@@ -315,7 +315,7 @@ while num < n:
             ant_az += 360.
             """
     print("check_track")
-    con.tracking_check()
+    con.antenna_tracking_check()
     con.dome_tracking_check()
     print('tracking OK')
 

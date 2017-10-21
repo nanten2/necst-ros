@@ -1,0 +1,252 @@
+
+*** Initial Check- Weather
+ 2017/10/20 04:06:26 [UTC]
+ In Temp 6.06 [C]
+ Out Temp 1802.61 [C]
+ Dome Temp -0.00 [C]
+ Cab Temp 16.90 [C]
+ In Humi 1 [%]
+ Out Humi 128 [%]
+ Wind Dir 259 [deg]
+ Wind Sp 3.58 [m/s]
+ Pressure 567.71 [hPa]
+
+
+
+*** Initial Check- Weather
+ 2017/10/20 04:08:00 [UTC]
+ In Temp 6.06 [C]
+ Out Temp 1802.61 [C]
+ Dome Temp -0.00 [C]
+ Cab Temp 16.90 [C]
+ In Humi 1 [%]
+ Out Humi 128 [%]
+ Wind Dir 259 [deg]
+ Wind Sp 3.58 [m/s]
+ Pressure 567.71 [hPa]
+
+
+
+*** Initial Check- Weather
+ 2017/10/20 04:11:17 [UTC]
+ In Temp 5.89 [C]
+ Out Temp 1802.61 [C]
+ Dome Temp -0.20 [C]
+ Cab Temp 16.80 [C]
+ In Humi 1 [%]
+ Out Humi 128 [%]
+ Wind Dir 271 [deg]
+ Wind Sp 4.47 [m/s]
+ Pressure 567.67 [hPa]
+
+
+
+*** Initial Check- Weather
+ 2017/10/20 04:13:43 [UTC]
+ In Temp 5.89 [C]
+ Out Temp 1802.61 [C]
+ Dome Temp -0.20 [C]
+ Cab Temp 16.80 [C]
+ In Humi 1 [%]
+ Out Humi 128 [%]
+ Wind Dir 271 [deg]
+ Wind Sp 4.47 [m/s]
+ Pressure 567.67 [hPa]
+
+
+
+*** Initial Check- Weather
+ 2017/10/20 04:32:17 [UTC]
+ In Temp 5.33 [C]
+ Out Temp 1802.61 [C]
+ Dome Temp -0.40 [C]
+ Cab Temp 16.70 [C]
+ In Humi 2 [%]
+ Out Humi 128 [%]
+ Wind Dir 280 [deg]
+ Wind Sp 3.13 [m/s]
+ Pressure 567.66 [hPa]
+
+
+
+*** Initial Check- Weather
+ 2017/10/20 04:33:36 [UTC]
+ In Temp 5.33 [C]
+ Out Temp 1802.61 [C]
+ Dome Temp -0.40 [C]
+ Cab Temp 16.70 [C]
+ In Humi 2 [%]
+ Out Humi 128 [%]
+ Wind Dir 280 [deg]
+ Wind Sp 3.13 [m/s]
+ Pressure 567.66 [hPa]
+
+
+
+*** Initial Check- Weather
+ 2017/10/20 04:48:27 [UTC]
+ In Temp 5.11 [C]
+ Out Temp 1802.61 [C]
+ Dome Temp -0.40 [C]
+ Cab Temp 16.60 [C]
+ In Humi 2 [%]
+ Out Humi 128 [%]
+ Wind Dir 280 [deg]
+ Wind Sp 4.02 [m/s]
+ Pressure 567.65 [hPa]
+
+
+
+*** Initial Check- Weather
+ 2017/10/20 04:50:25 [UTC]
+ In Temp 5.06 [C]
+ Out Temp 1802.61 [C]
+ Dome Temp -0.70 [C]
+ Cab Temp 16.50 [C]
+ In Humi 2 [%]
+ Out Humi 128 [%]
+ Wind Dir 275 [deg]
+ Wind Sp 3.13 [m/s]
+ Pressure 567.65 [hPa]
+
+
+
+*** Initial Check- Weather
+ 2017/10/20 04:52:25 [UTC]
+ In Temp 5.06 [C]
+ Out Temp 1802.61 [C]
+ Dome Temp -0.70 [C]
+ Cab Temp 16.50 [C]
+ In Humi 2 [%]
+ Out Humi 128 [%]
+ Wind Dir 275 [deg]
+ Wind Sp 3.13 [m/s]
+ Pressure 567.65 [hPa]
+
+
+
+*** Initial Check- Weather
+ 2017/10/20 04:53:34 [UTC]
+ In Temp 5.00 [C]
+ Out Temp 1802.61 [C]
+ Dome Temp -0.60 [C]
+ Cab Temp 16.60 [C]
+ In Humi 2 [%]
+ Out Humi 128 [%]
+ Wind Dir 280 [deg]
+ Wind Sp 3.13 [m/s]
+ Pressure 567.65 [hPa]
+
+
+
+*** Initial Check- Weather
+ 2017/10/20 04:54:30 [UTC]
+ In Temp 5.00 [C]
+ Out Temp 1802.61 [C]
+ Dome Temp -0.60 [C]
+ Cab Temp 16.60 [C]
+ In Humi 2 [%]
+ Out Humi 128 [%]
+ Wind Dir 280 [deg]
+ Wind Sp 3.13 [m/s]
+ Pressure 567.65 [hPa]
+
+
+
+*** Initial Check- Weather
+ 2017/10/20 04:55:16 [UTC]
+ In Temp 5.00 [C]
+ Out Temp 1802.61 [C]
+ Dome Temp -0.60 [C]
+ Cab Temp 16.60 [C]
+ In Humi 2 [%]
+ Out Humi 128 [%]
+ Wind Dir 280 [deg]
+ Wind Sp 3.13 [m/s]
+ Pressure 567.65 [hPa]
+
+
+
+*** Initial Check- Weather
+ 2017/10/20 04:58:25 [UTC]
+ In Temp 5.00 [C]
+ Out Temp 1802.61 [C]
+ Dome Temp -0.60 [C]
+ Cab Temp 16.50 [C]
+ In Humi 2 [%]
+ Out Humi 128 [%]
+ Wind Dir 270 [deg]
+ Wind Sp 4.02 [m/s]
+ Pressure 567.63 [hPa]
+
+
+
+*** Initial Check- Weather
+ 2017/10/20 04:59:13 [UTC]
+ In Temp 4.94 [C]
+ Out Temp 1802.61 [C]
+ Dome Temp -0.50 [C]
+ Cab Temp 16.50 [C]
+ In Humi 2 [%]
+ Out Humi 128 [%]
+ Wind Dir 270 [deg]
+ Wind Sp 2.68 [m/s]
+ Pressure 567.63 [hPa]
+
+
+
+*** Initial Check- Weather
+ 2017/10/20 06:03:37 [UTC]
+ In Temp 4.17 [C]
+ Out Temp 1802.61 [C]
+ Dome Temp -0.90 [C]
+ Cab Temp 18.00 [C]
+ In Humi 2 [%]
+ Out Humi 128 [%]
+ Wind Dir 275 [deg]
+ Wind Sp 4.02 [m/s]
+ Pressure 567.20 [hPa]
+
+
+
+*** Initial Check- Weather
+ 2017/10/20 06:04:50 [UTC]
+ In Temp 4.17 [C]
+ Out Temp 1802.61 [C]
+ Dome Temp -0.90 [C]
+ Cab Temp 18.00 [C]
+ In Humi 2 [%]
+ Out Humi 128 [%]
+ Wind Dir 275 [deg]
+ Wind Sp 4.02 [m/s]
+ Pressure 567.20 [hPa]
+
+
+
+*** Initial Check- Weather
+ 2017/10/20 06:05:55 [UTC]
+ In Temp 4.06 [C]
+ Out Temp 1802.61 [C]
+ Dome Temp -1.00 [C]
+ Cab Temp 19.20 [C]
+ In Humi 2 [%]
+ Out Humi 128 [%]
+ Wind Dir 270 [deg]
+ Wind Sp 4.92 [m/s]
+ Pressure 567.17 [hPa]
+
+
+
+*** Initial Check- Weather
+ 2017/10/20 06:06:45 [UTC]
+ In Temp 4.06 [C]
+ Out Temp 1802.61 [C]
+ Dome Temp -1.00 [C]
+ Cab Temp 19.20 [C]
+ In Humi 2 [%]
+ Out Humi 128 [%]
+ Wind Dir 270 [deg]
+ Wind Sp 4.92 [m/s]
+ Pressure 567.17 [hPa]
+
+

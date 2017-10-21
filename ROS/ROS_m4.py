@@ -7,7 +7,7 @@ import threading
 #import board_M4
 import test_board_M4
 
-from ros_start.msg import Status_m4_msg
+from necst.msg import Status_m4_msg
 from std_msgs.msg import String
 
 class m4_controller(object):
@@ -26,21 +26,24 @@ class m4_controller(object):
     #M4 = M4.m4_controller()
 
     def __init__(self):
-	#self.mtr = pyinterface.create_gpg7204(ndev)
+        pass
+
+    def open(self):
+        #self.mtr = pyinterface.create_gpg7204(ndev)
         #self.mtr.ctrl.set_limit_config('MTR_LOGIC', 0x000c)
         #self.mtr.ctrl.off_inter_lock()
-	#self.board_M4 = board_M4.board_M4()
-	self.board_M4 = test_board_M4.board()
-	self.board_M4.set_limit_config('MTR_LOGIC', 0x000c)
-	self.board_M4.off_inter_lock()
+        #self.board_M4 = board_M4.board()
+        self.board_M4 = test_board_M4.board()
+        self.board_M4.set_limit_config('MTR_LOGIC', 0x000c)
+        self.board_M4.off_inter_lock() 
         self.get_pos()
-        pass
+        return
 
     def start_thread(self):
         th = threading.Thread(target = self.pub_status)
-	th.setDaemon(True)
-	th.start()
-	return
+        th.setDaemon(True)
+        th.start()
+        return
 
     def print_msg(self, msg):
         print(msg)
@@ -78,30 +81,30 @@ class m4_controller(object):
         pos = self.get_pos()
 
         if req.data == pos:
-	    if req.data == 'OUT':
-	        self.print_msg('m4 is alrady out')
-	        return
-	    elif req.data == 'IN':
-	        self.print_msg('m4 is alrady in')
-	        return
+            if req.data == 'OUT':
+                self.print_msg('m4 is alrady out')
+                return
+            elif req.data == 'IN':
+                self.print_msg('m4 is alrady in')
+                return
             else:
-	        self.print_msg('me is alrady move')
+                self.print_msg('me is alrady move')
                 return
         else:
-	    if req.data == 'OUT':
+            if req.data == 'OUT':
                 nstep = 60500
-		self.print_msg('m4 move out')
-	    elif req.data == 'IN':
-		nstep = -60500
-		self.print_msg('m4 move in')
-	    else:
-		self.print_error('parameter error')
-		return
-	    self.board_M4.move(self.speed, nstep, self.low_speed, self.acc, self.dec)
+                self.print_msg('m4 move out')
+            elif req.data == 'IN':
+                nstep = -60500
+                self.print_msg('m4 move in')
+            else:
+                self.print_error('parameter error')
+                return
+            self.board_M4.move(self.speed, nstep, self.low_speed, self.acc, self.dec)
             time.sleep(12.)
             #count = self.get_count()
             pos= self.get_pos()
-	    return
+            return
 
     def m4_out(self):
         self.move('OUT')
@@ -145,6 +148,7 @@ class m4_controller(object):
 
 if __name__ == '__main__':
     m4 = m4_controller()
+    m4.open()
     rospy.init_node('m4_controller')
     rospy.loginfo('waiting publish M4')
     m4.start_thread()

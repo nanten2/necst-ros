@@ -41,6 +41,8 @@ delay, lamda, hosei, code_mode, off_x, off_y, offcoord, temp, press, humi)
             az_list.append(ret[0][0])
             el_list.append(ret[1][0])
             nt += 0.1
+            print("#####################")
+            print(az_list, el_list)
             print(ret[0][0],ret[1][0])
 
         start_time = float(now.strftime("%s"))+9*3600. + float(now.strftime("%f"))*1e-6

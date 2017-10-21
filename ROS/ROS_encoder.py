@@ -1,11 +1,12 @@
+#!/usr/bin/env python
 import math
 import time
 import portio
 import rospy
 
-from ros_start.msg import Status_encoder_msg
-from ros_start.msg import Status_antenna_msg
-from ros_start.msg import Test_board_msg
+from necst.msg import Status_encoder_msg
+from necst.msg import Status_antenna_msg
+from necst.msg import Test_board_msg
 
 class enc_controller(object):
 

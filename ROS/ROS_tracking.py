@@ -2,8 +2,8 @@
 import time
 import threading
 import rospy
-from ros_start.msg import Status_antenna_msg
-from ros_start.msg import Status_encoder_msg
+from necst.msg import Status_antenna_msg
+from necst.msg import Status_encoder_msg
 from std_msgs.msg import Bool
 
 class tracking_check(object):
