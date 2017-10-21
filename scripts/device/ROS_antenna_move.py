@@ -190,6 +190,7 @@ class antenna_move(object):
             return
         if st_e - ct >0:
             print('azel list end')
+            rospy.logwarn('end')
             return
         else:
             for i in range(len(self.parameters['az_list'])):
