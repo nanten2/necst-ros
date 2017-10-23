@@ -4,7 +4,7 @@ import math
 import threading
 #import pyinterface### for ROS
 import sys
-sys.path.append('./../../lib')
+sys.path.append('/home/amigos/ros/src/necst/lib')
 import dome_pos
 #import antenna_enc### for ROS
 
