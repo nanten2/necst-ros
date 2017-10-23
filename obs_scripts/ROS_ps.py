@@ -43,6 +43,7 @@ import os
 import time
 import numpy
 import sys
+sys.path.append("/home/amigos/ros/src/necst/lib")
 import doppler_nanten
 dp = doppler_nanten.doppler_nanten()
 import ROS_controller
@@ -65,7 +66,7 @@ def handler(num, flame):
 signal.signal(signal.SIGINT, handler)
 
 ###obsdir = '/home/amigos/NECST/script/obslist/ps/'
-obsdir = "/home/amigos/catkin_ws/src/ros_start/ROS/obs/"
+obsdir = "/home/amigos/obs_lists/"
 obs_items = open(obsdir+obsfile, 'r').read().split('\n')
 obs = {}
 for _item in obs_items:
