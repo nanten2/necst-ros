@@ -58,5 +58,5 @@ class gpg6204_controller(object):
     def input_di(self):
         return
     
-     def output_do(self, ulValue):
-         return
+    def output_do(self, ulValue):
+        return

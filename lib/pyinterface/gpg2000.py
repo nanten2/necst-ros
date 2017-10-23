@@ -42,14 +42,14 @@ class gpg2000(object):
         
 class gpg2000_controller(object):
 
-    def __init__(self, num=1, nn=3):
+    def __init__(self, ndev=1, boardid=2724, initialize=True):
         self.pub = rospy.Publisher("pyinterface", Status_encoder_msg, queue_size=10, latch=True)
-        self.num = num
+        self.ndev = ndev
         self.az = 0
         self.el = 0
         
     def out_word(self, name, value):
-        if self.num == 3:
+        if self.ndev == 3:
             if name == "FBIDIO_OUT1_16":
                 self.az = value
             elif name == "FBIDIO_OUT17_32":
