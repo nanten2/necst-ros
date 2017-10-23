@@ -568,6 +568,7 @@ if __name__ == '__main__':
     rospy.init_node('dome')
     d = dome_controller()
     d.start_thread_ROS()
+    print('[ROS_dome.py] : START SUBSCRIBE')
     sub1 = rospy.Subscriber('status_encoder', Status_encoder_msg, d.set_enc_parameter)
     sub2 = rospy.Subscriber('dome_move', Dome_msg, d.set_command)
     rospy.spin()
