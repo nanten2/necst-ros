@@ -3,6 +3,8 @@
 import rospy
 import time
 import threading
+import sys
+sys.path.append("/home/amigos/ros/src/necst/lib")
 #import abs
 #import board_abs
 import test_board_abs
