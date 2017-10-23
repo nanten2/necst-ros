@@ -52,7 +52,8 @@ class controller(object):
         self.pub12 = rospy.Publisher("antenna_otf", Otf_mode_msg, queue_size = 10, latch = True)
         self.pub13 = rospy.Publisher("dome_move", Dome_msg, queue_size = 10, latch = True)
         self.pub14 = rospy.Publisher('m4', String, queue_size = 10, latch = True)
-        self.pub15 = rospy.Publisher("hot", String, queue_size = 10, latch = True)        
+        self.pub15 = rospy.Publisher("hot", String, queue_size = 10, latch = True)
+        self.pub16 = rospy.Publisher("m2", Float64, queue_size=10, latch=True)
 
         return
     
@@ -374,7 +375,9 @@ class controller(object):
 
     def m2_move(self, dist):
         """m2\u3092\u52d5\u304b\u3059(um)"""
-        self.beam.m2_move(dist)
+        status = Float64()
+        status.data = dist
+        self.pub16.publish(status)
         return
 
 # ===================
