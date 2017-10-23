@@ -43,6 +43,7 @@ import time
 import numpy
 import sys
 sys.path.append("/home/amigos/ros/src/necst/lib")
+sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 import obs_log
 import doppler_nanten
 dp = doppler_nanten.doppler_nanten()
@@ -65,7 +66,7 @@ list.append(obsfile)
 obs_log.start_script(name, list)
 
 # read obsfile
-obsdir = '/home/amigos/obs_lists/'
+obsdir = '/home/amigos/necst-obsfiles/'
 obs_items = open(obsdir+obsfile, 'r').read().split('\n')
 obs = {}
 for _item in obs_items:
@@ -160,7 +161,7 @@ vlsr = obs["vlsr"]
 
 # Save file
 # ----------------------
-
+"""
 datahome = 'data'
 timestamp = time.strftime('%Y%m%d%H%M%S')
 dirname = 'n%s_%s_%s_otf_%s'%(timestamp ,obs['molecule_1'] ,obs['transiti_1'].split('=')[1],obs['object'])
@@ -168,6 +169,7 @@ savedir = os.path.join(datahome, name, dirname)
 
 print('mkdir {savedir}'.format(**locals()))
 os.makedirs(savedir)
+"""
 
 # Scan Parameters
 # --------------- 
