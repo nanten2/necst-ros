@@ -336,7 +336,7 @@ class coord_calc(object):
             '''
 
     def read_kisa_file(self, hosei, num):
-        f = open(hosei)
+        f = open('/home/amigos/ros/src/necst/lib/' + hosei)
         line = f.readline()
         kisa = [0]*num
         n = 0
