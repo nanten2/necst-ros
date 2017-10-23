@@ -212,6 +212,10 @@ class antenna_move(object):
         if ct - st_e >=0:
             rospy.loginfo('!!!azel_list is end!!!')
             self.stop_flag = 1
+            for i in range(5):
+                self.board.out_word("FBIDIO_OUT1_16", 0)
+                self.board.out_word("FBIDIO_OUT17_32", 0)
+                time.sleep(0.05)
             return
 
         else:
