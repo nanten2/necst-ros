@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
+import time
 from necst.msg import Velocity_mode_msg
 from necst.msg import Move_mode_msg
 from necst.msg import Otf_mode_msg
@@ -11,6 +12,7 @@ from datetime import datetime as dt
 import sys
 sys.path.append("/home/amigos/ros/src/necst/lib")
 import azel_calc
+import otf
 
 
 class antenna(object):
@@ -30,7 +32,6 @@ class antenna(object):
     humi = ""
     def __init__(self):
         self.calc = azel_calc.azel_calc()
-        import otf
         self.otf = otf.otf()
 
     def note_encoder(self, req):
@@ -102,11 +103,12 @@ if __name__ == "__main__":
     rospy.init_node("antenna_server")
     rospy.loginfo(" Read ok ")
     at = antenna()
+    rospy.Subscriber("status_encoder", Status_encoder_msg, at.note_encoder)
+    rospy.Subscriber('status_weather', Status_weather_msg, at.note_weather)
+    time.sleep(0.1)
     rospy.Subscriber('antenna_vel', Velocity_mode_msg, at.velocity_move)
     rospy.Subscriber('antenna_radec', Move_mode_msg, at.radec_move)
     rospy.Subscriber('antenna_galactic', Move_mode_msg, at.galactic_move)
     rospy.Subscriber('antenna_planet', Move_mode_msg, at.planet_move)
     rospy.Subscriber('antenna_otf', Otf_mode_msg, at.otf_start)
-    rospy.Subscriber("status_encoder", Status_encoder_msg, at.note_encoder)
-    rospy.Subscriber('status_weather', Status_weather_msg, at.note_weather)
     rospy.spin()
