@@ -60,6 +60,7 @@ class antenna(object):
         return
 
     def radec_move(self, req):
+        print("#############################")
         now = dt.utcnow()
         ret = self.calc.coordinate_calc(req.x, req.y, req.ntarg, req.code_mode,
                                         req.off_x/3600., req.off_y/3600.,
