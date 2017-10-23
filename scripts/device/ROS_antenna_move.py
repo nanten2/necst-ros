@@ -11,7 +11,7 @@ import threading
 import math
 import sys
 sys.path.append('/home/amigos/python/')
-sys.path.append('./../../lib')
+sys.path.append('/home/amigos/ros/src/necst/lib')
 import test_board
 import numpy as np
 #import pyinterface
