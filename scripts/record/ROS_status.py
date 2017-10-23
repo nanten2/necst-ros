@@ -164,6 +164,8 @@ class status_main(object):
             drive = self.param6["drive"]
             enc_az = self.param3['encoder_az']
             enc_el = self.param3['encoder_el']
+            command_az = self.param1['command_az']
+            command_el = self.param1['command_el']
             doom_door = self.param4['dome_status']
             memb_status = self.param4['memb_pos']
             dome_enc = self.param4['dome_pos']
@@ -192,9 +194,10 @@ class status_main(object):
             lst_mm = "{0:02d}".format(lst_mm)
             lst_ss = "{0:02d}".format(lst_ss)
             log = "telescope: %s %s %s %s %s %5.0f %6.1f %s:%s:%s %5.2f %5.2f  dome: door %s  membrane: %s %s %5.2f HOT :%s M4 :%s" %(self.param6["drive"], self.param6["contactor"], 'N', 'N', 'N', mjd, secofday, lst_hh, lst_mm, lst_ss, enc_az, enc_el, doom_door, memb_status, remote_status, dome_enc, hot_position, m4_position)
-            rospy.logdebug(log)
+            log_debug = "telescope: %s %s %s %s %s %5.0f %6.1f %s:%s:%s %5.2f %5.2f %5.2f %5.2f dome: door %s  membrane: %s %s %5.2f HOT :%s M4 :%s" %(self.param6["drive"], self.param6["contactor"], 'N', 'N', 'N', mjd, secofday, lst_hh, lst_mm, lst_ss, enc_az, enc_el, command_az, command_el, doom_door, memb_status, remote_status, dome_enc, hot_position, m4_position)
+            
             #f.write(log + "\n")
-            print(log)
+            print(log_debug)
             
             time.sleep(1.)
 
