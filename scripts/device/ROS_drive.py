@@ -10,6 +10,8 @@ import time
 import rospy
 from std_msgs.msg import String
 from necst.msg import Status_drive_msg
+import sys
+sys.path.append("/home/amigos/ros/src/necst/lib")
 import board_drive
 import test_board # antenna_board test
 

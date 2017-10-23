@@ -7,7 +7,7 @@ from necst.msg import Status_weather_msg
 class weather_controller(object):
     host = "weather@200.91.8.66"
     #dir = "/home/weather/WeatherMonitor/Weather_Data/"
-    dir = "/home/amigos/ros/src/necst/ROS/"
+    dir = "/home/amigos/ros/src/necst/scripts/device/"
     data = [0]*20
 
     def __init__(self):

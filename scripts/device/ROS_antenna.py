@@ -8,6 +8,9 @@ from necst.msg import Status_encoder_msg
 from necst.msg import Status_weather_msg
 from necst.msg import list_azelmsg
 from datetime import datetime as dt
+import sys
+sys.path.append("/home/amigos/ros/src/necst/lib")
+import azel_calc
 
 
 class antenna(object):
@@ -26,7 +29,6 @@ class antenna(object):
     press = ""
     humi = ""
     def __init__(self):
-        import azel_calc
         self.calc = azel_calc.azel_calc()
         import otf
         self.otf = otf.otf()
