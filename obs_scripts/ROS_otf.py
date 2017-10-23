@@ -41,6 +41,8 @@ import os
 import shutil
 import time
 import numpy
+import sys
+sys.path.append("/home/amigos/ros/src/necst/lib")
 import obs_log
 import doppler_nanten
 dp = doppler_nanten.doppler_nanten()
@@ -48,7 +50,6 @@ import ROS_controller
 con = ROS_controller.controller()
 con.dome_track()
 con.move_stop()
-import sys
 import signal
 def handler(num, flame):
     print("!!ctrl+C!!")
@@ -64,7 +65,7 @@ list.append(obsfile)
 obs_log.start_script(name, list)
 
 # read obsfile
-obsdir = './obslist/'
+obsdir = '/home/amigos/obs_lists/'
 obs_items = open(obsdir+obsfile, 'r').read().split('\n')
 obs = {}
 for _item in obs_items:
