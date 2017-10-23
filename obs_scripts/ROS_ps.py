@@ -44,6 +44,7 @@ import time
 import numpy
 import sys
 sys.path.append("/home/amigos/ros/src/necst/lib")
+sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 import doppler_nanten
 dp = doppler_nanten.doppler_nanten()
 import ROS_controller
@@ -66,7 +67,7 @@ def handler(num, flame):
 signal.signal(signal.SIGINT, handler)
 
 ###obsdir = '/home/amigos/NECST/script/obslist/ps/'
-obsdir = "/home/amigos/obs_lists/"
+obsdir = "/home/amigos/necst-obsfiles/"
 obs_items = open(obsdir+obsfile, 'r').read().split('\n')
 obs = {}
 for _item in obs_items:
@@ -138,7 +139,7 @@ if obs['lo1st_sb_2'] == 'U':#後半に似たのがあるけど気にしない()
 else:
     sb2 = -1  
 
-
+"""
 datahome = 'data'
 timestamp = time.strftime('%Y%m%d_%H%M%S')
 dirname = timestamp
@@ -146,7 +147,7 @@ savedir = os.path.join(datahome, name, dirname)
 
 print('mkdir {savedir}'.format(**locals()))
 os.makedirs(savedir)
-
+"""
 
 d1_list = []
 d2_list = []
