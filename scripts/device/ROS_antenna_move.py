@@ -268,7 +268,8 @@ class antenna_move(object):
                 if self.emergency_flag:
                     time.sleep(0.1)
                     continue
-                self.move_azel(tar_az,tar_el,10000,12000)
+                #self.move_azel(tar_az,tar_el,10000,12000)
+                self.azel_move(tar_az,tar_el,10000,12000)
                 time.sleep(0.01)
            
 
