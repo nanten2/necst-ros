@@ -1,14 +1,24 @@
+#!/usr/bin/env python
 import time
+import sys
+sys.path.append("/home/amigos/ros/src/necst/lib")
 import pyinterface
 import rospy
 from necst.msg import Status_limit_msg
-
-self.dio = pyinterface.create_gpg2000(3)
+from std_msgs.msg import Bool
+import signal
+def handler(num, flame):
+    stop_flag = 1
+    rospy.is_shutdown()
+signal.signal(signal.SIGINT, handler)
+            
+dio = pyinterface.create_gpg2000(3)
 
 stop_flag = 0
 ret = [1]*4
 error_box = [1]*32
 msg = ""
+
 
 rospy.init_node("limit_check")
 pub = rospy.Publisher("limit_check", Status_limit_msg, queue_size=10, latch=True)
@@ -18,10 +28,10 @@ _lim = Bool()
 
 while stop_flag == 0:
 
-    ret[0] = self.dio.ctrl.in_byte('FBIDIO_IN1_8')
-    ret[1] = self.dio.ctrl.in_byte('FBIDIO_IN9_16')
-    ret[2] = self.dio.ctrl.in_byte('FBIDIO_IN17_24')
-    ret[3] = self.dio.ctrl.in_byte('FBIDIO_IN25_32')
+    ret[0] = dio.ctrl.in_byte('FBIDIO_IN1_8')
+    ret[1] = dio.ctrl.in_byte('FBIDIO_IN9_16')
+    ret[2] = dio.ctrl.in_byte('FBIDIO_IN17_24')
+    ret[3] = dio.ctrl.in_byte('FBIDIO_IN25_32')
     
     for i in range(8):
         error_box[i] = ret[0] >> i & 0x01
@@ -89,5 +99,5 @@ while stop_flag == 0:
     st.error_msg = msg
     pub.publish(st)
 
-    time.slep(0.1)
+    time.sleep(0.1)
 
