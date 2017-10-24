@@ -23,10 +23,10 @@ class soft_limit_check(object):
         while True:
             if self.enc_az >= 280*3600 or self.enc_az <=-280*3600:
                 rospy.logwarn('[ROS.soft_limit_check.py] : !!!limit az!!!')
-                self.pub.publish()
+                self.pub.publish(self.call.data)
             if self.enc_el >= 90*3600 or self.enc_el <=-1*3600:#?
                 rospy.logwarn('[ROS.soft_limit_check.py] : !!!limit el!!!')
-                self.pub.publish()
+                self.pub.publish(self.call.data)
             time.sleep(0.1)
             continue
 
