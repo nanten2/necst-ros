@@ -12,8 +12,8 @@ from std_msgs.msg import String
 from necst.msg import Status_drive_msg
 import sys
 sys.path.append("/home/amigos/ros/src/necst/lib")
-import board_drive
-import test_board # antenna_board test
+import gpg2000_board
+#import test_board # antenna_board test
 
 class drive(object):
 
@@ -21,49 +21,45 @@ class drive(object):
     contactor_param = 0 #test 
 
     def __init__(self):
-        self.bd = board_drive.board_drive()
-        self.board = test_board.board()# test
+        self.bd = gpg2000_board.board()
+        #self.board = test_board.board()# test
         self.pub = rospy.Publisher('status_drive', Status_drive_msg, queue_size=10, latch=True)#test
         self.msg = Status_drive_msg()#test
         
     def drive(self, req):
         if req.data == "on":
             _drive = 1#test
-            #ret = self.bd.out_byte("FBIDIO_OUT1_8", 3)
+            print("drive_start")
+            ret = self.bd.out_byte("FBIDIO_OUT1_8", 3)
+            print("drive_on")
         elif req.data == "off":
             _drive = 0#test
-            #ret = self.bd.out_byte("FBIDIO_OUT1_8", 0)
+            ret = self.bd.out_byte("FBIDIO_OUT1_8", 0)
         else:
             print(req.data)
             rospy.logerr('bad command !!')
             ret = False
         if True:#ret:
             rospy.loginfo("complete !!")
-            print(self.drive_param,_drive)
-            self.drive_param = _drive#test
-            print(self.drive_param,_drive)
-            self.msg.value = [self.drive_param, self.contactor_param]
-            self.pub.publish(self.msg)
         else:
             rospy.logerr("board_drive is unfinished !!")
     
     def contactor(self, req):
         if req.data == "on":
             _contactor = 1#test
-            #ret = self.bd.out_byte("FBIDIO_OUT9_16", 15)
+            ret = self.bd.out_byte("FBIDIO_OUT9_16", 15)
+            print("contactor_on")
         elif req.data == "off":
             _contactor = 0#test
-            #ret = self.bd.out_byte("FBIDIO_OUT9_16", 0)
+            ret = self.bd.out_byte("FBIDIO_OUT9_16", 0)
         else:
             rospy.logerr('bad command !!')
         if True:#ret:
             rospy.loginfo("complete !!")
-            self.contactor_param = _contactor
-            self.msg.value = [self.drive_param, self.contactor_param]
-            self.pub.publish(self.msg)
         else:
             rospy.logerr("board_drive is unfinished !!")
-"""
+            
+    """limit_check.py
     def drive_pub(self):
         pub = rospy.Publisher('status_drive', Status_drive_msg, queue_size=10, latch=True)
         msg = Status_drive_msg()
@@ -87,8 +83,7 @@ class drive(object):
                 rospy.logerr("no publish !!")
                 flag=False
                 break
-"""
-
+    """
 
 if __name__ == "__main__":
     rospy.init_node("drive")

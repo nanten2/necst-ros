@@ -2,8 +2,6 @@
 ###this script is dummy for sumilator###
 import time
 
-global dome_enc_1
-dome_enc_1 = 0
 class gpg6204(object):
     ###dome
     right_act = 'OFF'
@@ -52,8 +50,17 @@ class gpg6204_controller(object):
     boardid = ''
     print_log = True
 
+    def __init__(self, ndev=1, nChannel=1, boardid=6204, initialize=True):
+        self.ndev = ndev
+        self.nChannel = nChannel
+        return
+
+
     def get_counter(self):
-        return dome_enc_1
+        with open("/home/amigos/ros/src/necst/lib/"+"dome_enc.txt","r") as rf:
+            txt = rf.readlines()
+            txt = txt[0].split()[0]
+        return float(txt)
 
     def input_di(self):
         return

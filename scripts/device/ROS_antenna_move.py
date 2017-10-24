@@ -12,7 +12,7 @@ import math
 import sys
 sys.path.append('/home/amigos/python/')
 sys.path.append('/home/amigos/ros/src/necst/lib')
-import test_board
+import gpg2000_board
 import numpy as np
 #import pyinterface
 #import antenna_enc
@@ -115,7 +115,7 @@ class antenna_move(object):
     
     def __init__(self):
         #self.board = board.board()#N
-        self.board = test_board.board()
+        self.board = gpg2000_board.board()
         #self.dio = pyinterface.create_gpg2000(3)
         #self.enc = antenna_enc.enc_monitor_client('172.20.0.11',8002)###0921
         #self.enc = antenna_enc.enc_controller()
