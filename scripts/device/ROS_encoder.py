@@ -20,7 +20,8 @@ class enc_controller(object):
 
     def __init__(self):
         rospy.init_node("encoder_status")
-        sub = rospy.Subscriber("pyinterface", Status_encoder_msg, self.sub_enc)
+        #sub = rospy.Subscriber("pyinterface", Status_encoder_msg, self.sub_enc)
+        sub = rospy.Subscriber("status_board", Test_board_msg, self.sub_enc)
         pass
 
     def pub_status(self):

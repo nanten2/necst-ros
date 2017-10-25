@@ -415,7 +415,7 @@ class dome_controller(object):
         self.dome_enc = self.dome_pos.dome_encoder_acq()
         dome_enc_print = float(self.dome_enc)
         dome_enc_print = self.dome_enc/3600.
-        rospy.logwarn(dome_enc_print)
+        #rospy.logwarn(dome_enc_print)
         return self.dome_enc
     
     def read_limit(self):
