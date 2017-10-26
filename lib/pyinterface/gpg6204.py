@@ -1,4 +1,4 @@
-#!usr/bin/env python
+#!/usr/bin/env python
 ###this script is dummy for sumilator###
 import time
 

@@ -1,7 +1,6 @@
 <launch>
   <node pkg="necst" name="Status" type="ROS_status.py" output="screen"/>
   <node pkg="necst" name="tracking" type="ROS_tracking.py"/>
-  <node pkg="necst" name="controller_client" type="ROS_controller.py"/>
   <node pkg="necst" name="antenna_server" type="ROS_antenna.py"/>
   <node pkg="necst" name="antenna_move" type="ROS_antenna_move.py"/>
   <node pkg="necst" name="encoder_status" type="ROS_encoder.py"/>
@@ -12,4 +11,5 @@
   <node pkg="necst" name="drive" type="ROS_drive.py"/>
   <node pkg="necst" name="dome" type="ROS_dome.py"/>
   <node pkg="necst" name="dome_tracking" type="ROS_dome_track_check.py"/>
+  <node pkg="necst" name="limit_check" type="ROS_limit_check.py"/>
 </launch>
