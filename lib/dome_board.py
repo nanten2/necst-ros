@@ -11,8 +11,8 @@ import ros_start
 import threading
 from necst.msg import Dome_msg
 from std_msgs.msg import String
-#import pyinterface
-import shiotani_pyinterface
+import pyinterface
+#import shiotani_pyinterface
 
 class dome_board(object):
     ###dome
@@ -36,8 +36,8 @@ class dome_board(object):
     
 
     def __init__(self):
-        #self.dio = pyinterface.create_gpg2000(5)#N
-        self.dio = shiotani_pyinterface.create_gpg2000(5)#N
+        self.dio = pyinterface.create_gpg2000(5)#N
+        #self.dio = shiotani_pyinterface.create_gpg2000(5)#N
         pass
 
     def start_thread(self):

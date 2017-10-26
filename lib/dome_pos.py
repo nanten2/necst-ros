@@ -1,7 +1,7 @@
 import time
 import math
-#import pyinterface
-import shiotani_pyinterface###for dummy
+import pyinterface
+#import shiotani_pyinterface###for dummy
 
 class dome_pos_controller(object):
     touchsensor_pos = [-391,-586,-780,-974,-1168,-1363,-1561,-1755,-1948,-2143, 0, -197]
@@ -13,8 +13,8 @@ class dome_pos_controller(object):
 
 
     def __init__(self, ndev2 = 1):
-        #self.dio = pyinterface.create_gpg6204(ndev2)
-        self.dio = shiotani_pyinterface.create_gpg6204(ndev2)
+        self.dio = pyinterface.create_gpg6204(ndev2)
+        #self.dio = shiotani_pyinterface.create_gpg6204(ndev2)
 	#self.dome_enc_initialize()
 	#self.dio.ctrl.set_mode(4, 0, 1, 0)
 	#self.dome_encoder_acq()

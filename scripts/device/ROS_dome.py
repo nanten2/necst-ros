@@ -274,6 +274,7 @@ class dome_controller(object):
         if dome_controller.stop[0] == 1:
             self.buffer[1] = 0
         else: self.buffer[1] = 1
+        print(self.buffer)
         self.dio.do_output(self.buffer, 1, 6)
         #self.dome_limit()
         #pos_arcsec = self.dome_pos.dome_encoder_acq()

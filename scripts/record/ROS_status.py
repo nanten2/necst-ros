@@ -1,6 +1,7 @@
 #!/usr/bin/env python                                                            
 
 import time
+import math
 import rospy
 import threading
 from datetime import datetime as dt
@@ -125,10 +126,10 @@ class status_main(object):
         self.param4['memb_act'] = status_box[5]
         self.param4['memb_pos'] = status_box[6]
         self.param4['remote_status'] = status_box[7]
-        self.param4['dome_pos'] = status_box[8]
+        dome_pos_1 = float(status_box[8])
         #print(status_box[8])
-        self.param4['dome_pos'] = float(self.param4['dome_pos'])%1296000
-        self.param4['dome_pos'] = self.param4['dome_pos']/3600.
+        dome_pos_2 = math.fabs(dome_pos_1)%1296000
+        self.param4['dome_pos'] = math.copysign(dome_pos_2,dome_pos_1)/3600.
         #self.param4['dome_pos'] = str(self.param4['dome_pos'])
         if self.param4['right_pos'] == 'OPEN' and self.param4['left_pos'] == 'OPEN':
             self.param4['dome_status'] = 'OPEN'

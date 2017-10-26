@@ -178,7 +178,7 @@ class gpg2000_controller(object):
                 elif self.speed == 'low':
                     calc_dome_enc = c_dome_enc - 1000
 
-            with open("dome_enc.txt","w") as wf:
+            with open("/home/amigos/ros/src/necst/lib/"+"dome_enc.txt","w") as wf:
                 wf.write(str(calc_dome_enc))
             #print(self.turn, self.speed, calc_dome_enc, dome_enc_1)
             time.sleep(0.5)
@@ -294,6 +294,10 @@ class gpg2000_controller(object):
         with open("/home/amigos/ros/src/necst/lib/"+"dome_enc.txt","r") as rf:
             txt = rf.readlines()
             txt = txt[0].split()[0]
+            print("#################")
+            print(txt)
+            print("###################")
+
         return float(txt)
 
     def out_byte(self, name, value):
