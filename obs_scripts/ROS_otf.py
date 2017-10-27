@@ -810,5 +810,7 @@ n2fits_write.write(read2,f2)
 '''
 
 #shutil.copy("/home/amigos/NECST/soft/server/hosei_230.txt", savedir+"/hosei_copy")
+timestamp = time.strftime('%Y%m%d_%H%M%S')
+dirname = timestamp
 obs_log.end_script(name, dirname)
 

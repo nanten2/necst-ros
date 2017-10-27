@@ -301,46 +301,70 @@ class gpg2000_controller(object):
         return float(txt)
 
     def out_byte(self, name, value):
-        dr = self.drive_read()
-        if name == "FBIDIO_OUT1_8":
-            if value == 3:
-                self.drive = 1
-            elif value == 0:
-                self.drive = 0
-        elif name == "FBIDIO_OUT9_16":
-            if value == 15:
-                self.contactor = 1
-            elif value == 0:
-                self.contactor = 0
+        if self.ndev == 10:
+            if name == "FBIDIO_OUT1_8":
+                if value == 1:
+                    pos = "in"
+                elif value == 3:
+                    pos = "out"
+                else:
+                    pos = "move"
+            else:
+                pass
+            with open("/home/amigos/ros/src/necst/lib/"+"hot.txt","w") as f:
+                f.write(str(pos))
         else:
-            pass
-        self.drive_write()
+            dr = self.drive_read()
+            if name == "FBIDIO_OUT1_8":
+                if value == 3:
+                    self.drive = 1
+                elif value == 0:
+                    self.drive = 0
+            elif name == "FBIDIO_OUT9_16":
+                if value == 15:
+                    self.contactor = 1
+                elif value == 0:
+                    self.contactor = 0
+            else:
+                pass
+            self.drive_write()
         return
             
         
             
     def in_byte(self, no):
-        with open("/home/amigos/ros/src/necst/lib/"+"drive.txt","r") as f:
-            txt = f.readlines()
+        if self.ndev == 10:
+            with open("/home/amigos/ros/src/necst/lib/"+"hot.txt","r") as f:
+                txt = f.readlines()
+            hot = txt[0].split()[0]
+            if hot == "in":
+                value = 2
+            elif hot == "out":
+                value =1
+            elif hot == "move":
+                value = 3
+        else:
+            with open("/home/amigos/ros/src/necst/lib/"+"drive.txt","r") as f:
+                txt = f.readlines()
             dr = int(txt[0].split()[0])
             co = int(txt[1].split()[0])
-        if no == 'FBIDIO_IN1_8':
-            if dr == 1 and co == 1:
+            if no == 'FBIDIO_IN1_8':
+                if dr == 1 and co == 1:
+                    value = int(b"11111111",2)
+                elif dr == 0 and co == 1:
+                    value = int(b"11111100",2)
+                elif dr == 1 and co == 0:
+                    value = int(b"11110011",2)
+                elif dr == 0 and co == 0:
+                    value = int(b"11110000",2)                
+            elif no == 'FBIDIO_IN9_16':
                 value = int(b"11111111",2)
-            elif dr == 0 and co == 1:
-                value = int(b"11111100",2)
-            elif dr == 1 and co == 0:
-                value = int(b"11110011",2)
-            elif dr == 0 and co == 0:
-                value = int(b"11110000",2)                
-        elif no == 'FBIDIO_IN9_16':
-            value = int(b"11111111",2)
-        elif no == 'FBIDIO_IN17_24':
-            value = int(b"11111111",2)
-        elif no == 'FBIDIO_IN25_32':
-            value = int(b"11111111",2)
-        else:
-            print("############ !!error!! ############")
+            elif no == 'FBIDIO_IN17_24':
+                value = int(b"11111111",2)
+            elif no == 'FBIDIO_IN25_32':
+                value = int(b"11111111",2)
+            else:
+                print("############ !!error!! ############")
 
         
         return value

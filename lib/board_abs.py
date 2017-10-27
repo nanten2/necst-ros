@@ -11,5 +11,4 @@ class board(object):
         return
 
     def in_byte(self,no):
-        self.dio.ctrl.in_byte(no)
-        return
+        return self.dio.ctrl.in_byte(no)
