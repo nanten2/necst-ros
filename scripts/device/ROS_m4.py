@@ -6,8 +6,8 @@ import threading
 import sys
 sys.path.append("/home/amigos/ros/src/necst/lib")
 #import M4
-#import board_M4
-import test_board_M4
+import board_M4
+#import test_board_M4
 
 from necst.msg import Status_m4_msg
 from std_msgs.msg import String
@@ -64,7 +64,7 @@ class m4_controller(object):
     
     def get_pos(self):
         status = self.board_M4.get_status('MTR_LIMIT_STATUS')
-
+        print(status)
         if status == 0x0004:
             #SMART
            self.position = 'OUT'
@@ -83,30 +83,30 @@ class m4_controller(object):
         pos = self.get_pos()
 
         if req.data == pos:
-            if req.data == 'OUT':
+            if req.data.upper() == 'OUT':
                 self.print_msg('m4 is alrady out')
                 return
-            elif req.data == 'IN':
+            elif req.data.upper() == 'IN':
                 self.print_msg('m4 is alrady in')
                 return
             else:
-                self.print_msg('me is alrady move')
+                self.print_msg('m4 is alrady move')
                 return
         else:
-            if req.data == 'OUT':
+            if req.data.upper() == 'OUT':
                 nstep = 60500
                 self.print_msg('m4 move out')
-            elif req.data == 'IN':
+            elif req.data.upper() == 'IN':
                 nstep = -60500
                 self.print_msg('m4 move in')
             else:
                 self.print_error('parameter error')
                 return
             self.board_M4.move(self.speed, nstep, self.low_speed, self.acc, self.dec)
-            time.sleep(12.)
+            #time.sleep(12.)
             #count = self.get_count()
-            pos= self.get_pos()
-            return
+        pos= self.get_pos()
+        return
 
     def m4_out(self):
         self.move('OUT')
@@ -141,10 +141,10 @@ class m4_controller(object):
         msg = Status_m4_msg()
 
         while not rospy.is_shutdown():
-            pos = self.get_pos()
-            msg.m4_position = pos
+            #pos = self.get_pos()
+            msg.m4_position = self.position
             pub.publish(msg)
-            rospy.loginfo(pos)
+            rospy.loginfo(self.position)
             time.sleep(0.5)
         return
 
