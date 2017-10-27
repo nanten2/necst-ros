@@ -34,8 +34,8 @@ class m4_controller(object):
         #self.mtr = pyinterface.create_gpg7204(ndev)
         #self.mtr.ctrl.set_limit_config('MTR_LOGIC', 0x000c)
         #self.mtr.ctrl.off_inter_lock()
-        #self.board_M4 = board_M4.board()
-        self.board_M4 = test_board_M4.board()
+        self.board_M4 = board_M4.board()
+        #self.board_M4 = test_board_M4.board()
         self.board_M4.set_limit_config('MTR_LOGIC', 0x000c)
         self.board_M4.off_inter_lock() 
         self.get_pos()
@@ -157,7 +157,7 @@ if __name__ == '__main__':
     sub = rospy.Subscriber('m4', String, m4.move)
     sub = rospy.Subscriber('emergency', String, m4.emergency)
     rospy.spin()
-
+"""
 def m4_client(host,port):
     client = pyinterface.server_client_wrapper.control_client_wrapper(m4_controller, host, port)
     return client
@@ -171,3 +171,4 @@ def start_m4_server(port1=6003, port2=6004):
     server = pyinterface.server_client_wrapper.server_wrapper(m4,'', port1, port2)
     server.start()
     return server
+"""

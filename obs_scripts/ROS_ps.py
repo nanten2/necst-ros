@@ -628,5 +628,7 @@ import n2fits_write
 n2fits_write.write(read1,f1)
 n2fits_write.write(read2,f2)
 """
+timestamp = time.strftime('%Y%m%d_%H%M%S')
+dirname = timestamp
 obs_log.end_script(name, dirname)
 

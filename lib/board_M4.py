@@ -23,5 +23,5 @@ class board(object):
         return
 
     def move(self, speed, count, low_speed=5, acc=100, dec=100, sspeed=0)
-	self.mtr..move(speed, count, low_speed, acc, dec, sspeed=0)
+	self.mtr.move(speed, count, low_speed, acc, dec, sspeed=0)
         return

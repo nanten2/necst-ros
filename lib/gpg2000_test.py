@@ -3,7 +3,8 @@ import pyinterface
 class board(object):
 
     def __init__(self):
-        self.dio = pyinterface.create_gpg2000(3)
+        #self.dio = pyinterface.create_gpg2000(3)
+        self.dio = pyinterface.create_gpg2000(10)#test
         pass
 
     def out_byte(self, no, value):

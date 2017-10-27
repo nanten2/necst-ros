@@ -7,7 +7,9 @@ import sys
 sys.path.append("/home/amigos/ros/src/necst/lib")
 #import abs
 #import board_abs
-import test_board_abs
+#import gpg2000_board
+#import test_board_abs
+import gpg2000_test
 
 from std_msgs.msg import String 
 from necst.msg import Status_hot_msg
@@ -26,7 +28,8 @@ class abs_controller(object):
 
     def open(self):
         #self.board_abs = board_abs.board()
-        self.board_abs = test_board_abs.board()
+        #self.board_abs = test_board_abs.board()
+        self.board_abs = gpg2000_test.board()
         self.get_pos()
         return
 
@@ -67,7 +70,7 @@ if ret == 0x02:
 
     def get_pos(self):
         ret = self.board_abs.in_byte('FBIDIO_IN1_8')
-        
+        print(ret,ret,ret)
         if ret == 0x02:
             self.position = 'IN'
         elif ret == 0x01:
@@ -88,10 +91,10 @@ if ret == 0x02:
         if pos == req.data:
             print('hot is already ' + req.data)
             return
-        if req.data == 'IN':
+        if req.data.lower() == 'in':
             #self.pro = 0x00
             self.buff = 0x01
-        elif req.data == 'OUT':
+        elif req.data.lower() == 'out':
             #self.pro = 0x02
             self.buff = 0x03
         print(req.data)
@@ -114,6 +117,8 @@ if ret == 0x02:
 
         while not rospy.is_shutdown():
             pos = self.get_pos()
+            print("####################")
+            print(pos)
             msg.hot_position =pos
             pub.publish(msg)
             rospy.loginfo(pos)
@@ -146,7 +151,7 @@ if __name__ == '__main__':
     sub = rospy.Subscriber('hot', String, abs.move)
     sub = rospy.Subscriber('emergency', String, abs.emergency)
     rospy.spin()
-
+"""
 def abs_client(host, port):
     client = pyinterface.server_client_wrapper.control_client_wrapper(abs_controller, host, port)
     return client
@@ -160,3 +165,4 @@ def start_abs_server(port1 = 6001, port2 = 6002):
     server = pyinterface.server_client_wrapper.server_wrapper(abs,'', port1, port2)
     server.start()
     return server
+"""
