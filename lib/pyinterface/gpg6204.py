@@ -29,7 +29,12 @@ class gpg6204(object):
         pass
 
     def get_position(self):
-        ret = self.ctrl.get_counter()
+        while True:
+            try:
+                ret = self.ctrl.get_counter()
+                break
+            except:
+                continue
         return ret
 
     def di_check(self):

@@ -186,7 +186,13 @@ class gpg2000_controller(object):
             return
 
     def in_point(self, start_num, num):
-        status = self.dome_read()
+        while True:
+            try:
+                status = self.dome_read()
+                break
+            except:
+                print('error')
+                continue
         if start_num == 1 and num ==1:
             if status[0] == 'OFF':
                 return 0
