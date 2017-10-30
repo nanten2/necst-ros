@@ -37,7 +37,7 @@ class dome_pos_controller(object):
 	
     def dome_encoder_acq(self):
         counter = self.dio.get_position()
-        dome_enc_arcsec = -int(((counter-self.dome_encoffset)*self.dome_enc2arcsec)-self.dome_enc_tel_offset)
+        #dome_enc_arcsec = -int(((counter-self.dome_encoffset)*self.dome_enc2arcsec)-self.dome_enc_tel_offset)
         dome_enc_arcsec = counter
         while(dome_enc_arcsec>1800.*360):
             dome_enc_arcsec-=3600.*360
