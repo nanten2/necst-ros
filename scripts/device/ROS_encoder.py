@@ -37,8 +37,8 @@ class enc_controller(object):
             msg.enc_el = ret[1]
             time.sleep(0.1)
             pub.publish(msg)
-            rospy.loginfo(msg.enc_az/3600.)
-            rospy.loginfo(msg.enc_el/3600.)
+            rospy.loginfo('Az :'+str(msg.enc_az/3600.))
+            rospy.loginfo('El :'+str(msg.enc_el/3600.))
         return
 
     def test(self):
