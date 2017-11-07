@@ -42,6 +42,7 @@ import shutil
 import time
 import numpy
 import sys
+sys.path.append("/home/amigos/necst-obsfiles")
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 import obs_log
@@ -196,8 +197,10 @@ dt = obs['exposure']#float(obs['grid']/obs['otfvel'])
 
 if obs['otadel'].lower() == 'y':
     offset_dcos = 1
+    dcos = 1
 else:
     offset_dcos = 0
+    dcos = 0
 if obs['coordsys'].lower() == 'j2000' or obs['coordsys'].lower() == 'b1950':
     coord_sys = 'EQUATORIAL'
 elif obs['coordsys'].lower() == 'galactic':
@@ -323,6 +326,7 @@ while rp_num < rp:
         
             print('get spectrum...')
             ###con.doppler_calc()
+            print(cosydel)
             dp2 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, 
                                sx + num*gridx + total_count*dx, sy + num*gridy + total_count*dy, 
                                dcos, cosydel, integ_off*2+rampt+(dt*scan_point), 
@@ -466,7 +470,7 @@ while rp_num < rp:
 
         print('getting_data...')
         #d = con.oneshot(repeat = scan_point ,exposure = integ_on ,stime = start_on)
-
+        start_on = 5#test
         print("start_on:",start_on)
         while start_on + obs['otflen']/24./3600. > 40587 + time.time()/(24.*3600.):
             #while obs['otflen']/24./3600. > 40587 + time.time()/(24.*3600.):    
