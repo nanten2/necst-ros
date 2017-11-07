@@ -27,7 +27,7 @@ class dome_tracking_check(object):
         
 
     def set_dome_param(self, req):
-        self.dome_az = req.status[8]#[arcsec]
+        self.dome_az = req.dome_enc#[arcsec]
         return
 
     def set_enc_param(self, req):
