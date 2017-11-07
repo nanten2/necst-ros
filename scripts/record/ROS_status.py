@@ -126,7 +126,7 @@ class status_main(object):
         self.param4['memb_act'] = status_box[5]
         self.param4['memb_pos'] = status_box[6]
         self.param4['remote_status'] = status_box[7]
-        dome_pos_1 = float(status_box[8])
+        dome_pos_1 = float(req.dome_enc)
         #print(status_box[8])
         dome_pos_2 = math.fabs(dome_pos_1)%1296000
         self.param4['dome_pos'] = math.copysign(dome_pos_2,dome_pos_1)/3600.

@@ -541,7 +541,8 @@ class dome_controller(object):
         while True:
             pub = rospy.Publisher('status_dome', Status_dome_msg, queue_size=10, latch = True)
             s = Status_dome_msg()
-            s.status = self.status_box
+            s.status = self.status_box[:8]
+            s.dome_enc = float(self.status_box[8])
             pub.publish(s)
             time.sleep(0.5)
         
