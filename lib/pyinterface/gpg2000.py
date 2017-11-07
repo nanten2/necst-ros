@@ -474,12 +474,15 @@ class gpg2000_controller(object):
         return
 
     def drive_read(self):
-        with open("/home/amigos/ros/src/necst/lib/"+"drive.txt","r") as df:
-            txt = df.readlines()
-            txt = [txt[i].split()[0] for i in range(len(txt))]
-            print(txt)
-            self.drive = int(txt[0])
-            self.contactor = int(txt[1])
-            print(self.drive)
-            print(self.contactor)
+        while True:
+            try:
+                with open("/home/amigos/ros/src/necst/lib/"+"drive.txt","r") as df:
+                    txt = df.readlines()
+                    txt = [txt[i].split()[0] for i in range(len(txt))]
+                    print(txt)
+                    self.drive = int(txt[0])
+                    self.contactor = int(txt[1])
+                break
+            except:
+                pass
         return txt

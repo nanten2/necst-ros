@@ -4,7 +4,9 @@ import time
 import os
 import sys
 import argparse
-import controller
+sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
+import ROS_controller
+sys.path.append("/home/amigos/ros/src/necst/lib")
 import obs_log
 
 
@@ -37,8 +39,10 @@ if args.opt is not None: opt = args.opt
 obs_log.start_script(name)
 obs_log.weather_log()
 
-ctrl = controller.controller()
+ctrl = ROS_controller.controller()
+time.sleep(0.5)
 ctrl.drive_on()
+ctrl.contactor_on()
 print("dome_open")
 ctrl.dome_open()
 

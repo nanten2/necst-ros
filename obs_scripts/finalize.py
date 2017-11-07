@@ -4,7 +4,9 @@ import time
 import os
 import sys
 import argparse
-import controller
+sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
+import ROS_controller
+sys.path.append("/home/amigos/ros/src/necst/lib")
 import obs_log
 
 
@@ -38,41 +40,37 @@ if snow:
     list.append(snow)
 obs_log.start_script(name, list)
 
-ctrl = controller.controller()
-
+ctrl = ROS_controller.controller()
+time.sleep(0.5)
 try:
-    ctrl.tracking_end()
+    ctrl.move_stop()
 except:
     print("Already tracking_end.")
 try:
-    ctrl.dome_track_end()
+    ctrl.dome_stop()
 except:
     print("Already dome_track_end.")
 
-try:
-    status = ctrl.read_status()
-    if status["Drive_ready_Az"] == "ON" and status["Drive_ready_El"] == "ON":
-        print("antenna_move")
-        if snow:
-            ctrl.azel_move(-90*3600, 0)
-        else:
-            ctrl.azel_move(0, 45*3600)
-    print("memb_close")
-    ctrl.memb_close()
-    print("dome_close")
-    ctrl.dome_close()
-    print("dome_move")
-    ctrl.dome_move(90)
-    ret = ctrl.read_status()
-    while round(ret["Current_Az"], 2) != 0.0 or round(ret["Current_El"], 2) != 45.0:
-        time.sleep(0.5)
-        ret = ctrl.read_status()
-    ctrl.drive_off()
-    print("End observation")
-    obs_log.end_script(name)
+#status = ctrl.read_status()
+#if status["Drive_ready_Az"] == "ON" and status["Drive_ready_El"] == "ON":
+#print("antenna_move")
+if snow:
+    ctrl.azel_move(-90*3600, 0)
+else:
+    ctrl.azel_move(0, 45)
+print("memb_close")
+ctrl.memb_close()
+print("dome_close")
+ctrl.dome_close()
+print("dome_move")
+ctrl.dome_move(90)
+#ret = ctrl.read_status()
+#while round(ret["Current_Az"], 2) != 0.0 or round(ret["Current_El"], 2) != 45.0:
+#time.sleep(0.5)
+#ret = ctrl.read_status()
+ctrl.drive_off()
+ctrl.contactor_off()
+print("End observation")
+obs_log.end_script(name)
     
-except:
-    print("!!ctrl+c!!")
-    print("Stop antenna_move")
-    ctrl.azel_stop()
 
