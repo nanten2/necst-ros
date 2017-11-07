@@ -21,6 +21,7 @@ from necst.msg import Dome_msg
 from std_msgs.msg import Bool
 from std_msgs.msg import String
 from std_msgs.msg import Float64
+from std_msgs.msg import Int64
 
 class controller(object):
 
@@ -53,7 +54,7 @@ class controller(object):
         self.pub13 = rospy.Publisher("dome_move", Dome_msg, queue_size = 10, latch = True)
         self.pub14 = rospy.Publisher('m4', String, queue_size = 10, latch = True)
         self.pub15 = rospy.Publisher("hot", String, queue_size = 10, latch = True)
-        self.pub16 = rospy.Publisher("m2", Float64, queue_size=10, latch=True)
+        self.pub16 = rospy.Publisher("m2", Int64, queue_size=10, latch=True)
 
         return
     
@@ -375,7 +376,7 @@ class controller(object):
 
     def m2_move(self, dist):
         """m2\u3092\u52d5\u304b\u3059(um)"""
-        status = Float64()
+        status = Int64()
         status.data = dist
         self.pub16.publish(status)
         return

@@ -78,7 +78,8 @@ class doppler_nanten (object):
     """
 
 
-    coord_dict = {"j2000"     : 1,
+    coord_dict = {"equatorial" : 1,
+                  "j2000"     : 1,
                   "b1950"     : 2,
                   "lb"        : 3,
                   "galactic"  : 3,
