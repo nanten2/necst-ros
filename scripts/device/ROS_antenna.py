@@ -59,8 +59,16 @@ class antenna(object):
         self.azel_publish(ret[0], ret[1], ret[2])
         return
 
+    def azel_move(self,req):
+        now = dt.utcnow()
+        ret = self.calc.azel_calc(req.x, req.y, 
+                                  req.off_x/3600., req.off_y/3600.,
+                                  req.offcoord, now)
+        self.azel_publish(ret[0], ret[1], ret[2])
+        return
+        
+
     def radec_move(self, req):
-        print("#############################")
         now = dt.utcnow()
         ret = self.calc.coordinate_calc(req.x, req.y, req.ntarg, req.code_mode,
                                         req.off_x/3600., req.off_y/3600.,
@@ -107,6 +115,7 @@ if __name__ == "__main__":
     rospy.Subscriber('status_weather', Status_weather_msg, at.note_weather)
     time.sleep(0.1)
     rospy.Subscriber('antenna_vel', Velocity_mode_msg, at.velocity_move)
+    rospy.Subscriber('antenna_azel', Move_mode_msg, at.azel_move)
     rospy.Subscriber('antenna_radec', Move_mode_msg, at.radec_move)
     rospy.Subscriber('antenna_galactic', Move_mode_msg, at.galactic_move)
     rospy.Subscriber('antenna_planet', Move_mode_msg, at.planet_move)
