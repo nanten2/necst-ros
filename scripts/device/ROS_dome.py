@@ -126,8 +126,6 @@ class dome_controller(object):
         #pos_arcsec = self.dome_pos.dome_encoder_acq()
         #pos_arcsec = self.dome_pos.read_dome_enc()
         #pos_arcsec = self.read_domepos()###delete for ROS
-        rospy.logfatal(self.dome_enc)
-        rospy.logfatal(dist)
         pos_arcsec = float(self.dome_enc)#[arcsec]
         pos = pos_arcsec/3600.
         pos = pos % 360.0
