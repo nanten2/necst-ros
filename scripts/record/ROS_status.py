@@ -5,6 +5,7 @@ import math
 import rospy
 import threading
 from datetime import datetime as dt
+from std_msgs.msg import Float64
 from necst.msg import Status_antenna_msg
 from necst.msg import Status_weather_msg
 from necst.msg import Status_encoder_msg
@@ -60,8 +61,9 @@ class status_main(object):
               "contactor":0
               }
     param7 = {'position':'none'}
-    param8 = [[0]*32,""]
-    
+    param8 = {"error":[0]*32,
+              "error_msg":""}
+    param9 = {"m2_pos": 0}
 
     def __init__(self):
         th = threading.Thread(target = self.tel_status)
@@ -73,7 +75,7 @@ class status_main(object):
         time.sleep(0.1)
         #rospy.loginfo(self.param1)
         #rospy.loginfo("\n")
-        #rospy.loginfo(self.param2)
+        #rospy.loginfo(self.param2["rain"])
         #rospy.loginfo("\n")
         #rospy.loginfo(self.param3)
         #rospy.loginfo(self.param4)
@@ -158,11 +160,16 @@ class status_main(object):
         pass
 
     def callback8(self,req):
-        self.param8[0] = req.error_box
-        self.param8[1] = req.error_msg
+        self.param8["error"] = req.error_box
+        self.param8["error_msg"] = req.error_msg
         self.status_check()
         pass
-    
+
+    def callback9(self,req):
+        self.param9["m2_pos"] = req.data
+        self.status_check()
+        pass
+
 
     def tel_status(self):
         print('*********************************')
@@ -171,7 +178,6 @@ class status_main(object):
         time.sleep(1)
 
         while(1):
-            drive = self.param8[0][0:4]
             #drive = self.param6["drive"]
             enc_az = self.param3['encoder_az']
             enc_el = self.param3['encoder_el']
@@ -183,6 +189,8 @@ class status_main(object):
             remote_status = self.param4['remote_status']
             hot_position = self.param5['position']
             m4_position = self.param7['position']
+            m2_position = self.param9["m2_pos"]
+            drive = self.param8["error"][0:4]
             
             tv = time.time()
             mjd = tv/24./3600. + 40587.0 # 40587.0 = MJD0
@@ -205,12 +213,12 @@ class status_main(object):
             lst_mm = "{0:02d}".format(lst_mm)
             lst_ss = "{0:02d}".format(lst_ss)
             log = "telescope: %s %s %s %s %s %5.0f %6.1f %s:%s:%s %5.2f %5.2f  dome: door %s  membrane: %s %s %5.2f HOT :%s M4 :%s" %(drive[0],drive[1], drive[2], drive[3], 'N', mjd, secofday, lst_hh, lst_mm, lst_ss, enc_az, enc_el, doom_door, memb_status, remote_status, dome_enc, hot_position, m4_position)
-            log_debug = "telescope: %s %s %s %s %s %5.0f %6.1f %s:%s:%s %5.2f %5.2f %5.2f %5.2f dome: door %s  membrane: %s %s %5.2f HOT :%s M4 :%s" %(drive[0],drive[1], drive[2], drive[3], 'N', mjd, secofday, lst_hh, lst_mm, lst_ss, enc_az, enc_el, command_az, command_el, doom_door, memb_status, remote_status, dome_enc, hot_position, m4_position)
+            log_debug = "telescope: %s %s %s %s %s %5.0f %6.1f %s:%s:%s %5.2f %5.2f %5.2f %5.2f dome: door %s  membrane: %s %s %5.2f HOT :%s M4 :%s M2 :%s" %(drive[0],drive[1], drive[2], drive[3], 'N', mjd, secofday, lst_hh, lst_mm, lst_ss, enc_az, enc_el, command_az, command_el, doom_door, memb_status, remote_status, dome_enc, hot_position, m4_position, m2_position)
             
             #f.write(log + "\n")
             print(log_debug)
-            if self.param8[1]:
-                print(self.param8[1])
+            if self.param8["error_msg"]:
+                print(self.param8["error_msg"])
             time.sleep(1.)
 
 
@@ -227,5 +235,6 @@ if __name__ == '__main__':
     sub6 = rospy.Subscriber('status_drive', Status_drive_msg, st.callback6)
     sub7 = rospy.Subscriber('status_m4', Status_m4_msg, st.callback7)
     sub8 = rospy.Subscriber('limit_check', Status_limit_msg, st.callback8)
+    sub9 = rospy.Subscriber('status_m2', Float64, st.callback9)
     print("Subscribe Start")
     rospy.spin()

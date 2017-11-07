@@ -51,6 +51,7 @@ class gpg2000_controller(object):
         self.speed = 'None'
         self.turn = 'None'
 
+
     def out_word(self, name, value):
         self.read_enc()
         if name == "FBIDIO_OUT1_16":
@@ -307,7 +308,7 @@ class gpg2000_controller(object):
         return float(txt)
 
     def out_byte(self, name, value):
-        if self.ndev == 10:
+        if self.ndev == 10:#hot
             if name == "FBIDIO_OUT1_8":
                 if value == 1:
                     pos = "in"
@@ -319,6 +320,63 @@ class gpg2000_controller(object):
                 pass
             with open("/home/amigos/ros/src/necst/lib/"+"hot.txt","w") as f:
                 f.write(str(pos))
+        elif self.ndev == 2:#m2
+            with open("/home/amigos/ros/src/necst/lib/"+"m2.txt","r") as f:
+                txt = f.readlines()
+                txt = [txt[i].split()[0] for i in range(len(txt))]
+                m2_move = txt[0]
+                m2_dir = int(txt[1])
+                m2_pos = float(txt[2])
+                m2_param = float(txt[3])
+            if name == "FBIDIO_OUT1_8":
+                if value == 0x08:
+                    m2_move = True
+                if m2_move and m2_param == 1000:
+                    if value == 0x08:
+                        pass
+                    elif value == 0xff:
+                        pass
+                    elif value == 0xc0:
+                        pass
+                    elif value == 0x10:
+                        m2_dir = +1
+                    elif value == 0x11:
+                        m2_dir = -1
+                    elif value == 0x18:
+                        m2_move = False
+                    elif value == 0x48:
+                        pass
+                    elif value == 0x05:
+                        pass
+                    elif value == 0x40:
+                        pass
+                    elif value == 200:
+                        pass
+                    elif value == 0x50:
+                        pass
+                    elif value == 100:
+                        pass
+                    elif value == 0:
+                        pass
+                    else:
+                        m2_param = value
+                elif m2_move and m2_param != 1000:
+                        m2_pos += (m2_param*256 + value)/80.*m2_dir
+                        m2_param = 1000
+                else:
+                    print("############## error #################")
+            elif name == "FBIDIO_OUT9_16":
+                pass
+            else:
+                print("############## error #################")
+            with open("/home/amigos/ros/src/necst/lib/"+"m2.txt","w") as f:
+                f.write(str(m2_move))
+                f.write("\n")
+                f.write(str(m2_dir))
+                f.write("\n")
+                f.write(str(m2_pos))
+                f.write("\n")
+                f.write(str(m2_param))
         else:
             dr = self.drive_read()
             if name == "FBIDIO_OUT1_8":
@@ -349,6 +407,39 @@ class gpg2000_controller(object):
                 value =1
             elif hot == "move":
                 value = 3
+        elif self.ndev == 2:#m2
+            try:
+                with open("/home/amigos/ros/src/necst/lib/"+"m2.txt","r") as f:
+                    txt = f.readlines()
+                txt = [txt[i].split()[0] for i in range(len(txt))]
+                m2_move = txt[0]
+                m2_dir = int(txt[1])
+                m2_pos = float(txt[2])
+                m2_param = float(txt[3])
+            except:
+                with open("/home/amigos/ros/src/necst/lib/"+"m2.txt","r") as f:
+                    txt = f.readlines()
+                txt = [txt[i].split()[0] for i in range(len(txt))]
+                m2_move = txt[0]
+                m2_dir = txt[1]
+                m2_pos = float(txt[2])
+                m2_param = float(txt[3])
+            print("m2_pos", m2_pos)
+            real = abs(int(m2_pos/1000))
+            decimal = abs(m2_pos/1000)-real
+            _list = []
+            for i in range(154):
+                dt = i%16
+                if not 0 <= dt <= 5 or i < 15:
+                    _list.append(i)
+            if no == 'FBIDIO_IN9_16':
+                if m2_dir > 0:
+                    value = real + 32
+                elif m2_dir < 0:
+                    value = real
+            elif no == 'FBIDIO_IN1_8':
+                value = _list[int(decimal*100)]
+            
         else:
             with open("/home/amigos/ros/src/necst/lib/"+"drive.txt","r") as f:
                 txt = f.readlines()
