@@ -56,6 +56,7 @@ class controller(object):
         self.pub15 = rospy.Publisher("hot", String, queue_size = 10, latch = True)
         self.pub16 = rospy.Publisher("m2", Int64, queue_size=10, latch=True)
         self.pub17 = rospy.Publisher("antenna_azel", Move_mode_msg, queue_size=10, latch=True)
+        time.sleep(0.5)
         return
     
     def authority_check(self, req):

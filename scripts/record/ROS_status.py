@@ -6,6 +6,7 @@ import rospy
 import threading
 from datetime import datetime as dt
 from std_msgs.msg import Float64
+from std_msgs.msg import String
 from necst.msg import Status_antenna_msg
 from necst.msg import Status_weather_msg
 from necst.msg import Status_encoder_msg
@@ -64,6 +65,7 @@ class status_main(object):
     param8 = {"error":[0]*32,
               "error_msg":""}
     param9 = {"m2_pos": 0}
+    param10 = {"alert_msg":""}
 
     def __init__(self):
         th = threading.Thread(target = self.tel_status)
@@ -170,6 +172,10 @@ class status_main(object):
         self.status_check()
         pass
 
+    def callback10(self,req):
+        self.param10["alert_msg"] = req.data
+        self.status_check()
+        pass
 
     def tel_status(self):
         print('*********************************')
@@ -219,6 +225,8 @@ class status_main(object):
             print(log_debug)
             if self.param8["error_msg"]:
                 print(self.param8["error_msg"])
+            if self.param10["alert_msg"]:
+                print(self.param10["alert_msg"])
             time.sleep(1.)
 
 
@@ -236,5 +244,6 @@ if __name__ == '__main__':
     sub7 = rospy.Subscriber('status_m4', Status_m4_msg, st.callback7)
     sub8 = rospy.Subscriber('limit_check', Status_limit_msg, st.callback8)
     sub9 = rospy.Subscriber('status_m2', Float64, st.callback9)
+    sub10 = rospy.Subscriber('alert', String, st.callback10)
     print("Subscribe Start")
     rospy.spin()
