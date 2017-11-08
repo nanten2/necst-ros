@@ -40,7 +40,7 @@ obs_log.start_script(name)
 obs_log.weather_log()
 
 ctrl = ROS_controller.controller()
-time.sleep(0.5)
+time.sleep(2)
 ctrl.drive_on()
 ctrl.contactor_on()
 print("dome_open")

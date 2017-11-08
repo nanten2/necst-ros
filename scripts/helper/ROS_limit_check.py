@@ -26,7 +26,7 @@ st = Status_limit_msg()
 limit_pub = rospy.Publisher("limit", Bool, queue_size=10, latch=True)
 _lim = Bool()
 
-while stop_flag == 0:
+while not rospy.is_shutdown():#stop_flag == 0:
 
     ret[0] = dio.ctrl.in_byte('FBIDIO_IN1_8')
     ret[1] = dio.ctrl.in_byte('FBIDIO_IN9_16')

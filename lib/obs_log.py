@@ -88,7 +88,11 @@ def weather_log():
     tstmp = time.strftime("%Y/%m/%d %H:%M:%S", ut)
     daystmp = time.strftime("%Y%m%d")
     text = []
-    fp = urllib.request.urlopen("http://200.91.8.66/WeatherMonitor/WeatherMenu.html")
+    try:
+        fp = urllib.request.urlopen("http://200.91.8.66/WeatherMonitor/WeatherMenu.html")
+    except:
+        print("URL is not open!!")
+        return
     html = fp.readline()
     while html:
         html = html.decode('utf-8')
