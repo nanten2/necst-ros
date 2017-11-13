@@ -40,15 +40,16 @@ obs_log.start_script(name)
 obs_log.weather_log()
 
 ctrl = ROS_controller.controller()
-time.sleep(2)
 ctrl.drive_on()
 ctrl.contactor_on()
 print("dome_open")
 ctrl.dome_open()
+time.sleep(1.0)
 
 if opt:
     print("memb_open")
     ctrl.memb_open()
+    time.sleep(1.0)
 print("Init end")
 ctrl.dome_track()
 time.sleep(0.8)
