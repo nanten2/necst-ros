@@ -12,8 +12,9 @@ from std_msgs.msg import String
 from necst.msg import Status_drive_msg
 import sys
 sys.path.append("/home/amigos/ros/src/necst/lib")
-import gpg2000_board
+#import gpg2000_board
 #import test_board # antenna_board test
+import pyinterface
 
 class drive(object):
 
@@ -21,7 +22,8 @@ class drive(object):
     contactor_param = 0 #test 
 
     def __init__(self):
-        self.bd = gpg2000_board.board()
+        #self.bd = gpg2000_board.board()
+        self.dio = pyinterface.create_gpg2000(4)
         #self.board = test_board.board()# test
         self.pub = rospy.Publisher('status_drive', Status_drive_msg, queue_size=10, latch=True)#test
         self.msg = Status_drive_msg()#test
@@ -30,11 +32,11 @@ class drive(object):
         if req.data == "on":
             _drive = 1#test
             print("drive_start")
-            ret = self.bd.out_byte("FBIDIO_OUT1_8", 3)
+            ret = self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 3)
             print("drive_on")
         elif req.data == "off":
             _drive = 0#test
-            ret = self.bd.out_byte("FBIDIO_OUT1_8", 0)
+            ret = self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0)
         else:
             print(req.data)
             rospy.logerr('bad command !!')
@@ -47,11 +49,11 @@ class drive(object):
     def contactor(self, req):
         if req.data == "on":
             _contactor = 1#test
-            ret = self.bd.out_byte("FBIDIO_OUT9_16", 15)
+            ret = self.dio.ctrl.out_byte("FBIDIO_OUT9_16", 15)
             print("contactor_on")
         elif req.data == "off":
             _contactor = 0#test
-            ret = self.bd.out_byte("FBIDIO_OUT9_16", 0)
+            ret = self.dio.ctrl.out_byte("FBIDIO_OUT9_16", 0)
         else:
             rospy.logerr('bad command !!')
         if True:#ret:
