@@ -23,9 +23,9 @@ class antenna_assist(object):
     lamda = 2600
     dcos = 0
 
-    r_flag = False
-    g_flag = False
-    p_flag = False
+    r_flag = 0
+    g_flag = 0
+    p_flag = 0
     
 
     def __init__(self):
@@ -44,11 +44,10 @@ class antenna_assist(object):
         th3 = threading.Thread(target = self.pub_planet)
         th3.setDaemon(True)
         th3.start()
+        return
 
     def radec_assist(self, req):
-        r_flag = True
-        g_flag = False
-        p_flag = False
+        self.r_flag = 1
         self.ra = req.x
         self.dec = req.y
         self.code_mode = req.code_mode
@@ -61,9 +60,7 @@ class antenna_assist(object):
         return
 
     def galactic_assist(self, req):
-        r_flag = False
-        g_flag = True
-        p_flag = False
+        self.g_flag = 1
         self.l = req.x
         self.b = req.y
         self.off_x = req.off_x
@@ -76,12 +73,10 @@ class antenna_assist(object):
         return
 
     def planet_assist(self, req):
-        r_flag = False
-        g_flag = False
-        p_flag = True
+        self.p_flag = 1
         self.number = req.ntarg
-        self.off_x = off_x
-        self.off_y = off_y
+        self.off_x = req.off_x
+        self.off_y = req.off_y
         self.code_mode = req.code_mode
         self.hosei = req.hosei
         self.offcoord = req.offcoord
@@ -90,8 +85,8 @@ class antenna_assist(object):
         return
 
     def pub_radec(self):
-        while r_flag = False:
-            time.sleep()
+        while self.r_flag == 0 :
+            time.sleep(0.1)
         else:
             msg = Move_mode_msg()
             while not rospy.is_shutdown():
@@ -108,10 +103,11 @@ class antenna_assist(object):
                 self.pub1.publish(msg)
                 time.sleep(5)
                 continue
+        return
 
     def pub_galactic(self):
-        while g_flag = False:
-            time.sleep()
+        while self.g_flag == 0:
+            time.sleep(1)
         else:
             msg = Move_mode_msg()
             while not rospy.is_shutdown():
@@ -128,16 +124,17 @@ class antenna_assist(object):
                 self.pub2.publish(msg)
                 time.sleep(5)
                 continue
+        return
 
     def pub_planet(self):
-        while p_flag = False:
-            time.sleep()
+        while self.p_flag == 0:
+            time.sleep(1)
         else:
             msg = Move_mode_msg()
             while not rospy.is_shutdown():
                 msg.ntarg = self.number
                 msg.off_x = self.off_x
-                msg.off_y = self_off_y
+                msg.off_y = self.off_y
                 msg.code_mode = self.code_mode
                 msg.hosei = self.hosei
                 msg.offcoord = self.offcoord
@@ -147,6 +144,7 @@ class antenna_assist(object):
                 self.pub3.publish(msg)
                 time.sleep(5)
                 continue
+        return
         
 if __name__ == "__main__":
     rospy.init_node('antennna_assist')
