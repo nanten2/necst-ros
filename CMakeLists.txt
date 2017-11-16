@@ -67,6 +67,7 @@ add_message_files(
   Status_hot_msg.msg
   Status_drive_msg.msg
   Status_m4_msg.msg
+  Status_limit_msg.msg
   Record_param_msg.msg
   Status_pc_msg.msg
 )
