@@ -32,25 +32,12 @@ class gpg2000_controller(object):
         self.contactor = 0
         self.az = 0
         self.el = 0
-
-        ###dome
-        self.right_act = 'OFF'
-        self.right_pos = 'CLOSE' 
-        self.left_act = 'OFF'
-        self.left_pos = 'CLOSE'
-        ###memb
-        self.memb_act = 'OFF'
-        self.memb_pos = 'CLOSE'
-        
-        ###get_action/move_status
-        self.move_status = 'OFF'
-        
-        ###remote/local
-        self.status = 'LOCAL'
-        
+      
         self.speed = 'None'
         self.turn = 'None'
 
+        #self.dome = [move_status, right_act, left_act, right_pos, left_pos, memb_act, memb_pos, status]
+        self.dome = ['OFF', 'OFF', 'OFF', 'CLOSE', 'CLOSE', 'OFF', 'CLOSE', 'LOCAL']
 
     def out_word(self, name, value):
         self.read_enc()
@@ -86,8 +73,9 @@ class gpg2000_controller(object):
         
     def out_point(self, buffer, startnum, num):
         self.dome_read()
+        dome_list = self.dome
         if startnum == 2 and num == 1:#end thread(ROS_dome.py)
-            self.move_status = 'OFF'
+            dome_list[7] = 'OFF'
             print('dome_stop function called dome_board.py')
             self.speed = 'None'
             self.turn = 'None'
@@ -99,21 +87,25 @@ class gpg2000_controller(object):
                 return
                 
             elif buffer == [1, 1]:
-                self.right_pos = 'MOVE'
-                self.left_pos = 'MOVE'
+                dome_list[3] = 'MOVE'
+                dome_list[4] = 'MOVE'
+                self.dome = dome_list
                 self.dome_write()
-                time.sleep(2)
-                self.right_pos = 'OPEN'
-                self.left_pos = 'OPEN'
+                time.sleep(4)
+                dome_list[3] = 'OPEN'
+                dome_list[4] = 'OPEN'
+                self.dome = dome_list
                 self.dome_write()
                 return
             elif buffer == [0, 1]:
-                self.right_pos = 'MOVE'
-                self.left_pos = 'MOVE'
+                dome_list[3] = 'MOVE'
+                dome_list[4] = 'MOVE'
+                self.dome = dome_list
                 self.dome_write()
-                time.sleep(2)
-                self.right_pos = 'CLOSE'
-                self.left_pos = 'CLOSE'
+                time.sleep(4)
+                dome_list[3] = 'CLOSE'
+                dome_list[4] = 'CLOSE'
+                self.dome = dome_list
                 self.dome_write()
                 return
 
@@ -121,14 +113,24 @@ class gpg2000_controller(object):
                 
 
         if startnum == 7 and num == 2:
-            if buffer == [1, 1]:
-                self.memb_pos = 'OPEN'
+            if buffer == [0,0]:
+                return
+            elif buffer == [1, 1]:
+                dome_list[6] = 'MOVE'
+                self.dome = dome_list
+                self.dome_write()
+                time.sleep(4)
+                dome_list[6] = 'OPEN'
+                self.dome = dome_list
                 self.dome_write()
                 return
-            elif buffer == [0,0]:
-                return
             elif buffer == [0, 1]:
-                self.memb_pos = 'CLOSE'
+                dome_list[6] = 'MOVE'
+                self.dome = dome_list
+                self.dome_write()
+                time.sleep(4)
+                dome_list[6] = 'CLOSE'
+                self.dome = dome_list
                 self.dome_write()
                 return
 
@@ -136,13 +138,9 @@ class gpg2000_controller(object):
 
         if startnum == 9 and num == 2:
             if buffer == [1, 1]:
-                self.dome_write()
                 return
             else:#buffer == [0, 0]
-                self.dome_write()
-                eturn
-
-            return
+                return
             
         if startnum == 1 and num == 6:### need to add 'turn'
             if buffer[0] == 0:
@@ -169,31 +167,23 @@ class gpg2000_controller(object):
                     calc_dome_enc = c_dome_enc + 4000
                 elif self.speed == 'low':
                     calc_dome_enc = c_dome_enc + 1000
-                print('%%%')
             if self.turn == 'left':
                 if self.speed == 'high':
                     calc_dome_enc = c_dome_enc - 10000
                 elif self.speed == 'mid':
-                    print('###')
                     calc_dome_enc = c_dome_enc - 4000
                 elif self.speed == 'low':
                     calc_dome_enc = c_dome_enc - 1000
 
             with open("/home/amigos/ros/src/necst/lib/"+"dome_enc.txt","w") as wf:
                 wf.write(str(calc_dome_enc))
-            #print(self.turn, self.speed, calc_dome_enc, dome_enc_1)
             time.sleep(0.5)
-            self.dome_write()
             return
 
     def in_point(self, start_num, num):
-        while True:
-            try:
-                status = self.dome_read()
-                break
-            except:
-                print('error')
-                continue
+        status = self.dome_read()
+        print("############################3")
+        print(status)
         if start_num == 1 and num ==1:
             if status[0] == 'OFF':
                 return 0
@@ -264,47 +254,29 @@ class gpg2000_controller(object):
 
 
     def dome_write(self):
+        _list = ''
+        for i in range(len(self.dome)):
+            _list += self.dome[i]+"\n"
         with open("/home/amigos/ros/src/necst/lib/"+"dome.txt","w") as f:
-            f.write(self.move_status)
-            f.write("\n")
-            f.write(self.right_act)
-            f.write("\n")
-            f.write(self.left_act)
-            f.write("\n")
-            f.write(self.right_pos)
-            f.write("\n")
-            f.write(self.left_pos)
-            f.write("\n")
-            f.write(self.memb_act)
-            f.write("\n")
-            f.write(self.memb_pos)
-            f.write("\n")
-            f.write(self.status)
+            f.write(_list)
         return
 
     def dome_read(self):
-        with open("/home/amigos/ros/src/necst/lib/"+"dome.txt","r") as ref:
-            txt = ref.readlines()
-            txt = [txt[i].split()[0] for i in range(len(txt))]
-            self.move_status = txt[0]
-            self.right_act = txt[1]
-            self.left_act = txt[2]
-            self.right_pos = txt[3]
-            self.left_pos = txt[4]
-            self.memb_act = txt[5]
-            self.memb_pos = txt[6]
-            self.status = txt[7]
-        return txt
+        while True:
+            with open("/home/amigos/ros/src/necst/lib/"+"dome.txt","r") as ref:
+                txt = ref.readlines()
+                self.dome = [txt[i].split()[0] for i in range(len(txt))]
+            if len(self.dome) == 10:
+                break
+            print("##########################")
+            print(self.dome)
+        return self.dome
       
 
     def dome_enc_read(self):
         with open("/home/amigos/ros/src/necst/lib/"+"dome_enc.txt","r") as rf:
             txt = rf.readlines()
             txt = txt[0].split()[0]
-            print("#################")
-            print(txt)
-            print("###################")
-
         return float(txt)
 
     def out_byte(self, name, value):
@@ -369,14 +341,10 @@ class gpg2000_controller(object):
                 pass
             else:
                 print("############## error #################")
+            _list = [str(m2_move)+"\n"+str(m2_dir)+"\n"+str(m2_pos)+"\n"+str(m2_param)]
             with open("/home/amigos/ros/src/necst/lib/"+"m2.txt","w") as f:
-                f.write(str(m2_move))
-                f.write("\n")
-                f.write(str(m2_dir))
-                f.write("\n")
-                f.write(str(m2_pos))
-                f.write("\n")
-                f.write(str(m2_param))
+                f.write(_list)
+
         else:
             dr = self.drive_read()
             if name == "FBIDIO_OUT1_8":
