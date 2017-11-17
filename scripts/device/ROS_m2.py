@@ -6,8 +6,9 @@ import threading
 #import M2
 import sys
 sys.path.append("/home/amigos/ros/src/necst/lib")
-import board_M2
+#import board_M2
 #import test_board_M2
+import pyinterface
 
 #from necst.msg import Status_m2_msg
 from std_msgs.msg import String
@@ -36,9 +37,9 @@ class m2_controller(object):
     def __init__(self):
         pass
     
-    def open(self):
-        #self.dio = pyinterface.create_gpg2000(ndev)
-        self.board_M2 = board_M2.board()
+    def open(self,ndev):
+        self.dio = pyinterface.create_gpg2000(ndev)
+        #self.board_M2 = board_M2.board()
         #self.board_M2 = test_board_M2.board()
         self.InitIndexFF()
         self.get_pos()
@@ -63,10 +64,10 @@ class m2_controller(object):
         buff = []
         buff2 = []
         
-        #bin  = self.dio.ctrl.in_byte("FBIDIO_IN1_8")
-        #bin2 = self.dio.ctrl.in_byte("FBIDIO_IN9_16")
-        bin = self.board_M2.in_byte("FBIDIO_IN1_8")
-        bin2 = self.board_M2.in_byte("FBIDIO_IN9_16")      
+        bin  = self.dio.ctrl.in_byte("FBIDIO_IN1_8")
+        bin2 = self.dio.ctrl.in_byte("FBIDIO_IN9_16")
+        #bin = self.board_M2.in_byte("FBIDIO_IN1_8")
+        #bin2 = self.board_M2.in_byte("FBIDIO_IN9_16")      
         #rospy.logerr(bin)
         #rospy.logerr(bin2)
         """
@@ -113,21 +114,21 @@ class m2_controller(object):
     
     def Strobe(self):
         time.sleep(0.01)
-        #self.dio.ctrl.out_byte("FBIDIO_OUT9_16", 0x01)
-        self.board_M2.out_byte("FBIDIO_OUT9_16", 0x01)
+        self.dio.ctrl.out_byte("FBIDIO_OUT9_16", 0x01)
+        #self.board_M2.out_byte("FBIDIO_OUT9_16", 0x01)
         time.sleep(0.01)
-        #self.dio.ctrl.out_byte("FBIDIO_OUT9_16", 0x00)
-        self.board_M2.out_byte("FBIDIO_OUT9_16", 0x00)
+        self.dio.ctrl.out_byte("FBIDIO_OUT9_16", 0x00)
+        #self.board_M2.out_byte("FBIDIO_OUT9_16", 0x00)
         time.sleep(0.01)
         return
     
     def StrobeHOff(self):
         time.sleep(0.01)
-        #self.dio.ctrl.out_byte("FBIDIO_OUT9_16", 0x05)
-        self.board_M2.out_byte("FBIDIO_OUT9_16", 0x05)
+        self.dio.ctrl.out_byte("FBIDIO_OUT9_16", 0x05)
+        #self.board_M2.out_byte("FBIDIO_OUT9_16", 0x05)
         time.sleep(0.01)
-        #self.dio.ctrl.out_byte("FBIDIO_OUT9_16", 0x04)
-        self.board_M2.out_byte("FBIDIO_OUT9_16", 0x04)
+        self.dio.ctrl.out_byte("FBIDIO_OUT9_16", 0x04)
+        #self.board_M2.out_byte("FBIDIO_OUT9_16", 0x04)
         time.sleep(0.01)
         return
     
@@ -159,106 +160,106 @@ class m2_controller(object):
     
     def InitIndexFF(self):
         #initialization?
-        #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x08)
-        self.board_M2.out_byte("FBIDIO_OUT1_8", 0x08)
+        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x08)
+        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x08)
         self.StrobeHOff()
         #step no.
-        #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0xff)
-        self.board_M2.out_byte("FBIDIO_OUT1_8", 0xff)
+        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0xff)
+        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0xff)
         self.StrobeHOff()
         #vs set
-        #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x48)
-        self.board_M2.out_byte("FBIDIO_OUT1_8", 0x48)
+        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x48)
+        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x48)
         self.StrobeHOff()
         #5(*10=50)
-        #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
-        self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
+        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
+        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
         self.StrobeHOff()
-        #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x05)
-        self.board_M2.out_byte("FBIDIO_OUT1_8", 0x05)
+        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x05)
+        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x05)
         self.StrobeHOff()
         #vr set
-        #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x40)
-        self.board_M2.out_byte("FBIDIO_OUT1_8", 0x40)
+        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x40)
+        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x40)
         self.StrobeHOff()
         
-        #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
-        self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
+        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
+        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
         self.StrobeHOff()
-        #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", self.MOTOR_SPEED)
-        self.board_M2.out_byte("FBIDIO_OUT1_8", self.MOTOR_SPEED)
+        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", self.MOTOR_SPEED)
+        #self.board_M2.out_byte("FBIDIO_OUT1_8", self.MOTOR_SPEED)
         self.StrobeHOff()
         #su-sd set
-        #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x50)
-        self.board_M2.out_byte("FBIDIO_OUT1_8", 0x50)
+        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x50)
+        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x50)
         self.StrobeHOff()
         #100(/10=10)
-        #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
-        self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
+        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
+        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
         self.StrobeHOff()
-        #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 100)
-        self.board_M2.out_byte("FBIDIO_OUT1_8", 100)
+        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 100)
+        #self.board_M2.out_byte("FBIDIO_OUT1_8", 100)
         self.StrobeHOff()
         #position set
-        #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0xc0)
-        self.board_M2.out_byte("FBIDIO_OUT1_8", 0xc0)
+        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0xc0)
+        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0xc0)
         self.StrobeHOff()
         #cw
-        #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", self.CW)
-        self.board_M2.out_byte("FBIDIO_OUT1_8", self.CW)
+        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", self.CW)
+        #self.board_M2.out_byte("FBIDIO_OUT1_8", self.CW)
         self.StrobeHOff()
         #0
-        #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
-        self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
+        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
+        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
         self.StrobeHOff()
-        #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
-        self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
+        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
+        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
         self.StrobeHOff()
-        #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
-        self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
+        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
+        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
         self.StrobeHOff()
         #start
-        #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x18)
-        self.board_M2.out_byte("FBIDIO_OUT1_8", 0x18)
+        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x18)
+        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x18)
         self.StrobeHOff()
         return
     
     def MoveIndexFF(self, puls):
         if puls >= -65535 and puls <= 65535:
             #index mode
-            #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x08)
-            self.board_M2.out_byte("FBIDIO_OUT1_8", 0x08)	
+            self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x08)
+            #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x08)	
             self.Strobe()
             #step no.
-            #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0xff)
-            self.board_M2.out_byte("FBIDIO_OUT1_8", 0xff)
+            self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0xff)
+            #self.board_M2.out_byte("FBIDIO_OUT1_8", 0xff)
             self.Strobe()
             #position set
-            #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0xc0)
-            self.board_M2.out_byte("FBIDIO_OUT1_8", 0xc0)
+            self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0xc0)
+            #self.board_M2.out_byte("FBIDIO_OUT1_8", 0xc0)
             self.Strobe()
             #direction
             if puls >= 0:
-                #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", self.CW)
-                self.board_M2.out_byte("FBIDIO_OUT1_8", self.CW)
+                self.dio.ctrl.out_byte("FBIDIO_OUT1_8", self.CW)
+                #self.board_M2.out_byte("FBIDIO_OUT1_8", self.CW)
                 self.Strobe()
             else:
-                #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", self.CCW)
-                self.board_M2.out_byte("FBIDIO_OUT1_8", self.CCW)
+                self.dio.ctrl.out_byte("FBIDIO_OUT1_8", self.CCW)
+                #self.board_M2.out_byte("FBIDIO_OUT1_8", self.CCW)
                 self.Strobe()
             #displacement
-            #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
-            self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
+            self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
+            #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
             self.Strobe()
-            #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", (abs(puls) / 256))
-            self.board_M2.out_byte("FBIDIO_OUT1_8", (int(abs(puls) / 256)))
+            self.dio.ctrl.out_byte("FBIDIO_OUT1_8", (abs(puls) / 256))
+            #self.board_M2.out_byte("FBIDIO_OUT1_8", (int(abs(puls) / 256)))
             self.Strobe()
-            #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", (abs(puls) % 256))
-            self.board_M2.out_byte("FBIDIO_OUT1_8", (abs(puls) % 256))
+            self.dio.ctrl.out_byte("FBIDIO_OUT1_8", (abs(puls) % 256))
+            #self.board_M2.out_byte("FBIDIO_OUT1_8", (abs(puls) % 256))
             self.Strobe()
             #start
-            #self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x18)
-            self.board_M2.out_byte("FBIDIO_OUT1_8", 0x18)
+            self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x18)
+            #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x18)
             self.Strobe()
             time.sleep((abs(puls) / self.MOTOR_SPEED / 10.) + 1.)
             self.print_msg("Motor stopped")
@@ -287,7 +288,7 @@ class m2_controller(object):
 
 if __name__ == '__main__':
     m2 = m2_controller()
-    m2.open()
+    m2.open(2)
     rospy.init_node('m2_controller')
     rospy.loginfo('waiting publish M2')
     m2.start_thread()

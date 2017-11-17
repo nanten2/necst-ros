@@ -2,6 +2,8 @@
 
 import time
 import threading
+import astropy.units as u
+from astropy.coordinates import SkyCoord, EarthLocation, AltAz, get_body
 import rospy
 from std_msgs.msg import String
 from std_msgs.msg import Bool
@@ -19,6 +21,10 @@ class alert(object):
     memb = ''
     dome_r = ''
     dome_l = ''
+    latitude = -22.96995611
+    longitude = -67.70308139
+    height = 4863.85
+
     
     
     def __init__(self):

@@ -9,7 +9,8 @@ sys.path.append("/home/amigos/ros/src/necst/lib")
 #import board_abs
 #import gpg2000_board
 #import test_board_abs
-import gpg2000_test
+#import gpg2000_test
+import pyinterface
 
 from std_msgs.msg import String 
 from necst.msg import Status_hot_msg
@@ -29,7 +30,9 @@ class abs_controller(object):
     def open(self):
         #self.board_abs = board_abs.board()
         #self.board_abs = test_board_abs.board()
-        self.board_abs = gpg2000_test.board()
+        #self.board_abs = gpg2000_test.board()
+        self.dio = pyinterface.create_gpg2000(10)#dummy
+        #self.dio = pyinterface.create_gpg2000(3)#real
         self.get_pos()
         return
 
@@ -69,7 +72,7 @@ if ret == 0x02:
     '''
 
     def get_pos(self):
-        ret = self.board_abs.in_byte('FBIDIO_IN1_8')
+        ret = self.dio.ctrl.in_byte('FBIDIO_IN1_8')
         print(ret,ret,ret)
         if ret == 0x02:
             self.position = 'IN'
@@ -100,7 +103,7 @@ if ret == 0x02:
         print(req.data)
         #self.board_abs.out_byte('FBIDIO_OUT1_8', self.pro)
         #time.sleep(1)
-        self.board_abs.out_byte('FBIDIO_OUT1_8', self.buff)
+        self.dio.ctrl.out_byte('FBIDIO_OUT1_8', self.buff)
         time.sleep(5)
         self.get_pos()
         return
