@@ -60,10 +60,12 @@ else:
     ctrl.azel_move(0, 45)
 print("memb_close")
 ctrl.memb_close()
-time.sleep(1.0)
+
+time.sleep(1.5)
 print("dome_close")
 ctrl.dome_close()
-time.sleep(0.5)
+time.sleep(1.5)
+
 print("dome_move")
 ctrl.dome_move(90)
 #ret = ctrl.read_status()
