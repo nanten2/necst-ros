@@ -1,7 +1,4 @@
-#!/usr/bin/env python3
-
-import sys
-sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
+#!/usr/bin/env python                                                           
 import time
 import rospy
 import threading

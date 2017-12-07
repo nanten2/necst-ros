@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python
 
 """
 ------------------------------------------------
@@ -6,12 +6,12 @@
 2017/10/05 : kondo takashi
 ------------------------------------------------
 """
-import sys
-sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 import time
 import rospy
 from std_msgs.msg import String
 from necst.msg import Status_drive_msg
+import sys
+sys.path.append("../../lib")
 sys.path.append("/home/necst/ros/src/necst/lib")
 #import gpg2000_board
 #import test_board # antenna_board test
@@ -23,11 +23,8 @@ class drive(object):
     contactor_param = 0 #test 
 
     def __init__(self):
-        board_name = 2724
-        rsw_id = 0
         #self.bd = gpg2000_board.board()
-        #self.dio = pyinterface.create_gpg2000(4)
-        self.dio = pyinterface.open(board_name, rsw_id)
+        self.dio = pyinterface.create_gpg2000(4)
         #self.board = test_board.board()# test
         self.pub = rospy.Publisher('status_drive', Status_drive_msg, queue_size=10, latch=True)#test
         self.msg = Status_drive_msg()#test
@@ -36,13 +33,11 @@ class drive(object):
         if req.data == "on":
             _drive = 1#test
             print("drive_start")
-            #ret = self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 3)
-            ret = self.dio.output_byte([0,0,0,0,0,0,1,1], 'OUT1_8')
+            ret = self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 3)
             print("drive_on")
         elif req.data == "off":
             _drive = 0#test
-            #ret = self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0)
-            ret = self.dio.output_byte([0,0,0,0,0,0,0,0], 'OUT1_8')
+            ret = self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0)
         else:
             print(req.data)
             rospy.logerr('bad command !!')
@@ -55,13 +50,11 @@ class drive(object):
     def contactor(self, req):
         if req.data == "on":
             _contactor = 1#test
-            #ret = self.dio.ctrl.out_byte("FBIDIO_OUT9_16", 15)
-            ret = self.dio.output_byte([0,0,0,0,1,1,1,1], 'OUT9_16')
+            ret = self.dio.ctrl.out_byte("FBIDIO_OUT9_16", 15)
             print("contactor_on")
         elif req.data == "off":
             _contactor = 0#test
-            #ret = self.dio.ctrl.out_byte("FBIDIO_OUT9_16", 0)
-            ret = self.dio.output_byte([0,0,0,0,0,0,0,0], 'OUT9_16')
+            ret = self.dio.ctrl.out_byte("FBIDIO_OUT9_16", 0)
         else:
             rospy.logerr('bad command !!')
         if True:#ret:

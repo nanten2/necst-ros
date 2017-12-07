@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="necst" name="test_python2_or_3" type="ROS_test.py" output="screen"/>
+</launch>

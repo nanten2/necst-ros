@@ -1,9 +1,11 @@
 import time
+import sys
 
 class gpg7204(object):
     def __init__(self, ndev=1, remote=False):
         initialize = not remote
         self.ctrl = gpg7204_controller(ndev, initialize=initialize)
+        self.dir = "/home/necst/ros/src/necst/lib/"
         pass
 
     def stop(self):
@@ -16,17 +18,17 @@ class gpg7204(object):
         else: direc = -1
         speed = abs(int(speed))
         count *= direc
-        with open("/home/amigos/ros/src/necst/lib/"+"m4.txt","r") as rf:
+        with open(self.dir+"m4.txt","r") as rf:
             txt = rf.readlines()
         txt = txt[0].split()[0]
-        with open("/home/amigos/ros/src/necst/lib/"+"m4.txt","w") as wf:
+        with open(self.dir+"m4.txt","w") as wf:
             if count > 0 and txt == "in":
                 wf.write("move")
             elif count < 0 and txt == "out":
                 wf.write("move")
             else:
                 pass
-        with open("/home/amigos/ros/src/necst/lib/"+"m4.txt","w") as wf:
+        with open(self.dir+"m4.txt","w") as wf:
             if count > 0:
                 wf.write("out")
             elif count < 0:
@@ -52,6 +54,7 @@ class gpg7204_controller(object):
         boardid = 7204 or 742020
         """
         self.ndev = ndev
+        self.dir = "/home/necst/ros/src/necst/lib/"
         #if initialize: self.initialize()
         return
 
@@ -75,7 +78,7 @@ class gpg7204_controller(object):
         24. MtrReadCounter
         ------------------
         """
-        with open("/home/amigos/ros/src/necst/lib/"+"m4.txt","r") as rf:
+        with open(self.dir+"m4.txt","r") as rf:
             txt = rf.readlines()
         txt = txt[0].split()[0]
         return txt
@@ -85,7 +88,7 @@ class gpg7204_controller(object):
         22. MtrGetStatus
         ----------------
         """
-        with open("/home/amigos/ros/src/necst/lib/"+"m4.txt","r") as rf:
+        with open(self.dir+"m4.txt","r") as rf:
             txt = rf.readlines()
         txt = txt[0].split()[0]
         if txt == 'out':
@@ -104,6 +107,6 @@ class gpg7204_controller(object):
         return
 
     def stop_motion(self, mode='MTR_DEC_STOP'):
-        with open("/home/amigos/ros/src/necst/lib/"+"m4.txt","w") as wf:
+        with open(self.dir+"m4.txt","w") as wf:
             wf.write("move")
         return

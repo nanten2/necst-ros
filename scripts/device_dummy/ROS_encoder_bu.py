@@ -1,12 +1,8 @@
-#!/usr/bin/env python3
-
+#!/usr/bin/env python
 import math
 import time
 #import portio
-import sys
-sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 import rospy
-import pyinterface
 
 from necst.msg import Status_encoder_msg
 from necst.msg import Status_antenna_msg
@@ -23,12 +19,10 @@ class enc_controller(object):
     
 
     def __init__(self):
-        board_name = 6204
-        rsw_id = 0
         rospy.init_node("encoder_status")
         sub = rospy.Subscriber("pyinterface", Status_encoder_msg, self.sub_enc)
         #sub = rospy.Subscriber("status_board", Test_board_msg, self.sub_enc)
-        self.dio = pyinterface.open(board_name, rsw_id)
+
         pass
 
     def pub_status(self):
@@ -61,25 +55,6 @@ class enc_controller(object):
         return
 
 
-    def get_azel(self):
-        cntAz = self.dio.get_counter(1)
-        cntEl = self.dio.get_counter(2)
-        
-        if cntAz > 0:
-            encAz = (324*cntAz+295)/590
-        else:
-            encAz = (324*cntAz-295)/590
-            self.Az = encAz      #arcsecond
-            
-        if cntEl > 0:
-            encEl = (324*cntEl+295)/590
-        else:
-            encEl = (324*cntEl-295)/590
-            self.El = encEl+45*3600      #arcsecond
-            return [self.Az, self.El]
-            
-            
-    '''
     def get_azel(self):
         # for renishaw(El), for nikon(Az)
         byte_az = [0]*3
@@ -163,8 +138,6 @@ class enc_controller(object):
             abs += 1
         
         return abs*sign
-        '''
-
 
 if __name__ == "__main__":
     enc = enc_controller()
