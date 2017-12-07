@@ -7,7 +7,7 @@ this script is dummy for ROS_dome.py
 #import pyinterface#N
 import time
 import rospy ###for dummy dome
-import ros_start
+#import ros_start
 import threading
 from necst.msg import Dome_msg
 from std_msgs.msg import String

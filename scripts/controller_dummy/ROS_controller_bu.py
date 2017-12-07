@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python
 # coding:utf-8
 
 """
@@ -7,10 +7,10 @@
 2017/10/18 : kondo takashi
 ------------------------------------------------
 """
-import sys
-sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
+
 import time
 from datetime import datetime as dt
+import sys
 import rospy
 
 from necst.msg import drive_msg

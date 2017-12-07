@@ -1,16 +1,17 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 history
 2017/10/21 Shiotani
 ROS_antenna_move.py
 """
-import sys
-sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 import rospy
 import numpy
 import time
 import threading
 import math
+import sys
+sys.path.append('/home/amigos/python/')
+sys.path.append('../../lib')
 sys.path.append("/home/necst/ros/src/necst/lib")
 import pyinterface
 import numpy as np
@@ -113,11 +114,9 @@ class antenna_move(object):
     end_flag = 0
     
     def __init__(self):
-        board_name = 2724
-        rsw_id = 2
         #self.board = board.board()#N
         #self.board = gpg2000_board.board()
-        self.dio = pyinterface.open(board_name, rsw_id)
+        self.dio = pyinterface.create_gpg2000(3)
         #self.enc = antenna_enc.enc_monitor_client('172.20.0.11',8002)###0921
         #self.enc = antenna_enc.enc_controller()
         #ret = self.enc.read_azel()###0921
@@ -214,10 +213,8 @@ class antenna_move(object):
             rospy.loginfo('!!!azel_list is end!!!')
             self.stop_flag = 1
             for i in range(5):
-                #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
-                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
-                #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
-                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')
+                self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
+                self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
                 time.sleep(0.05)
             return
 
@@ -318,10 +315,8 @@ class antenna_move(object):
         flag_list = self.server_flag[:]
         time.sleep(1)
         if self.server_flag == flag_list:
-            #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)#0921
-            self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
-            #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)#0921
-            self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')
+            self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)#0921
+            self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)#0921
             self.end_flag = 1
             for i in range(1000):
                 print(flag_list)
@@ -344,10 +339,8 @@ class antenna_move(object):
     
     
     def init_speed(self):
-        #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
-        self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
-        #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
-        self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')
+        self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
+        self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
         return
     
     """original version
@@ -394,10 +387,8 @@ class antenna_move(object):
                 time.sleep(0.01-interval)
                     
             else:
-                #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
-                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
-                #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
-                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')
+                self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
+                self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
                 #time.sleep(0.02)#0922
                 return 0
                 
@@ -474,11 +465,7 @@ class antenna_move(object):
         """
         
         #dummy=m_bStop==TRUE?m_stop_rate_az:motor_param.az_rate_ref;
-        #self.dio.ctrl.out_word("FBIDIO_OUT1_16", dummy)#0922
-        dummy_byte = bin(dummy)
-        dummy_byte = dummy_byte[2:]
-        dummy_byte = list(dummy)
-        self.dio.output_word(dummy_byte, 'OUT1_16')
+        self.dio.ctrl.out_word("FBIDIO_OUT1_16", dummy)#0922
         #dioOutputWord(CONTROLER_BASE2,0x00,dummy)  output port is unreliable
         self.az_rate_d = dummy
         
@@ -495,11 +482,7 @@ class antenna_move(object):
         """
         
         #dummy=m_bStop==TRUE?m_stop_rate_el:motor_param.el_rate_ref;
-        #self.dio.ctrl.out_word("FBIDIO_OUT17_32", dummy)#0921
-        dummy_byte = bin(dummy)
-        dummy_byte = dummy_byte[2:]
-        dummy_byte = list(dummy_bute)
-        self.dio.output_word(dummy_byte, 'OUT17_32')
+        self.dio.ctrl.out_word("FBIDIO_OUT17_32", dummy)#0921
         #dioOutputWord(CONTROLER_BASE2,0x02,dummy);
         self.el_rate_d = dummy
         
@@ -886,10 +869,8 @@ class antenna_move(object):
         rospy.loginfo('***subscribe move stop***')
         self.stop_flag = 1
         time.sleep(0.1)
-        #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
-        self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
-        #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
-        self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')
+        self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
+        self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
         return
         
 
@@ -900,10 +881,8 @@ class antenna_move(object):
             rospy.logwarn('!!!emergency!!!')
             rospy.logwarn('!!!stop azel velocity =>0!!!')
             for i in range(5):
-                #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
-                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
-                #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
-                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')
+                self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
+                self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
                 time.sleep(0.05)
             rospy.logwarn('!!!exit ROS_antenna.py!!!')
             rospy.signal_shutdown('emergency')

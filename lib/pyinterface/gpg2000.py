@@ -1,4 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
+import sys
+sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 import time
 import rospy
 from necst.msg import Status_encoder_msg
@@ -32,6 +35,7 @@ class gpg2000_controller(object):
         self.contactor = 0
         self.az = 0
         self.el = 0
+        self.dir = "/home/necst/ros/src/necst/lib/"
       
         self.speed = 'None'
         self.turn = 'None'
@@ -55,14 +59,14 @@ class gpg2000_controller(object):
         self.write_enc()
 
     def write_enc(self):
-        with open("/home/amigos/ros/src/necst/lib/"+"enc.txt","w") as ef:
+        with open(self.dir+"enc.txt","w") as ef:
             ef.write(str(self.enc_az))
             ef.write("\n")
             ef.write(str(self.enc_el))
         return
 
     def read_enc(self):
-        with open("/home/amigos/ros/src/necst/lib/"+"enc.txt","r") as ref:
+        with open(self.dir+"enc.txt","r") as ref:
             txt = ref.readlines()
             txt = [txt[i].split()[0] for i in range(len(txt))]
             self.enc_az = float(txt[0])
@@ -175,7 +179,7 @@ class gpg2000_controller(object):
                 elif self.speed == 'low':
                     calc_dome_enc = c_dome_enc - 1000
 
-            with open("/home/amigos/ros/src/necst/lib/"+"dome_enc.txt","w") as wf:
+            with open("dome_enc.txt","w") as wf:
                 wf.write(str(calc_dome_enc))
             time.sleep(0.5)
             return
@@ -257,13 +261,13 @@ class gpg2000_controller(object):
         _list = ''
         for i in range(len(self.dome)):
             _list += self.dome[i]+"\n"
-        with open("/home/amigos/ros/src/necst/lib/"+"dome.txt","w") as f:
+        with open(self.dir+"dome.txt","w") as f:
             f.write(_list)
         return
 
     def dome_read(self):
         while True:
-            with open("/home/amigos/ros/src/necst/lib/"+"dome.txt","r") as ref:
+            with open(self.dir+"dome.txt","r") as ref:
                 txt = ref.readlines()
                 self.dome = [txt[i].split()[0] for i in range(len(txt))]
             if len(self.dome) == 10:
@@ -274,7 +278,7 @@ class gpg2000_controller(object):
       
 
     def dome_enc_read(self):
-        with open("/home/amigos/ros/src/necst/lib/"+"dome_enc.txt","r") as rf:
+        with open(self.dir+"dome_enc.txt","r") as rf:
             txt = rf.readlines()
             txt = txt[0].split()[0]
         return float(txt)
@@ -290,10 +294,10 @@ class gpg2000_controller(object):
                     pos = "move"
             else:
                 pass
-            with open("/home/amigos/ros/src/necst/lib/"+"hot.txt","w") as f:
+            with open(self.dir+"hot.txt","w") as f:
                 f.write(str(pos))
         elif self.ndev == 2:#m2
-            with open("/home/amigos/ros/src/necst/lib/"+"m2.txt","r") as f:
+            with open(self.dir+"m2.txt","r") as f:
                 txt = f.readlines()
                 txt = [txt[i].split()[0] for i in range(len(txt))]
                 m2_move = txt[0]
@@ -342,7 +346,7 @@ class gpg2000_controller(object):
             else:
                 print("############## error #################")
             _list = [str(m2_move)+"\n"+str(m2_dir)+"\n"+str(m2_pos)+"\n"+str(m2_param)]
-            with open("/home/amigos/ros/src/necst/lib/"+"m2.txt","w") as f:
+            with open(self.dir+"m2.txt","w") as f:
                 f.write(_list)
 
         else:
@@ -366,7 +370,7 @@ class gpg2000_controller(object):
             
     def in_byte(self, no):
         if self.ndev == 10:
-            with open("/home/amigos/ros/src/necst/lib/"+"hot.txt","r") as f:
+            with open(self.dir+"hot.txt","r") as f:
                 txt = f.readlines()
             hot = txt[0].split()[0]
             if hot == "in":
@@ -377,7 +381,7 @@ class gpg2000_controller(object):
                 value = 3
         elif self.ndev == 2:#m2
             try:
-                with open("/home/amigos/ros/src/necst/lib/"+"m2.txt","r") as f:
+                with open(self.dir+"m2.txt","r") as f:
                     txt = f.readlines()
                 txt = [txt[i].split()[0] for i in range(len(txt))]
                 m2_move = txt[0]
@@ -385,7 +389,7 @@ class gpg2000_controller(object):
                 m2_pos = float(txt[2])
                 m2_param = float(txt[3])
             except:
-                with open("/home/amigos/ros/src/necst/lib/"+"m2.txt","r") as f:
+                with open(self.dir+"m2.txt","r") as f:
                     txt = f.readlines()
                 txt = [txt[i].split()[0] for i in range(len(txt))]
                 m2_move = txt[0]
@@ -409,7 +413,7 @@ class gpg2000_controller(object):
                 value = _list[int(decimal*100)]
             
         else:
-            with open("/home/amigos/ros/src/necst/lib/"+"drive.txt","r") as f:
+            with open(self.dir+"drive.txt","r") as f:
                 txt = f.readlines()
             dr = int(txt[0].split()[0])
             co = int(txt[1].split()[0])
@@ -435,7 +439,7 @@ class gpg2000_controller(object):
         return value
 
     def drive_write(self):
-        with open("/home/amigos/ros/src/necst/lib/"+"drive.txt","w") as f:
+        with open(self.dir+"drive.txt","w") as f:
             f.write(str(self.drive))
             f.write("\n")
             f.write(str(self.contactor))
@@ -444,7 +448,7 @@ class gpg2000_controller(object):
     def drive_read(self):
         while True:
             try:
-                with open("/home/amigos/ros/src/necst/lib/"+"drive.txt","r") as df:
+                with open(self.dir+"drive.txt","r") as df:
                     txt = df.readlines()
                     txt = [txt[i].split()[0] for i in range(len(txt))]
                     print(txt)

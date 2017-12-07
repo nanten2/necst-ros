@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """
 you can see what node is running now and publishing
 2017/10/28 Kazuki Shiotani
