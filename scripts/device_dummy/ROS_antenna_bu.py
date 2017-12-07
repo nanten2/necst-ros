@@ -1,7 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
-import sys
-sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 import rospy
 import time
 from necst.msg import Velocity_mode_msg
@@ -11,6 +9,8 @@ from necst.msg import Status_encoder_msg
 from necst.msg import Status_weather_msg
 from necst.msg import list_azelmsg
 from datetime import datetime as dt
+import sys
+sys.path.append("../../lib")
 sys.path.append("/home/necst/ros/src/necst/lib")
 import azel_calc
 import otf

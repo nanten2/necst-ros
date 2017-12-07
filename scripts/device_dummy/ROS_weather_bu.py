@@ -1,7 +1,4 @@
-#!/usr/bin/env python3
-
-import sys
-sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
+#!/usr/bin/env python
 import datetime
 import time
 import rospy
@@ -10,6 +7,7 @@ from necst.msg import Status_weather_msg
 class weather_controller(object):
     host = "weather@200.91.8.66"
     #dir = "/home/weather/WeatherMonitor/Weather_Data/"
+    dir = "./"
     dir = "/home/necst/ros/src/necst/scripts/device/"
     data = [0]*20
 

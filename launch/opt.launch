@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="necst" name="m4_controller" type="ROS_m4.py"/>
+  <node pkg="necst" name="abs_controller" type="ROS_abs.py"/>
+</launch>
