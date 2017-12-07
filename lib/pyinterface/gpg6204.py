@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 ###this script is dummy for sumilator###
 import time
 
@@ -26,6 +26,7 @@ class gpg6204(object):
     def __init__(self, ndev=1, remote=False):
         initialize = not remote
         self.ctrl = gpg6204_controller(ndev, initialize=initialize)
+        self.dir = "/home/necst/ros/src/necst/lib/"
         pass
 
     def get_position(self):
@@ -62,7 +63,7 @@ class gpg6204_controller(object):
 
 
     def get_counter(self):
-        with open("/home/amigos/ros/src/necst/lib/"+"dome_enc.txt","r") as rf:
+        with open(self.dir+"dome_enc.txt","r") as rf:
             txt = rf.readlines()
             txt = txt[0].split()[0]
         return float(txt)

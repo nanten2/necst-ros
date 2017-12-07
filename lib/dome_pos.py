@@ -13,7 +13,10 @@ class dome_pos_controller(object):
 
 
     def __init__(self, ndev2 = 1):
-        self.dio = pyinterface.create_gpg6204(ndev2)
+        board_name = 6204
+        rsw_id = 1
+        #self.dio = pyinterface.create_gpg6204(ndev2)
+        self.dio = pyinterface.open(board_name, rsw_id)
         #self.dio = shiotani_pyinterface.create_gpg6204(ndev2)
 	#self.dome_enc_initialize()
 	#self.dio.ctrl.set_mode(4, 0, 1, 0)
@@ -21,9 +24,12 @@ class dome_pos_controller(object):
         pass
 
     def dome_enc_initialize(self):
-        self.dio.ctrl.reset()
-        self.dio.ctrl.set_mode(4, 0, 1, 0)
+        #self.dio.ctrl.reset()
+        self.dio.reset()
+        #self.dio.ctrl.set_mode(4, 0, 1, 0)
+        self.dio.set_mode(4, 0, 1, 0)
         #self.dio.ctrl.set_counter(self.dome_enc_offset)  ???
+        self.dio.set_counter(self.dome_encoffset)
         return
 	
     def print_msg(self,msg):
@@ -36,9 +42,10 @@ class dome_pos_controller(object):
         return
 	
     def dome_encoder_acq(self):
-        counter = self.dio.get_position()
-        #dome_enc_arcsec = -int(((counter-self.dome_encoffset)*self.dome_enc2arcsec)-self.dome_enc_tel_offset)
-        dome_enc_arcsec = counter
+        #counter = self.dio.get_position()
+        counter = self.dio.get_counter()
+        counter = int(counter)
+        dome_enc_arcsec = -int(((counter-self.dome_encoffset)*self.dome_enc2arcsec)-self.dome_enc_tel_offset)
         while(dome_enc_arcsec>1800.*360):
             dome_enc_arcsec-=3600.*360
         while(dome_enc_arcsec<=-1800.*360):
@@ -47,7 +54,8 @@ class dome_pos_controller(object):
         return self.dome_position
  
     def dome_set_counter(self, counter):
-        self.dio.ctrl.set_counter(counter)
+        #self.dio.ctrl.set_counter(counter)
+        self.dio.set_counter(self.dome_encoffset)
         return
 
     def read_dome_enc(self):

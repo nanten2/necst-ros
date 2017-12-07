@@ -1,11 +1,10 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
-import sys
-sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 import rospy
 import time
 import threading
 #import M2
+import sys
 sys.path.append("/home/necst/ros/src/necst/lib")
 #import board_M2
 #import test_board_M2

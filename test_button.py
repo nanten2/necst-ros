@@ -1,5 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
 import sys
+sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 import tkinter
 import rospy
 from std_msgs.msg import String
@@ -8,9 +10,9 @@ import time
 import os
 import sys
 import argparse
-sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
+sys.path.append("/home/necst/ros/src/necst/scripts/controller")
 import ROS_controller
-sys.path.append("/home/amigos/ros/src/necst/lib")
+sys.path.append("/home/necst/ros/src/necst/lib")
 import obs_log
 ctrl = ROS_controller.controller()
 
