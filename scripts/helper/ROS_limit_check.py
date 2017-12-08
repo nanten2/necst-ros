@@ -93,6 +93,49 @@ while not rospy.is_shutdown():#stop_flag == 0:
         msg = '!!!2nd limit DOWN!!!'
         stop_flag = 1
         print(msg)
+    if (error_box[16]) == 0:
+        msg = "!!!cable_cw : error!!!"
+        stop_flag = 1
+        print(msg)
+    if (error_box[17]) == 0:
+        msg = "!!!cable_ccw : error!!!"
+        stop_flag = 1
+        print(msg)
+
+    """
+    if (error_box[18]) == 0:
+        msg = '!!!2nd limit DOWN!!!'
+        stop_flag = 1
+        print(msg)
+    if (error_box[19]) == 0:
+        msg = '!!!2nd limit DOWN!!!'
+        stop_flag = 1
+        print(msg)
+        """
+
+    if (error_box[20]) == 0:
+        msg = '!!!az_error!!!'
+        stop_flag = 1
+        print(msg)
+    if (error_box[21]) == 0:
+        msg = '!!!el_error!!!'
+        stop_flag = 1
+        print(msg)
+    if (error_box[22]) == 0:
+        msg = '!!!servo_error_az!!!'
+        stop_flag = 1
+        print(msg)
+    if (error_box[23]) == 0:
+        msg = '!!!servo_error_az!!!'
+        stop_flag = 1
+        print(msg)
+
+
+
+
+
+
+
     if stop_flag == 1:
         _lim.data = False
         limit_pub.publish(_lim)
