@@ -20,7 +20,7 @@ class enc_controller(object):
     enc_El = 45*3600. #test
     vel_az = 0.
     vel_el = 0.
-    
+    resolution = 360*3600/(23600*400)  #0.13728813559 (4 multiplication)
 
     def __init__(self):
         board_name = 6204
@@ -29,6 +29,10 @@ class enc_controller(object):
         sub = rospy.Subscriber("pyinterface", Status_encoder_msg, self.sub_enc)
         #sub = rospy.Subscriber("status_board", Test_board_msg, self.sub_enc)
         self.dio = pyinterface.open(board_name, rsw_id)
+        self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=1)
+        self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=2)
+        self.dio.set_z_mode(clear_condition="", latch_condition="", z_polarity=0, ch=1)
+        self.dio.set_z_mode(clear_condition="", latch_condition="", z_polarity=0, ch=2)
         pass
 
     def pub_status(self):
@@ -37,8 +41,8 @@ class enc_controller(object):
 
         while not rospy.is_shutdown():
             print("loop...")
-            #ret = self.get_azel()
-            ret = self.test()
+            ret = self.get_azel()
+            #ret = self.test()
             msg.enc_az = ret[0]
             msg.enc_el = ret[1]
             time.sleep(0.1)
@@ -62,21 +66,27 @@ class enc_controller(object):
 
 
     def get_azel(self):
-        cntAz = self.dio.get_counter(1)
-        cntEl = self.dio.get_counter(2)
-        
-        if cntAz > 0:
-            encAz = (324*cntAz+295)/590
+        cntAz = int(self.dio.get_counter(1))
+        cntEl = int(self.dio.get_counter(2))
+        print(cntAz)
+        print(cntEl)
+        if cntAz < 360*3600./self.resolution:
+            #encAz = (324*cntAz+295)/590
+            encAz = cntAz*self.resolution
         else:
-            encAz = (324*cntAz-295)/590
-            self.Az = encAz      #arcsecond
+            encAz = -(2**32-cntAz)*self.resolution
+            pass
+        self.Az = encAz      #arcsecond
             
-        if cntEl > 0:
-            encEl = (324*cntEl+295)/590
+        if cntEl < 360*3600./self.resolution:
+            #encEl = (324*cntEl+295)/590
+            encEl = cntEl*self.resolution
         else:
-            encEl = (324*cntEl-295)/590
-            self.El = encEl+45*3600      #arcsecond
-            return [self.Az, self.El]
+            encEl = -(2**32-cntEl)*self.resolution
+            pass
+        self.El = encEl+45*3600      #arcsecond
+            
+        return [self.Az, self.El]
             
             
     '''
