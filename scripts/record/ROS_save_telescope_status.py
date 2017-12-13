@@ -186,13 +186,15 @@ class status_main(object):
         pass
 
     def tel_status(self):
+        file_memo = input('input file_name: ')
         ut = time.gmtime()
-        filename = time.strftime("%Y_%m_%d_%H_%M_%S.txt", ut)
+        filename = time.strftime("%Y_%m_%d_%H_%M_%S_" + file_memo + ".txt", ut)
         saveto = os.path.join(home_dir, filename)
         print('*********************************')
         print('    NANTEN2 telescope status     ')
         print('*********************************')
         time.sleep(1)
+        print('save to: ', filename)
 
         while(1):
             #drive = self.param6["drive"]
@@ -208,6 +210,10 @@ class status_main(object):
             m4_position = self.param7['position']
             m2_position = self.param9["m2_pos"]
             drive = self.param8["error"][0:4]
+            if self.param8["error"][26] == 1:
+                antenna_status = "Local"
+            else:
+                antenna_status = "REMOTE"
             
             tv = time.time()
             mjd = tv/24./3600. + 40587.0 # 40587.0 = MJD0
@@ -229,7 +235,7 @@ class status_main(object):
             lst_hh = "{0:02d}".format(lst_hh)
             lst_mm = "{0:02d}".format(lst_mm)
             lst_ss = "{0:02d}".format(lst_ss)
-            log_debug = "telescope: %s %s %s %s %s %5.0f %6.1f %s:%s:%s %5.2f %5.2f %5.2f %5.2f dome: door %s  membrane: %s %s %5.2f HOT: %s M4: %s M2: %s" %(drive[0],drive[1], drive[2], drive[3], 'N', mjd, secofday, lst_hh, lst_mm, lst_ss, enc_az, enc_el, command_az, command_el, doom_door, memb_status, remote_status, dome_enc, hot_position, m4_position, m2_position)
+            log_debug = "telescope: %s %s %s %s %s %5.0f %6.1f %s:%s:%s %5.2f %5.2f %5.2f %5.2f dome: door %s  membrane: %s %s %5.2f HOT: %s M4: %s M2: %s" %(drive[0],drive[1], drive[2], drive[3], antenna_status, mjd, secofday, lst_hh, lst_mm, lst_ss, enc_az, enc_el, command_az, command_el, doom_door, memb_status, remote_status, dome_enc, hot_position, m4_position, m2_position)
             f = open(saveto,'a')
             f.write(log_debug  + "\n")
             print(log_debug)
