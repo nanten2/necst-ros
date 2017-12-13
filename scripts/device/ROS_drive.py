@@ -28,6 +28,7 @@ class drive(object):
         #self.bd = gpg2000_board.board()
         #self.dio = pyinterface.create_gpg2000(4)
         self.dio = pyinterface.open(board_name, rsw_id)
+        self.dio.initialize()
         #self.board = test_board.board()# test
         self.pub = rospy.Publisher('status_drive', Status_drive_msg, queue_size=10, latch=True)#test
         self.msg = Status_drive_msg()#test

@@ -93,6 +93,8 @@ while not rospy.is_shutdown():#stop_flag == 0:
         msg = '!!!2nd limit DOWN!!!'
         stop_flag = 1
         print(msg)
+
+    '''
     if (error_box[16]) == 0:
         msg = "!!!cable_cw : error!!!"
         stop_flag = 1
@@ -126,10 +128,16 @@ while not rospy.is_shutdown():#stop_flag == 0:
         stop_flag = 1
         print(msg)
     if (error_box[23]) == 0:
-        msg = '!!!servo_error_az!!!'
+        msg = '!!!servo_error_el!!!'
         stop_flag = 1
         print(msg)
 
+    '''
+
+    if (error_box[24]) == 0:
+        msg = '!!!emergency_switch!!!'
+        stop_flag = 1
+        print(msg)
 
 
 
