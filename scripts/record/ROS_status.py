@@ -95,7 +95,7 @@ class status_main(object):
         #self.param1["current_az"] = req.current_az
         #self.param1["current_el"] = req.current_el
         self.param1["emergency"] = req.emergency
-        self.status_check()
+        pass
 
     def callback2(self, req):
         self.param2["in_temp"] = req.in_temp
@@ -112,13 +112,11 @@ class status_main(object):
         self.param2["dome_temp2"]= req.dome_temp2
         self.param2["gen_temp1"]= req.gen_temp1
         self.param2["gen_temp2"]= req.gen_temp2
-        self.status_check()
         pass
 
     def callback3(self, req):
         self.param3["encoder_az"] = req.enc_az/3600.
         self.param3["encoder_el"] = req.enc_el/3600.
-        self.status_check()
         pass
     
     def callback4(self, req):
@@ -143,40 +141,33 @@ class status_main(object):
             self.param4['dome_status'] = 'MOVE'
         elif self.param4['right_pos'] == 'CLOSE' and self.param4['left_pos'] == 'CLOSE':
             self.param4['dome_status'] = 'CLOSE'
-        self.status_check()
         pass
         
     def callback5(self, req):
         self.param5['position'] = req.hot_position
-        self.status_check()
         pass
 
     def callback6(self, req):
         print(req)
         self.param6["drive"] = req.value[0]
         self.param6["contactor"] = req.value[1]
-        self.status_check()
         pass
 
     def callback7(self,req):
         self.param7['position'] = req.m4_position
-        self.status_check()
         pass
 
     def callback8(self,req):
         self.param8["error"] = req.error_box
         self.param8["error_msg"] = req.error_msg
-        self.status_check()
         pass
 
     def callback9(self,req):
         self.param9["m2_pos"] = req.data
-        self.status_check()
         pass
 
     def callback10(self,req):
         self.param10["alert_msg"] = req.data
-        self.status_check()
         pass
 
     def tel_status(self):
@@ -232,7 +223,7 @@ class status_main(object):
                 print(self.param8["error_msg"])
             if self.param10["alert_msg"]:
                 print(self.param10["alert_msg"])
-            time.sleep(1.)
+            time.sleep(0.1)
 
 
 if __name__ == '__main__':
