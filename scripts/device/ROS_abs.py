@@ -6,11 +6,6 @@ import rospy
 import time
 import threading
 sys.path.append("/home/necst/ros/src/necst/lib")
-#import abs
-#import board_abs
-#import gpg2000_board
-#import test_board_abs
-#import gpg2000_test
 import pyinterface
 
 from std_msgs.msg import String 
@@ -24,16 +19,15 @@ class abs_controller(object):
 
     position = ''
 
+    board_name = 2724
+    rsw_id = 0 #test
+
 
     def __init__(self):
         pass
 
     def open(self):
-        #self.board_abs = board_abs.board()
-        #self.board_abs = test_board_abs.board()
-        #self.board_abs = gpg2000_test.board()
-        self.dio = pyinterface.create_gpg2000(10)#dummy
-        #self.dio = pyinterface.create_gpg2000(3)#real
+        self.dio = pyinterface.open(self.board_name, self.rsw_id)
         self.get_pos()
         return
 
@@ -43,9 +37,6 @@ class abs_controller(object):
         th.start()
         return
     
-
-    def test(self):
-        return
 
     def print_msg(self, msg):
         print(msg)
@@ -73,20 +64,18 @@ if ret == 0x02:
     '''
 
     def get_pos(self):
-        ret = self.dio.ctrl.in_byte('FBIDIO_IN1_8')
+        ret = self.dio.input_byte('IN1_8')
         print(ret,ret,ret)
-        if ret == 0x02:
+        if ret[0] == 0 and ret[1] == 1:#ret == 0x02
             self.position = 'IN'
-        elif ret == 0x01:
+        elif ret[0] == 1 and ret[1] == 0:#ret == 0x01
             self.position = 'OUT'
-        elif ret == 0x03:
+        elif ret[0] == 1 and ret[1] == 1:#ret == 0x03
             self.position = 'MOVE'
         else:
             self.print_error('limit error')
             return
         return self.position
-
-
 
     def move(self,req):
         print('move start')
@@ -97,14 +86,14 @@ if ret == 0x02:
             return
         if req.data.lower() == 'in':
             #self.pro = 0x00
-            self.buff = 0x01
+            self.buff = [1,0,0,0] #0x01
         elif req.data.lower() == 'out':
             #self.pro = 0x02
-            self.buff = 0x03
+            self.buff = [1,1,0,0] #0x03
         print(req.data)
         #self.board_abs.out_byte('FBIDIO_OUT1_8', self.pro)
         #time.sleep(1)
-        self.dio.ctrl.out_byte('FBIDIO_OUT1_8', self.buff)
+        self.dio.output_point(self.buff,'OUT1')
         time.sleep(5)
         self.get_pos()
         return
