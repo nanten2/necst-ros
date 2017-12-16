@@ -64,7 +64,7 @@ class antenna(object):
         now = dt.utcnow()
         ret = self.calc.azel_calc(req.x, req.y, 
                                   req.off_x/3600., req.off_y/3600.,
-                                  req.offcoord, now)
+                                  req.offcoord, req.vel_x, req.vel_y, now)
         self.azel_publish(ret[0], ret[1], ret[2])
         return
         
