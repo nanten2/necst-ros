@@ -14,6 +14,7 @@ import math
 sys.path.append("/home/necst/ros/src/necst/lib")
 import pyinterface
 import numpy as np
+import struct
 #import antenna_enc
 
 #ROS/import field
@@ -114,10 +115,11 @@ class antenna_move(object):
     
     def __init__(self):
         board_name = 2724
-        rsw_id = 2
+        rsw_id = 0
         #self.board = board.board()#N
         #self.board = gpg2000_board.board()
         self.dio = pyinterface.open(board_name, rsw_id)
+        self.dio.initialize()
         #self.enc = antenna_enc.enc_monitor_client('172.20.0.11',8002)###0921
         #self.enc = antenna_enc.enc_controller()
         #ret = self.enc.read_azel()###0921
@@ -217,8 +219,8 @@ class antenna_move(object):
                 #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
                 self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
                 #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
-                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')
-                time.sleep(0.05)
+                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for az_test
+                time.sleep(0.25)
             return
 
         else:
@@ -321,7 +323,7 @@ class antenna_move(object):
             #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)#0921
             self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
             #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)#0921
-            self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')
+            self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
             self.end_flag = 1
             for i in range(1000):
                 print(flag_list)
@@ -347,7 +349,7 @@ class antenna_move(object):
         #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
         self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
         #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
-        self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')
+        self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
         return
     
     """original version
@@ -397,7 +399,7 @@ class antenna_move(object):
                 #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
                 self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
                 #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
-                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')
+                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
                 #time.sleep(0.02)#0922
                 return 0
                 
@@ -475,9 +477,15 @@ class antenna_move(object):
         
         #dummy=m_bStop==TRUE?m_stop_rate_az:motor_param.az_rate_ref;
         #self.dio.ctrl.out_word("FBIDIO_OUT1_16", dummy)#0922
-        dummy_byte = bin(dummy)
-        dummy_byte = dummy_byte[2:]
-        dummy_byte = list(dummy)
+        #print(dummy)
+        #dummy_byte = bin(dummy)
+        #dummy_byte = dummy_byte[2:]
+        #dummy_byte = list(map(int,dummy_byte))
+        #dummy_byte = dummy_byte[::-1]
+        #_len = len(dummy_byte)
+        #for i in range(16 - _len):
+        #    dummy_byte.append(0)
+        dummy_byte = list(map(int,  ''.join([format(b, '08b')[::-1] for b in struct.pack('<h', dummy)])))
         self.dio.output_word(dummy_byte, 'OUT1_16')
         #dioOutputWord(CONTROLER_BASE2,0x00,dummy)  output port is unreliable
         self.az_rate_d = dummy
@@ -496,16 +504,26 @@ class antenna_move(object):
         
         #dummy=m_bStop==TRUE?m_stop_rate_el:motor_param.el_rate_ref;
         #self.dio.ctrl.out_word("FBIDIO_OUT17_32", dummy)#0921
-        dummy_byte = bin(dummy)
-        dummy_byte = dummy_byte[2:]
-        dummy_byte = list(dummy_bute)
-        self.dio.output_word(dummy_byte, 'OUT17_32')
-        #dioOutputWord(CONTROLER_BASE2,0x02,dummy);
+        #print(dummy)
+        
+        dummy_byte = list(map(int,  ''.join([format(b, '08b')[::-1] for b in struct.pack('<h', dummy)])))
+
+        #dummy_byte = bin(dummy)
+        #dummy_byte = dummy_byte[2:]
+        #dummy_byte = list(map(int,dummy_byte))
+        #dummy_byte = dummy_byte[::-1]
+        #_len = len(dummy_byte)
+        #for i in range(16 - _len):
+        #    dummy_byte.append(0)
+            
+        self.dio.output_word(dummy_byte, 'OUT17_32')#for aztest
+        #diOutputWord(CONTROLER_BASE2,0x02,dummy);
         self.el_rate_d = dummy
         
         if stop_flag:
             rospy.logwarn('')
             sys.exit()
+        print('move check')
         return [Az_track_flag, El_track_flag]
 
 
@@ -551,12 +569,12 @@ class antenna_move(object):
         d_el_coeff = float(line1[6])
         s_el_coeff = float(line1[7])
         """
-        p_az_coeff = 3.
-        i_az_coeff = 2.
+        p_az_coeff = 3.7
+        i_az_coeff = 3.0
         d_az_coeff = 0
         s_az_coeff = 0
-        p_el_coeff = 3.
-        i_el_coeff = 3.
+        p_el_coeff = 3.7
+        i_el_coeff = 3.0
         d_el_coeff = 0
         s_el_coeff = 0
         
@@ -889,7 +907,7 @@ class antenna_move(object):
         #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
         self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
         #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
-        self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')
+        self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
         return
         
 
@@ -903,7 +921,7 @@ class antenna_move(object):
                 #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
                 self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
                 #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
-                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')
+                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
                 time.sleep(0.05)
             rospy.logwarn('!!!exit ROS_antenna.py!!!')
             rospy.signal_shutdown('emergency')
