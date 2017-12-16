@@ -168,7 +168,10 @@ class controller(object):
         rospy.loginfo(vel)
         return
 
-    def azel_move(self,az, el, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt',  lamda=2600, dcos=0, az_rate=12000, el_rate=12000,):
+    def azel_move(self,az, el, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt',  lamda=2600, dcos=0, vel_x=0, vel_y=0,):
+        """azel_move"""
+        # az,el,off_x,off_y = deg
+        # vel_x, vel_y = arcsec/s
         msg = Move_mode_msg()
         msg.x = az
         msg.y = el
@@ -179,8 +182,8 @@ class controller(object):
         msg.offcoord = offcoord
         msg.lamda = lamda
         msg.dcos = dcos
-        #mv.az_rate ... no inplementation
-        #mv.el_rate ... no inplementation
+        msg.vel_x = vel_x
+        msg.vel_y = vel_y
         rospy.loginfo(msg)
         self.pub17.publish(msg)
         return
@@ -245,7 +248,6 @@ class controller(object):
         print("move_stop")
         self.pub11.publish(msg)
         return
-        
 
     def otf_scan(self, lambda_on, beta_on, coord_sys, dx, dy, dt, num, rampt, delay, lamda, hosei, code_mode, off_x, off_y, off_coord, dcos=0, ntarg = 0):
         #on_start = self.ant.otf_start(lambda_on, beta_on, dcos, coord_sys, dx, dy, dt, num, rampt, delay, lamda, hosei, code_mode, off_x, off_y, off_coord, ntarg)
