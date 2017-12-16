@@ -14,8 +14,7 @@ class azel_calc(object):
     latitude = -22.96995611
     longitude = -67.70308139
     height = 4863.85
-    #utc_offset = -3. # chile_time
-    utc_offset = 0.# nagoya_time
+    utc_offset = 0.# utc_time
 
     vel_dt = 0.1
     off_az = 0.
