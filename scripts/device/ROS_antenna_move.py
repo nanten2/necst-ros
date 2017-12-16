@@ -219,8 +219,8 @@ class antenna_move(object):
                 #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
                 self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
                 #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
-                #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for az_test
-                time.sleep(0.05)
+                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for az_test
+                time.sleep(0.25)
             return
 
         else:
