@@ -41,7 +41,7 @@ class save_azel(object):
             f = open(saveto,'a')
             f.write('%s %s %s %s %s \n'%(str(ctime), str(self.enc_az), str(self.enc_el), str(self.command_az), str(self.command_el)))
             f.close()
-            time.sleep(0.1)
+            time.sleep(0.01)
             continue
         return
     
