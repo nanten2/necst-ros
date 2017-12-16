@@ -43,7 +43,7 @@ class enc_controller(object):
             pass
             
     def pub_status(self):
-        pub = rospy.Publisher("status_encoder", Status_encoder_msg, queue_size = 10, latch = True)
+        pub = rospy.Publisher("status_encoder", Status_encoder_msg, queue_size = 1, latch = True)
         msg = Status_encoder_msg()
 
         while not rospy.is_shutdown():
@@ -52,7 +52,7 @@ class enc_controller(object):
             #ret = self.test()
             msg.enc_az = ret[0]
             msg.enc_el = ret[1]
-            time.sleep(0.1)
+            time.sleep(0.01)
             pub.publish(msg)
             rospy.loginfo('Az :'+str(msg.enc_az/3600.))
             rospy.loginfo('El :'+str(msg.enc_el/3600.))
