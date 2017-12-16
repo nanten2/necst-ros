@@ -23,6 +23,8 @@ class drive(object):
     drive_pos = ""
     contactor_move = ""
     drive_move = ""
+
+    flag = True
     
     def __init__(self):
         """initialize"""
@@ -36,6 +38,7 @@ class drive(object):
         self.current_position()
         self.stop_thread = threading.Event()
         self.move_thread = threading.Thread(target = self.move)
+        self.move_thread.setDaemon(True)
         self.move_thread.start()
 
     def current_position(self):
@@ -50,18 +53,22 @@ class drive(object):
         else:
             self.drive_pos = "off"
             pass
+        print("Current position is : ")
+        print("drive : ",self.drive_pos, "contactor : ", self.contactor_pos)
         return [self.contactor_pos, self.drive_pos]
 
     def contactor(self, req):
-        self.contacor_move = req.data
+        self.contactor_move = req.data
         return self.contactor_move
 
     def drive(self, req):
-        self.drive = req.data
+        self.drive_move = req.data
         return self.drive_move
     
     def move(self):
-        while not rospy.is_shutdown:
+        ret = ""
+        while not rospy.is_shutdown():
+            print("drive : ",self.drive_pos, "contactor : ", self.contactor_pos)
             """drive"""
             if self.drive_move == self.drive_pos:
                 pass
@@ -79,7 +86,7 @@ class drive(object):
                     print(self.drive_move)
                     ret = False
             elif self.drive_move == "":
-                print("no signal")
+                pass
             else:
                 rospy.logerr('bad command !!')
                 print(self.drive_move)
@@ -102,7 +109,7 @@ class drive(object):
                     print(self.contactor_move)
                     ret = False
             elif self.contactor_move == "":
-                print("no signal")
+                pass
             else:
                 rospy.logerr('bad command !!')
                 print(self.contactor_move)
@@ -110,9 +117,13 @@ class drive(object):
                 
             if ret:
                 rospy.loginfo("complete !!")
+                ret = ""
+            elif ret == "":
+                pass
             else:
                 rospy.logerr("unfinished !!")
                 self.stop_thread.set()
+        time.sleep(0.1)
 
 if __name__ == "__main__":
     rospy.init_node("drive")
