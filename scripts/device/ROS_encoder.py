@@ -2,9 +2,7 @@
 
 import math
 import time
-#import portio
 import sys
-sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 import rospy
 import pyinterface
 
@@ -29,13 +27,21 @@ class enc_controller(object):
         sub = rospy.Subscriber("pyinterface", Status_encoder_msg, self.sub_enc)
         #sub = rospy.Subscriber("status_board", Test_board_msg, self.sub_enc)
         self.dio = pyinterface.open(board_name, rsw_id)
-        self.dio.initialize()
-        self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=1)
-        self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=2)
-        self.dio.set_z_mode(clear_condition="CLS0", latch_condition="", z_polarity=0, ch=1)
-        self.dio.set_z_mode(clear_condition="CLS0", latch_condition="", z_polarity=0, ch=2)
+        self.board_initialize()
         pass
 
+    def board_initialize(self):
+        if self.dio.get_mode().bin() == "00000000" :
+            rospy.loginfo("initialize : start")
+            self.dio.initialize()
+            self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=1)
+            self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=2)
+            self.dio.set_z_mode(clear_condition="CLS0", latch_condition="", z_polarity=0, ch=1)
+            self.dio.set_z_mode(clear_condition="CLS0", latch_condition="", z_polarity=0, ch=2)
+            rospy.loginfo("initialize : end")
+        else:
+            pass
+            
     def pub_status(self):
         pub = rospy.Publisher("status_encoder", Status_encoder_msg, queue_size = 10, latch = True)
         msg = Status_encoder_msg()

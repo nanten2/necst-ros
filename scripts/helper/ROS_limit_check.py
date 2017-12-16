@@ -36,8 +36,8 @@ _lim = Bool()
 
 while not rospy.is_shutdown():#stop_flag == 0:
     msg = ""
-    ret = dio.dword()
-    for i in range(4,18):
+    ret = dio.input_dword()
+    for i in range(4,16):
         if ret[i] == 0:
             msg = msg+str(limit_list[i+1])
         else:
