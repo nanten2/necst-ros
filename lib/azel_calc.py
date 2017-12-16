@@ -68,7 +68,7 @@ class azel_calc(object):
             n += 1
         return [az_list, el_list, tv]
 
-    def azel_calc(self, az, el, off_x, off_y, off_coord, vel_x=0, vel_y=0, now):
+    def azel_calc(self, az, el, off_x, off_y, off_coord, now, vel_x=0, vel_y=0):
         if off_coord.lower() != "horizontal":
             print("Please, off_coord is HORIZONTAL")
             return
