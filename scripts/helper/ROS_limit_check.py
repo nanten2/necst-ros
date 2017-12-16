@@ -18,10 +18,15 @@ rsw_id = 0
 dio = pyinterface.open(board_name, rsw_id)
 
 stop_flag = 0
-ret = [1]*4
-error_box = [1]*32
-msg = ""
+#ret = [1]*4
+#error_box = [1]*32
 
+limit_list = {1:"", 2:"", 3:"", 4:"", 5:"soft limit CW", 6:"soft limit CCW", 7:"soft limit UP", 8:"soft limit DOWN",
+              9:"1st limit CW", 10:"1st limit CCW", 11:"1st limit UP", 12:"1st limit DOWN",
+              13:"2nd limit CW", 14:"2nd limit CCW", 15:"2nd limit UP", 16: "2nd limit DOWN",
+              17:"cable_cw error", 18:"cable_ccw error", 19:"", 20:"",
+              21:"az_error", 22:"el_error", 23:"servo_error_az", 24:"servo_error_el",
+              25:"emergency_switch"} # ==> bit
 
 rospy.init_node("limit_check")
 pub = rospy.Publisher("limit_check", Status_limit_msg, queue_size=10, latch=True)
@@ -30,7 +35,22 @@ limit_pub = rospy.Publisher("limit", Bool, queue_size=10, latch=True)
 _lim = Bool()
 
 while not rospy.is_shutdown():#stop_flag == 0:
-
+    msg = ""
+    ret = dio.input_dword()
+    for i in range(4,16):
+        if ret[i] == 0:
+            msg = msg+str(limit_list[i+1])
+        else:
+            pass
+    if ret[24] == 0:
+        msg = msg+str(limit_list[24+1])
+    else:
+        pass
+    if str(msg):
+        print(msg)
+        stop_flag = 1
+    
+    '''
     ret[0] = dio.input_byte('IN1_8')
     ret[1] = dio.input_byte('IN9_16')
     ret[2] = dio.input_byte('IN17_24')
@@ -44,12 +64,13 @@ while not rospy.is_shutdown():#stop_flag == 0:
         error_box[i+16] = ret[2][i]
     for i in range(8):
         error_box[i+24] = ret[3][i]
-        
-    if (error_box[4]) == 0:
+    
+    
+    if ret[4] == 0:
         msg = '!!!soft limit CW!!!'
         print(msg)
         stop_flag = 1
-    if (error_box[5]) == 0:
+    if ret[5] == 0:
         msg = '!!!soft limit CCW!!!'
         stop_flag = 1
         print(msg)
@@ -94,7 +115,6 @@ while not rospy.is_shutdown():#stop_flag == 0:
         stop_flag = 1
         print(msg)
 
-    '''
     if (error_box[16]) == 0:
         msg = "!!!cable_cw : error!!!"
         stop_flag = 1
@@ -104,7 +124,6 @@ while not rospy.is_shutdown():#stop_flag == 0:
         stop_flag = 1
         print(msg)
 
-    """
     if (error_box[18]) == 0:
         msg = '!!!2nd limit DOWN!!!'
         stop_flag = 1
@@ -132,24 +151,18 @@ while not rospy.is_shutdown():#stop_flag == 0:
         stop_flag = 1
         print(msg)
 
-    '''
-
     if (error_box[24]) == 0:
         msg = '!!!emergency_switch!!!'
         stop_flag = 1
         print(msg)
-
-
-
-
-
+    '''
 
     if stop_flag == 1:
         _lim.data = False
         limit_pub.publish(_lim)
 
 
-    st.error_box = error_box
+    st.error_box = ret
     st.error_msg = msg
     pub.publish(st)
 
