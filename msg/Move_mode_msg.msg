@@ -9,3 +9,5 @@ string offcoord
 int64 dcos
 string hosei
 float64 lamda
+float64 vel_x
+float64 vel_y

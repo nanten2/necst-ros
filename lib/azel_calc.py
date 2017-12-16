@@ -68,15 +68,15 @@ class azel_calc(object):
             n += 1
         return [az_list, el_list, tv]
 
-    def azel_calc(self, az, el, off_x, off_y, off_coord, now):
+    def azel_calc(self, az, el, off_x, off_y, off_coord, vel_x=0, vel_y=0, now):
         if off_coord.lower() != "horizontal":
             print("Please, off_coord is HORIZONTAL")
             return
         else:
             pass
         tv = time.time()
-        az_list = [(az+off_x)*3600. for i in range(500)]
-        el_list = [(el+off_y)*3600. for i in range(500)]
+        az_list = [(az+off_x)*3600.+vel_x*0.1*i for i in range(500)]
+        el_list = [(el+off_y)*3600.+vel_y*0.1*i for i in range(500)]
         return [az_list, el_list, tv]
 
     def coordinate_calc(self, x, y, ntarg, code_mode, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, loop = 500, time_rate=0.):
