@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
+"""
+create : okuda
+correction : kondo 2017/12/19
+"""
+
 import sys
-sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 import rospy
 import time
 import threading
-#import M2
-sys.path.append("/home/necst/ros/src/necst/lib")
-#import board_M2
-#import test_board_M2
+import struct
 import pyinterface
 
 #from necst.msg import Status_m2_msg
@@ -23,23 +24,25 @@ class m2_controller(object):
     
     error = []
     m_pos = 0.0
-    CW = 0x10
-    CCW = 0x11
+    #CW = 0x10
+    CW = [0,0,0,0,1,0,0,0]
+    #CCW = 0x11
+    CCW = [1,0,0,0,1,0,0,0]
     LIMIT_CW = 1000
     LIMIT_CCW = -1000
     PULSRATE = 80 #1puls = 0.1micron
     MOTOR_SPEED = 200 # * 10pulses/sec
+    MOTOR_SPEED_byte = [0,0,0,1,0,0,1,1] # * 10pulses/sec
     m_limit_up = 1
     m_limit_down = 1
-    
-    
     
     
     def __init__(self):
         pass
     
     def open(self,ndev):
-        self.dio = pyinterface.create_gpg2000(ndev)
+        #self.dio = pyinterface.create_gpg2000(ndev)
+        self.dio = pyinterface.open(2724,0)#test
         #self.board_M2 = board_M2.board()
         #self.board_M2 = test_board_M2.board()
         self.InitIndexFF()
@@ -65,40 +68,36 @@ class m2_controller(object):
         buff = []
         buff2 = []
         
-        bin  = self.dio.ctrl.in_byte("FBIDIO_IN1_8")
-        bin2 = self.dio.ctrl.in_byte("FBIDIO_IN9_16")
+        in1_8  = self.dio.input_byte("IN1_8")
+        in9_16 = self.dio.input_byte("IN9_16")
         #bin = self.board_M2.in_byte("FBIDIO_IN1_8")
         #bin2 = self.board_M2.in_byte("FBIDIO_IN9_16")      
-        #rospy.logerr(bin)
-        #rospy.logerr(bin2)
-        """
-        if bin2 & 0x40:
+
+        if in9_16 == [0,0,0,0,0,0,1,0]:
             self.m_limit_up = 1
         else:
             self.m_limit_up = 0
-        if bin2 & 0x80:
+        if in9_16 == [0,0,0,0,0,0,0,1]:
             self.m_limit_down = 1
         else:
             self.m_limit_down = 0
-        """
+
 
         for i in range(8):
-            if i != 0 and bin == 0:
+            if i != 0 and in1_8 == [0,0,0,0,0,0,0,0]:
                 buff.append(0)
-            if bin % 2 == 0:
+            if in1_8[i] == 0:
                 buff.append(0)
             else:
                 buff.append(1)
-            bin = int(bin/2)
         
         for i in range(8):
-            if i != 0 and bin2 == 0:
+            if i != 0 and in9_16 == [0,0,0,0,0,0,0,0]:
                 buff2.append(0)
-            if bin2 % 2 == 0:
+            if in9_16[i]== 0:
                 buff2.append(0)
             else:
                 buff2.append(1)
-            bin2 = int(bin2/2)
         
         #calculate each digit
         total = (buff[0]*1+buff[1]*2+buff[2]*pow(2.,2.)+buff[3]*pow(2.,3.))/100.0
@@ -115,28 +114,26 @@ class m2_controller(object):
     
     def Strobe(self):
         time.sleep(0.01)
-        self.dio.ctrl.out_byte("FBIDIO_OUT9_16", 0x01)
-        #self.board_M2.out_byte("FBIDIO_OUT9_16", 0x01)
+        self.dio.output_byte([1,0,0,0,0,0,0,0], "OUT9_16")
         time.sleep(0.01)
-        self.dio.ctrl.out_byte("FBIDIO_OUT9_16", 0x00)
-        #self.board_M2.out_byte("FBIDIO_OUT9_16", 0x00)
+        self.dio.output_byte([0,0,0,0,0,0,0,0], "OUT9_16")
         time.sleep(0.01)
         return
     
     def StrobeHOff(self):
         time.sleep(0.01)
-        self.dio.ctrl.out_byte("FBIDIO_OUT9_16", 0x05)
-        #self.board_M2.out_byte("FBIDIO_OUT9_16", 0x05)
+        self.dio.output_byte([1,0,1,0,0,0,0,0], "OUT9_16")
         time.sleep(0.01)
-        self.dio.ctrl.out_byte("FBIDIO_OUT9_16", 0x04)
+        self.dio.output_byte([0,0,1,0,0,0,0,0], "OUT9_16")
         #self.board_M2.out_byte("FBIDIO_OUT9_16", 0x04)
         time.sleep(0.01)
         return
     
+    
     def move(self, req):
         #move subref
         puls = int(req.data) * self.PULSRATE
-        
+        rospy.logerr(req.data)
         ret = self.get_pos()
         print("ret",ret)
         if req.data/1000.+float(ret) <= -4.0 or req.data/1000.+float(ret) >= 5.5:
@@ -150,7 +147,11 @@ class m2_controller(object):
             self.print_error("can't move down direction")
             return
         
-        self.MoveIndexFF(puls)
+        puls1 = int(abs(puls) / 256)
+        puls2 = int(abs(puls) % 256)
+        puls1 = list(map(int, ''.join([format(b, '04b')[::-1] for b in struct.pack('<h', puls1)])))
+        puls2 = list(map(int, ''.join([format(b, '04b')[::-1] for b in struct.pack('<h', puls2)])))
+        self.MoveIndexFF(puls, puls1, puls2)
         print("\n")
         print("\n")
         print("\n")
@@ -161,111 +162,86 @@ class m2_controller(object):
     
     def InitIndexFF(self):
         #initialization?
-        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x08)
-        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x08)
+        self.dio.output_byte([0,0,0,1,0,0,0,0], "OUT1_8")
         self.StrobeHOff()
         #step no.
-        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0xff)
-        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0xff)
+        self.dio.output_byte([1,1,1,1,1,1,1,1],"OUT1_8")
         self.StrobeHOff()
         #vs set
-        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x48)
-        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x48)
+        self.dio.output_byte([0,1,0,0,1,0,0,0], "OUT1_8")
         self.StrobeHOff()
         #5(*10=50)
-        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
-        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
+        self.dio.output_byte([0,0,0,0,0,0,0,0], "OUT1_8")
         self.StrobeHOff()
-        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x05)
-        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x05)
+        self.dio.output_byte([1,0,1,0,0,0,0,0], "OUT1_8")
         self.StrobeHOff()
         #vr set
-        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x40)
-        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x40)
+        self.dio.output_byte([0,0,0,0,0,0,1,0], "OUT1_8")
         self.StrobeHOff()
         
-        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
-        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
+        self.dio.output_byte([0,0,0,0,0,0,0,0], "OUT1_8")
         self.StrobeHOff()
-        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", self.MOTOR_SPEED)
-        #self.board_M2.out_byte("FBIDIO_OUT1_8", self.MOTOR_SPEED)
+        self.dio.output_byte(self.MOTOR_SPEED_byte, "OUT1_8")
         self.StrobeHOff()
         #su-sd set
-        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x50)
-        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x50)
+        self.dio.output_byte([0,0,0,0,1,0,1,0], "OUT1_8")
         self.StrobeHOff()
         #100(/10=10)
-        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
-        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
+        self.dio.output_byte([0,0,0,0,0,0,0,0], "OUT1_8")
         self.StrobeHOff()
-        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 100)
-        #self.board_M2.out_byte("FBIDIO_OUT1_8", 100)
+        self.dio.output_byte([0,0,1,0,0,1,1,0], "OUT1_8")
         self.StrobeHOff()
         #position set
-        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0xc0)
-        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0xc0)
+        self.dio.output_byte([0,0,0,0,0,0,1,1], "OUT1_8")
         self.StrobeHOff()
         #cw
-        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", self.CW)
-        #self.board_M2.out_byte("FBIDIO_OUT1_8", self.CW)
+        self.dio.output_byte(self.CW, "OUT1_8")
         self.StrobeHOff()
         #0
-        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
-        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
+        self.dio.output_byte([0,0,0,0,0,0,0,0], "OUT1_8")
         self.StrobeHOff()
-        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
-        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
+        self.dio.output_byte([0,0,0,0,0,0,0,0], "OUT1_8")
         self.StrobeHOff()
-        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
-        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
+        self.dio.output_byte([0,0,0,0,0,0,0,0], "OUT1_8")
         self.StrobeHOff()
         #start
-        self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x18)
-        #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x18)
+        self.dio.output_byte([0,0,0,1,1,0,0,0], "OUT1_8")
         self.StrobeHOff()
         return
     
-    def MoveIndexFF(self, puls):
+    def MoveIndexFF(self, puls, puls1, puls2):
         if puls >= -65535 and puls <= 65535:
             #index mode
-            self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x08)
-            #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x08)	
+            self.dio.output_byte([0,0,0,1,0,0,0,0], "OUT1_8")
             self.Strobe()
             #step no.
-            self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0xff)
-            #self.board_M2.out_byte("FBIDIO_OUT1_8", 0xff)
+            self.dio.output_byte([1,1,1,1,1,1,1,1], "OUT1_8")
             self.Strobe()
             #position set
-            self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0xc0)
-            #self.board_M2.out_byte("FBIDIO_OUT1_8", 0xc0)
+            self.dio.output_byte([0,0,0,0,0,0,1,1], "OUT1_8")
             self.Strobe()
             #direction
             if puls >= 0:
-                self.dio.ctrl.out_byte("FBIDIO_OUT1_8", self.CW)
-                #self.board_M2.out_byte("FBIDIO_OUT1_8", self.CW)
+                self.dio.output_byte(self.CW, "OUT1_8")
                 self.Strobe()
             else:
-                self.dio.ctrl.out_byte("FBIDIO_OUT1_8", self.CCW)
-                #self.board_M2.out_byte("FBIDIO_OUT1_8", self.CCW)
+                self.dio.output_byte(self.CCW, "OUT1_8")
                 self.Strobe()
             #displacement
-            self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x00)
-            #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x00)
+            self.dio.output_byte([0,0,0,0,0,0,0,0], "OUT1_8")
             self.Strobe()
-            self.dio.ctrl.out_byte("FBIDIO_OUT1_8", (abs(puls) / 256))
-            #self.board_M2.out_byte("FBIDIO_OUT1_8", (int(abs(puls) / 256)))
+            self.dio.output_byte(puls1, "OUT1_8")
             self.Strobe()
-            self.dio.ctrl.out_byte("FBIDIO_OUT1_8", (abs(puls) % 256))
-            #self.board_M2.out_byte("FBIDIO_OUT1_8", (abs(puls) % 256))
+            self.dio.output_byte(puls2, "OUT1_8")
             self.Strobe()
             #start
-            self.dio.ctrl.out_byte("FBIDIO_OUT1_8", 0x18)
-            #self.board_M2.out_byte("FBIDIO_OUT1_8", 0x18)
+            self.dio.output_byte([0,0,0,1,1,0,0,0], "OUT1_8")
             self.Strobe()
             time.sleep((abs(puls) / self.MOTOR_SPEED / 10.) + 1.)
             self.print_msg("Motor stopped")
         else:
             self.print_msg("Puls number is over.")
+            self.print_msg("Please command x : 10*x [um]")
             return False
         return True
 
