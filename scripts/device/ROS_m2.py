@@ -68,8 +68,8 @@ class m2_controller(object):
         buff = []
         buff2 = []
         
-        in1_8  = self.dio.input_byte("IN1_8")
-        in9_16 = self.dio.input_byte("IN9_16")
+        in1_8  = self.dio.input_byte("IN1_8").to_uint()
+        in9_16 = self.dio.input_byte("IN9_16").to_uint()
         #bin = self.board_M2.in_byte("FBIDIO_IN1_8")
         #bin2 = self.board_M2.in_byte("FBIDIO_IN9_16")      
 
@@ -114,17 +114,17 @@ class m2_controller(object):
     
     def Strobe(self):
         time.sleep(0.01)
-        self.dio.output_byte([1,0,0,0,0,0,0,0], "OUT9_16")
+        self.dio.output_byte("OUT9_16", [1,0,0,0,0,0,0,0])
         time.sleep(0.01)
-        self.dio.output_byte([0,0,0,0,0,0,0,0], "OUT9_16")
+        self.dio.output_byte("OUT9_16", [0,0,0,0,0,0,0,0])
         time.sleep(0.01)
         return
     
     def StrobeHOff(self):
         time.sleep(0.01)
-        self.dio.output_byte([1,0,1,0,0,0,0,0], "OUT9_16")
+        self.dio.output_byte("OUT9_16", [1,0,1,0,0,0,0,0])
         time.sleep(0.01)
-        self.dio.output_byte([0,0,1,0,0,0,0,0], "OUT9_16")
+        self.dio.output_byte("OUT9_16", [0,0,1,0,0,0,0,0])
         #self.board_M2.out_byte("FBIDIO_OUT9_16", 0x04)
         time.sleep(0.01)
         return
@@ -162,80 +162,80 @@ class m2_controller(object):
     
     def InitIndexFF(self):
         #initialization?
-        self.dio.output_byte([0,0,0,1,0,0,0,0], "OUT1_8")
+        self.dio.output_byte("OUT1_8", [0,0,0,1,0,0,0,0])
         self.StrobeHOff()
         #step no.
-        self.dio.output_byte([1,1,1,1,1,1,1,1],"OUT1_8")
+        self.dio.output_byte("OUT1_8", [1,1,1,1,1,1,1,1])
         self.StrobeHOff()
         #vs set
-        self.dio.output_byte([0,1,0,0,1,0,0,0], "OUT1_8")
+        self.dio.output_byte("OUT1_8", [0,1,0,0,1,0,0,0])
         self.StrobeHOff()
         #5(*10=50)
-        self.dio.output_byte([0,0,0,0,0,0,0,0], "OUT1_8")
+        self.dio.output_byte("OUT1_8", [0,0,0,0,0,0,0,0])
         self.StrobeHOff()
-        self.dio.output_byte([1,0,1,0,0,0,0,0], "OUT1_8")
+        self.dio.output_byte("OUT1_8", [1,0,1,0,0,0,0,0])
         self.StrobeHOff()
         #vr set
-        self.dio.output_byte([0,0,0,0,0,0,1,0], "OUT1_8")
+        self.dio.output_byte("OUT1_8", [0,0,0,0,0,0,1,0])
         self.StrobeHOff()
         
-        self.dio.output_byte([0,0,0,0,0,0,0,0], "OUT1_8")
+        self.dio.output_byte("OUT1_8", [0,0,0,0,0,0,0,0])
         self.StrobeHOff()
-        self.dio.output_byte(self.MOTOR_SPEED_byte, "OUT1_8")
+        self.dio.output_byte("OUT1_8", self.MOTOR_SPEED_byte)
         self.StrobeHOff()
         #su-sd set
-        self.dio.output_byte([0,0,0,0,1,0,1,0], "OUT1_8")
+        self.dio.output_byte("OUT1_8", [0,0,0,0,1,0,1,0])
         self.StrobeHOff()
         #100(/10=10)
-        self.dio.output_byte([0,0,0,0,0,0,0,0], "OUT1_8")
+        self.dio.output_byte("OUT1_8", [0,0,0,0,0,0,0,0])
         self.StrobeHOff()
-        self.dio.output_byte([0,0,1,0,0,1,1,0], "OUT1_8")
+        self.dio.output_byte("OUT1_8", [0,0,1,0,0,1,1,0])
         self.StrobeHOff()
         #position set
-        self.dio.output_byte([0,0,0,0,0,0,1,1], "OUT1_8")
+        self.dio.output_byte("OUT1_8", [0,0,0,0,0,0,1,1])
         self.StrobeHOff()
         #cw
-        self.dio.output_byte(self.CW, "OUT1_8")
+        self.dio.output_byte("OUT1_8", self.CW)
         self.StrobeHOff()
         #0
-        self.dio.output_byte([0,0,0,0,0,0,0,0], "OUT1_8")
+        self.dio.output_byte("OUT1_8", [0,0,0,0,0,0,0,0])
         self.StrobeHOff()
-        self.dio.output_byte([0,0,0,0,0,0,0,0], "OUT1_8")
+        self.dio.output_byte("OUT1_8", [0,0,0,0,0,0,0,0])
         self.StrobeHOff()
-        self.dio.output_byte([0,0,0,0,0,0,0,0], "OUT1_8")
+        self.dio.output_byte("OUT1_8", [0,0,0,0,0,0,0,0])
         self.StrobeHOff()
         #start
-        self.dio.output_byte([0,0,0,1,1,0,0,0], "OUT1_8")
+        self.dio.output_byte("OUT1_8", [0,0,0,1,1,0,0,0])
         self.StrobeHOff()
         return
     
     def MoveIndexFF(self, puls, puls1, puls2):
         if puls >= -65535 and puls <= 65535:
             #index mode
-            self.dio.output_byte([0,0,0,1,0,0,0,0], "OUT1_8")
+            self.dio.output_byte("OUT1_8", [0,0,0,1,0,0,0,0])
             self.Strobe()
             #step no.
-            self.dio.output_byte([1,1,1,1,1,1,1,1], "OUT1_8")
+            self.dio.output_byte("OUT1_8", [1,1,1,1,1,1,1,1])
             self.Strobe()
             #position set
-            self.dio.output_byte([0,0,0,0,0,0,1,1], "OUT1_8")
+            self.dio.output_byte("OUT1_8", [0,0,0,0,0,0,1,1])
             self.Strobe()
             #direction
             if puls >= 0:
-                self.dio.output_byte(self.CW, "OUT1_8")
+                self.dio.output_byte("OUT1_8", self.CW)
                 self.Strobe()
             else:
-                self.dio.output_byte(self.CCW, "OUT1_8")
+                self.dio.output_byte("OUT1_8", self.CCW)
                 self.Strobe()
             #displacement
-            self.dio.output_byte([0,0,0,0,0,0,0,0], "OUT1_8")
+            self.dio.output_byte("OUT1_8", [0,0,0,0,0,0,0,0])
             self.Strobe()
-            self.dio.output_byte(puls1, "OUT1_8")
+            self.dio.output_byte("OUT1_8", puls1)
             self.Strobe()
-            self.dio.output_byte(puls2, "OUT1_8")
+            self.dio.output_byte("OUT1_8", puls2)
             self.Strobe()
             #start
-            self.dio.output_byte([0,0,0,1,1,0,0,0], "OUT1_8")
+            self.dio.output_byte("OUT1_8", [0,0,0,1,1,0,0,0])
             self.Strobe()
             time.sleep((abs(puls) / self.MOTOR_SPEED / 10.) + 1.)
             self.print_msg("Motor stopped")

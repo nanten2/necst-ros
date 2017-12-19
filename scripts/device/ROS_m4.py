@@ -34,9 +34,11 @@ class m4_controller(object):
         pass
 
     def open(self):
-        self.mtr = pyinterface.create_gpg7204(1)
-        self.mtr.ctrl.set_limit_config('MTR_LOGIC', 0x000c)
-        self.mtr.ctrl.off_inter_lock()
+        #self.mtr = pyinterface.create_gpg7204(1)
+        self.mtr = pyinterface.open(7204,0) #test rsw
+        #self.mtr.ctrl.set_limit_config('MTR_LOGIC', 0x000c)
+        self.mtr.set_limit_config('LOGIC', '+EL -EL', axis=1)
+        #self.mtr.ctrl.off_inter_lock() # abolition
         #self.board_M4 = board_M4.board()
         #self.board_M4 = test_board_M4.board()
         #self.board_M4.set_limit_config('MTR_LOGIC', 0x000c)
@@ -69,15 +71,15 @@ class m4_controller(object):
     '''
     
     def get_pos(self):
-        status = self.mtr.ctrl.get_status('MTR_LIMIT_STATUS')
+        status = self.mtr.get_status()
         print(status)
-        if status == 0x0004:
+        if status["limit"]["+EL"] == 1: #status == 0x0004:
             #SMART
-           self.position = 'OUT'
-        elif status == 0x0008:
+            self.position = 'OUT'
+        elif status["limit"]["-EL"] == 1:
             #NAGOYA
             self.position = 'IN'
-        elif status == 0x0000:
+        elif status["linit"][] == 0x0000:
             self.position = 'MOVE'
         else:
             self.print_error('limit error')
@@ -95,15 +97,19 @@ class m4_controller(object):
                 print('M4 is already ' , self.position)
             elif self.move_position != self.position and self.move_position != "":
                 if self.move_position == 'OUT':
-                    nstep = 60500
+                    #nstep = 60500
+                    step=1
                     self.print_msg('m4 move out')
                 elif self.move_position == 'IN':
-                    nstep = -60500
+                    #nstep = -60500
+                    step=-1
                     self.print_msg('m4 move in')
                 else:
                     self.print_error('parameter error')
                     pass
-                self.mtr.move(self.speed, nstep, self.low_speed, self.acc, self.dec)
+                #self.mtr.move(self.speed, nstep, self.low_speed, self.acc, self.dec)
+                self.mtr.set_motion(mode="JOG",step=step)
+                self.mtr.start_motion(mode="JOG")
             elif self.move_position == "":
                 pass
             else:
