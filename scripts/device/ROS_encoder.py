@@ -31,7 +31,7 @@ class enc_controller(object):
         pass
 
     def board_initialize(self):
-        if self.dio.get_mode().bin() == "00000000" :
+        if self.dio.get_mode().to_bit() == "00000000" :
             rospy.loginfo("initialize : start")
             self.dio.initialize()
             self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=1)
@@ -73,8 +73,8 @@ class enc_controller(object):
 
 
     def get_azel(self):
-        cntAz = int(self.dio.get_counter(1))
-        cntEl = int(self.dio.get_counter(2))
+        cntAz = int(self.dio.get_counter(1).to_int())
+        cntEl = int(self.dio.get_counter(2).to_int())
         print(cntAz)
         print(cntEl)
         if cntAz < 360*3600./self.resolution:

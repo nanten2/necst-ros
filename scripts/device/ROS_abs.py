@@ -66,7 +66,7 @@ if ret == 0x02:
     '''
 
     def get_pos(self):
-        ret = self.dio.input_byte('IN1_8')
+        ret = self.dio.input_byte('IN1_8').to_list()
         print(ret)
         if ret[0] == 0 and ret[1] == 1:#ret == 0x02
             self.position = 'IN'

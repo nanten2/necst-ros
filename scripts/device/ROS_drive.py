@@ -1,4 +1,3 @@
-
 #! /usr/bin/env python3
 
 """
@@ -42,7 +41,7 @@ class drive(object):
         self.move_thread.start()
 
     def current_position(self):
-        pos = self.dio_input.input_byte("IN1_8").to_int()[0:4]
+        pos = self.dio_input.input_byte("IN1_8").to_list()
         if pos[0] == 1 and pos[1] == 1:
             self.contactor_pos = "on"
         else:

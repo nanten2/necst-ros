@@ -24,25 +24,28 @@ class m2_controller(object):
     
     error = []
     m_pos = 0.0
-    #CW = 0x10
-    CW = [0,0,0,0,1,0,0,0]
-    #CCW = 0x11
-    CCW = [1,0,0,0,1,0,0,0]
+    CW = 0x10 # CW = [0,0,0,0,1,0,0,0]
+    CCW = 0x11 #CCW = [1,0,0,0,1,0,0,0]
     LIMIT_CW = 1000
     LIMIT_CCW = -1000
     PULSRATE = 80 #1puls = 0.1micron
-    MOTOR_SPEED = 200 # * 10pulses/sec
-    MOTOR_SPEED_byte = [0,0,0,1,0,0,1,1] # * 10pulses/sec
+    MOTOR_SPEED = 200 # * 10pulses/sec # MOTOR_SPEED_byte = [0,0,0,1,0,0,1,1] # * 10pulses/sec
     m_limit_up = 1
     m_limit_down = 1
+    puls = ""
+    past_puls = ""
     
     
     def __init__(self):
+        self.stop_thread = threading.Event()
+        self.thread = threading.Thread(target=self.move_thread)
+        self.thread.setDaemon(True)
+        self.thread.start()
         pass
     
     def open(self,ndev):
         #self.dio = pyinterface.create_gpg2000(ndev)
-        self.dio = pyinterface.open(2724,0)#test
+        self.dio = pyinterface.open(2724,1)
         #self.board_M2 = board_M2.board()
         #self.board_M2 = test_board_M2.board()
         self.InitIndexFF()
@@ -67,9 +70,8 @@ class m2_controller(object):
     def get_pos(self):
         buff = []
         buff2 = []
-        
-        in1_8  = self.dio.input_byte("IN1_8").to_uint()
-        in9_16 = self.dio.input_byte("IN9_16").to_uint()
+        in1_8  = self.dio.input_byte("IN1_8").to_list()
+        in9_16 = self.dio.input_byte("IN9_16").to_list()
         #bin = self.board_M2.in_byte("FBIDIO_IN1_8")
         #bin2 = self.board_M2.in_byte("FBIDIO_IN9_16")      
 
@@ -125,7 +127,6 @@ class m2_controller(object):
         self.dio.output_byte("OUT9_16", [1,0,1,0,0,0,0,0])
         time.sleep(0.01)
         self.dio.output_byte("OUT9_16", [0,0,1,0,0,0,0,0])
-        #self.board_M2.out_byte("FBIDIO_OUT9_16", 0x04)
         time.sleep(0.01)
         return
     
@@ -146,17 +147,23 @@ class m2_controller(object):
         if self.m_limit_down == 0 and puls > 0:
             self.print_error("can't move down direction")
             return
+        self.puls = puls
         
-        puls1 = int(abs(puls) / 256)
-        puls2 = int(abs(puls) % 256)
-        puls1 = list(map(int, ''.join([format(b, '04b')[::-1] for b in struct.pack('<h', puls1)])))
-        puls2 = list(map(int, ''.join([format(b, '04b')[::-1] for b in struct.pack('<h', puls2)])))
-        self.MoveIndexFF(puls, puls1, puls2)
-        print("\n")
-        print("\n")
-        print("\n")
-        self.get_pos()
         return
+
+    def move_thread(self):
+        while not rospy.is_shutdown():
+            if self.puls == "":
+                pass
+            elif self.puls != self.past_puls:
+                print("move start")
+                self.MoveIndexFF(self.puls)
+                self.get_pos()
+                self.past_puls = self.puls
+                print("move end")
+            else:
+                pass
+            
     
     
     
@@ -181,7 +188,7 @@ class m2_controller(object):
         
         self.dio.output_byte("OUT1_8", [0,0,0,0,0,0,0,0])
         self.StrobeHOff()
-        self.dio.output_byte("OUT1_8", self.MOTOR_SPEED_byte)
+        self.dio.output_byte("OUT1_8", self.MOTOR_SPEED, fmt="<I")
         self.StrobeHOff()
         #su-sd set
         self.dio.output_byte("OUT1_8", [0,0,0,0,1,0,1,0])
@@ -195,7 +202,7 @@ class m2_controller(object):
         self.dio.output_byte("OUT1_8", [0,0,0,0,0,0,1,1])
         self.StrobeHOff()
         #cw
-        self.dio.output_byte("OUT1_8", self.CW)
+        self.dio.output_byte("OUT1_8", self.CW, fmt="<I")
         self.StrobeHOff()
         #0
         self.dio.output_byte("OUT1_8", [0,0,0,0,0,0,0,0])
@@ -209,7 +216,7 @@ class m2_controller(object):
         self.StrobeHOff()
         return
     
-    def MoveIndexFF(self, puls, puls1, puls2):
+    def MoveIndexFF(self, puls):
         if puls >= -65535 and puls <= 65535:
             #index mode
             self.dio.output_byte("OUT1_8", [0,0,0,1,0,0,0,0])
@@ -222,17 +229,17 @@ class m2_controller(object):
             self.Strobe()
             #direction
             if puls >= 0:
-                self.dio.output_byte("OUT1_8", self.CW)
+                self.dio.output_byte("OUT1_8", self.CW, fmt="<I")
                 self.Strobe()
             else:
-                self.dio.output_byte("OUT1_8", self.CCW)
+                self.dio.output_byte("OUT1_8", self.CCW, fmt="<I")
                 self.Strobe()
             #displacement
             self.dio.output_byte("OUT1_8", [0,0,0,0,0,0,0,0])
             self.Strobe()
-            self.dio.output_byte("OUT1_8", puls1)
+            self.dio.output_byte("OUT1_8", int(abs(puls) / 256), fmt="<I")
             self.Strobe()
-            self.dio.output_byte("OUT1_8", puls2)
+            self.dio.output_byte("OUT1_8", int(abs(puls) % 256), fmt="<I")
             self.Strobe()
             #start
             self.dio.output_byte("OUT1_8", [0,0,0,1,1,0,0,0])
