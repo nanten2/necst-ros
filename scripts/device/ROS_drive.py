@@ -1,3 +1,4 @@
+
 #! /usr/bin/env python3
 
 """
@@ -12,7 +13,6 @@ import time
 import rospy
 from std_msgs.msg import String
 from necst.msg import Status_drive_msg
-sys.path.append("/home/necst/ros/src/necst/lib")
 import threading
 
 import pyinterface
@@ -42,7 +42,7 @@ class drive(object):
         self.move_thread.start()
 
     def current_position(self):
-        pos = self.dio_input.input_byte("IN1_8")[0:4]
+        pos = self.dio_input.input_byte("IN1_8").to_int()[0:4]
         if pos[0] == 1 and pos[1] == 1:
             self.contactor_pos = "on"
         else:
@@ -68,7 +68,7 @@ class drive(object):
     def move(self):
         ret = ""
         while not rospy.is_shutdown():
-            print("drive : ",self.drive_pos, "contactor : ", self.contactor_pos)
+            #print("drive : ",self.drive_pos, "contactor : ", self.contactor_pos)
             """drive"""
             if self.drive_move == self.drive_pos:
                 pass
