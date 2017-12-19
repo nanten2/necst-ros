@@ -79,7 +79,7 @@ class m4_controller(object):
         elif status["limit"]["-EL"] == 1:
             #NAGOYA
             self.position = 'IN'
-        elif status["linit"][] == 0x0000:
+        elif status["linit"]["+EL"] == 0: #test
             self.position = 'MOVE'
         else:
             self.print_error('limit error')
