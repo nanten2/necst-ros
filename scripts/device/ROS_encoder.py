@@ -75,22 +75,28 @@ class enc_controller(object):
     def get_azel(self):
         cntAz = int(self.dio.get_counter(1).to_int())
         cntEl = int(self.dio.get_counter(2).to_int())
-        print(cntAz)
-        print(cntEl)
+        #print(cntAz)
+        #print(cntEl)
+        
+        """unsigned
         if cntAz < 360*3600./self.resolution:
             #encAz = (324*cntAz+295)/590
             encAz = cntAz*self.resolution
         else:
             encAz = -(2**32-cntAz)*self.resolution
             pass
+        """
+        encAz = cntAz*self.resolution
         self.Az = encAz      #arcsecond
-            
+        """ unsigned
         if cntEl < 360*3600./self.resolution:
             #encEl = (324*cntEl+295)/590
             encEl = cntEl*self.resolution
         else:
             encEl = -(2**32-cntEl)*self.resolution
             pass
+        """
+        encEl = cntEl*self.resolution
         self.El = encEl+45*3600      #arcsecond
             
         return [self.Az, self.El]
