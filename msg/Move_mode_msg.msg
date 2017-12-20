@@ -11,3 +11,4 @@ string hosei
 float64 lamda
 float64 vel_x
 float64 vel_y
+bool limit

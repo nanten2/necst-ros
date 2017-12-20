@@ -18,18 +18,19 @@ class dome_pos_controller(object):
         #self.dio = pyinterface.create_gpg6204(ndev2)
         self.dio = pyinterface.open(board_name, rsw_id)
         #self.dio = shiotani_pyinterface.create_gpg6204(ndev2)
-	#self.dome_enc_initialize()
+        self.dome_enc_initialize()
 	#self.dio.ctrl.set_mode(4, 0, 1, 0)
 	#self.dome_encoder_acq()
         pass
 
     def dome_enc_initialize(self):
         #self.dio.ctrl.reset()
-        self.dio.reset()
+        self.dio.reset(ch=1)
         #self.dio.ctrl.set_mode(4, 0, 1, 0)
-        self.dio.set_mode(4, 0, 1, 0)
+        #self.dio.set_mode(4, 0, 1, 0)
+        self.dio.set_mode('MD0', 0, 1, 0, ch=1)
         #self.dio.ctrl.set_counter(self.dome_enc_offset)  ???
-        self.dio.set_counter(self.dome_encoffset)
+        #self.dio.set_counter(self.dome_encoffset)
         return
 	
     def print_msg(self,msg):
@@ -43,8 +44,9 @@ class dome_pos_controller(object):
 	
     def dome_encoder_acq(self):
         #counter = self.dio.get_position()
-        counter = self.dio.get_counter()
-        counter = int(counter)
+        counter = self.dio.get_counter(ch=1)
+        print('self,dio.get_counter : ', counter.to_int())
+        counter = counter.to_int()
         dome_enc_arcsec = -int(((counter-self.dome_encoffset)*self.dome_enc2arcsec)-self.dome_enc_tel_offset)
         while(dome_enc_arcsec>1800.*360):
             dome_enc_arcsec-=3600.*360
@@ -55,7 +57,7 @@ class dome_pos_controller(object):
  
     def dome_set_counter(self, counter):
         #self.dio.ctrl.set_counter(counter)
-        self.dio.set_counter(self.dome_encoffset)
+        self.dio.set_counter(counter, ch=1)
         return
 
     def read_dome_enc(self):
@@ -65,7 +67,7 @@ def dome_pos_client(host, port):
 	client = pyinterface.server_client_wrapper.control_client_wrapper(dome_pos_controller, host, port)
 	return client
 
-def dome_pos_monitor_client(host, port):
+def dome_pos_monito_client(host, port):
 	client = pyinterface.server_client_wrapper.monitor_client_wrapper(dome_pos_controller, host, port)
 	return client
 

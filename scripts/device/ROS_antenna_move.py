@@ -217,9 +217,11 @@ class antenna_move(object):
             self.stop_flag = 1
             for i in range(5):
                 #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
-                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
+                #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
+                self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#new pyinterface
                 #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
-                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for az_test
+                #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for az_test
+                self.dio.output_word('OUT17_32',[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#new pyinterface
                 time.sleep(0.25)
             return
 
@@ -321,9 +323,11 @@ class antenna_move(object):
         time.sleep(1)
         if self.server_flag == flag_list:
             #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)#0921
-            self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
+            #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
+            self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
             #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)#0921
-            self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
+            #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
+            self.sdio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],)
             self.end_flag = 1
             for i in range(1000):
                 print(flag_list)
@@ -347,9 +351,11 @@ class antenna_move(object):
     
     def init_speed(self):
         #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
-        self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
+        #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
+        self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#new pyinterface
         #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
-        self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
+        #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
+        self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#new py
         return
     
     """original version
@@ -397,9 +403,11 @@ class antenna_move(object):
                     
             else:
                 #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
-                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
+                #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
+                self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#new pyinterface
                 #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
-                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
+                #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
+                self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#new pyinteface
                 #time.sleep(0.02)#0922
                 return 0
                 
@@ -486,7 +494,8 @@ class antenna_move(object):
         #for i in range(16 - _len):
         #    dummy_byte.append(0)
         dummy_byte = list(map(int,  ''.join([format(b, '08b')[::-1] for b in struct.pack('<h', dummy)])))
-        self.dio.output_word(dummy_byte, 'OUT1_16')
+        #self.dio.output_word(dummy_byte, 'OUT1_16')
+        self.dio.putput_word('OUT1_16', dummy_byte)
         #dioOutputWord(CONTROLER_BASE2,0x00,dummy)  output port is unreliable
         self.az_rate_d = dummy
         
@@ -516,7 +525,8 @@ class antenna_move(object):
         #for i in range(16 - _len):
         #    dummy_byte.append(0)
             
-        self.dio.output_word(dummy_byte, 'OUT17_32')#for aztest
+        #self.dio.output_word(dummy_byte, 'OUT17_32')#for aztest
+        self.dio.output_word('OUT17_32', dummy_byte)
         #diOutputWord(CONTROLER_BASE2,0x02,dummy);
         self.el_rate_d = dummy
         
@@ -905,9 +915,11 @@ class antenna_move(object):
         self.stop_flag = 1
         time.sleep(0.1)
         #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
-        self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
+        #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
+        self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
         #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
-        self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
+        #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
+        self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
         return
         
 
@@ -919,9 +931,11 @@ class antenna_move(object):
             rospy.logwarn('!!!stop azel velocity =>0!!!')
             for i in range(5):
                 #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
-                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
+                #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
+                self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
                 #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
-                self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
+                #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
+                self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
                 time.sleep(0.05)
             rospy.logwarn('!!!exit ROS_antenna.py!!!')
             rospy.signal_shutdown('emergency')
@@ -937,7 +951,7 @@ class antenna_move(object):
         
             
     def pub_status(self):
-        rate = rospy.Rate(10)
+        rate = rospy.Rate(100)
         pub = rospy.Publisher('status_antenna',Status_antenna_msg, queue_size=1, latch = True)
         pub2 = rospy.Publisher('task_check', Bool, queue_size =1, latch = True)
         while not rospy.is_shutdown():
