@@ -15,7 +15,7 @@ import rospy
 from necst.msg import Status_encoder_msg
 from necst.msg import Status_dome_msg
 from necst.msg import Dome_msg
-import dome_board
+#import dome_board
 
 class dome_controller(object):
     ###dome.py parameter
@@ -184,6 +184,7 @@ class dome_controller(object):
                     else:
                         speed = 'mid'
                     self.do_output(turn, speed)
+                time.sleep(0.1)
         
         self.dome_stop()
         #self.get_count()
@@ -249,7 +250,8 @@ class dome_controller(object):
                 time.sleep(5)
                 ret = self.get_memb_status()
         buff = [0, 0]
-        self.dio.do_output(buff, 7, 2)
+        #self.dio.do_output(buff, 7, 2)
+        self.dio.output_point(buff, 7)
         return
     
     """
@@ -290,9 +292,10 @@ class dome_controller(object):
         if dome_controller.stop[0] == 1:
             self.buffer[1] = 0
         else: self.buffer[1] = 1
-        print(self.buffer)
+        #print(self.buffer)
         #self.dio.do_output(self.buffer, 1, 6)
         self.dio.output_point(self.buffer, 1)
+        print('do_output')
         #self.dome_limit()
         #pos_arcsec = self.dome_pos.dome_encoder_acq()
         #pos_arcsec = self.dome_pos.read_dome_enc()
@@ -395,6 +398,7 @@ class dome_controller(object):
     def _limit_check(self):
         #limit = self.dio.di_check(12, 4)
         limit = self.dio.input_point(12, 4)
+        #print(limit)
         ret = 0
         if limit[0:4] == [0,0,0,0]:
             ret = 0
@@ -429,6 +433,8 @@ class dome_controller(object):
         if limit != 0:
             #self.dome_pos.dio.ctrl.set_counter(self.touchsensor_pos[limit-1]+self.dome_encoffset)
             self.dome_pos.dome_set_counter(self.touchsensor_pos[limit-1]+self.dome_encoffset)
+            print('!!!dome_pos_clear!!!')
+            pass
         #print (limit)
         self.get_count()
         #print (self.count)
@@ -439,7 +445,10 @@ class dome_controller(object):
         self.dome_enc = self.dome_pos.dome_encoder_acq()
         dome_enc_print = float(self.dome_enc)
         dome_enc_print = self.dome_enc/3600.
-        #rospy.logwarn(dome_enc_print)
+        rospy.logwarn(dome_enc_print)
+        f = open('./dome_enc1.txt', 'a')
+        f.write(str(dome_enc_print)+'\n')
+        f.close()
         return self.dome_enc
     
     def read_limit(self):
@@ -464,7 +473,7 @@ class dome_controller(object):
             ret5 = str(self.get_domepos())
             #self.status_box = [ret1, ret2, ret3, ret4]###dome.py version
             self.status_box = [ret1, ret2[0], ret2[1], ret2[2], ret2[3], ret3[0], ret3[1], ret4, ret5]
-            time.sleep(0.1)
+            time.sleep(0.01)
         return
     
     def stop_status_check(self):
@@ -569,7 +578,7 @@ class dome_controller(object):
             s.status = self.status_box[:8]
             s.dome_enc = float(self.status_box[8])
             pub.publish(s)
-            time.sleep(0.5)
+            time.sleep(0.1)
         
         
 

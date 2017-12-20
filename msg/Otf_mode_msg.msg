@@ -16,3 +16,4 @@ int64 dcos
 string hosei
 float64 lamda
 int64 num
+bool limit
