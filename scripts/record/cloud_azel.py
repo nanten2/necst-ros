@@ -4,10 +4,10 @@ import time
 import threading
 
 import rospy
-
+from necst.msg import Status_encoder_msg
 
 ### drive
-sys.path.append(os.pardir)
+sys.path.append("/home/amigos/git")
 from n2db import n2database
 db = n2database.N2db()
 db.authorize()
@@ -18,21 +18,23 @@ class record_cloud(object):
 
     def __init__(self):
         self.stop_thread = threading.Event()
-        self.record_thread = threading.thread(target=self.list_count)
+        self.record_thread = threading.Thread(target=self.list_count)
         self.record_thread.setDaemon(True)
         self.record_thread.start()
         return
 
     def add_list(self, req):
-        _list = [req.time, req.az, req.el]
+        time.sleep(0.1)
+        _list = [req.utc, req.enc_az/3600., req.enc_el/3600.]
         self.azel_list.append(_list)
         return
 
     def list_count(self):
         while not rospy.is_shutdown():
-            if len(self.azel_list) > 100: # 1count/0.1s
-                self.record(self.azel_list)
+            if len(self.azel_list) > 300: # 1count/0.1s
+                azel_list = self.azel_list
                 self.azel_list = []
+                self.record(azel_list)
             else:
                 pass
         return
@@ -41,16 +43,18 @@ class record_cloud(object):
         self.record_thread.set()
         return
 
-    def record(self):
-        _list = self.azel_list
+    def record(self, azel_list):
+        _list = azel_list
         db.authorize()
-        for i in range(_list):
-            db.INSERT(pjt='Telescope', table='AzEl', data=_list[i])
-    
+        a = time.time()
+        db.INSERT(pjt='Telescope', table='AzEl', data=_list)
+        b = time.time()
+        print("time", b-a, "len", len(_list))
 
 
 if __name__ == "__main__":
     rospy.init_node("cloud_AzEl")
     rec = record_cloud()
-    rospy.Subscriber("save_cloud_azel", Save_cloud_azel, rec.add_list)
+    print("Subscribe start")
+    rospy.Subscriber("status_encoder", Status_encoder_msg, rec.add_list, queue_size = 1)
     rospy.spin()
