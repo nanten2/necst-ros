@@ -36,6 +36,7 @@ class m4_controller(object):
     def open(self):
         #self.mtr = pyinterface.create_gpg7204(1)
         self.mtr = pyinterface.open(7204,0) #test rsw
+        self.mtr.initialize()
         #self.mtr.ctrl.set_limit_config('MTR_LOGIC', 0x000c)
         self.mtr.set_limit_config('LOGIC', '+EL -EL', axis=1)
         #self.mtr.ctrl.off_inter_lock() # abolition
@@ -44,6 +45,15 @@ class m4_controller(object):
         #self.board_M4.set_limit_config('MTR_LOGIC', 0x000c)
         #self.board_M4.off_inter_lock() 
         self.get_pos()
+        return
+
+    def counter_reset(self):
+        is_stop = not self.mtr.get_status(axis=1)['busy']
+        position = self.position
+        
+        if (position=='NAGOYA') & is_stop:
+            self.mtr.set_counter(0, axis=1)
+            pass
         return
 
     def start_thread(self):
@@ -72,22 +82,29 @@ class m4_controller(object):
     
     def get_pos(self):
         status = self.mtr.get_status()
-        print(status)
-        if status["limit"]["+EL"] == 1: #status == 0x0004:
-            #SMART
-            self.position = 'OUT'
-        elif status["limit"]["-EL"] == 1:
-            #NAGOYA
-            self.position = 'IN'
-        elif status["linit"]["+EL"] == 0: #test
+        #print(status)
+        if status["busy"] == True:
             self.position = 'MOVE'
+        elif status["limit"]["+EL"] == 0: #status == 0x0004:
+            #OUT
+            self.position = 'SMART'
+        elif status["limit"]["-EL"] == 0:
+            #IN
+            self.position = 'NAGOYA'
         else:
             self.print_error('limit error')
             return
         return self.position
 
     def move_pos(self, req):
-        self.move_position = req.data.upper()
+        if req.data.upper() == "IN":
+            self.move_position = "NAGOYA"
+        elif req.data.upper() == "OUT":
+            self.move_position = "SMART"
+        else:
+            rospy.logerr("!!command error!!")
+            pass
+        return
 
     def move(self):
         print('move start')
@@ -96,11 +113,11 @@ class m4_controller(object):
             if self.move_position == self.position:
                 print('M4 is already ' , self.position)
             elif self.move_position != self.position and self.move_position != "":
-                if self.move_position == 'OUT':
+                if self.move_position == 'SMART':
                     #nstep = 60500
                     step=1
                     self.print_msg('m4 move out')
-                elif self.move_position == 'IN':
+                elif self.move_position == 'NAGOYA':
                     #nstep = -60500
                     step=-1
                     self.print_msg('m4 move in')
@@ -116,6 +133,10 @@ class m4_controller(object):
                 rospy.logerr("Bad command!!")
                 pass
             self.move_position = ""
+            if self.mtr.get_status()['busy'] == False:
+                self.counter_reset()
+            else:
+                pass
             time.sleep(0.5)
         return
 

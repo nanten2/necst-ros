@@ -33,24 +33,20 @@ class m2_controller(object):
     m_limit_up = 1
     m_limit_down = 1
     puls = ""
-    past_puls = ""
     
     
     def __init__(self):
+        self.dio = pyinterface.open(2724,1)
+        self.dio.initialize()
+        self.InitIndexFF()
+        self.get_pos()
+        
         self.stop_thread = threading.Event()
         self.thread = threading.Thread(target=self.move_thread)
         self.thread.setDaemon(True)
         self.thread.start()
-        pass
-    
-    def open(self,ndev):
-        #self.dio = pyinterface.create_gpg2000(ndev)
-        self.dio = pyinterface.open(2724,1)
-        #self.board_M2 = board_M2.board()
-        #self.board_M2 = test_board_M2.board()
-        self.InitIndexFF()
-        self.get_pos()
-        pass
+
+        return
 
     def start_thread(self):
         th = threading.Thread(target = self.pub_status)
@@ -75,11 +71,11 @@ class m2_controller(object):
         #bin = self.board_M2.in_byte("FBIDIO_IN1_8")
         #bin2 = self.board_M2.in_byte("FBIDIO_IN9_16")      
 
-        if in9_16 == [0,0,0,0,0,0,1,0]:
+        if in9_16[6] == 1: # [0,0,0,0,0,0,1,0]:
             self.m_limit_up = 1
         else:
             self.m_limit_up = 0
-        if in9_16 == [0,0,0,0,0,0,0,1]:
+        if in9_16[7] == 1: # [0,0,0,0,0,0,0,1]:
             self.m_limit_down = 1
         else:
             self.m_limit_down = 0
@@ -135,12 +131,12 @@ class m2_controller(object):
         #move subref
         puls = int(req.data) * self.PULSRATE
         rospy.logerr(req.data)
-        ret = self.get_pos()
+        #ret = self.get_pos()
+        ret = self.m_pos
         print("ret",ret)
         if req.data/1000.+float(ret) <= -4.0 or req.data/1000.+float(ret) >= 5.5:
             self.print_error("move limit")
             #return
-        print(self.m_limit_down)
         if self.m_limit_up == 0 and puls < 0:
             self.print_error("can't move up direction")
             return
@@ -153,16 +149,15 @@ class m2_controller(object):
 
     def move_thread(self):
         while not rospy.is_shutdown():
-            if self.puls == "":
+            if not self.puls:
                 pass
-            elif self.puls != self.past_puls:
+            else:
                 print("move start")
                 self.MoveIndexFF(self.puls)
                 self.get_pos()
-                self.past_puls = self.puls
+                self.puls = ""
                 print("move end")
-            else:
-                pass
+            time.sleep(0.1)
             
     
     
@@ -272,7 +267,6 @@ class m2_controller(object):
 
 if __name__ == '__main__':
     m2 = m2_controller()
-    m2.open(2)
     rospy.init_node('m2_controller')
     rospy.loginfo('waiting publish M2')
     m2.start_thread()
