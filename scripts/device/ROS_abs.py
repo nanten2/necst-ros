@@ -19,7 +19,7 @@ class abs_controller(object):
     move_position = ''
 
     board_name = 2724
-    rsw_id = 0 #test
+    rsw_id = 0
 
 
     def __init__(self):
@@ -27,6 +27,7 @@ class abs_controller(object):
 
     def open(self):
         self.dio = pyinterface.open(self.board_name, self.rsw_id)
+        self.dio.initialize()
         self.get_pos()
         return
 
@@ -102,6 +103,7 @@ if ret == 0x02:
                     rospy.logerr("Bad command!!")
                     pass
                 self.dio.output_point(self.pro, 1)
+                time.sleep(1)
                 self.dio.output_point(self.buff,1)
             elif self.move_position == "":
                 pass
@@ -149,13 +151,13 @@ return
 
 
 if __name__ == '__main__':
-    abs = abs_controller()
-    abs.open()
+    hot = abs_controller()
+    hot.open()
     rospy.init_node('abs_controller')
     rospy.loginfo('waiting publish abs')
-    abs.start_thread()
-    sub = rospy.Subscriber('hot', String, abs.move_pos)
-    sub = rospy.Subscriber('emergency', String, abs.emergency)
+    hot.start_thread()
+    sub = rospy.Subscriber('hot', String, hot.move_pos)
+    sub = rospy.Subscriber('emergency', String, hot.emergency)
     rospy.spin()
 """
 def abs_client(host, port):
