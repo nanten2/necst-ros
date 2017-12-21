@@ -10,6 +10,8 @@ from necst.msg import Status_encoder_msg
 from necst.msg import Status_antenna_msg
 from necst.msg import Test_board_msg
 
+from datetime import datetime as dt
+
 class enc_controller(object):
 
     Az = ''
@@ -52,6 +54,7 @@ class enc_controller(object):
             #ret = self.test()
             msg.enc_az = ret[0]
             msg.enc_el = ret[1]
+            msg.utc = ret[2]
             time.sleep(0.01)
             pub.publish(msg)
             rospy.loginfo('Az :'+str(msg.enc_az/3600.))
@@ -75,6 +78,8 @@ class enc_controller(object):
     def get_azel(self):
         cntAz = int(self.dio.get_counter(1).to_int())
         cntEl = int(self.dio.get_counter(2).to_int())
+        now = dt.utcnow()
+        _utc = now.strftime("%Y-%m-%d %H-%M-%S")
         #print(cntAz)
         #print(cntEl)
         
@@ -99,7 +104,7 @@ class enc_controller(object):
         encEl = cntEl*self.resolution
         self.El = encEl+45*3600      #arcsecond
             
-        return [self.Az, self.El]
+        return [self.Az, self.El, _utc]
 
 
 if __name__ == "__main__":
