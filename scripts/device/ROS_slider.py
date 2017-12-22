@@ -1,6 +1,15 @@
+#!/usr/bin/env python3
+
 import os, datetime, linecache
 import libMotor as lib
 import NASCORX_System.device.CPZ7415V as CPZ7415V
+import rospy
+import time
+import threading
+import sys
+
+from std_msgs.msg import String 
+from necst.msg import Status_slider_msg
 
 class slider(object):
     """
@@ -37,34 +46,41 @@ class slider(object):
         ret = [device, info1]
         return ret
 
-    def slide_cw(self, strk=1, axis=lib.MOTOR_XAXIS):
-        if self.board == 'CPZ7415Va' and axis == X:
-            axis = lib.MOTOR_XAXIS_1
-        elif self.board == 'CPZ7415Vb' and axis == X:
-            axis = lib.MOTOR_XAXIS_2
-        else: pass
-        if 0 < strk < 150:
-            self.mtnc.move_cw(strk=[strk,1,1,1], axis=axis)
-            self.close_box()
-            return
-        else:
-            print('!!!!ERROR!!!!\n'
-                  'Please input invalid parameter.\n'
-                  '0 < strk < 150')
+    def start_thread(self):
+        th = threading.Thread(target = self.pub_status)
+        th.setDaemon(True)
+        th.start()
+        return
 
-        if self.board == 'CPZ7415Va' and axis == X:
-            axis = lib.MOTOR_XAXIS_1
-        elif self.board == 'CPZ7415Vb' and axis == X:
-            axis = lib.MOTOR_XAXIS_2
-        else: pass
-        if 0 < strk < 150:
-            self.mtnc.move_ccw(strk=[strk,1,1,1], axis=axis)
-            self.close_box()
-            return
-        else:
-            print('!!!!ERROR!!!!\n'
-                  'Please input invalid parameter.\n'
-                  '0 < strk < 150')
+    def move(self, strk=1, axis=lib.MOTOR_XAXIS, req):
+        if req.data == 'plus':
+            if self.board == 'CPZ7415Va' and axis == X:
+                axis = lib.MOTOR_XAXIS_1
+            elif self.board == 'CPZ7415Vb' and axis == X:
+                axis = lib.MOTOR_XAXIS_2
+            else: pass
+            if 0 < strk < 150:
+                self.mtnc.move_cw(strk=[strk,1,1,1], axis=axis)
+                self.close_box()
+                return
+            else:
+                print('!!!!ERROR!!!!\n'
+                      'Please input invalid parameter.\n'
+                      '0 < strk < 150')
+        if req.data == 'minus':
+            if self.board == 'CPZ7415Va' and axis == X:
+                axis = lib.MOTOR_XAXIS_1
+            elif self.board == 'CPZ7415Vb' and axis == X:
+                axis = lib.MOTOR_XAXIS_2
+            else: pass
+            if 0 < strk < 150:
+                self.mtnc.move_ccw(strk=[strk,1,1,1], axis=axis)
+                self.close_box()
+                return
+            else:
+                print('!!!!ERROR!!!!\n'
+                      'Please input invalid parameter.\n'
+                      '0 < strk < 150')
 
 
     def return_org(self, out=lib.RETURN_ORIGIN_XAXIS, req):
