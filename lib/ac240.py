@@ -46,15 +46,18 @@ HELP_STR = """
 # ------ start source code ------
 
 import struct, numpy
-import client, config
+import sys
+sys.path.append("/home/amigos/ros/src/necst/lib")
+import dfs_table
+import dfs_client
 
-DB_LOG     = 'log_'+ config.DFS_TABLE +'_server'
-DB_MONITOR = 'monitor_' + config.DFS_TABLE
+DB_LOG     = 'log_'+ dfs_table.DFS_TABLE +'_server'
+DB_MONITOR = 'monitor_' + dfs_table.DFS_TABLE
 
 
-class ac240(client.Client):
+class ac240(dfs_client.Client):
     def __init__(self, host, port, print_socket=True):
-        client.Client.__init__(self, print_socket=print_socket)
+        dfs_client.Client.__init__(self, print_socket=print_socket)
         self._set_reply_handler(self.__ac240_reply_handler)
         self._init_socket(host, port)
         self._init_db(table_log=DB_LOG, table_monitor=DB_MONITOR)

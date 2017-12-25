@@ -55,12 +55,12 @@ class controller(object):
         self.pub15 = rospy.Publisher("hot", String, queue_size = 10, latch = True)
         self.pub16 = rospy.Publisher("m2", Int64, queue_size=10, latch=True)
         self.pub17 = rospy.Publisher("antenna_azel", Move_mode_msg, queue_size=10, latch=True)
-        self.pub18 = rospy.Publisher("oneshot_achilles", Oneshot_achiless_msg, queue_size=10, latch=True )
+        #self.pub18 = rospy.Publisher("oneshot_achilles", Oneshot_achiless_msg, queue_size=10, latch=True )
         time.sleep(0.5)
 
         sys.path.append("/home/amigos/ros/src/necst/lib")
         import achilles
-        self.dfs = achiless.dfs()
+        self.dfs = achilles.dfs()
 
         return
     
@@ -424,21 +424,21 @@ class controller(object):
         self.pub1.publish(msg)
         return
 
+# ===================
+# spectrometer
+# ===================
+
+    def oneshot_achilles(self, repeat=1, exposure=1.0, stime=0.0):
+        # only python2
+        data = self.dfs.oneshot(repeat, exposure, stime)
+        data_dict = {'dfs1': data[0], 'dfs2': data[1]}
+        return data_dict
+
     def spectrometer(self, exposure):
         msg = Float64()
         msg.data = exposure
         self.pub3.publish(msg)
         return
-
-# ===================
-# encoder
-# ===================
-
-    def oneshot_achiless(self, repeat=1, exposure=1.0, stime=0.0):
-        data = self.dfs.oneshot(repeat, exposure, stime)
-        data_dict = {'dfs1': data[0], 'dfs2': data[1]}
-        return data_dict
-
 
 
 if __name__ == "__main__":
