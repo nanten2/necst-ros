@@ -2,19 +2,26 @@
 
 import sys
 sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
+import os
 import datetime
 import time
+import pexpect
+import getpass
 import rospy
 from necst.msg import Status_weather_msg
 
+
 class weather_controller(object):
-    host = "weather@200.91.8.66"
-    #dir = "/home/weather/WeatherMonitor/Weather_Data/"
-    dir = "/home/necst/ros/src/necst/scripts/device/"
+    host = "amigos@200.91.8.66"
+    dir = "/home/weather/WeatherMonitor/Weather_Data/"
+    #dir = "/home/necst/ros/src/necst/scripts/device/"
+    copy_dir = "/home/amigos/data/monitor/"
     data = [0]*20
+    passwd = ""
 
     def __init__(self):
         rospy.init_node("weather_status")
+        self.passwd = getpass.getpass()
         pass
 
     def pub_func(self):
@@ -42,6 +49,20 @@ class weather_controller(object):
         return
 
 
+    def copy_file(self, dir, data):
+        path = self.copy_dir + data
+        print(path)
+        if not os.path.exists(path):
+            os.makedirs(path)
+            print("make_dir")
+        if os.path.exists(path):
+            print("ok")
+            scp = pexpect.spawn('scp %s:%s %s' % (self.host, self.dir+data, self.copy_dir+data))
+            scp.expect('.*ssword:')
+            scp.sendline(self.passwd)
+            scp.interact()
+        return
+
     def get_weather(self):
         now = time.time()
         d = datetime.datetime.utcfromtimestamp(now)
@@ -56,15 +77,15 @@ class weather_controller(object):
         else:
             day = str(d.day)
 
-        '''
         data = str(d.year)+month+"/"+str(d.year)+month+day+".nwd"
-        ret = subprocess.check_output(["ssh", self.host, "tail", self.dir+data, "-n", "1"])
+        self.copy_file(str(d.year)+month + "/", data)
+
         res = ret.split()
         for i in range(20):
             self.data[i] = res[i].decode("UTF-8").strip(',')
-            '''
+
         #data = str(d.year)+month+"/"+str(d.year)+month+day+".nwd"
-        data = str(2016)+str(12)+str(19)+".nwd" 
+        #data = str(2016)+str(12)+str(19)+".nwd" 
         f = open(self.dir+data, "r")
         last_data = f.readlines()[-1]
         f.close()
