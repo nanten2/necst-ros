@@ -58,9 +58,6 @@ class controller(object):
         #self.pub18 = rospy.Publisher("oneshot_achilles", Oneshot_achiless_msg, queue_size=10, latch=True )
         time.sleep(0.5)
 
-        sys.path.append("/home/amigos/ros/src/necst/lib")
-        import achilles
-        self.dfs = achilles.dfs()
 
         return
     
@@ -430,6 +427,9 @@ class controller(object):
 
     def oneshot_achilles(self, repeat=1, exposure=1.0, stime=0.0):
         # only python2
+        sys.path.append("/home/amigos/ros/src/necst/lib")
+        import achilles
+        self.dfs = achilles.dfs()
         data = self.dfs.oneshot(repeat, exposure, stime)
         data_dict = {'dfs1': data[0], 'dfs2': data[1]}
         return data_dict
