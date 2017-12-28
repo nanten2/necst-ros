@@ -59,7 +59,7 @@ else:
     pass
 
 savedir = "/home/amigos/data/experiment/rsky/"
-
+'''
 fp = urllib.request.urlopen("http://200.91.8.66/WeatherMonitor/WeatherMenu.html")
 html = fp.readline()
 text = []
@@ -75,7 +75,7 @@ for i in range(len(text)):
         aa = text[i]
     _list.append(aa)
 fp.close()
-
+'''
 #cabin_temp = float(_list[35].split()[0])
 now = time.time()-12*3600.
 d = datetime.datetime.utcfromtimestamp(now)
