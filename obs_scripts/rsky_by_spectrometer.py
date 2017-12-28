@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+#! /usr/bin/env python2
 
 # Configurations
 # ==============
@@ -41,8 +41,8 @@ import os
 import time
 import numpy
 import matplotlib.pyplot
-import urllib.request
-
+#import urllib.request
+import datetime
 matplotlib.pyplot.rcParams['font.size'] = 9
 
 import ROS_controller
@@ -76,8 +76,19 @@ for i in range(len(text)):
     _list.append(aa)
 fp.close()
 
-cabin_temp = float(_list[35].split()[0])
-
+#cabin_temp = float(_list[35].split()[0])
+now = time.time()-12*3600.
+d = datetime.datetime.utcfromtimestamp(now)
+data = str(d.year)+str(d.month)+"/"+str(d.year)+str(d.month)+str(d.day)+".nwd"
+f = open("/home/amigos/data/monitor/"+data,"r")
+last_data = f.readlines()[-1]
+f.close()
+data_list = last_data.strip()
+data_list = data_list.split(",")
+data = [0]*18
+for i in range(len(data_list)):
+    data[i] = float(data_list[i].strip())
+cabin_temp = data[14]
 # Data aquisition
 # ---------------
 
