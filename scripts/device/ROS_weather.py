@@ -49,22 +49,20 @@ class weather_controller(object):
         return
 
 
-    def copy_file(self, dir, data):
-        path = self.copy_dir + data
-        print(path)
+    def copy_file(self, _dir, data):
+        path = self.copy_dir + _dir
         if not os.path.exists(path):
             os.makedirs(path)
             print("make_dir")
-        if os.path.exists(path):
-            print("ok")
-            scp = pexpect.spawn('scp %s:%s %s' % (self.host, self.dir+data, self.copy_dir+data))
-            scp.expect('.*ssword:')
-            scp.sendline(self.passwd)
-            scp.interact()
+        scp = pexpect.spawn('scp %s:%s %s' % (self.host, self.dir+data, self.copy_dir+data))
+        scp.expect('.*ssword:')
+        scp.sendline(self.passwd)
+        scp.interact()
+        time.sleep(0.1)
         return
 
     def get_weather(self):
-        now = time.time()
+        now = time.time()-12*3600.#-12h
         d = datetime.datetime.utcfromtimestamp(now)
         
         if d.month < 10:
@@ -80,19 +78,13 @@ class weather_controller(object):
         data = str(d.year)+month+"/"+str(d.year)+month+day+".nwd"
         self.copy_file(str(d.year)+month + "/", data)
 
-        res = ret.split()
-        for i in range(20):
-            self.data[i] = res[i].decode("UTF-8").strip(',')
-
-        #data = str(d.year)+month+"/"+str(d.year)+month+day+".nwd"
-        #data = str(2016)+str(12)+str(19)+".nwd" 
-        f = open(self.dir+data, "r")
+        f = open(self.copy_dir+data, "r")
         last_data = f.readlines()[-1]
         f.close()
-        print(f)
         data_list = last_data.strip()
-        for i in range(20):
-            self.data[i] = float(data_list.split()[i].strip(","))
+        data_list = data_list.split(",")
+        for i in range(len(data_list)):
+            self.data[i] = float(data_list[i].strip())
 
         return self.data
 
