@@ -45,6 +45,8 @@ import matplotlib.pyplot
 import datetime
 matplotlib.pyplot.rcParams['font.size'] = 9
 
+import sys
+sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 import ROS_controller
 
 
@@ -92,7 +94,7 @@ cabin_temp = data[14]
 # Data aquisition
 # ---------------
 
-con = controller.controller()
+con = ROS_controller.controller()
 
 d1_list = []
 d2_list = []
@@ -109,7 +111,7 @@ time.sleep(1)
 print('cabin_temp: %.2f'%(cabin_temp))
 
 print('get spectrum...')
-d = con.oneshot(exposure=integ)
+d = con.oneshot_achilles(exposure=integ)
 d1 = d['dfs1'][0]
 d2 = d['dfs2'][0]
 d1_list.append(d1)
@@ -121,7 +123,7 @@ con.move_hot('out')
 time.sleep(1)
 
 print('get spectrum...')
-d = con.oneshot(exposure=integ)
+d = con.oneshot_achilles(exposure=integ)
 d1 = d['dfs1'][0]
 d2 = d['dfs2'][0]
 d1_list.append(d1)
