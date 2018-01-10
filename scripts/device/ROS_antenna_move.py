@@ -148,9 +148,11 @@ class antenna_move(object):
         self.parameters['az_list'] = req.az_list
         self.parameters['el_list'] = req.el_list
         self.parameters['start_time'] = req.start_time
+        """
         if not self.limit_check():
             self.stop_flag = 1
             return
+        """
         print('start_time : ', self.parameters['start_time'])
         self.stop_flag = 0
         return
@@ -262,6 +264,15 @@ class antenna_move(object):
                 st = ret[4]
                 tar_az = ret[0] + az*(c-st)
                 tar_el = ret[2] + el*(c-st)
+                #2nd limit check (1st limit check is in ROS_antenna.py)
+                if tar_az > 240*3600. or tar_el < -240*3600.:
+                    self.stop_flag = False
+                    print('!!!target az limit!!! : ', tar_az)
+                    continue
+                if tar_el > 89*3600. or tar_el < 0:
+                    self.stop_flag = False
+                    print('!!!target el limit!!! : ', tar_el)
+                    continue
                 self.command_az = tar_az
                 self.command_el = tar_el
                 d_t = st - c
@@ -495,7 +506,7 @@ class antenna_move(object):
         #    dummy_byte.append(0)
         dummy_byte = list(map(int,  ''.join([format(b, '08b')[::-1] for b in struct.pack('<h', dummy)])))
         #self.dio.output_word(dummy_byte, 'OUT1_16')
-        self.dio.putput_word('OUT1_16', dummy_byte)
+        self.dio.output_word('OUT1_16', dummy_byte)
         #dioOutputWord(CONTROLER_BASE2,0x00,dummy)  output port is unreliable
         self.az_rate_d = dummy
         
