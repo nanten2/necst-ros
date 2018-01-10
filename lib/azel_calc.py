@@ -178,5 +178,5 @@ if __name__ == "__main__":
     qq = azel_calc()
     from datetime import datetime as dt
     now = dt.utcnow()
-    #qq.coordinate_calc(83, -5, 0, code_mode="j2000", off_x=10, off_y=10, offcoord="j2000", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, loop = 500, time_rate=0.)
-    qq.coordinate_calc(30, 40, 0, code_mode="planet", off_x=10, off_y=10, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, loop = 50, time_rate=0.)
+    #qq.coordinate_calc(-40, -60, 0, code_mode="galactic", off_x=0, off_y=0, offcoord="j2000", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, loop = 500, time_rate=0.)
+    qq.coordinate_calc(30, 40, 7, code_mode="planet", off_x=10, off_y=10, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, loop = 50, time_rate=0.)
