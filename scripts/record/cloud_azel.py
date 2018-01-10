@@ -7,7 +7,7 @@ import rospy
 
 
 ### drive
-sys.path.append(os.pardir)
+sys.path.append("/home/necst/git")
 from n2db import n2database
 db = n2database.N2db()
 db.authorize()
