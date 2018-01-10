@@ -79,7 +79,7 @@ class enc_controller(object):
         cntAz = int(self.dio.get_counter(1).to_int())
         cntEl = int(self.dio.get_counter(2).to_int())
         now = dt.utcnow()
-        _utc = now.strftime("%Y-%m-%d %H-%M-%S")
+        _utc = now.strftime("%Y-%m-%d %H:%M:%S")
         #print(cntAz)
         #print(cntEl)
         
