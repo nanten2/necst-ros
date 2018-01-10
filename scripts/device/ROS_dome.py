@@ -173,10 +173,21 @@ class dome_controller(object):
                 dist = dist % 360.0
                 diff = dist - pos
                 dir = diff % 360.0
-                print('pos,dist,diff, dir',pos,dist,diff,dir)
+                #print('pos,dist,diff, dir',pos,dist,diff,dir)
                 if abs(dir) <= 0.5:
                     dir = 0
                 else:
+                    if dir < 0:
+                        if abs(dir) >= 180:
+                            turn = 'right'
+                        else:
+                            turn = 'left'
+                    else:
+                        if abs(dir) >= 180:
+                            turn = 'left'
+                        else:
+                            turn = 'right'
+                            
                     if abs(dir) < 5.0 or abs(dir) > 355.0:
                         speed = 'low'
                     elif abs(dir) > 20.0 and abs(dir) < 340.0:###or => and
@@ -433,8 +444,7 @@ class dome_controller(object):
         if limit != 0:
             #self.dome_pos.dio.ctrl.set_counter(self.touchsensor_pos[limit-1]+self.dome_encoffset)
             self.dome_pos.dome_set_counter(self.touchsensor_pos[limit-1]+self.dome_encoffset)
-            print('!!!dome_pos_clear!!!')
-            pass
+            #print('!!!dome_pos_clear!!!')
         #print (limit)
         self.get_count()
         #print (self.count)
@@ -445,7 +455,7 @@ class dome_controller(object):
         self.dome_enc = self.dome_pos.dome_encoder_acq()
         dome_enc_print = float(self.dome_enc)
         dome_enc_print = self.dome_enc/3600.
-        rospy.logwarn(dome_enc_print)
+        #rospy.logwarn(dome_enc_print)
         f = open('./dome_enc1.txt', 'a')
         f.write(str(dome_enc_print)+'\n')
         f.close()
