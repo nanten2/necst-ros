@@ -122,7 +122,7 @@ class drive(object):
             elif ret == "":
                 pass
             else:
-                rospy.logerr("unfinished !!")
+                #rospy.logerr("unfinished !!")
                 self.stop_thread.set()
         time.sleep(1.)
 
