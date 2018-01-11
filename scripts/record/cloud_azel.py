@@ -34,7 +34,11 @@ class record_cloud(object):
             if len(self.azel_list) > 300: # 1count/0.1s
                 azel_list = self.azel_list
                 self.azel_list = []
-                self.record(azel_list)
+                try:
+                    self.record(azel_list)
+                except Exception as e:
+                    print(e)
+                    pass
             else:
                 pass
         return

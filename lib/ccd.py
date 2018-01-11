@@ -47,8 +47,8 @@ class ccd_controller(object):
         return status
         """
         
-        f = open("/home/nfs/necopt-old/ccd-shot/ccd-shot-command.txt", "a")
-        f.write(str(dirname) + "/" + str(filename))
+        f = open("/home/nfs/necopt-old/ccd-shot/ccd-shot-command.txt", "w")
+        f.write(str(dirname) + "/" + str(filename) + ".bmp")
         f.close()
 
         return
