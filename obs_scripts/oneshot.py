@@ -86,12 +86,13 @@ signal.signal(signal.SIGINT, handler)
 '''test
 ctrl.dome_track()
 ctrl.move_stop()
-
+'''
+print("planet : ", planet)
+print(target[0], target[1])
 if planet:
     ctrl.planet_move(planet, hosei = "hosei_opt.txt", lamda = 0.5)
 else:
-    ctrl.radec_move(target[0], target[1], 'J2000', 0, 0, hosei='hosei_opt.txt', lamda = 0.5)
-'''
+    ctrl.radec_move(target[0], target[1], 'J2000', 0, 0, offcoord="HORIZONTAL", hosei='hosei_opt.txt', lamda = 0.5)
 
 b_az = 0
 #ctrl.dome_tracking_check()#test
