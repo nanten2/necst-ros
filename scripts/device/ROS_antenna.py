@@ -31,6 +31,9 @@ class antenna(object):
     temp = ""
     press = ""
     humi = ""
+
+    limit = 0
+    
     def __init__(self):
         self.calc = azel_calc.azel_calc()
         self.otf = otf.otf()
@@ -45,19 +48,28 @@ class antenna(object):
         self.press = req.press/100. #[Pa]
         self.humi = req.out_humi/100. #[%]
     
-    def azel_publish(self, az_list, el_list, start_time):
+    def azel_publish(self, az_list, el_list, start_time, limit = True):
         pub = rospy.Publisher("list_azel", list_azelmsg, queue_size = 10, latch=True)
         msg = list_azelmsg()
         msg.az_list = az_list
         msg.el_list = el_list
         msg.start_time = start_time
-        pub.publish(msg)
-        rospy.loginfo('Publish ok.')
+        if limit:
+            ret = self.limit_check(az_list, el_list)
+        else:
+            ret = ""
+            pass
+        if ret:
+            rospy.logerr("Publish False...")
+        else:
+            pub.publish(msg)
+            rospy.loginfo('Publish ok.')
+            pass
         return
 
     def velocity_move(self, req):
         ret = self.calc.velocity_calc(req.az_speed, req.el_speed, req.dist, self.enc_az, self.enc_el)
-        self.azel_publish(ret[0], ret[1], ret[2])
+        self.azel_publish(ret[0], ret[1], ret[2], req.limit)
         return
 
     def azel_move(self,req):
@@ -65,7 +77,7 @@ class antenna(object):
         ret = self.calc.azel_calc(req.x, req.y, 
                                   req.off_x/3600., req.off_y/3600.,
                                   req.offcoord, now, req.vel_x, req.vel_y)
-        self.azel_publish(ret[0], ret[1], ret[2])
+        self.azel_publish(ret[0], ret[1], ret[2], req.limit)
         return
         
 
@@ -76,7 +88,7 @@ class antenna(object):
                                         req.offcoord, req.hosei, req.lamda,
                                         req.dcos, self.temp, self.press, self.humi,
                                         now)
-        self.azel_publish(ret[0], ret[1], ret[2])
+        self.azel_publish(ret[0], ret[1], ret[2], req.limit)
         return
 
     def galactic_move(self, req):
@@ -86,7 +98,7 @@ class antenna(object):
                                         req.offcoord, req.hosei, req.lamda,
                                         req.dcos, self.temp, self.press, self.humi,
                                         now)
-        self.azel_publish(ret[0], ret[1], ret[2])
+        self.azel_publish(ret[0], ret[1], ret[2], req.limit)
         return
     
     def planet_move(self, req):
@@ -95,7 +107,7 @@ class antenna(object):
                                         req.off_x/3600., req.off_y/3600.,
                                         req.offcoord, req.hosei, req.lamda, req.dcos,
                                         self.temp, self.press, self.humi, now)
-        self.azel_publish(ret[0], ret[1], ret[2])
+        self.azel_publish(ret[0], ret[1], ret[2], req.limit)
         return
 
     def otf_start(self, req):
@@ -104,9 +116,29 @@ class antenna(object):
                                 req.delay, req.lamda, req.hosei, req.code_mode,
                                 req.off_x, req.off_y, req.offcoord,
                                  self.temp, self.press, self.humi)
-        self.azel_publish(ret[0], ret[1], ret[2])
+        self.azel_publish(ret[0], ret[1], ret[2], req.limit)
         return
 
+    def limit_check(self, az_list, el_list):
+        for i in az_list:
+            if i > 240.*3600.:
+                limit_az = "!!cw limit!!"
+            elif i <-240.*3600.:
+                limit_az = "!!ccw limit!!"
+            else:
+                limit_az = ""
+                pass
+        for i in el_list:
+            if i < 20.*3600.:
+                limit_el = "!!down limit!!"
+            elif i > 80.*3600.:
+                limit_el = "!!up limit!!"
+            else:
+                limit_el = ""
+                pass
+            limit = limit_az + "" + limit_el
+        rospy.loginfo(limit)
+        return limit
 
 if __name__ == "__main__":    
     rospy.init_node("antenna_server")
