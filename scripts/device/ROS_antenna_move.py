@@ -251,7 +251,8 @@ class antenna_move(object):
     def act_azel(self):
         while True:
             if self.stop_flag:
-                time.sleep(0.01)
+                print('stop_flag ON')
+                time.sleep(1)
                 continue
 
             b_time2 = time.time()
@@ -933,13 +934,13 @@ class antenna_move(object):
     def stop_move(self, req):
         rospy.loginfo('***subscribe move stop***')
         self.stop_flag = 1
-        time.sleep(0.1)
+        #time.sleep(0.1)
         #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
         #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
-        self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+        #self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
         #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
         #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
-        self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+        #self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
         self.command_az_speed = 0
         self.command_el_speed = 0
         return
