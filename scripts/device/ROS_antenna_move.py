@@ -53,6 +53,8 @@ class antenna_move(object):
     current_az = 0
     current_el = 0
 
+    command_az_speed = 0
+    command_el_speed = 0
     """
     ###for module
     az_rate_d = 0
@@ -224,6 +226,8 @@ class antenna_move(object):
                 #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
                 #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for az_test
                 self.dio.output_word('OUT17_32',[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#new pyinterface
+                self.command_az_speed = 0
+                self.command_el_speed = 0
                 time.sleep(0.25)
             return
 
@@ -367,6 +371,8 @@ class antenna_move(object):
         #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
         #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
         self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#new py
+        self.command_az_speed = 0
+        self.command_el_speed = 0
         return
     
     """original version
@@ -420,6 +426,8 @@ class antenna_move(object):
                 #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
                 self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#new pyinteface
                 #time.sleep(0.02)#0922
+                self.command_az_speed = 0
+                self.command_el_speed = 0
                 return 0
                 
             return 1
@@ -504,6 +512,7 @@ class antenna_move(object):
         #_len = len(dummy_byte)
         #for i in range(16 - _len):
         #    dummy_byte.append(0)
+        self.command_az_speed = dummy
         dummy_byte = list(map(int,  ''.join([format(b, '08b')[::-1] for b in struct.pack('<h', dummy)])))
         #self.dio.output_word(dummy_byte, 'OUT1_16')
         self.dio.output_word('OUT1_16', dummy_byte)
@@ -525,7 +534,7 @@ class antenna_move(object):
         #dummy=m_bStop==TRUE?m_stop_rate_el:motor_param.el_rate_ref;
         #self.dio.ctrl.out_word("FBIDIO_OUT17_32", dummy)#0921
         #print(dummy)
-        
+        self.command_el_speed = dummy
         dummy_byte = list(map(int,  ''.join([format(b, '08b')[::-1] for b in struct.pack('<h', dummy)])))
 
         #dummy_byte = bin(dummy)
@@ -931,6 +940,8 @@ class antenna_move(object):
         #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
         #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
         self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+        self.command_az_speed = 0
+        self.command_el_speed = 0
         return
         
 
@@ -948,6 +959,8 @@ class antenna_move(object):
                 #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
                 self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
                 time.sleep(0.05)
+                self.command_az_speed = 0
+                self.command_el_speed = 0
             rospy.logwarn('!!!exit ROS_antenna.py!!!')
             rospy.signal_shutdown('emergency')
             #rospy.on_shutdown(self.emergency_end)
@@ -974,6 +987,8 @@ class antenna_move(object):
             status.command_az = self.command_az
             status.command_el = self.command_el
             status.emergency = self.emergency_flag
+            status.command_azspeed = self.command_az_speed
+            status.command_elspeed = self.command_el_speed
             
             #publisher2
             #----------
