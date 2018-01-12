@@ -188,6 +188,7 @@ class controller(object):
         msg.vel_x = vel_x
         msg.vel_y = vel_y
         msg.limit = limit
+        msg.time = float(time.time())
         rospy.loginfo(msg)
         self.pub17.publish(msg)
         return
@@ -206,6 +207,7 @@ class controller(object):
         msg.lamda = lamda
         msg.dcos = dcos
         msg.limit = limit
+        msg.time = float(time.time())
         #mv.az_rate ... no inplementation
         #mv.el_rate ... no inplementation
         rospy.loginfo(msg)
@@ -225,6 +227,7 @@ class controller(object):
         msg.lamda = lamda
         msg.dcos = dcos
         msg.limit = limit
+        msg.time = float(time.time())
         #mv.az_rate ... no inplementation
         #mv.el_rate ... no inplementation
         rospy.loginfo(msg)
@@ -243,6 +246,7 @@ class controller(object):
         msg.lamda = lamda
         msg.dcos = dcos
         msg.limit = limit
+        msg.time = float(time.time())
         #mv.az_rate ... no inplementation
         #mv.el_rate ... no inplementation
         rospy.loginfo(msg)
