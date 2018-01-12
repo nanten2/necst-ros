@@ -33,10 +33,12 @@ class antenna(object):
     humi = ""
 
     limit = 0
+    stime = 0
     
     def __init__(self):
         self.calc = azel_calc.azel_calc()
         self.otf = otf.otf()
+        self.stime = time.time()
 
     def note_encoder(self, req):
         self.enc_az = req.enc_az
@@ -49,7 +51,7 @@ class antenna(object):
         self.humi = req.out_humi/100. #[%]
     
     def azel_publish(self, az_list, el_list, start_time, limit = True):
-        pub = rospy.Publisher("list_azel", list_azelmsg, queue_size = 10, latch=True)
+        pub = rospy.Publisher("list_azel", list_azelmsg, queue_size = 1, latch=True)
         msg = list_azelmsg()
         msg.az_list = az_list
         msg.el_list = el_list
@@ -74,40 +76,57 @@ class antenna(object):
 
     def azel_move(self,req):
         now = dt.utcnow()
+        print("start calculation")
         ret = self.calc.azel_calc(req.x, req.y, 
                                   req.off_x/3600., req.off_y/3600.,
                                   req.offcoord, now, req.vel_x, req.vel_y)
+        print("end calculation")
         self.azel_publish(ret[0], ret[1], ret[2], req.limit)
         return
         
 
     def radec_move(self, req):
-        now = dt.utcnow()
-        ret = self.calc.coordinate_calc(req.x, req.y, req.ntarg, req.code_mode,
+        if req.time < self.stime:
+            pass
+        else:
+            now = dt.utcnow()
+            print("start calculation")
+            ret = self.calc.coordinate_calc(req.x, req.y, req.ntarg, req.code_mode,
                                         req.off_x/3600., req.off_y/3600.,
                                         req.offcoord, req.hosei, req.lamda,
                                         req.dcos, self.temp, self.press, self.humi,
                                         now)
-        self.azel_publish(ret[0], ret[1], ret[2], req.limit)
+            print("end calculation")
+            self.azel_publish(ret[0], ret[1], ret[2], req.limit)
         return
 
     def galactic_move(self, req):
-        now = dt.utcnow()
-        ret = self.calc.coordinate_calc(req.x, req.y, req.ntarg, req.code_mode,
+        if req.time < self.stime:
+            pass
+        else:
+            now = dt.utcnow()
+            print("start calculation")
+            ret = self.calc.coordinate_calc(req.x, req.y, req.ntarg, req.code_mode,
                                         req.off_x/3600., req.off_y/3600.,
                                         req.offcoord, req.hosei, req.lamda,
                                         req.dcos, self.temp, self.press, self.humi,
                                         now)
-        self.azel_publish(ret[0], ret[1], ret[2], req.limit)
+            print("end calculation")
+            self.azel_publish(ret[0], ret[1], ret[2], req.limit)
         return
     
     def planet_move(self, req):
-        now = dt.now()
-        ret = self.calc.coordinate_calc(req.x, req.y, req.ntarg, req.code_mode,
+        if req.time < self.stime:
+            pass
+        else:
+            now = dt.now()
+            print("start calculation")
+            ret = self.calc.coordinate_calc(req.x, req.y, req.ntarg, req.code_mode,
                                         req.off_x/3600., req.off_y/3600.,
                                         req.offcoord, req.hosei, req.lamda, req.dcos,
                                         self.temp, self.press, self.humi, now)
-        self.azel_publish(ret[0], ret[1], ret[2], req.limit)
+            print("end calculation")
+            self.azel_publish(ret[0], ret[1], ret[2], req.limit)
         return
 
     def otf_start(self, req):

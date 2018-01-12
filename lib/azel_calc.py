@@ -6,7 +6,7 @@ import coord
 import time
 import math
 import sys
-sys.path.append('/home/amigos/ros/src/necst/lib')
+sys.path.append('/home/necst/ros/src/necst/lib')
 import numpy as np
 
 class azel_calc(object):
