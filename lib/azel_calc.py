@@ -79,7 +79,7 @@ class azel_calc(object):
         el_list = [(el+off_y)*3600.+vel_y*0.1*i for i in range(500)]
         return [az_list, el_list, tv]
 
-    def coordinate_calc(self, x, y, ntarg, code_mode, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, loop = 500, time_rate=0.):
+    def coordinate_calc(self, x, y, ntarg, code_mode, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, loop = 100, time_rate=0.):
         print(x, y, ntarg, code_mode, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, loop, time_rate)
         # coordinate check
         if code_mode.lower() == "j2000":

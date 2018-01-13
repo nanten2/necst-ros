@@ -31,9 +31,9 @@ class antenna_assist(object):
 
     def __init__(self):
         self.start_time = time.time()
-        self.pub1 = rospy.Publisher("antenna_radec", Move_mode_msg, queue_size = 10, latch = True)
-        self.pub2 = rospy.Publisher("antenna_galactic", Move_mode_msg, queue_size = 10, latch = True)
-        self.pub3 = rospy.Publisher("antenna_planet", Move_mode_msg, queue_size = 10, latch = True)
+        self.pub1 = rospy.Publisher("assist_radec", Move_mode_msg, queue_size = 1, latch = True)
+        self.pub2 = rospy.Publisher("assist_galactic", Move_mode_msg, queue_size = 1, latch = True)
+        self.pub3 = rospy.Publisher("assist_planet", Move_mode_msg, queue_size = 1, latch = True)
         pass
 
     def start_thread(self):
@@ -49,7 +49,6 @@ class antenna_assist(object):
         return
 
     def radec_assist(self, req):
-        self.r_flag = 1
         self.ra = req.x
         self.dec = req.y
         self.code_mode = req.code_mode
@@ -61,6 +60,10 @@ class antenna_assist(object):
         self.dcos = req.dcos
         self.limit = req.limit
         self.controller_time =req.time
+        if self.controller_time > self.start_time:
+            self.r_flag = 1
+        else:
+            pass
         return
 
     def galactic_assist(self, req):
@@ -108,12 +111,10 @@ class antenna_assist(object):
                 msg.lamda = self.lamda
                 msg.dcos = self.dcos
                 msg.limit = self.limit
-                rospy.loginfo(msg)
-                if self.start_time > self.controller_time :
-                    continue
-                else:
-                    pass
+                msg.time = self.controller_time
                 self.pub1.publish(msg)
+                rospy.loginfo(msg)
+                print('published')
                 time.sleep(5)
                 continue
         return
