@@ -3,4 +3,5 @@ bool limit_el
 bool emergency
 float64 command_az
 float64 command_el
-
+float32 command_azspeed
+float32 command_elspeed

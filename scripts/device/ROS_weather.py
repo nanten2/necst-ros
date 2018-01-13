@@ -62,7 +62,7 @@ class weather_controller(object):
         return
 
     def get_weather(self):
-        now = time.time()-12*3600.#-12h
+        now = time.time()-17*3600.#-17h(nanmeteo time)
         d = datetime.datetime.utcfromtimestamp(now)
         
         if d.month < 10:
@@ -78,9 +78,9 @@ class weather_controller(object):
         data = str(d.year)+month+"/"+str(d.year)+month+day+".nwd"
         self.copy_file(str(d.year)+month + "/", data)
 
-        f = open(self.copy_dir+data, "r")
-        last_data = f.readlines()[-1]
-        f.close()
+        with open(self.copy_dir+data, "r") as f:
+            last_data = f.readlines()[-1]
+
         data_list = last_data.strip()
         data_list = data_list.split(",")
         for i in range(len(data_list)):

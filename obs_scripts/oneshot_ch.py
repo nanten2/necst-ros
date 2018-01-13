@@ -43,8 +43,8 @@ import numpy
 import matplotlib.pyplot
 #import urllib.request
 import datetime
-matplotlib.pyplot.rcParams['font.size'] = 9
 
+matplotlib.pyplot.rcParams['font.size'] = 9
 import sys
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 import ROS_controller
@@ -107,7 +107,7 @@ print('Start experimentation')
 print('')
 
 print('R')
-con.move_hot('in')
+#con.move_hot('in')
 
 time.sleep(1)
 
@@ -120,20 +120,20 @@ d2 = d['dfs2'][0]
 d1_list.append(d1)
 d2_list.append(d2)    
 
-print('SKY')
-con.move_hot('out')
+#print('SKY')
+#con.move_hot('out')
 
-time.sleep(1)
+#time.sleep(1)
 
-print('get spectrum...')
-d = con.oneshot_achilles(exposure=integ)
-d1 = d['dfs1'][0]
-d2 = d['dfs2'][0]
-d1_list.append(d1)
-d2_list.append(d2)    
+#print('get spectrum...')
+#d = con.oneshot(exposure=integ)
+#d1 = d['dfs1'][0]
+#d2 = d['dfs2'][0]
+#d1_list.append(d1)
+#d2_list.append(d2)    
 
 
-con.move_hot('in')
+#con.move_hot('in')
 
 d1_list = numpy.array(d1_list)
 d2_list = numpy.array(d2_list)
@@ -154,15 +154,16 @@ def tsys(dhot, dsky, thot):
     tsys = thot / (y - 1.)
     return tsys
 
-tsys1 = tsys(d1_list[0], d1_list[1], cabin_temp)
-tsys2 = tsys(d2_list[0], d2_list[1], cabin_temp)
+#tsys1 = tsys(d1_list[0], d1_list[1], cabin_temp)
+#tsys2 = tsys(d2_list[0], d2_list[1], cabin_temp)
 
-d1_av = numpy.mean(d1_list[:,500:-500], axis=1)
-d2_av = numpy.mean(d2_list[:,500:-500], axis=1)
-tsys1_av = tsys(d1_av[0], d1_av[1], cabin_temp)
-tsys2_av = tsys(d2_av[0], d2_av[1], cabin_temp)
 
-x = numpy.linspace(0, 1000, len(d1_list[0]))
+#d1_av = numpy.mean(d1_list[:,500:-500], axis=1)
+#d2_av = numpy.mean(d2_list[:,500:-500], axis=1)
+#tsys1_av = tsys(d1_av[0], d1_av[1], cabin_temp)
+#tsys2_av = tsys(d2_av[0], d2_av[1], cabin_temp)
+
+x = numpy.linspace(0, 16384, len(d1_list[0]))
 
 fig = matplotlib.pyplot.figure(figsize=(14, 5))
 ax11 = fig.add_subplot(121)
@@ -172,8 +173,8 @@ ax22 = ax21.twinx()
 
 ax11.plot(x, d1_list[0], 'r-')
 ax21.plot(x, d2_list[0], 'r-')
-ax11.plot(x, d1_list[1], 'b-')
-ax21.plot(x, d2_list[1], 'b-')
+#ax11.plot(x, d1_list[1], 'b-')
+#ax21.plot(x, d2_list[1], 'b-')
 
 ax11.set_yscale('log')
 ax21.set_yscale('log')
@@ -184,8 +185,8 @@ ax21.set_ylabel('Power (count)')
 ax11.set_title('dfs01')
 ax21.set_title('dfs02')
 
-ax12.plot(x, tsys1, 'k.', alpha=0.2)
-ax22.plot(x, tsys2, 'k.', alpha=0.2)
+ax12.plot(x, d1_list[0], 'k.', alpha=0.2)
+ax22.plot(x, d2_list[0], 'k.', alpha=0.2)
 ax12.grid(True)
 ax22.grid(True)
 ax12.set_ylim(0, 200)
@@ -193,8 +194,8 @@ ax22.set_ylim(0, 200)
 ax12.set_ylabel('Tsys (K)')
 ax22.set_ylabel('Tsys (K)')
 
-ax11.text(0.05, 0.9, 'Tsys = %.1f'%(tsys1_av), transform=ax11.transAxes)
-ax21.text(0.05, 0.9, 'Tsys = %.1f'%(tsys2_av), transform=ax21.transAxes)
+#ax11.text(0.05, 0.9, 'Tsys = %.1f'%(tsys1_av), transform=ax11.transAxes)
+#ax21.text(0.05, 0.9, 'Tsys = %.1f'%(tsys2_av), transform=ax21.transAxes)
 
 fig.suptitle('%s : %s,  integ = %.2f'%(name, timestamp, integ))
 fig.savefig(os.path.join(savedir, '%s_%s.png'%(name, timestamp)))

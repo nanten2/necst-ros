@@ -161,16 +161,17 @@ class controller(object):
         self.pub6.publish(msg)
         return
 
-    def velocity_move(self, az_speed, el_speed, dist_arcsec = 5 * 3600):
+    def velocity_move(self, az_speed, el_speed, dist_arcsec = 5 * 3600, limit=True):
         vel = Velocity_mode_msg()
         vel.az_speed = az_speed
         vel.el_speed = el_speed
         vel.dist = dist_arcsec
+        vel.limit = limit
         self.pub7.publish(vel)
         rospy.loginfo(vel)
         return
 
-    def azel_move(self,az, el, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt',  lamda=2600, dcos=0, vel_x=0, vel_y=0,):
+    def azel_move(self,az, el, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt',  lamda=2600, dcos=0, vel_x=0, vel_y=0,limit=True):
         """azel_move"""
         # az,el,off_x,off_y = deg
         # vel_x, vel_y = arcsec/s
@@ -186,12 +187,14 @@ class controller(object):
         msg.dcos = dcos
         msg.vel_x = vel_x
         msg.vel_y = vel_y
+        msg.limit = limit
+        msg.time = float(time.time())
         rospy.loginfo(msg)
         self.pub17.publish(msg)
         return
       
 
-    def radec_move(self, ra, dec, code_mode, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt',  lamda=2600, dcos=0, az_rate=12000, el_rate=12000,):
+    def radec_move(self, ra, dec, code_mode, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt',  lamda=2600, dcos=0, az_rate=12000, el_rate=12000,limit=True):
         #self.ant.radec_move(ra, dec, code_mode, off_x, off_y, hosei, offcoord, lamda, az_rate, el_rate, dcos)
         msg = Move_mode_msg()
         msg.x = ra
@@ -203,6 +206,8 @@ class controller(object):
         msg.offcoord = offcoord
         msg.lamda = lamda
         msg.dcos = dcos
+        msg.limit = limit
+        msg.time = float(time.time())
         #mv.az_rate ... no inplementation
         #mv.el_rate ... no inplementation
         rospy.loginfo(msg)
@@ -210,7 +215,7 @@ class controller(object):
         return
     
 
-    def galactic_move(self, l, b, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt', lamda=2600, az_rate=12000, el_rate=12000, dcos=0):
+    def galactic_move(self, l, b, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt', lamda=2600, az_rate=12000, el_rate=12000, dcos=0, limit=True):
         msg = Move_mode_msg()
         msg.x = l
         msg.y = b
@@ -221,13 +226,15 @@ class controller(object):
         msg.offcoord = offcoord
         msg.lamda = lamda
         msg.dcos = dcos
+        msg.limit = limit
+        msg.time = float(time.time())
         #mv.az_rate ... no inplementation
         #mv.el_rate ... no inplementation
         rospy.loginfo(msg)
         self.pub9.publish(msg)
         return
 
-    def planet_move(self, number, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt', lamda=2600, az_rate=12000, el_rate=12000, dcos=0):
+    def planet_move(self, number, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt', lamda=2600, az_rate=12000, el_rate=12000, dcos=0, limit=True):
         """1.Mercury 2.Venus 3. 4.Mars 5.Jupiter 6.Saturn 7.Uranus 8.Neptune, 9.Pluto, 10.Moon, 11.Sun"""
         msg = Move_mode_msg()
         msg.ntarg = number
@@ -238,6 +245,8 @@ class controller(object):
         msg.offcoord = offcoord
         msg.lamda = lamda
         msg.dcos = dcos
+        msg.limit = limit
+        msg.time = float(time.time())
         #mv.az_rate ... no inplementation
         #mv.el_rate ... no inplementation
         rospy.loginfo(msg)
@@ -251,7 +260,7 @@ class controller(object):
         self.pub11.publish(msg)
         return
 
-    def otf_scan(self, lambda_on, beta_on, coord_sys, dx, dy, dt, num, rampt, delay, lamda, hosei, code_mode, off_x, off_y, off_coord, dcos=0, ntarg = 0):
+    def otf_scan(self, lambda_on, beta_on, coord_sys, dx, dy, dt, num, rampt, delay, lamda, hosei, code_mode, off_x, off_y, off_coord, dcos=0, ntarg = 0, limit=True):
         #on_start = self.ant.otf_start(lambda_on, beta_on, dcos, coord_sys, dx, dy, dt, num, rampt, delay, lamda, hosei, code_mode, off_x, off_y, off_coord, ntarg)
         msg = Otf_mode_msg()
         msg.x = lambda_on
@@ -270,6 +279,7 @@ class controller(object):
         msg.num = num
         msg.rampt = rampt
         msg.delay = delay
+        msg.limit = limit
         rospy.loginfo(msg)
         self.pub12.publish(msg)
         

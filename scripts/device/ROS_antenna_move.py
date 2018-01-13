@@ -53,6 +53,8 @@ class antenna_move(object):
     current_az = 0
     current_el = 0
 
+    command_az_speed = 0
+    command_el_speed = 0
     """
     ###for module
     az_rate_d = 0
@@ -148,9 +150,11 @@ class antenna_move(object):
         self.parameters['az_list'] = req.az_list
         self.parameters['el_list'] = req.el_list
         self.parameters['start_time'] = req.start_time
+        """
         if not self.limit_check():
             self.stop_flag = 1
             return
+        """
         print('start_time : ', self.parameters['start_time'])
         self.stop_flag = 0
         return
@@ -222,6 +226,8 @@ class antenna_move(object):
                 #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
                 #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for az_test
                 self.dio.output_word('OUT17_32',[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#new pyinterface
+                self.command_az_speed = 0
+                self.command_el_speed = 0
                 time.sleep(0.25)
             return
 
@@ -245,7 +251,8 @@ class antenna_move(object):
     def act_azel(self):
         while True:
             if self.stop_flag:
-                time.sleep(0.01)
+                print('stop_flag ON')
+                time.sleep(1)
                 continue
 
             b_time2 = time.time()
@@ -262,6 +269,15 @@ class antenna_move(object):
                 st = ret[4]
                 tar_az = ret[0] + az*(c-st)
                 tar_el = ret[2] + el*(c-st)
+                #2nd limit check (1st limit check is in ROS_antenna.py)
+                if tar_az > 240*3600. or tar_el < -240*3600.:
+                    self.stop_flag = False
+                    print('!!!target az limit!!! : ', tar_az)
+                    continue
+                if tar_el > 89*3600. or tar_el < 0:
+                    self.stop_flag = False
+                    print('!!!target el limit!!! : ', tar_el)
+                    continue
                 self.command_az = tar_az
                 self.command_el = tar_el
                 d_t = st - c
@@ -356,6 +372,8 @@ class antenna_move(object):
         #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
         #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
         self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#new py
+        self.command_az_speed = 0
+        self.command_el_speed = 0
         return
     
     """original version
@@ -409,6 +427,8 @@ class antenna_move(object):
                 #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
                 self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#new pyinteface
                 #time.sleep(0.02)#0922
+                self.command_az_speed = 0
+                self.command_el_speed = 0
                 return 0
                 
             return 1
@@ -493,9 +513,10 @@ class antenna_move(object):
         #_len = len(dummy_byte)
         #for i in range(16 - _len):
         #    dummy_byte.append(0)
+        self.command_az_speed = dummy
         dummy_byte = list(map(int,  ''.join([format(b, '08b')[::-1] for b in struct.pack('<h', dummy)])))
         #self.dio.output_word(dummy_byte, 'OUT1_16')
-        self.dio.putput_word('OUT1_16', dummy_byte)
+        self.dio.output_word('OUT1_16', dummy_byte)
         #dioOutputWord(CONTROLER_BASE2,0x00,dummy)  output port is unreliable
         self.az_rate_d = dummy
         
@@ -514,7 +535,7 @@ class antenna_move(object):
         #dummy=m_bStop==TRUE?m_stop_rate_el:motor_param.el_rate_ref;
         #self.dio.ctrl.out_word("FBIDIO_OUT17_32", dummy)#0921
         #print(dummy)
-        
+        self.command_el_speed = dummy
         dummy_byte = list(map(int,  ''.join([format(b, '08b')[::-1] for b in struct.pack('<h', dummy)])))
 
         #dummy_byte = bin(dummy)
@@ -913,13 +934,15 @@ class antenna_move(object):
     def stop_move(self, req):
         rospy.loginfo('***subscribe move stop***')
         self.stop_flag = 1
-        time.sleep(0.1)
+        #time.sleep(0.1)
         #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
         #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
-        self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+        #self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
         #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
         #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
-        self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+        #self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+        self.command_az_speed = 0
+        self.command_el_speed = 0
         return
         
 
@@ -937,6 +960,8 @@ class antenna_move(object):
                 #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
                 self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
                 time.sleep(0.05)
+                self.command_az_speed = 0
+                self.command_el_speed = 0
             rospy.logwarn('!!!exit ROS_antenna.py!!!')
             rospy.signal_shutdown('emergency')
             #rospy.on_shutdown(self.emergency_end)
@@ -963,6 +988,8 @@ class antenna_move(object):
             status.command_az = self.command_az
             status.command_el = self.command_el
             status.emergency = self.emergency_flag
+            status.command_azspeed = self.command_az_speed
+            status.command_elspeed = self.command_el_speed
             
             #publisher2
             #----------
