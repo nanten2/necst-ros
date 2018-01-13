@@ -22,6 +22,7 @@ class antenna_assist(object):
     hosei = 'hosei_230.txt'
     lamda = 2600
     dcos = 0
+    limit = True
 
     r_flag = 0
     g_flag = 0
@@ -29,9 +30,10 @@ class antenna_assist(object):
     
 
     def __init__(self):
-        self.pub1 = rospy.Publisher("antenna_radec", Move_mode_msg, queue_size = 10, latch = True)
-        self.pub2 = rospy.Publisher("antenna_galactic", Move_mode_msg, queue_size = 10, latch = True)
-        self.pub3 = rospy.Publisher("antenna_planet", Move_mode_msg, queue_size = 10, latch = True)
+        self.start_time = time.time()
+        self.pub1 = rospy.Publisher("assist_radec", Move_mode_msg, queue_size = 1, latch = True)
+        self.pub2 = rospy.Publisher("assist_galactic", Move_mode_msg, queue_size = 1, latch = True)
+        self.pub3 = rospy.Publisher("assist_planet", Move_mode_msg, queue_size = 1, latch = True)
         pass
 
     def start_thread(self):
@@ -47,7 +49,6 @@ class antenna_assist(object):
         return
 
     def radec_assist(self, req):
-        self.r_flag = 1
         self.ra = req.x
         self.dec = req.y
         self.code_mode = req.code_mode
@@ -57,6 +58,12 @@ class antenna_assist(object):
         self.offcoord = req.offcoord
         self.lamda = req.lamda
         self.dcos = req.dcos
+        self.limit = req.limit
+        self.controller_time =req.time
+        if self.controller_time > self.start_time:
+            self.r_flag = 1
+        else:
+            pass
         return
 
     def galactic_assist(self, req):
@@ -70,6 +77,8 @@ class antenna_assist(object):
         self.offcoord = req.offcoord
         self.lamda = req.lamda
         self.dcos = req.dcos
+        self.limit = req.limit
+        self.controller_time =req.time
         return
 
     def planet_assist(self, req):
@@ -82,6 +91,8 @@ class antenna_assist(object):
         self.offcoord = req.offcoord
         self.lamda = req.lamda
         self.dcos = req.dcos
+        self.limit = req.limit
+        self.controller_time =req.time
         return
 
     def pub_radec(self):
@@ -99,8 +110,11 @@ class antenna_assist(object):
                 msg.offcoord = self.offcoord
                 msg.lamda = self.lamda
                 msg.dcos = self.dcos
-                rospy.loginfo(msg)
+                msg.limit = self.limit
+                msg.time = self.controller_time
                 self.pub1.publish(msg)
+                rospy.loginfo(msg)
+                print('published')
                 time.sleep(5)
                 continue
         return
@@ -120,7 +134,12 @@ class antenna_assist(object):
                 msg.lamda = self.lamda
                 msg.hosei = self.hosei
                 msg.dcos = self.dcos
+                msg.limit = self.limit
                 rospy.loginfo(msg)
+                if self.start_time > self.controller_time :
+                    continue
+                else:
+                    pass
                 self.pub2.publish(msg)
                 time.sleep(5)
                 continue
@@ -140,7 +159,12 @@ class antenna_assist(object):
                 msg.offcoord = self.offcoord
                 msg.lamda = self.lamda
                 msg.dcos = self.dcos
+                msg.limit = self.limit
                 rospy.loginfo(msg)
+                if self.start_time > self.controller_time :
+                    continue
+                else:
+                    pass
                 self.pub3.publish(msg)
                 time.sleep(5)
                 continue
@@ -151,7 +175,7 @@ if __name__ == "__main__":
     rospy.loginfo(" assist start ")
     at_as = antenna_assist()
     at_as.start_thread()
-    rospy.Subscriber("antenna_radec", Move_mode_msg, at_as.radec_assist)
+    rospy.Subscriber("antenna_radec", Move_mode_msg, at_as.radec_assist, queue_size = 1)
     rospy.Subscriber("antenna_galactic", Move_mode_msg, at_as.galactic_assist)
     rospy.Subscriber("antenna_planet", Move_mode_msg, at_as.planet_assist)
     rospy.spin()

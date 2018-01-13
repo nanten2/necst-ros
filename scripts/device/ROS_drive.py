@@ -96,12 +96,14 @@ class drive(object):
                 pass
             elif self.contactor_move != self.contactor_pos and self.contactor_move != "":
                 if self.contactor_move == "on":
-                    ret = self.dio.output_point([1,1,1,1], 9) #output_byte([1,1,1,1,0,0,0,0], 'OUT9_16')
+                    self.dio.output_point([1,1,1,1], 9) #output_byte([1,1,1,1,0,0,0,0], 'OUT9_16')
                     self.contactor_pos = self.contactor_move
+                    ret = True
                     print("contactor_on")
                 elif self.contactor_move == "off":
-                    ret = self.dio.output_point([0,0,0,0], 9) #output_byte([0,0,0,0,0,0,0,0], 'OUT9_16')
+                    self.dio.output_point([0,0,0,0], 9) #output_byte([0,0,0,0,0,0,0,0], 'OUT9_16')
                     self.contactor_pos = self.contactor_move
+                    ret = True
                     print("contactor_off")
                 else:
                     rospy.logerr('bad command !!')
@@ -120,9 +122,9 @@ class drive(object):
             elif ret == "":
                 pass
             else:
-                rospy.logerr("unfinished !!")
+                #rospy.logerr("unfinished !!")
                 self.stop_thread.set()
-        time.sleep(0.1)
+        time.sleep(1.)
 
 if __name__ == "__main__":
     rospy.init_node("drive")

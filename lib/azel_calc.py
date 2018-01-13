@@ -6,7 +6,7 @@ import coord
 import time
 import math
 import sys
-sys.path.append('/home/amigos/ros/src/necst/lib')
+sys.path.append('/home/necst/ros/src/necst/lib')
 import numpy as np
 
 class azel_calc(object):
@@ -79,7 +79,7 @@ class azel_calc(object):
         el_list = [(el+off_y)*3600.+vel_y*0.1*i for i in range(500)]
         return [az_list, el_list, tv]
 
-    def coordinate_calc(self, x, y, ntarg, code_mode, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, loop = 500, time_rate=0.):
+    def coordinate_calc(self, x, y, ntarg, code_mode, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, loop = 100, time_rate=0.):
         print(x, y, ntarg, code_mode, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, loop, time_rate)
         # coordinate check
         if code_mode.lower() == "j2000":
@@ -178,5 +178,5 @@ if __name__ == "__main__":
     qq = azel_calc()
     from datetime import datetime as dt
     now = dt.utcnow()
-    #qq.coordinate_calc(83, -5, 0, code_mode="j2000", off_x=10, off_y=10, offcoord="j2000", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, loop = 500, time_rate=0.)
-    qq.coordinate_calc(30, 40, 0, code_mode="planet", off_x=10, off_y=10, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, loop = 50, time_rate=0.)
+    #qq.coordinate_calc(-40, -60, 0, code_mode="galactic", off_x=0, off_y=0, offcoord="j2000", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, loop = 500, time_rate=0.)
+    qq.coordinate_calc(30, 40, 7, code_mode="planet", off_x=10, off_y=10, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, loop = 50, time_rate=0.)
