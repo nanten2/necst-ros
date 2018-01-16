@@ -54,8 +54,9 @@ class antenna(object):
 
     def move_stop(self, req):
         self.stime = time.time()
+        rospy.logwarn("move stop!!")
         
-    def azel_publish(self, az_list, el_list, start_time, limit = True, stime = 0):
+    def azel_publish(self, az_list, el_list, start_time, limit = True):
         pub = rospy.Publisher("list_azel", list_azelmsg, queue_size = 1, latch=True)
         msg = list_azelmsg()
         msg.az_list = az_list
@@ -68,63 +69,39 @@ class antenna(object):
             pass
         if ret:
             rospy.logerr("Publish False...")
-        elif stime < self.stime:
-            rospy.logwarn("move stop!!")
         else:
             pub.publish(msg)
             rospy.loginfo('Publish ok.')
             pass
         return
-
+    """
     def velocity_move(self, req):
         ret = self.calc.velocity_calc(req.az_speed, req.el_speed, req.dist, self.enc_az, self.enc_el)
         self.azel_publish(ret[0], ret[1], ret[2], req.limit, req.time)
         return
+    """
 
-    def azel_move(self,req):
-        now = dt.utcnow()
-        print("start calculation")
-        ret = self.calc.azel_calc(req.x, req.y, 
-                                  req.off_x/3600., req.off_y/3600.,
-                                  req.offcoord, now, req.vel_x, req.vel_y)
-        print("end calculation")
-        self.azel_publish(ret[0], ret[1], ret[2], req.limit, req.time)
-        return
-        
-
-    def radec_move(self, req):
-        now = dt.utcnow()
-        print("start calculation")
-        ret = self.calc.coordinate_calc(req.x, req.y, req.ntarg, req.code_mode,
-                                        req.off_x/3600., req.off_y/3600.,
-                                        req.offcoord, req.hosei, req.lamda,
-                                        req.dcos, self.temp, self.press, self.humi,
-                                        now)
-        print("end calculation")
-        self.azel_publish(ret[0], ret[1], ret[2], req.limit, req.time)
-        return
-
-    def galactic_move(self, req):
-        now = dt.utcnow()
-        print("start calculation")
-        ret = self.calc.coordinate_calc(req.x, req.y, req.ntarg, req.code_mode,
-                                        req.off_x/3600., req.off_y/3600.,
-                                        req.offcoord, req.hosei, req.lamda,
-                                        req.dcos, self.temp, self.press, self.humi,
-                                        now)
-        print("end calculation")
-        self.azel_publish(ret[0], ret[1], ret[2], req.limit, req.time)
-        return
-    
-    def planet_move(self, req):
-        now = dt.now()
-        print("start calculation")
-        ret = self.calc.coordinate_calc(req.x, req.y, req.ntarg, req.code_mode,
-                                        req.off_x/3600., req.off_y/3600.,
-                                        req.offcoord, req.hosei, req.lamda, req.dcos,
-                                        self.temp, self.press, self.humi, now)
-        print("end calculation")
-        self.azel_publish(ret[0], ret[1], ret[2], req.limit, req.time)
+    def antenna_move(self, req):
+        if req.time < self.stime:
+            pass
+        elif not self.temp:
+            rospy.logerr("weather_node is not move!!")
+        else:
+            print("start calculation")
+            now = dt.utcnow()
+            if req.coord.lower() == "horizontal":
+                ret = self.calc.azel_calc(req.x, req.y,
+                                          req.off_x/3600., req.off_y/3600.,
+                                          req.offcoord, now, req.vel_x, req.vel_y, req.movetime)
+            else:
+                ret = self.calc.coordinate_calc(req.x, req.y, req.coord, req.planet,
+                                                req.off_x/3600., req.off_y/3600.,
+                                                req.offcoord, req.hosei, req.lamda,
+                                                req.dcos, self.temp, self.press, self.humi,
+                                                now, req.movetime)
+                pass
+            print("end calculation")
+            self.azel_publish(ret[0], ret[1], ret[2], req.limit)
         return
 
     def otf_start(self, req):
@@ -133,7 +110,7 @@ class antenna(object):
                                 req.delay, req.lamda, req.hosei, req.code_mode,
                                 req.off_x, req.off_y, req.offcoord,
                                  self.temp, self.press, self.humi)
-        self.azel_publish(ret[0], ret[1], ret[2], req.limit, req.time)
+        self.azel_publish(ret[0], ret[1], ret[2], req.limit)
         return
 
     def limit_check(self, az_list, el_list):
@@ -164,11 +141,8 @@ if __name__ == "__main__":
     rospy.Subscriber("status_encoder", Status_encoder_msg, at.note_encoder)
     rospy.Subscriber('status_weather', Status_weather_msg, at.note_weather)
     rospy.Subscriber("move_stop", String, at.move_stop)
-    time.sleep(0.1)
-    rospy.Subscriber('antenna_vel', Velocity_mode_msg, at.velocity_move)
-    rospy.Subscriber('antenna_azel', Move_mode_msg, at.azel_move)
-    rospy.Subscriber('assist_radec', Move_mode_msg, at.radec_move)
-    rospy.Subscriber('assist_galactic', Move_mode_msg, at.galactic_move)
-    rospy.Subscriber('assist_planet', Move_mode_msg, at.planet_move)
+    time.sleep(3.)
+    #rospy.Subscriber('antenna_vel', Velocity_mode_msg, at.velocity_move)
+    rospy.Subscriber('assist_antenna', Move_mode_msg, at.antenna_move)
     rospy.Subscriber('antenna_otf', Otf_mode_msg, at.otf_start)
     rospy.spin()

@@ -68,30 +68,30 @@ class azel_calc(object):
             n += 1
         return [az_list, el_list, tv]
 
-    def azel_calc(self, az, el, off_x, off_y, off_coord, now, vel_x=0, vel_y=0):
+    def azel_calc(self, az, el, off_x, off_y, off_coord, now, vel_x=0, vel_y=0, movetime=10):
         if off_coord.lower() != "horizontal":
             print("Please, off_coord is HORIZONTAL")
             return
         else:
             pass
         tv = time.time()
-        az_list = [(az+off_x)*3600.+vel_x*0.1*i for i in range(500)]
-        el_list = [(el+off_y)*3600.+vel_y*0.1*i for i in range(500)]
+        az_list = [(az+off_x)*3600.+vel_x*0.1*i for i in range(int(movetime*10))]
+        el_list = [(el+off_y)*3600.+vel_y*0.1*i for i in range(int(movetime*10))]
         return [az_list, el_list, tv]
 
-    def coordinate_calc(self, x, y, ntarg, code_mode, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, loop = 100, time_rate=0.):
-        print(x, y, ntarg, code_mode, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, loop, time_rate)
+    def coordinate_calc(self, x, y, coord, ntarg, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, movetime = 10, time_rate=0.):
+        print(x, y, ntarg, coord, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, movetime, time_rate)
         # coordinate check
-        if code_mode.lower() == "j2000":
+        if coord.lower() == "j2000":
             on_coord = SkyCoord(x, y,frame='fk5', unit='deg',)
-        elif code_mode.lower() =="b1950":
+        elif coord.lower() =="b1950":
             on_coord = SkyCoord(x, y, frame='fk4', unit='deg',)
-        elif code_mode.lower() =="galactic":
+        elif coord.lower() =="galactic":
             on_coord = SkyCoord(x, y, frame='galactic', unit='deg',)
-        elif code_mode.lower() =="planet":
+        elif coord.lower() =="planet":
             print("planet_move")
         else:
-            print("code_mode error !!")
+            print("coord error !!")
             sys.exit()
 
 
@@ -116,7 +116,7 @@ class azel_calc(object):
         elif offcoord.lower() == "horizontal":
             self.off_az = off_x #arcsec
             self.off_el = off_y #arcsec
-            if not code_mode.lower() =="planet":
+            if not coord.lower() =="planet":
                 real_coord = on_coord
             else:
                 pass
@@ -134,10 +134,10 @@ class azel_calc(object):
         nanten2 = EarthLocation(lat = self.latitude*u.deg, lon = self.longitude*u.deg, height = self.height*u.m)
         utcoffset = self.utc_offset*u.hour
         tstr = now.strftime('%Y-%m-%d %H:%M:%S')
-        for i in range(loop):
+        for i in range(int(movetime*10)):
             time_list.append(Time(tstr) - utcoffset + (i*self.loop_rate + time_rate)*u.s)
         atime = Time(time_list)
-        if code_mode.lower() =="planet":
+        if coord.lower() =="planet":
             real_coord = get_body(self.planet[ntarg], atime)
             real_coord.location=nanten2
             real_coord.pressure=press*u.Pa#param
@@ -157,11 +157,9 @@ class azel_calc(object):
             altaz = real_coord.transform_to(AltAz(obstime=time_list))
 
         print("start")
-        #print(loop)
-        ss = [altaz[i] for i in range(loop)]
-        #print(loop)
-        az_list = [self.kisa_calc(ss, dcos, hosei, i)[0] for i in range(loop)]
-        el_list = [self.kisa_calc(ss, dcos, hosei, i)[1] for i in range(loop)]
+        ss = [altaz[i] for i in range(int(movetime*10))]
+        az_list = [self.kisa_calc(ss, dcos, hosei, i)[0] for i in range(int(movetime*10))]
+        el_list = [self.kisa_calc(ss, dcos, hosei, i)[1] for i in range(int(movetime*10))]
         
 
         
@@ -178,5 +176,5 @@ if __name__ == "__main__":
     qq = azel_calc()
     from datetime import datetime as dt
     now = dt.utcnow()
-    #qq.coordinate_calc(-40, -60, 0, code_mode="galactic", off_x=0, off_y=0, offcoord="j2000", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, loop = 500, time_rate=0.)
-    qq.coordinate_calc(30, 40, 7, code_mode="planet", off_x=10, off_y=10, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, loop = 50, time_rate=0.)
+    #qq.coordinate_calc(-40, -60, 0, coord="galactic", off_x=0, off_y=0, offcoord="j2000", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime = 50, time_rate=0.)
+    qq.coordinate_calc(30, 40, 7, coord="planet", off_x=10, off_y=10, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime = 50, time_rate=0.)
