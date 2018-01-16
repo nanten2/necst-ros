@@ -5,3 +5,4 @@ float64 command_az
 float64 command_el
 float32 command_azspeed
 float32 command_elspeed
+string node_status

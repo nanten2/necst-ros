@@ -14,7 +14,7 @@ import math
 sys.path.append("/home/necst/ros/src/necst/lib")
 import numpy as np
 import struct
-import pyinterface
+#import pyinterface
 
 #ROS/import field
 #----------------
@@ -127,8 +127,8 @@ class antenna_move(object):
     def __init__(self):
         board_name = 2724
         rsw_id = 0 #rotary switch id
-        self.dio = pyinterface.open(board_name, rsw_id)
-        self.dio.initialize()
+        #self.dio = pyinterface.open(board_name, rsw_id)
+        #self.dio.initialize()
         self.node_status = 'node_start[ROS_antenna_move]'
         pass
     
@@ -220,8 +220,8 @@ class antenna_move(object):
             rospy.loginfo('!!!azel_list is end!!!')
             self.stop_flag = 1
             for i in range(5):
-                self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#az
-                self.dio.output_word('OUT17_32',[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#el
+                #self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#az
+                #self.dio.output_word('OUT17_32',[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#el
                 self.command_az_speed = 0
                 self.command_el_speed = 0
                 time.sleep(0.25)
@@ -335,8 +335,8 @@ class antenna_move(object):
         flag_list = self.server_flag[:]
         time.sleep(1)
         if self.server_flag == flag_list:
-            self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
-            self.sdio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+            #self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+            #self.sdio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
             self.end_flag = 1
             for i in range(1000):
                 print(flag_list)
@@ -359,8 +359,8 @@ class antenna_move(object):
     
     
     def init_speed(self):
-        self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#az
-        self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#el
+        #self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#az
+        #self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#el
         self.command_az_speed = 0
         self.command_el_speed = 0
         return
@@ -386,8 +386,8 @@ class antenna_move(object):
                 time.sleep(0.01-interval)
                     
             else:
-                self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#az
-                self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#el
+                #self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#az
+                #self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#el
                 self.command_az_speed = 0
                 self.command_el_speed = 0
                 return 0
@@ -476,7 +476,7 @@ class antenna_move(object):
         #    dummy_byte.append(0)
         self.command_az_speed = dummy
         dummy_byte = list(map(int,  ''.join([format(b, '08b')[::-1] for b in struct.pack('<h', dummy)])))
-        self.dio.output_word('OUT1_16', dummy_byte)
+        #self.dio.output_word('OUT1_16', dummy_byte)
         #dioOutputWord(CONTROLER_BASE2,0x00,dummy)  output port is unreliable
         self.az_rate_d = dummy
         
@@ -505,7 +505,7 @@ class antenna_move(object):
         #_len = len(dummy_byte)
         #for i in range(16 - _len):
         #    dummy_byte.append(0)
-        self.dio.output_word('OUT17_32', dummy_byte)
+        #self.dio.output_word('OUT17_32', dummy_byte)
         #diOutputWord(CONTROLER_BASE2,0x02,dummy);
         self.el_rate_d = dummy
         
@@ -868,10 +868,10 @@ class antenna_move(object):
             for i in range(5):
                 #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
                 #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
-                self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+                #self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
                 #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
                 #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
-                self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+                #self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
                 time.sleep(0.05)
                 self.command_az_speed = 0
                 self.command_el_speed = 0
