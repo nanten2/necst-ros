@@ -84,6 +84,8 @@ class antenna(object):
     def antenna_move(self, req):
         if req.time < self.stime:
             pass
+        elif not self.temp:
+            rospy.logerr("weather_node is not move!!")
         else:
             print("start calculation")
             now = dt.utcnow()
@@ -139,6 +141,7 @@ if __name__ == "__main__":
     rospy.Subscriber("status_encoder", Status_encoder_msg, at.note_encoder)
     rospy.Subscriber('status_weather', Status_weather_msg, at.note_weather)
     rospy.Subscriber("move_stop", String, at.move_stop)
+    time.sleep(3.)
     #rospy.Subscriber('antenna_vel', Velocity_mode_msg, at.velocity_move)
     rospy.Subscriber('assist_antenna', Move_mode_msg, at.antenna_move)
     rospy.Subscriber('antenna_otf', Otf_mode_msg, at.otf_start)
