@@ -7,15 +7,13 @@ import pyinterface
 import sys
 sys.path.append('/home/necst/ros/src/necst/lib')
 import dome_pos
-#import antenna_enc### for ROS
 
-###ROS
+#ROS
 sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 import rospy
 from necst.msg import Status_encoder_msg
 from necst.msg import Status_dome_msg
 from necst.msg import Dome_msg
-#import dome_board
 
 class dome_controller(object):
     ###dome.py parameter
@@ -50,12 +48,7 @@ class dome_controller(object):
     def __init__(self):
         board_name = 2724
         rsw_id = 2
-        #self.enc = antenna_enc.enc_monitor_client('172.20.0.11',8002)#delete for ROS
-        #self.enc = antenna_enc.enc_controller()
-        #self.dome_pos = dome_pos.dome_pos_client('172.20.0.11',8006)
         self.dome_pos = dome_pos.dome_pos_controller()
-        #self.dio = pyinterface.create_gpg2000(5)### => dome_board.py
-        #self.dio = dome_board.dome_board()###dome_board.py
         self.dio = pyinterface.open(board_name, rsw_id)
         self.start_status_check()
         pass
@@ -76,7 +69,6 @@ class dome_controller(object):
             self.end_track_flag.set()
             self.thread.join()
             buff = [0]
-            #self.dio.do_output(buff, 2, 1)
             self.dio.output_point(buff, 2)
             return
         except:
@@ -84,22 +76,14 @@ class dome_controller(object):
     
     def move_track(self):
         print('dome_trakcking start', self.end_flag)
-        #ret = self.dome_pos.read_dome_enc()
-        #ret = self.dome_pos.dome_encoder_acq()
         ret = self.read_domepos()
-        #while not self.end_track_flag.is_set():
         while not self.end_flag:
-            #ret = self.enc.read_azel()###delete for ROS
             enc_az = float(self.enc_az)
-            #ret[0] = ret[0]/3600. # ret[0] = antenna_az
-            #dome_az = self.dome_pos.read_dome_enc()
-            #dome_az = self.dome_pos.dome_encoder_acq()
             dome_az = self.read_domepos()
             dome_az = dome_az/3600.
             self.dome_limit()
             enc_az = float(enc_az)
             enc_az = enc_az/3600.
-            #if math.fabs(ret[0]-dome_az) >= 2.0:###delete for ROS
             if math.fabs(enc_az - dome_az) >= 2.0:
                 self.move(enc_az)
             time.sleep(0.01)
@@ -125,13 +109,9 @@ class dome_controller(object):
     def move_org(self):
         dist = 90
         self.move(dist)    #move_org
-        #self.dome_pos.read_dome_enc()
         return
     
     def move(self, dist):
-        #pos_arcsec = self.dome_pos.dome_encoder_acq()
-        #pos_arcsec = self.dome_pos.read_dome_enc()
-        #pos_arcsec = self.read_domepos()###delete for ROS
         pos_arcsec = float(self.dome_enc)#[arcsec]
         pos = pos_arcsec/3600.
         pos = pos % 360.0
@@ -158,22 +138,17 @@ class dome_controller(object):
             speed = 'high'
         else:
             speed = 'mid'
-        #if dir != 0:
         if not abs(dir) < 0.5:
             global buffer
             self.buffer[1] = 1
             self.do_output(turn, speed)
             while dir != 0:
-                #pos_arcsec = self.dome_pos.dome_encoder_acq()
-                #pos_arcsec = self.dome_pos.read_dome_enc()
-                #pos_arcsec = self.read_domepos()###delete for ROS
                 pos_arcsec = float(self.dome_enc)
                 pos = pos_arcsec/3600.
                 pos = pos % 360.0
                 dist = dist % 360.0
                 diff = dist - pos
                 dir = diff % 360.0
-                #print('pos,dist,diff, dir',pos,dist,diff,dir)
                 if abs(dir) <= 0.5:
                     dir = 0
                 else:
@@ -198,12 +173,10 @@ class dome_controller(object):
                 time.sleep(0.1)
         
         self.dome_stop()
-        #self.get_count()
         return
     
     def dome_stop(self):
         buff = [0]
-        #self.dio.do_output(buff, 2, 1)
         self.dio.output_point(buff, 2)
         self.flag = 0
         return
@@ -212,14 +185,12 @@ class dome_controller(object):
         ret = self.get_door_status()
         if ret[1] != 'OPEN' and ret[3] != 'OPEN':
             buff = [1, 1]
-            #self.dio.do_output(buff, 5, 2)
             self.dio.output_point(buff, 5)
             d_door = self.get_door_status()
             while ret[1] != 'OPEN':
                 time.sleep(5)
                 ret = self.get_door_status()
         buff = [0, 0]
-        #self.dio.do_output(buff, 5, 2)
         self.dio.output_point(buff, 5)
         return
     
@@ -227,13 +198,11 @@ class dome_controller(object):
         ret = self.get_door_status()
         if ret[1] != 'CLOSE' and ret[3] != 'CLOSE':
             buff = [0, 1]
-            #self.dio.do_output(buff, 5, 2)
             self.dio.output_point(buff, 5)
             while ret[1] != 'CLOSE':
                 time.sleep(5)
                 ret = self.get_door_status()
         buff = [0, 0]
-        #self.dio.do_output(buff, 5, 2)
         self.dio.output_point(buff, 5)
         return
     
@@ -241,13 +210,11 @@ class dome_controller(object):
         ret = self.get_memb_status()
         if ret[1] != 'OPEN':
             buff = [1, 1]
-            #self.dio.do_output(buff, 7, 2)
             self.dio.output_point(buff, 7)
             while ret[1] != 'OPEN':
                 time.sleep(5)
                 ret = self.get_memb_status()
         buff = [0, 0]
-        #self.dio.do_output(buff, 7, 2)
         self.dio.output_point(buff, 7)
         return
     
@@ -255,13 +222,11 @@ class dome_controller(object):
         ret = self.get_memb_status()
         if ret[1] != 'CLOSE':
             buff = [0, 1]
-            #self.dio.do_output(buff, 7, 2)
             self.dio.output_point(buff, 7)
             while ret[1] != 'CLOSE':
                 time.sleep(5)
                 ret = self.get_memb_status()
         buff = [0, 0]
-        #self.dio.do_output(buff, 7, 2)
         self.dio.output_point(buff, 7)
         return
     
@@ -277,11 +242,9 @@ class dome_controller(object):
     def dome_fan(self, fan):
         if fan == 'on':
             fan_bit = [1, 1]
-            #self.dio.do_output(fan_bit, 9, 2)
             self.dio.output_point(fan_bit, 9)
         else:
             fan_bit = [0, 0]
-            #self.dio.do_output(fan_bit, 9, 2)
             self.dio.output_point(fanbit, 9)
         return
     
@@ -303,19 +266,12 @@ class dome_controller(object):
         if dome_controller.stop[0] == 1:
             self.buffer[1] = 0
         else: self.buffer[1] = 1
-        #print(self.buffer)
-        #self.dio.do_output(self.buffer, 1, 6)
         self.dio.output_point(self.buffer, 1)
         print('do_output')
-        #self.dome_limit()
-        #pos_arcsec = self.dome_pos.dome_encoder_acq()
-        #pos_arcsec = self.dome_pos.read_dome_enc()
         return
     
     def get_action(self):
-        #ret = self.dio.di_check(1, 1)
         ret = self.dio.input_point(1, 1)
-        #print('l269', ret)
         if ret == 0:
             move_status = 'OFF'
         else:
@@ -323,9 +279,7 @@ class dome_controller(object):
         return move_status
     
     def get_door_status(self):
-        #ret = self.dio.di_check(2, 6)
         ret = self.dio.input_point(2, 6)
-        #print('l277', ret)
         if ret[0] == 0:
             right_act = 'OFF'
         else:
@@ -354,7 +308,6 @@ class dome_controller(object):
         return [right_act, right_pos, left_act, left_pos]
         
     def get_memb_status(self):
-        #ret = self.dio.di_check(8, 3)
         ret = self.dio.input_point(8, 3)
         if ret[0] == 0:
             memb_act = 'OFF'
@@ -371,7 +324,6 @@ class dome_controller(object):
         return [memb_act, memb_pos]
     
     def get_remote_status(self):
-        #ret = self.dio.di_check(11, 1)
         ret = self.dio.input_point(11, 1)
         if ret[0] == 0:
             status = 'REMOTE'
@@ -380,7 +332,6 @@ class dome_controller(object):
         return status
     
     def error_check(self):
-        #ret = self.dio.di_check(16, 6)
         ret = self.dio.input_point(16, 6)
         if ret[0] == 1:
             self.print_error('controll board sequencer error')
@@ -407,9 +358,7 @@ class dome_controller(object):
         pass
         
     def _limit_check(self):
-        #limit = self.dio.di_check(12, 4)
         limit = self.dio.input_point(12, 4)
-        #print(limit)
         ret = 0
         if limit[0:4] == [0,0,0,0]:
             ret = 0
@@ -442,12 +391,8 @@ class dome_controller(object):
     def dome_limit(self):
         limit = self.limit_check()
         if limit != 0:
-            #self.dome_pos.dio.ctrl.set_counter(self.touchsensor_pos[limit-1]+self.dome_encoffset)
             self.dome_pos.dome_set_counter(self.touchsensor_pos[limit-1]+self.dome_encoffset)
-            #print('!!!dome_pos_clear!!!')
-        #print (limit)
         self.get_count()
-        #print (self.count)
         return limit
     
     def get_domepos(self):
@@ -455,7 +400,6 @@ class dome_controller(object):
         self.dome_enc = self.dome_pos.dome_encoder_acq()
         dome_enc_print = float(self.dome_enc)
         dome_enc_print = self.dome_enc/3600.
-        #rospy.logwarn(dome_enc_print)
         f = open('./dome_enc1.txt', 'a')
         f.write(str(dome_enc_print)+'\n')
         f.close()
@@ -465,23 +409,18 @@ class dome_controller(object):
         return self.limit
     
     def start_status_check(self):
-        #self.stop_status_flag = threading.Event()
-        #self.status_thread = threading.Thread(target = self.status_check)
-        #self.status_thread.start()
         th1 = threading.Thread(target = self.status_check)
         th1.setDaemon(True)
         th1.start()
         return
     
     def status_check(self):
-        #while not self.stop_status_flag.is_set():
-        while True:
+        while not rospy.is_shutdown()::
             ret1 = self.get_action()
             ret2 = self.get_door_status()
             ret3 = self.get_memb_status()
             ret4 = self.get_remote_status()
             ret5 = str(self.get_domepos())
-            #self.status_box = [ret1, ret2, ret3, ret4]###dome.py version
             self.status_box = [ret1, ret2[0], ret2[1], ret2[2], ret2[3], ret3[0], ret3[1], ret4, ret5]
             time.sleep(0.01)
         return
