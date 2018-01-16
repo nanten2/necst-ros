@@ -5,13 +5,13 @@
 ------------------------------------------------
 [History]
 2017/10/18 : kondo takashi
+2018/01/16 : kondo
 ------------------------------------------------
 """
 import sys
 import time
 from datetime import datetime as dt
 import rospy
-
 from necst.msg import drive_msg
 from necst.msg import Velocity_mode_msg
 from necst.msg import Move_mode_msg
@@ -38,24 +38,21 @@ class controller(object):
         rospy.Subscriber("dome_tracking_check", Bool, self.dome_tracking)
         rospy.Subscriber("authority_check", String, self.authority_check)
 
-        self.pub1 = rospy.Publisher("observation_start_", Bool, queue_size=10)#observation
-        self.pub2 = rospy.Publisher("authority_change", String, queue_size = 10,latch=True)
-        self.pub3 = rospy.Publisher("getting_data", Float64, queue_size=10)
-        self.pub4 = rospy.Publisher('emergency_stop', Bool, queue_size = 10, latch = True)
-        self.pub5 = rospy.Publisher("antenna_drive", String, queue_size = 10)
-        self.pub6 = rospy.Publisher("antenna_contactor", String, queue_size = 10)
-        self.pub7 = rospy.Publisher("antenna_vel", Velocity_mode_msg, queue_size = 10, latch = True)
-        self.pub8 = rospy.Publisher("antenna_radec", Move_mode_msg, queue_size = 10, latch = True)
-        self.pub9 = rospy.Publisher("antenna_galactic", Move_mode_msg, queue_size = 10, latch = True)
-        self.pub10 = rospy.Publisher("antenna_planet", Move_mode_msg, queue_size = 10, latch = True)
-        self.pub11 = rospy.Publisher("move_stop", String, queue_size = 10, latch = True)
-        self.pub12 = rospy.Publisher("antenna_otf", Otf_mode_msg, queue_size = 10, latch = True)
-        self.pub13 = rospy.Publisher("dome_move", Dome_msg, queue_size = 10, latch = True)
-        self.pub14 = rospy.Publisher('m4', String, queue_size = 10, latch = True)
-        self.pub15 = rospy.Publisher("hot", String, queue_size = 10, latch = True)
-        self.pub16 = rospy.Publisher("m2", Int64, queue_size=10, latch=True)
-        self.pub17 = rospy.Publisher("antenna_azel", Move_mode_msg, queue_size=10, latch=True)
-        #self.pub18 = rospy.Publisher("oneshot_achilles", Oneshot_achiless_msg, queue_size=10, latch=True )
+        self.pub1 = rospy.Publisher("observation_start_", Bool, queue_size=1)#observation
+        self.pub2 = rospy.Publisher("authority_change", String, queue_size = 1,latch=True)
+        self.pub4 = rospy.Publisher('emergency_stop', Bool, queue_size = 1, latch = True)
+        self.pub5 = rospy.Publisher("antenna_drive", String, queue_size = 1)
+        self.pub6 = rospy.Publisher("antenna_contactor", String, queue_size = 1)
+        self.pub7 = rospy.Publisher("antenna_vel", Velocity_mode_msg, queue_size = 1, latch = True)
+        self.pub8 = rospy.Publisher("antenna_command", Move_mode_msg, queue_size=1, latch=True)
+        self.pub9 = rospy.Publisher("assist_antenna", Move_mode_msg, queue_size=1, latch=True)
+        self.pub11 = rospy.Publisher("move_stop", String, queue_size = 1, latch = True)
+        self.pub12 = rospy.Publisher("antenna_otf", Otf_mode_msg, queue_size = 1, latch = True)
+
+        self.pub13 = rospy.Publisher("dome_move", Dome_msg, queue_size = 1, latch = True)
+        self.pub14 = rospy.Publisher('m4', String, queue_size = 1, latch = True)
+        self.pub15 = rospy.Publisher("hot", String, queue_size = 1, latch = True)
+        self.pub16 = rospy.Publisher("m2", Int64, queue_size=1, latch=True)
         time.sleep(0.5)
 
 
@@ -103,20 +100,6 @@ class controller(object):
             rospy.signal_shutdown("Error stop !!\n")
         return
 
-    """
-    def antenna_flag(self, req):
-        self.task_flag = req.data 
-        return
-
-    def antenna_check(self):
-        while self.task_flag:
-            rospy.loginfo(" move now... \n")
-            print(" move now... \n")
-            time.sleep(0.01)
-            pass
-        return
-        """
-
     def antenna_tracking(self, req):
         self.antenna_tracking_flag = req.data
         return
@@ -134,6 +117,21 @@ class controller(object):
         rospy.logwarn('!!!emergency called ROS_control.py!!!')
         
 
+
+    def drive(self, switch = ""):
+        """change drive"""
+        if not switch:
+            switch = str(input("drive change (on/off) : "))
+        if switch.lower() == "on":
+            self.drive_on()
+            self.contactor_on()
+            print("driver on!!")
+        elif switch.lower() == "off":
+            self.drive_off()
+            self.contactor_off()
+            print("driver off...")
+        else:
+            print("!!bad command!!")
 
     def drive_on(self):
         """drive_on"""
@@ -160,7 +158,7 @@ class controller(object):
         msg.data = "off"
         self.pub6.publish(msg)
         return
-
+    """
     def velocity_move(self, az_speed, el_speed, dist_arcsec = 5 * 3600, limit=True):
         vel = Velocity_mode_msg()
         vel.az_speed = az_speed
@@ -170,87 +168,68 @@ class controller(object):
         self.pub7.publish(vel)
         rospy.loginfo(vel)
         return
+    """
 
-    def azel_move(self,az, el, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt',  lamda=2600, dcos=0, vel_x=0, vel_y=0,limit=True):
-        """azel_move"""
-        # az,el,off_x,off_y = deg
-        # vel_x, vel_y = arcsec/s
-        msg = Move_mode_msg()
-        msg.x = az
-        msg.y = el
-        msg.code_mode = "horizontal"
-        msg.off_x = off_x
-        msg.off_y = off_y
-        msg.hosei = hosei
-        msg.offcoord = offcoord
-        msg.lamda = lamda
-        msg.dcos = dcos
-        msg.vel_x = vel_x
-        msg.vel_y = vel_y
-        msg.limit = limit
-        msg.time = float(time.time())
-        rospy.loginfo(msg)
-        self.pub17.publish(msg)
+    def move(self, x, y, coord, planet= 0, off_x=0, off_y=0, offcoord='horizontal', hosei='hosei_230.txt',  lamda=2600, dcos=0, vel_x=0, vel_y=0, movetime=10, limit=True, assist=True):
+        """ azel_move, radec_move, galactic_move, planet_move
+        
+        Parameters
+        ----------
+        x        : target_x [deg]
+        y        : target_y [deg]
+        planet   : planet_number (only when using "planet_move"!!)
+                   1.Mercury 2.Venus 3. 4.Mars 5.Jupiter 6.Saturn 7.Uranus 8.Neptune, 9.Pluto, 10.Moon, 11.Sun
+        coord    : "horizontal" or "j2000" or "b1950" or "galactic" or "planet" 
+        off_x    : offset_x [deg]
+        off_y    : offset_y [deg]
+        offcoord : "horizontal" or "j2000" or "b1950" or "galactic" or "planet" 
+        hosei    : hosei file name (default ; hosei_230.txt)
+        lamda    : observation wavelength [um] (default ; 2600)
+        dcos     : projection (no:0, yes:1)
+        vel_x    : constant speed scan [arcsec/s] (horizontal)
+        vel_y    : constant speed scan [arcsec/s] (horizontal)
+        movetime : azel_list length [s]
+        limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
+        assist   : ROS_antenna_assist is on or off (True:on, False:off)
+        """
+        if assist:
+            self.pub8.publish(x, y, coord, planet, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, time.time())
+        else:
+            self.pub9.publish(x, y, coord, planet, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, time.time())
         return
-      
 
-    def radec_move(self, ra, dec, code_mode, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt',  lamda=2600, dcos=0, az_rate=12000, el_rate=12000,limit=True):
-        #self.ant.radec_move(ra, dec, code_mode, off_x, off_y, hosei, offcoord, lamda, az_rate, el_rate, dcos)
-        msg = Move_mode_msg()
-        msg.x = ra
-        msg.y = dec
-        msg.code_mode = code_mode
-        msg.off_x = off_x
-        msg.off_y = off_y
-        msg.hosei = hosei
-        msg.offcoord = offcoord
-        msg.lamda = lamda
-        msg.dcos = dcos
-        msg.limit = limit
-        msg.time = float(time.time())
-        #mv.az_rate ... no inplementation
-        #mv.el_rate ... no inplementation
-        rospy.loginfo(msg)
-        self.pub8.publish(msg)
+
+    def azel_move(self, az, el, off_x = 0, off_y = 0, offcoord = 'horizontal', hosei = 'hosei_230.txt', lamda=2600, dcos=0, vel_x=0, vel_y=0, movetime=10, limit=True, assist=True):
+        """
+        azel_move
+        More detail is move()
+        """
+        self.move(az, el, "horizontal", 0, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, assist)
+        return
+
+    def radec_move(self, ra, dec, coord, off_x = 0, off_y = 0, offcoord = 'horizontal', hosei = 'hosei_230.txt', lamda=2600, dcos=0, vel_x=0, vel_y=0, movetime=10, limit=True, assist=True):
+        """
+        radec_move
+        More detail is move()
+        """
+        self.move(ra, dec, coord, 0, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, assist)
         return
     
-
-    def galactic_move(self, l, b, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt', lamda=2600, az_rate=12000, el_rate=12000, dcos=0, limit=True):
-        msg = Move_mode_msg()
-        msg.x = l
-        msg.y = b
-        msg.off_x = off_x
-        msg.off_y = off_y
-        msg.code_mode = "galactic"
-        msg.hosei = hosei
-        msg.offcoord = offcoord
-        msg.lamda = lamda
-        msg.dcos = dcos
-        msg.limit = limit
-        msg.time = float(time.time())
-        #mv.az_rate ... no inplementation
-        #mv.el_rate ... no inplementation
-        rospy.loginfo(msg)
-        self.pub9.publish(msg)
+    def galactic_move(self, l, b, off_x = 0, off_y = 0, offcoord = 'horizontal', hosei = 'hosei_230.txt', lamda=2600, dcos=0, vel_x=0, vel_y=0, movetime=10, limit=True, assist=True):
+        """
+        galactic_move
+        More detail is move()
+        """
+        self.move(l, b, "galactic", 0, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, assist)
         return
 
-    def planet_move(self, number, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt', lamda=2600, az_rate=12000, el_rate=12000, dcos=0, limit=True):
-        """1.Mercury 2.Venus 3. 4.Mars 5.Jupiter 6.Saturn 7.Uranus 8.Neptune, 9.Pluto, 10.Moon, 11.Sun"""
-        msg = Move_mode_msg()
-        msg.ntarg = number
-        msg.off_x = off_x
-        msg.off_y = off_y
-        msg.code_mode = "planet"
-        msg.hosei = hosei
-        msg.offcoord = offcoord
-        msg.lamda = lamda
-        msg.dcos = dcos
-        msg.limit = limit
-        msg.time = float(time.time())
-        #mv.az_rate ... no inplementation
-        #mv.el_rate ... no inplementation
-        rospy.loginfo(msg)
-        self.pub10.publish(msg)
+    def planet_move(self, number, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt', lamda=2600, dcos=0, vel_x=0, vel_y=0, movetime=10, limit=True, assist=True):
+        """
+        planet_move
+        1.Mercury 2.Venus 3. 4.Mars 5.Jupiter 6.Saturn 7.Uranus 8.Neptune, 9.Pluto, 10.Moon, 11.Sun
+        More detail is move()
+        """
+        self.move(0, 0, "planet", number, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, assist)
         return
 
     def move_stop(self):
