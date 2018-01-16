@@ -177,9 +177,9 @@ class controller(object):
         ----------
         x        : target_x [deg]
         y        : target_y [deg]
+        coord    : "horizontal" or "j2000" or "b1950" or "galactic" or "planet" 
         planet   : planet_number (only when using "planet_move"!!)
                    1.Mercury 2.Venus 3. 4.Mars 5.Jupiter 6.Saturn 7.Uranus 8.Neptune, 9.Pluto, 10.Moon, 11.Sun
-        coord    : "horizontal" or "j2000" or "b1950" or "galactic" or "planet" 
         off_x    : offset_x [deg]
         off_y    : offset_y [deg]
         offcoord : "horizontal" or "j2000" or "b1950" or "galactic" or "planet" 
