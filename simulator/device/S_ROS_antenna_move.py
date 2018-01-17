@@ -249,6 +249,8 @@ class antenna_move(object):
             if self.stop_flag:
                 print('stop_flag ON')
                 time.sleep(1)
+                self.command_az_speed = 0
+                self.command_el_speed = 0
                 continue
 
             b_time2 = time.time()
