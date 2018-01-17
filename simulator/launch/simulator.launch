@@ -4,4 +4,6 @@
   <node pkg="necst" name='dome' type='S_ROS_dome.py'/>
   <node pkg='necst' name='abs_controller' type='S_ROS_abs.py'/>
   <node pkg='necst' name='m4_controller' type='S_ROS_m4.py'/>
+  <node pkg='necst' name='m2_controller' type='S_ROS_m2.py'/>
+  <node pkg='necst' name='weather_status' type='S_ROS_weather.py'/>
 </launch>
