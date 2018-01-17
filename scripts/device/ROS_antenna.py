@@ -4,6 +4,7 @@ import sys
 sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 import rospy
 import time
+import math
 from std_msgs.msg import String
 from necst.msg import Velocity_mode_msg
 from necst.msg import Move_mode_msg
@@ -11,11 +12,11 @@ from necst.msg import Otf_mode_msg
 from necst.msg import Status_encoder_msg
 from necst.msg import Status_weather_msg
 from necst.msg import list_azelmsg
-from datetime import datetime as dt
+from datetime import datetime as date
+from datetime import timedelta
 sys.path.append("/home/necst/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/lib")
 import azel_calc
-import otf
 
 
 class antenna(object):
@@ -39,7 +40,6 @@ class antenna(object):
     
     def __init__(self):
         self.calc = azel_calc.azel_calc()
-        self.otf = otf.otf()
         self.stime = time.time()
 
     def note_encoder(self, req):
@@ -72,6 +72,7 @@ class antenna(object):
         else:
             pub.publish(msg)
             rospy.loginfo('Publish ok.')
+            print("\n")
             pass
         return
     """
@@ -88,7 +89,7 @@ class antenna(object):
             rospy.logerr("weather_node is not move!!")
         else:
             print("start calculation")
-            now = dt.utcnow()
+            now = date.utcnow()
             if req.coord.lower() == "horizontal":
                 ret = self.calc.azel_calc(req.x, req.y,
                                           req.off_x/3600., req.off_y/3600.,
@@ -105,11 +106,24 @@ class antenna(object):
         return
 
     def otf_start(self, req):
-        ret = self.otf.otf_scan(req.x, req.y, req.dcos, req.coord_sys, 
-                                req.dx, req.dy, req.dt, req.num, req.rampt,
-                                req.delay, req.lamda, req.hosei, req.code_mode,
-                                req.off_x, req.off_y, req.offcoord,
-                                 self.temp, self.press, self.humi)
+        start_x = req.off_x-float(req.dx)/2.-float(req.dx)/float(req.dt)*req.rampt
+        start_y = req.off_y-float(req.dy)/2.-float(req.dy)/float(req.dt)*req.rampt
+        total_t = req.rampt + req.dt * req.num
+        end_x = req.off_x + req.dx * (req.num - 0.5)
+        end_y = req.off_y + req.dy * (req.num - 0.5)
+        obs_start =  date.utcnow() + timedelta(seconds=float(req.delay))
+        obs_end = obs_start + timedelta(seconds=float(total_t))
+        off_dx_vel = (end_x - start_x) / total_t #(obs_end - obs_start)
+        off_dy_vel = (end_y - start_y) / total_t #(obs_end - obs_start)
+        x_list = [req.x+(start_x+off_dx_vel*i)/3600. for i in range(int(round(total_t/req.dt)))]
+        y_list = [req.y+(start_y+off_dy_vel*i)/3600. for i in range(int(round(total_t/req.dt)))]
+
+        ret = self.calc.coordinate_calc(x_list, y_list, req.coord_sys,
+                                        req.num, req.off_x, req.off_y,
+                                        req.offcoord, req.hosei, req.lamda,
+                                        req.dcos, self.temp, self.press,
+                                        self.humi, obs_start, req.movetime)
+        
         self.azel_publish(ret[0], ret[1], ret[2], req.limit)
         return
 
@@ -131,7 +145,8 @@ class antenna(object):
                 limit_el = ""
                 pass
             limit = limit_az + "" + limit_el
-        rospy.loginfo(limit)
+        if limit:
+            rospy.loginfo(limit)
         return limit
 
 if __name__ == "__main__":    
