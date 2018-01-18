@@ -70,6 +70,7 @@ add_message_files(
   Status_limit_msg.msg
   Status_pc_msg.msg
   Record_param_msg.msg
+  Read_status_msg.msg
 )
 
 ## Generate services in the 'srv' folder
