@@ -6,4 +6,5 @@
   <node pkg='necst' name='m4_controller' type='S_ROS_m4.py'/>
   <node pkg='necst' name='m2_controller' type='S_ROS_m2.py'/>
   <node pkg='necst' name='weather_status' type='S_ROS_weather.py'/>
+  <node pkg='necst' name='pc_status' type='ROS_pc_status.py' args='necst'/>
 </launch>
