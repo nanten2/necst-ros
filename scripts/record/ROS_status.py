@@ -17,6 +17,7 @@ from necst.msg import Status_hot_msg
 from necst.msg import Status_drive_msg
 from necst.msg import Status_m4_msg
 from necst.msg import Status_limit_msg
+from necst.msg import Read_status_msg
 
 
 class status_main(object):
@@ -73,6 +74,9 @@ class status_main(object):
         th = threading.Thread(target = self.tel_status)
         th.setDaemon(True)
         th.start()
+        self.args = sys.argv
+        self.args.append("")
+        self.pub = rospy.Publisher("read_status", Read_status_msg, queue_size=1)
         pass
 
     def status_check(self):
@@ -223,6 +227,13 @@ class status_main(object):
                 print(self.param8["error_msg"])
             if self.param10["alert_msg"]:
                 print(self.param10["alert_msg"])
+
+            if self.args[1]:
+                if drive[0] == 1:
+                    drive = "on"
+                else:
+                    drive = "off"
+                self.pub.publish(Time=tv, Limit=self.param8["error_msg"], Current_Az=enc_az, Current_El=enc_el, Command_Az=command_az, Command_El=command_el, Deviation_Az=command_az-enc_az, Deviation_El=command_el-enc_el, Drive_ready_Az=drive, Drive_ready_El=drive, Authority=antenna_status, Current_Dome=dome_enc, Door_Dome=doom_door, Door_Membrane=memb_status, Door_Authority=remote_status, Current_M4=m4_position, Current_Hot=hot_position, Year=float(ntime.strftime("%Y")), Month=float(ntime.strftime("%m")), Day=float(ntime.strftime("%d")), Hour=float(ntime.strftime("%H")), Min=float(ntime.strftime("%M")), Sec=float(ntime.strftime("%S")), InTemp=self.param2["in_temp"], OutTemp=self.param2["out_temp"], InHumi=self.param2["in_humi"], OutHumi=self.param2["out_humi"], WindDir=self.param2["wind_dir"], WindSp=self.param2["wind_sp"], Press=self.param2["press"], Rain=self.param2["rain"], CabinTemp1= self.param2["cabin_temp1"], CabinTemp2= self.param2["cabin_temp2"], DomeTemp1=self.param2["dome_temp1"], DomeTemp2=self.param2["dome_temp2"], GenTemp1=self.param2["gen_temp1"], GenTemp2=self.param2["gen_temp2"], Current_M2=m2_position, MJD=mjd, LST=lst_hh+":"+lst_mm+":"+lst_ss, Secofday=secofday)
             time.sleep(0.1)
 
 
