@@ -32,15 +32,12 @@ class controller(object):
 
     def __init__(self):
         rospy.init_node('controller_client')
-        rospy.Subscriber("error", Bool, self.error_check)
-        #rospy.Subscriber("task_check", Bool, self.antenna_flag)
         rospy.Subscriber("tracking_check", Bool, self.antenna_tracking)
         rospy.Subscriber("dome_tracking_check", Bool, self.dome_tracking)
         rospy.Subscriber("authority_check", String, self.authority_check)
 
         self.pub1 = rospy.Publisher("observation_start_", Bool, queue_size=1)#observation
         self.pub2 = rospy.Publisher("authority_change", String, queue_size = 1,latch=True)
-        self.pub4 = rospy.Publisher('emergency_stop', Bool, queue_size = 1, latch = True)
         self.pub5 = rospy.Publisher("antenna_drive", String, queue_size = 1)
         self.pub6 = rospy.Publisher("antenna_contactor", String, queue_size = 1)
         self.pub7 = rospy.Publisher("antenna_vel", Velocity_mode_msg, queue_size = 1, latch = True)
@@ -83,23 +80,6 @@ class controller(object):
         self.pub2.publish(msg)
         time.sleep(0.01)
 
-    def error_check(self, req):
-        # error --> True ... stop
-        #if not self.error:
-        if not req.data:
-            pass
-        elif req.data:
-            rospy.logerr("Error stop !!\n")
-            print("Error stop !!\n")
-            rospy.signal_shutdown("Error stop !!\n")
-        else:
-            rospy.logerr("Command error !!\n")
-            rospy.logerr("Please check script.\n")
-            print("Command error !!\n")
-            print("Please check script.\n")
-            rospy.signal_shutdown("Error stop !!\n")
-        return
-
     def antenna_tracking(self, req):
         self.antenna_tracking_flag = req.data
         return
@@ -109,14 +89,6 @@ class controller(object):
         while not self.antenna_tracking_flag:
             time.sleep(0.01)
             pass
-
-    def emergency(self):#shiotani added 09/25
-        emergen_call = Bool()
-        emergen_call.data = True
-        self.pub4.publish(emergen_call)
-        rospy.logwarn('!!!emergency called ROS_control.py!!!')
-        
-
 
     def drive(self, switch = ""):
         """change drive"""
@@ -158,17 +130,6 @@ class controller(object):
         msg.data = "off"
         self.pub6.publish(msg)
         return
-    """
-    def velocity_move(self, az_speed, el_speed, dist_arcsec = 5 * 3600, limit=True):
-        vel = Velocity_mode_msg()
-        vel.az_speed = az_speed
-        vel.el_speed = el_speed
-        vel.dist = dist_arcsec
-        vel.limit = limit
-        self.pub7.publish(vel)
-        rospy.loginfo(vel)
-        return
-    """
 
     def move(self, x, y, coord, planet= 0, off_x=0, off_y=0, offcoord='horizontal', hosei='hosei_230.txt',  lamda=2600, dcos=0, vel_x=0, vel_y=0, movetime=10, limit=True, assist=True):
         """ azel_move, radec_move, galactic_move, planet_move
@@ -212,6 +173,7 @@ class controller(object):
         radec_move
         More detail is move()
         """
+        print("start radec_move!!")
         self.move(ra, dec, coord, 0, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, assist)
         return
     
@@ -220,6 +182,7 @@ class controller(object):
         galactic_move
         More detail is move()
         """
+        print("start galactic_move!!")
         self.move(l, b, "galactic", 0, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, assist)
         return
 
@@ -229,49 +192,45 @@ class controller(object):
         1.Mercury 2.Venus 3. 4.Mars 5.Jupiter 6.Saturn 7.Uranus 8.Neptune, 9.Pluto, 10.Moon, 11.Sun
         More detail is move()
         """
+        print("start planet_move!!")
         self.move(0, 0, "planet", number, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, assist)
         return
 
     def move_stop(self):
-        msg = String()
-        msg.data = "stop"
         print("move_stop")
-        self.pub11.publish(msg)
+        self.pub11.publish("stop")
         return
 
-    def otf_scan(self, lambda_on, beta_on, coord_sys, dx, dy, dt, num, rampt, delay, lamda, hosei, code_mode, off_x, off_y, off_coord, dcos=0, ntarg = 0, limit=True):
-        #on_start = self.ant.otf_start(lambda_on, beta_on, dcos, coord_sys, dx, dy, dt, num, rampt, delay, lamda, hosei, code_mode, off_x, off_y, off_coord, ntarg)
-        msg = Otf_mode_msg()
-        msg.x = lambda_on
-        msg.y = beta_on
-        msg.code_mode = code_mode
-        msg.off_x = off_x
-        msg.off_y = off_y
-        msg.hosei = hosei
-        msg.offcoord = off_coord
-        msg.lamda = lamda
-        msg.dcos = dcos
-        msg.ntarg = ntarg
-        msg.dx = dx
-        msg.dy = dy
-        msg.dt = dt
-        msg.num = num
-        msg.rampt = rampt
-        msg.delay = delay
-        msg.limit = limit
-        rospy.loginfo(msg)
-        self.pub12.publish(msg)
+    def otf_scan(self, x, y, coord, dx, dy, dt, num, rampt, delay=10., off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., movetime=0.1, limit=True):
+        """ otf scan
+
+        Parameters
+        ----------
+        x        : target_x [deg]
+        y        : target_y [deg]
+        coord    : "j2000" or "b1950" or "galactic"
+        dx       : x_grid length [arcsec]
+        dy       : y_grid length [arcsec]
+        dt       : exposure time [s]
+        num      : scan point [ num / 1 line]
+        rampt    : ramp time [s]
+        delay    : (start observation time)-(now time) [s]
+        off_x    : (target_x)-(scan start_x) [arcsec]
+        off_y    : (target_y)-(scan start_y) [arcsec]
+        offcoord : equal coord (no implementation)
+        dcos     : projection (no:0, yes:1)
+        hosei    : hosei file name (default ; hosei_230.txt)
+        lamda    : observation wavelength [um] (default ; 2600)
+        movetime : azel_list length [s] (otf_mode = 0.1)
+        limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
+        """
+        
+        print("start OTF scan!!")
+        self.pub12.publish(x, y, coord, dx, dy, dt, num,
+                           rampt, delay, off_x, off_y, offcoord, dcos,
+                           hosei, lamda, movetime, limit)
         
         return 
-
-    def read_track(self):
-        ret = self.ant.read_track()
-        if ret[0] == "TRUE" and ret[1] == "TRUE":
-            flag = True
-        else:
-            flag = False
-        return flag
-
 
     def dome_move(self,dist):
         dome = Dome_msg()
@@ -432,25 +391,6 @@ class controller(object):
 
 if __name__ == "__main__":
     con = controller()
-
-    # test
-    aa = str(input("Please input mode (j2000, b1950, gal, planet, vel) : "))
-    if aa == "j2000" or aa == "":
-        con.radec_move(83, -5, "J2000")
-    elif aa == "b1950":
-        con.radec_move(28, 34, "b1950")
-    elif aa == "gal":
-        con.galactic_move(28, 34)
-    elif aa == "planet":
-        con.planet_move(2)
-    elif aa == "vel":
-        con.velocity_move(-2000, 0, 10*3600)
-    elif isinstance(aa ,str):
-        bb = input()
-        con.otf_scan(float(aa), float(bb), 1, "j2000", 30, 0, 0.6, 9, 4*0.6, 0, lamda=2600, hosei="hosei_230.txt", code_mode="j2000", off_x=-900, off_y=-900, off_coord="j2000", ntarg = 0)
-    else:
-        print("no name")
-    time.sleep(0.1)
-    #self, lambda_on, beta_on, dcos, coord_sys, dx, dy, dt, num, rampt, delay, lamda, hosei, code_mode, off_x, off_y, off_coord, ntarg = 0
-  
-
+    a = float(input("x : "))
+    b = float(input("y : "))
+    con.otf_scan(a, b, "j2000", 30, 0, 0.6, 9, 0.6*4, delay=10., off_x=-900, off_y=0, offcoord="j2000")
