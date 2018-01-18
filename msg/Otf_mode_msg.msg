@@ -1,12 +1,10 @@
 float64 x
 float64 y
-int64 ntarg
 string coord_sys
-string code_mode
 float64 dx
 float64 dy
 float64 dt
-float64 now
+int64 num
 float64 rampt
 float64 delay
 float64 off_x
@@ -15,5 +13,5 @@ string offcoord
 int64 dcos
 string hosei
 float64 lamda
-int64 num
+float64 movetime
 bool limit
