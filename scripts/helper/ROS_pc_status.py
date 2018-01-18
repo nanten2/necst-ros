@@ -3,6 +3,7 @@ import psutil
 import time
 import rospy
 import threading
+import sys
 from necst.msg import Status_pc_msg
 
 rospy.init_node('cpu_memory_check', anonymous = True)
@@ -10,8 +11,14 @@ class pc_check(object):
     cpu_percent = 0
     used_memory = 0
     used_memory_percent = 0
+    pc_name = ''
 
     def __init__(self):
+        #print(sys.argv)
+        try:
+            self.pc_name = sys.argv[1]
+        except:
+            pass
         pass
 
     def thread_start(self):
@@ -31,14 +38,15 @@ class pc_check(object):
 
     def publish_data(self):
         pub = rospy.Publisher('pc_status', Status_pc_msg, queue_size = 1)
-        while True:
+        while not rospy.is_shutdown():
             data = Status_pc_msg()
+            data.time = time.ctime()
             data.cpu_per = self.cpu_percent
-            data.pc_name = 'necst3(necctrl)'
+            data.pc_name = self.pc_name
             data.used_memory = int(self.used_memory)
             data.memory_per = self.used_memory_percent
             pub.publish(data)
-            time.sleep(10)
+            time.sleep(2)
 
 if __name__ == '__main__':
     print('start')
