@@ -146,7 +146,7 @@ class antenna_move(object):
         ===========
         This function recieves azel_list and start_time from publisher in ROS_antenna.py 
         """
-        print('set_parameter')
+        #print('set_parameter')
         self.parameters['az_list'] = req.az_list
         self.parameters['el_list'] = req.el_list
         self.parameters['start_time'] = req.start_time
@@ -155,7 +155,7 @@ class antenna_move(object):
             self.stop_flag = 1
             return
         """
-        print('start_time : ', self.parameters['start_time'])
+        #print('start_time : ', self.parameters['start_time'])
         self.stop_flag = 0
         return
 
@@ -205,13 +205,13 @@ class antenna_move(object):
         st = self.parameters['start_time']
         ct = time.time()
         st_e = float(st) + float(n*0.1)#0.1 = interval
-        print(n, st, ct, st_e, 'n, st, ct ,st_e')
+        #print(n, st, ct, st_e, 'n, st, ct ,st_e')
 
         #time check
         #----------
         
         if st - ct >=0:
-            print(st - ct,' [sec] waiting...')
+            #print(st - ct,' [sec] waiting...')
             #print('wait starting azel list or send another list')
             #time.sleep(st-ct)
             return
@@ -240,14 +240,14 @@ class antenna_move(object):
             x2 = self.parameters['az_list'][num+1]
             y1 = self.parameters['el_list'][num]
             y2 = self.parameters['el_list'][num+1]
-            rospy.loginfo('send comp azel')
-            print(x1,x2,y1,y2,st2)
+            #rospy.loginfo('send comp azel')
+            #print(x1,x2,y1,y2,st2)
             return (x1,x2,y1,y2,st2)
 
     def act_azel(self):
         while True:
             if self.stop_flag:
-                print('stop_flag ON')
+                #print('stop_flag ON')
                 time.sleep(1)
                 self.command_az_speed = 0
                 self.command_el_speed = 0
@@ -280,7 +280,7 @@ class antenna_move(object):
                 self.command_el = tar_el
                 d_t = st - c
                 a_time3=time.time()
-                print(az, el, c, st, tar_az, tar_el,"####az,el,c,st,tar_az,tar_el")
+                #print(az, el, c, st, tar_az, tar_el,"####az,el,c,st,tar_az,tar_el")
                 #print(a_time3-b_time3,'check#%#%')
                 #rospy.loginfo(d_t)
                 #print(d_t)
@@ -514,7 +514,7 @@ class antenna_move(object):
         if stop_flag:
             rospy.logwarn('')
             sys.exit()
-        print('move check')
+        #print('move check')
         return [Az_track_flag, El_track_flag]
 
 
@@ -924,9 +924,9 @@ if __name__ == '__main__':
     ant = antenna_move()
     ant.start_thread()
     print('[ROS_antenna_move.py] : START SUBSCRIBE')
-    rospy.Subscriber('list_azel', list_azelmsg, ant.set_parameter)
+    rospy.Subscriber('list_azel', list_azelmsg, ant.set_parameter, queue_size=1)
     rospy.Subscriber('move_stop', String, ant.stop_move)
     rospy.Subscriber('emergency_stop', Bool, ant.emergency)
-    rospy.Subscriber('status_encoder', Status_encoder_msg, ant.set_enc_parameter)
+    rospy.Subscriber('status_encoder', Status_encoder_msg, ant.set_enc_parameter, queue_size=1)
     rospy.spin()
     
