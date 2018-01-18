@@ -105,12 +105,15 @@ class antenna(object):
         return
 
     def otf_start(self, req):
-        ret = self.otf.otf_scan(req.x, req.y, req.dcos, req.coord_sys, 
-                                req.dx, req.dy, req.dt, req.num, req.rampt,
-                                req.delay, req.lamda, req.hosei, req.code_mode,
-                                req.off_x, req.off_y, req.offcoord,
-                                 self.temp, self.press, self.humi)
-        self.azel_publish(ret[0], ret[1], ret[2], req.limit)
+        if not self.temp:
+            rospy.logerr("weather_node is not move!!")
+        else:
+            ret = self.otf.otf_scan(req.x, req.y, req.dcos, req.coord_sys, 
+                                    req.dx, req.dy, req.dt, req.num, req.rampt,
+                                    req.delay, req.lamda, req.hosei, req.code_mode,
+                                    req.off_x, req.off_y, req.offcoord,
+                                    self.temp, self.press, self.humi)
+            self.azel_publish(ret[0], ret[1], ret[2], req.limit)
         return
 
     def limit_check(self, az_list, el_list):
