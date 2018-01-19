@@ -21,7 +21,7 @@ class weather_controller(object):
 
     def __init__(self):
         rospy.init_node("weather_status")
-        self.passwd = getpass.getpass()
+        #self.passwd = getpass.getpass()
         pass
 
     def pub_func(self):

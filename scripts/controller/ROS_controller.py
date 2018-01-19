@@ -17,6 +17,7 @@ from necst.msg import Velocity_mode_msg
 from necst.msg import Move_mode_msg
 from necst.msg import Otf_mode_msg
 from necst.msg import Dome_msg
+from necst.msg import Read_status_msg
 from std_msgs.msg import Bool
 from std_msgs.msg import String
 from std_msgs.msg import Float64
@@ -28,6 +29,8 @@ class controller(object):
     antenna_tracking_flag = False
     dome_tracking_flag = False
     access_authority = "no_data"
+
+    status = ""
     
 
     def __init__(self):
@@ -388,6 +391,20 @@ class controller(object):
         self.pub3.publish(msg)
         return
 
+# ===================
+# status
+# ===================
+
+    def read_status(self):
+        self.sub = rospy.Subscriber("read_status", Read_status_msg, self.write_status)
+        time.sleep(1.)
+        print("read end")
+        return self.status
+
+    def write_status(self, req):
+        self.status = req
+        self.sub.unregister()
+        return
 
 if __name__ == "__main__":
     con = controller()
