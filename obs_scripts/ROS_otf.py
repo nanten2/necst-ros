@@ -162,15 +162,15 @@ vlsr = obs["vlsr"]
 
 # Save file
 # ----------------------
-"""
-datahome = 'data'
+
+datahome = '/home/amigos/data/'
 timestamp = time.strftime('%Y%m%d%H%M%S')
 dirname = 'n%s_%s_%s_otf_%s'%(timestamp ,obs['molecule_1'] ,obs['transiti_1'].split('=')[1],obs['object'])
 savedir = os.path.join(datahome, name, dirname)
 
 print('mkdir {savedir}'.format(**locals()))
 os.makedirs(savedir)
-"""
+
 
 # Scan Parameters
 # --------------- 
@@ -190,7 +190,7 @@ elif direction ==1:
     gridx = obs['grid']#[arcsec]
     gridy = 0
 else:
-    con.tracking_end()
+    con.move_stop()
     print('Error:direction')
     sys.exit()
 dt = obs['exposure']#float(obs['grid']/obs['otfvel'])
@@ -284,8 +284,9 @@ beta_list = []
 print('Start experimentation')
 print('')
 
-#savetime = con.read_status()['Time']
-savetime = time.time()
+status = con.read_status()
+savetime = status.Time
+
 
 rp = int(obs['nTest'])
 rp_num = 0
@@ -340,30 +341,32 @@ while rp_num < rp:
             con.observation("start", integ_off)
             time.sleep(integ_off)
 
-            '''
-            d = con.oneshot(exposure=integ_off)
+            status = con.read_status()
+            temp = float(status.CabinTemp1) + 273.15
+            #d = con.oneshot_achilles(exposure=integ_off)
+            d = {'dfs1': [[10]*16384,0], 'dfs2': [[20]*16384,1]}
             d1 = d['dfs1'][0]
             d2 = d['dfs2'][0]
             d1_list.append(d1)
             d2_list.append(d2)
             tdim6_list.append([16384,1,1])
-            date_list.append(con.read_status()['Time'])
+            date_list.append(status.Time)
             thot_list.append(temp)
             vframe_list.append(dp1[0])
             vframe2_list.append(dp2[0]) 
-            lst_list.append(con.read_status()['LST'])
-            az_list.append(con.read_status()['Current_Az'])
-            el_list.append(con.read_status()['Current_El'])
+            lst_list.append(status.LST)
+            az_list.append(status.Current_Az)
+            el_list.append(status.Current_El)
             tau_list.append(tau)
-            hum_list.append(con.read_status()['OutHumi'])
-            tamb_list.append(con.read_status()['OutTemp'])
-            press_list.append(con.read_status()['Press'])
-            windspee_list.append(con.read_status()['WindSp'])
-            winddire_list.append(con.read_status()['WindDir'])
+            hum_list.append(status.OutHumi)
+            tamb_list.append(status.OutTemp)
+            press_list.append(status.Press)
+            windspee_list.append(status.WindSp)
+            winddire_list.append(status.WindDir)
             sobsmode_list.append('HOT')
-            mjd_list.append(con.read_status()['MJD'])
-            secofday_list.append(con.read_status()['Secofday'])
-            subref_list.append(con.read_status()['Current_M2'])
+            mjd_list.append(status.MJD)
+            secofday_list.append(status.Secofday)
+            subref_list.append(status.Current_M2)
             latest_hottime = time.time()
             P_hot1 = numpy.sum(d1)
             P_hot2 = numpy.sum(d2)
@@ -378,7 +381,7 @@ while rp_num < rp:
             beta_list.append(obs['beta_off'])
             pass
 
-            '''
+
         else:
             dp2 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, 
                                sx + num*gridx + total_count*dx, sy + num*gridy + total_count*dy, 
@@ -398,31 +401,32 @@ while rp_num < rp:
         time.sleep(integ_off)
 
 
-        '''
-        temp = float(con.read_status()['CabinTemp1']) + 273.15
-        d = con.oneshot(exposure=integ_off)
+        status = con.read_status()
+        temp = float(status.CabinTemp1) + 273.15
+        #d = con.oneshot_achilles(exposure=integ_off)
+        d ={'dfs1': [[1]*16384,0], 'dfs2': [[2]*16384,1]}
         d1 = d['dfs1'][0]
         d2 = d['dfs2'][0]
         d1_list.append(d1)
         d2_list.append(d2)
         tdim6_list.append([16384,1,1])
-        date_list.append(con.read_status()['Time'])
+        date_list.append(status.Time)
         thot_list.append(temp)
         vframe_list.append(dp1[0]) 
         vframe2_list.append(dp2[0]) 
-        lst_list.append(con.read_status()['LST'])
-        az_list.append(con.read_status()['Current_Az'])
-        el_list.append(con.read_status()['Current_El'])
+        lst_list.append(status.LST)
+        az_list.append(status.Current_Az)
+        el_list.append(status.Current_El)
         tau_list.append(tau)
-        hum_list.append(con.read_status()['OutHumi'])
-        tamb_list.append(con.read_status()['OutTemp'])
-        press_list.append(con.read_status()['Press'])
-        windspee_list.append(con.read_status()['WindSp'])
-        winddire_list.append(con.read_status()['WindDir'])
+        hum_list.append(status.OutHumi)
+        tamb_list.append(status.OutTemp)
+        press_list.append(status.Press)
+        windspee_list.append(status.WindSp)
+        winddire_list.append(status.WindDir)
         sobsmode_list.append('OFF')
-        mjd_list.append(con.read_status()['MJD'])
-        secofday_list.append(con.read_status()['Secofday'])
-        subref_list.append(con.read_status()['Current_M2'])
+        mjd_list.append(status.MJD)
+        secofday_list.append(status.Secofday)
+        subref_list.append(status.Current_M2)
         P_sky1 = numpy.sum(d1)
         P_sky2 = numpy.sum(d2)
         tsys1 = temp/(P_hot1/P_sky1-1)
@@ -437,7 +441,7 @@ while rp_num < rp:
         lambda_list.append(obs['lambda_off'])
         beta_list.append(obs['beta_off'])
 
-        '''
+
 
         print('move ON')
         con.move_stop()
@@ -466,11 +470,11 @@ while rp_num < rp:
 
         print(' OTF scan_start!! ')
         print('move ON')
-        start_on = con.otf_scan(lambda_on, beta_on, coord_sys, dx, dy, dt, scan_point, rampt, 0, lamda, 'hosei_230.txt', obs['coordsys'].lower(), off_x = sx + num*gridx, off_y = sy + num*gridy, off_coord = cosydel, dcos=dcos)
+        start_on = con.otf_scan(lambda_on, beta_on, coord_sys, dx, dy, dt, scan_point, rampt, delay=10, off_x = sx + num*gridx, off_y = sy + num*gridy, off_coord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, movwtime=0.1, limit=True)
 
         print('getting_data...')
-        #d = con.oneshot(repeat = scan_point ,exposure = integ_on ,stime = start_on)
-        start_on = 5#test
+        #d = con.oneshot_achilles(repeat = scan_point ,exposure = integ_on ,stime = start_on)
+        d ={'dfs1': [[1]*16384,0], 'dfs2': [[2]*16384,1]}
         print("start_on:",start_on)
         while start_on + obs['otflen']/24./3600. > 40587 + time.time()/(24.*3600.):
             #while obs['otflen']/24./3600. > 40587 + time.time()/(24.*3600.):    
@@ -478,20 +482,20 @@ while rp_num < rp:
         con.observation("start", integ_on)# getting one_shot_data
         time.sleep(integ_on)
 
-        '''
-        temp = float(con.read_status()['CabinTemp1']) + 273.15
-        date = con.read_status()['Time']
-        lst = con.read_status()['LST']
-        az = con.read_status()['Current_Az']
-        el = con.read_status()['Current_El']
-        hum = con.read_status()['OutHumi']
-        tamb = con.read_status()['OutTemp']
-        press = con.read_status()['Press']
-        windspee = con.read_status()['WindSp']
-        winddire = con.read_status()['WindDir']
-        mjd = con.read_status()['MJD']
-        sec = con.read_status()['Secofday']
-        subref = con.read_status()['Current_M2']
+        status = con.read_status()
+        temp = float(status.CabinTemp1) + 273.15
+        date = status.Time
+        lst = status.LST
+        az = status.Current_Az
+        el = status.Current_El
+        hum = status.OutHumi
+        tamb = status.OutTemp
+        press = status.Press
+        windspee = status.WindSp
+        winddire = status.WindDir
+        mjd = status.MJD
+        sec = status.Secofday
+        subref = status.Current_M2
 
         _on = 0
         while _on < scan_point:
@@ -531,7 +535,7 @@ while rp_num < rp:
             beta_list.append(obs['beta_on'])
 
             _on += 1
-            '''
+
 
         print('stop')
         con.move_stop()
@@ -547,34 +551,34 @@ con.move_hot('in')
 con.observation("start", integ_off)
 time.sleep(integ_off)
 
-'''            
-temp = float(con.read_status()['CabinTemp1']) + 273.15
+
+temp = float(status.CabinTemp1) + 273.15
         
 print('Temp: %.2f'%(temp))
 print('get spectrum...')
-d = con.oneshot(exposure=integ_off)
+d = con.oneshot_achilles(exposure=integ_off)
 d1 = d['dfs1'][0]
 d2 = d['dfs2'][0]
 d1_list.append(d1)
 d2_list.append(d2)
 tdim6_list.append([16384,1,1])
-date_list.append(con.read_status()['Time'])
+date_list.append(status.Time)
 thot_list.append(temp)
 vframe_list.append(dp1[0])
 vframe2_list.append(dp2[0])
-lst_list.append(con.read_status()['LST'])
-az_list.append(con.read_status()['Current_Az'])
-el_list.append(con.read_status()['Current_El'])
+lst_list.append(status.LST)
+az_list.append(status.Current_Az)
+el_list.append(status.Current_El)
 tau_list.append(tau)
-hum_list.append(con.read_status()['OutHumi'])
-tamb_list.append(con.read_status()['OutTemp'])
-press_list.append(con.read_status()['Press'])
-windspee_list.append(con.read_status()['WindSp'])
-winddire_list.append(con.read_status()['WindDir'])
+hum_list.append(status.OutHumi)
+tamb_list.append(status.OutTemp)
+press_list.append(status.Press)
+windspee_list.append(status.WindSp)
+winddire_list.append(status.WindDir)
 sobsmode_list.append('HOT')
-mjd_list.append(con.read_status()['MJD'])
-secofday_list.append(con.read_status()['Secofday'])
-subref_list.append(con.read_status()['Current_M2'])
+mjd_list.append(status.MJD)
+secofday_list.append(status.Secofday)
+subref_list.append(status.Current_M2)
 tsys_list1.append(0)
 tsys_list2.append(0)
 _2NDLO_list1.append(dp1[3]['sg21']*1000)
@@ -807,11 +811,12 @@ f2 = os.path.join(savedir,'n%s_%s_%s_otf_%s.fits'%(timestamp ,obs['molecule_2'],
 print('VFRAME1 : ',dp1[0])
 print('dp2 : ',dp2)
 
+sys.path.append("/home/amigos/ros/src/necst/lib/")
 import n2fits_write
 n2fits_write.write(read1,f1)
 n2fits_write.write(read2,f2)
 
-'''
+
 
 #shutil.copy("/home/amigos/NECST/soft/server/hosei_230.txt", savedir+"/hosei_copy")
 timestamp = time.strftime('%Y%m%d_%H%M%S')

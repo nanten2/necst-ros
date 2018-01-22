@@ -54,10 +54,12 @@ except:
 #status = ctrl.read_status()
 #if status["Drive_ready_Az"] == "ON" and status["Drive_ready_El"] == "ON":
 #print("antenna_move")
+time.sleep(0.3)
 if snow:
-    ctrl.azel_move(-90*3600, 0)
+    ctrl.azel_move(-90, 0.0, limit=False)
 else:
     ctrl.azel_move(0, 45)
+ctrl.antenna_tracking_check()
 print("memb_close")
 ctrl.memb_close()
 
@@ -68,12 +70,7 @@ time.sleep(1.5)
 
 print("dome_move")
 ctrl.dome_move(90)
-#ret = ctrl.read_status()
-#while round(ret["Current_Az"], 2) != 0.0 or round(ret["Current_El"], 2) != 45.0:
-#time.sleep(0.5)
-#ret = ctrl.read_status()
-ctrl.drive_off()
-ctrl.contactor_off()
+ctrl.drive("off")
 print("End observation")
 obs_log.end_script(name)
     

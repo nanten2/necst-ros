@@ -89,6 +89,7 @@ class controller(object):
 
     def antenna_tracking_check(self):
         rospy.loginfo(" tracking now... \n")
+        time.sleep(3.)
         while not self.antenna_tracking_flag:
             time.sleep(0.01)
             pass
@@ -321,6 +322,7 @@ class controller(object):
 
     def dome_tracking_check(self):
         rospy.loginfo(" dome_tracking now... \n")
+        time.sleep(3.)
         while not self.dome_tracking_flag:
             time.sleep(0.01)
             pass
