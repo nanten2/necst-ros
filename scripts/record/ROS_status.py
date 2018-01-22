@@ -227,10 +227,6 @@ class status_main(object):
                 print(self.param8["error_msg"])
             if self.param10["alert_msg"]:
                 print(self.param10["alert_msg"])
-<<<<<<< HEAD
-=======
-
->>>>>>> e3bdd655047dd88b62f65aeb1d4dc4cbcc1acd33
 
             if self.args[1]:
                 if drive[0] == 1:
