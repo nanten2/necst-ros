@@ -38,5 +38,5 @@ float64 GenTemp1
 float64 GenTemp2
 float64 Current_M2
 float64 MJD
-string LST
+int64 LST
 float64 Secofday

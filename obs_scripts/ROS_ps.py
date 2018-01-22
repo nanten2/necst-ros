@@ -139,15 +139,15 @@ if obs['lo1st_sb_2'] == 'U':#後半に似たのがあるけど気にしない()
 else:
     sb2 = -1  
 
-"""
-datahome = 'data'
+
+datahome = '/home/amigos/data/test/'
 timestamp = time.strftime('%Y%m%d_%H%M%S')
 dirname = timestamp
 savedir = os.path.join(datahome, name, dirname)
 
 print('mkdir {savedir}'.format(**locals()))
 os.makedirs(savedir)
-"""
+
 
 d1_list = []
 d2_list = []
@@ -177,8 +177,7 @@ _2NDLO_list2 = []
 print('Start experimentation')
 print('')
 
-###savetime = con.read_status()['Time']
-savetime = time.time()
+savetime = con.read_status().Time
 num = 0
 n = int(obs['nSeq'])
 latest_hottime = 0
@@ -210,30 +209,33 @@ while num < n:
                            sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
         con.observation("start", integ_off)# getting one_shot_data 
         time.sleep(integ_off)
-        """
-        d = con.oneshot(exposure=integ_off)
+
+        status = con.read_status()
+        temp = float(status.CabinTemp1) + 273.15
+        #d = con.oneshot_achilles(exposure=integ_off)
+        d = {'dfs1': [[100]*16384,1], 'dfs2': [[10]*16384,11]}
         d1 = d['dfs1'][0]
         d2 = d['dfs2'][0]
         d1_list.append(d1)
         d2_list.append(d2)
         tdim6_list.append([16384,1,1])
-        date_list.append(con.read_status()['Time'])
+        date_list.append(status.Time)
         thot_list.append(temp)
         vframe_list.append(dp1[0])
         vframe2_list.append(dp1[0])
-        lst_list.append(con.read_status()['LST'])
-        az_list.append(con.read_status()['Current_Az'])
-        el_list.append(con.read_status()['Current_El'])
+        lst_list.append(status.LST)
+        az_list.append(status.Current_Az)
+        el_list.append(status.Current_El)
         tau_list.append(tau)
-        hum_list.append(con.read_status()['OutHumi'])
-        tamb_list.append(con.read_status()['OutTemp'])
-        press_list.append(con.read_status()['Press'])
-        windspee_list.append(con.read_status()['WindSp'])
-        winddire_list.append(con.read_status()['WindDir'])
+        hum_list.append(status.OutHumi)
+        tamb_list.append(status.OutTemp)
+        press_list.append(status.Press)
+        windspee_list.append(status.WindSp)
+        winddire_list.append(status.WindDir)
         sobsmode_list.append('HOT')
-        mjd_list.append(con.read_status()['MJD'])
-        secofday_list.append(con.read_status()['Secofday'])
-        subref_list.append(con.read_status()['Current_M2'])
+        mjd_list.append(status.MJD)
+        secofday_list.append(status.Secofday)
+        subref_list.append(status.Current_M2)
         latest_hottime = time.time()
         P_hot = numpy.sum(d1)
         tsys_list.append(0)
@@ -242,7 +244,7 @@ while num < n:
         print(dp1[3]['sg21']*1000)
         print(dp1[3]['sg22']*1000)
         pass
-        """
+
 
     else:
         dp1 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, lamdel_on, betdel_on, dcos, cosydel,
@@ -254,31 +256,32 @@ while num < n:
     con.observation("start", integ_off)# getting one_shot_data
     time.sleep(integ_off)
 
-    """
-    temp = float(con.read_status()['CabinTemp1']) + 273.15
-    d = con.oneshot(exposure=integ_off)
+    status = con.read_status()
+    temp = float(status.CabinTemp1) + 273.15
+    #d = con.oneshot(exposure=integ_off)
+    d = {'dfs1': [[1]*16384,1], 'dfs2': [[10]*16384,11]}
     d1 = d['dfs1'][0]
     d2 = d['dfs2'][0]
     d1_list.append(d1)
     d2_list.append(d2)
     tdim6_list.append([16384,1,1])
-    date_list.append(con.read_status()['Time'])
+    date_list.append(status.Time)
     thot_list.append(temp)
     vframe_list.append(dp1[0])
     vframe2_list.append(dp1[0])
-    lst_list.append(con.read_status()['LST'])
-    az_list.append(con.read_status()['Current_Az'])
-    el_list.append(con.read_status()['Current_El'])
+    lst_list.append(status.LST)
+    az_list.append(status.Current_Az)
+    el_list.append(status.Current_El)
     tau_list.append(tau)
-    hum_list.append(con.read_status()['OutHumi'])
-    tamb_list.append(con.read_status()['OutTemp'])
-    press_list.append(con.read_status()['Press'])
-    windspee_list.append(con.read_status()['WindSp'])
-    winddire_list.append(con.read_status()['WindDir'])
+    hum_list.append(status.OutHumi)
+    tamb_list.append(status.OutTemp)
+    press_list.append(status.Press)
+    windspee_list.append(status.WindSp)
+    winddire_list.append(status.WindDir)
     sobsmode_list.append('OFF')
-    mjd_list.append(con.read_status()['MJD'])
-    secofday_list.append(con.read_status()['Secofday'])
-    subref_list.append(con.read_status()['Current_M2'])
+    mjd_list.append(status.MJD)
+    secofday_list.append(status.Secofday)
+    subref_list.append(status.Current_M2)
     P_sky = numpy.sum(d1)
     tsys = temp/(P_hot/P_sky-1)
     tsys_list.append(tsys)
@@ -286,7 +289,7 @@ while num < n:
     _2NDLO_list2.append(dp1[3]['sg22']*1000)
     print(dp1[3]['sg21']*1000)
     print(dp1[3]['sg22']*1000)
-    """
+
 
     print('move ON')
 
@@ -297,25 +300,6 @@ while num < n:
         con.galactic_move(lambda_on, beta_on, off_x=lamdel_on, off_y=betdel_on, offcoord = cosydel)
 
 
-
-    """
-    status = con.read_status()
-    dome_az = status["Current_Dome"]
-    if dome_az < 0.:
-        dome_az += 360.
-    ant_az = status["Current_Az"]
-    if ant_az < 0.:
-        ant_az += 360.
-    while abs(dome_az - ant_az) > 3. and abs(dome_az - ant_az) < 357.:
-        time.sleep(0.5)
-        status = con.read_status()
-        dome_az = status["Current_Dome"]
-        if dome_az < 0.:
-            dome_az += 360.
-        ant_az = status["Current_Az"]
-        if ant_az < 0.:
-            ant_az += 360.
-            """
     print("check_track")
     con.antenna_tracking_check()
     con.dome_tracking_check()
@@ -325,38 +309,40 @@ while num < n:
     con.observation("start", integ_on)# getting one_shot_data
     time.sleep(integ_on)
 
-    """
+
     #print(dp1)
-    temp = float(con.read_status()['CabinTemp1']) + 273.15
-    d = con.oneshot(exposure=integ_on)
+    status = con.read_status()
+    temp = float(status.CabinTemp1) + 273.15
+    #d = con.oneshot(exposure=integ_on)
+    d = {'dfs1': [[1]*16384,1], 'dfs2': [[10]*16384,11]}
     d1 = d['dfs1'][0]
     d2 = d['dfs2'][0]
     d1_list.append(d1)
     d2_list.append(d2)
     tdim6_list.append([16384,1,1])
-    date_list.append(con.read_status()['Time'])
+    date_list.append(status.Time)
     thot_list.append(temp)
     vframe_list.append(dp1[0])
     vframe2_list.append(dp1[0])
-    lst_list.append(con.read_status()['LST'])
-    az_list.append(con.read_status()['Current_Az'])
-    el_list.append(con.read_status()['Current_El'])
+    lst_list.append(status.LST)
+    az_list.append(status.Current_Az)
+    el_list.append(status.Current_El)
     tau_list.append(tau)
-    hum_list.append(con.read_status()['OutHumi'])
-    tamb_list.append(con.read_status()['OutTemp'])
-    press_list.append(con.read_status()['Press'])
-    windspee_list.append(con.read_status()['WindSp'])
-    winddire_list.append(con.read_status()['WindDir'])
+    hum_list.append(status.OutHumi)
+    tamb_list.append(status.OutTemp)
+    press_list.append(status.Press)
+    windspee_list.append(status.WindSp)
+    winddire_list.append(status.WindDir)
     sobsmode_list.append('ON')
-    mjd_list.append(con.read_status()['MJD'])
-    secofday_list.append(con.read_status()['Secofday'])
-    subref_list.append(con.read_status()['Current_M2'])
+    mjd_list.append(status.MJD)
+    secofday_list.append(status.Secofday)
+    subref_list.append(status.Current_M2)
     tsys_list.append(tsys)
     _2NDLO_list1.append(dp1[3]['sg21']*1000)    
     _2NDLO_list2.append(dp1[3]['sg22']*1000)
     print(dp1[3]['sg21']*1000)
     print(dp1[3]['sg22']*1000)
-    """
+
 
     print('stop')
         
@@ -368,46 +354,47 @@ print('R')#最初と最後をhotではさむ
 con.observation("start", integ_off)
 time.sleep(integ_off)
 
-"""            
-temp = float(con.read_status()['CabinTemp1']) + 273.15
-        
+
+status = con.read_status()
+temp = float(status.CabinTemp1) + 273.15
 print('Temp: %.2f'%(temp))
 print('get spectrum...')
-d = con.oneshot(exposure=integ_off)
+#d = con.oneshot(exposure=integ_off)
+d = {'dfs1': [[100]*16384,1], 'dfs2': [[10]*16384,11]}
 d1 = d['dfs1'][0]
 d2 = d['dfs2'][0]
 d1_list.append(d1)
 d2_list.append(d2)
 tdim6_list.append([16384,1,1])
-date_list.append(con.read_status()['Time'])
+date_list.append(status.Time)
 thot_list.append(temp)
 vframe_list.append(dp1[0])
 vframe2_list.append(dp1[0])
-lst_list.append(con.read_status()['LST'])
-az_list.append(con.read_status()['Current_Az'])
-el_list.append(con.read_status()['Current_El'])
+lst_list.append(status.LST)
+az_list.append(status.Current_Az)
+el_list.append(status.Current_El)
 tau_list.append(tau)
-hum_list.append(con.read_status()['OutHumi'])
-tamb_list.append(con.read_status()['OutTemp'])
-press_list.append(con.read_status()['Press'])
-windspee_list.append(con.read_status()['WindSp'])
-winddire_list.append(con.read_status()['WindDir'])
+hum_list.append(status.OutHumi)
+tamb_list.append(status.OutTemp)
+press_list.append(status.Press)
+windspee_list.append(status.WindSp)
+winddire_list.append(status.WindDir)
 sobsmode_list.append('HOT')
-mjd_list.append(con.read_status()['MJD'])
-secofday_list.append(con.read_status()['Secofday'])
-subref_list.append(con.read_status()['Current_M2'])
+mjd_list.append(status.MJD)
+secofday_list.append(status.Secofday)
+subref_list.append(status.Current_M2)
 P_hot = numpy.sum(d1)
 tsys_list.append(0)
 _2NDLO_list1.append(dp1[3]['sg21']*1000)
 _2NDLO_list2.append(dp1[3]['sg22']*1000)
-"""
+
 
 con.move_hot('out')
 print('observation end')
 con.move_stop()
 con.dome_stop()
 
-'''
+
 
 if obs['lo1st_sb_1'] == 'U':
     ul = 1
@@ -621,13 +608,13 @@ f1 = os.path.join(savedir,'n2ps_%s_IF1.fits'%(timestamp))
 f2 = os.path.join(savedir,'n2ps_%s_IF2.fits'%(timestamp))
 #numpy.save(f1+".npy",read1)
 #numpy.save(f2+".npy",read2)
-''' 
 
-"""
+
+sys.path.append("/home/amigos/ros/src/necst/lib")
 import n2fits_write
 n2fits_write.write(read1,f1)
 n2fits_write.write(read2,f2)
-"""
+
 timestamp = time.strftime('%Y%m%d_%H%M%S')
 dirname = timestamp
 obs_log.end_script(name, dirname)
