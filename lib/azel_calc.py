@@ -49,8 +49,6 @@ class azel_calc(object):
         ret = self.coord.apply_kisa_test(_az, _el, hosei)
         target_az = ret_azel[0]+ret[0]
         target_el = ret_azel[1]+ret[1]
-        if target_az > self.soft_limit*3600.:
-            target_az -= 360*3600.
         return target_az, target_el
 
     def azel_calc(self, az, el, off_x, off_y, off_coord, now, vel_x=0, vel_y=0, movetime=10):
@@ -140,6 +138,24 @@ class azel_calc(object):
             azel_list = self.kisa_calc(altaz_list[i], dcos, hosei)
             az_list.append(azel_list[0])
             el_list.append(azel_list[1])
+        check_list1 = [i for i in az_list if 0 <= i <= self.soft_limit*3600. ]
+        check_list2 = [i for i in az_list if (360-self.soft_limit)*3600. <= i <= 360*3600. ]
+        
+        if check_list1 == az_list:
+            pass
+        elif check_list2 == az_list:
+            az_list = [i-360.*3600. for i in az_list]
+        else:
+            check_list3 = [i for i in az_list if 0 <= i < 270.*3600. ]
+            check_list4 = [i for i in az_list if 90*3600. < i <= 360.*3600. ]
+            if check_list3 == az_list:
+                pass
+            elif check_list4 == az_list:
+                az_list = [i-360.*3600. for i in az_list]
+            else:
+                pass
+        
+    
                 
         print("create_list : end!!")
 
