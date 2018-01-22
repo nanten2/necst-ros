@@ -24,9 +24,19 @@ class dome_controller(object):
     stop = [0]
     error = []
     count = 0
-    status_box = ['0']*9 ### for ROS
+    #status_box = ['0']*9 ### for ROS
     dome_enc = 0
     limit = 0
+
+    ###status_paramter
+    move_status = ''
+    right_act = ''
+    right_pos = ''
+    left_act = ''
+    left_pos = ''
+    memb_act = ''
+    memb_pos = ''
+    remote_status = ''
 
     ###ROS_dome.py parameter
     enc_az = '0'###antenna az for dome tracking
@@ -35,16 +45,12 @@ class dome_controller(object):
         'target_az':0,
         'command':0
         }
+    
     ###command flags
     flag = 0
 
     end_flag = True
-        
-
-    
-    
-    
-    
+           
     def __init__(self):
         board_name = 2724
         rsw_id = 2
@@ -85,7 +91,7 @@ class dome_controller(object):
             enc_az = float(enc_az)
             enc_az = enc_az/3600.
             if math.fabs(enc_az - dome_az) >= 2.0:
-                self.move(enc_az)
+                self.move(enc_az, track=True)
             time.sleep(0.01)
             if self.end_flag == True:
                 break
@@ -111,7 +117,7 @@ class dome_controller(object):
         self.move(dist)    #move_org
         return
     
-    def move(self, dist):
+    def move(self, dist, track=False):
         pos_arcsec = float(self.dome_enc)#[arcsec]
         pos = pos_arcsec/3600.
         pos = pos % 360.0
@@ -142,6 +148,8 @@ class dome_controller(object):
             global buffer
             self.buffer[1] = 1
             self.do_output(turn, speed)
+            if track:
+                return
             while dir != 0:
                 pos_arcsec = float(self.dome_enc)
                 pos = pos_arcsec/3600.
@@ -415,13 +423,12 @@ class dome_controller(object):
         return
     
     def status_check(self):
-        while not rospy.is_shutdown()::
+        while not rospy.is_shutdown():
             ret1 = self.get_action()
             ret2 = self.get_door_status()
             ret3 = self.get_memb_status()
             ret4 = self.get_remote_status()
             ret5 = str(self.get_domepos())
-            self.status_box = [ret1, ret2[0], ret2[1], ret2[2], ret2[3], ret3[0], ret3[1], ret4, ret5]
             time.sleep(0.01)
         return
     
@@ -529,24 +536,6 @@ class dome_controller(object):
             pub.publish(s)
             time.sleep(0.1)
         
-        
-
-
-def dome_client(host, port):
-    client = pyinterface.server_client_wrapper.control_client_wrapper(dome_controller, host, port)
-    return client
-
-def dome_monitor_client(host, port):
-    client = pyinterface.server_client_wrapper.monitor_client_wrapper(dome_controller, host, port)
-    return client
-
-def start_dome_server(port1 = 8007, port2 = 8008):
-    dome = dome_controller()
-    server = pyinterface.server_client_wrapper.server_wrapper(dome,'', port1, port2)
-    server.start()
-    return server
-
-
 if __name__ == '__main__':
     rospy.init_node('dome')
     d = dome_controller()
