@@ -176,6 +176,8 @@ class alert(object):
                     self.state = "error release !!\n\n\n"
                     rospy.loginfo(self.state)
                     self.state = ""
+                    time.sleep(0.5)
+                    self.pub_alert.publish(self.state)
                 pass
             time.sleep(0.1)
         return
