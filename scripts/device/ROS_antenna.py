@@ -37,6 +37,10 @@ class antenna(object):
 
     limit = 0
     stime = 0
+
+    soft_limit_az = 240.
+    soft_limit_up = 80.
+    soft_limit_down = 20.
     
     def __init__(self):
         self.calc = azel_calc.azel_calc()
@@ -75,12 +79,6 @@ class antenna(object):
             print("\n")
             pass
         return
-    """
-    def velocity_move(self, req):
-        ret = self.calc.velocity_calc(req.az_speed, req.el_speed, req.dist, self.enc_az, self.enc_el)
-        self.azel_publish(ret[0], ret[1], ret[2], req.limit, req.time)
-        return
-    """
 
     def antenna_move(self, req):
         if req.time < self.stime:
@@ -132,18 +130,18 @@ class antenna(object):
 
     def limit_check(self, az_list, el_list):
         for i in az_list:
-            if i > 240.*3600.:
-                limit_az = "!!cw limit!!"
-            elif i <-240.*3600.:
-                limit_az = "!!ccw limit!!"
+            if i > self.soft_limit_az*3600.:
+                limit_az = "!!cw 1st soft limit!!"
+            elif i < -self.soft_limit_az*3600.:
+                limit_az = "!!ccw 1st soft limit!!"
             else:
                 limit_az = ""
                 pass
         for i in el_list:
-            if i < 20.*3600.:
-                limit_el = "!!down limit!!"
-            elif i > 80.*3600.:
-                limit_el = "!!up limit!!"
+            if i < self.soft_limit_down*3600.:
+                limit_el = "!!down 1st soft limit!!"
+            elif i > self.soft_limit_up*3600.:
+                limit_el = "!!up 1st soft limit!!"
             else:
                 limit_el = ""
                 pass
