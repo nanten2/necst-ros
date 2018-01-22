@@ -506,10 +506,10 @@ class dome_controller(object):
     def act_dome(self):
         while True:
             if self.flag == 1:
-                time.sleep(1)
+                time.sleep(0.01)
                 continue
             if self.parameters['command'] == 'pass':
-                time.sleep(1)
+                time.sleep(0.01)
             elif self.parameters['command'] == 'dome_open':
                 self.dome_open()
                 self.flag = 1
@@ -534,7 +534,7 @@ class dome_controller(object):
                 self.move_track()
                 self.flag = 1
                 pass
-            time.sleep(1)
+            time.sleep(0.01)
             continue
 
     def stop_dome(self):
@@ -551,7 +551,7 @@ class dome_controller(object):
                 self.end_flag = True
                 self.flag = 1
                 print('dome track end')
-            time.sleep(1)
+            time.sleep(0.01)
             continue        
 
     ###publish status
