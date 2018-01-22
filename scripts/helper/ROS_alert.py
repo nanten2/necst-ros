@@ -51,10 +51,10 @@ class alert(object):
         
     def callback_dome(self, req):
         """ callback : status_dome """
-        status_box = req.status
-        self.memb = status_box[6]
-        self.dome_r = status_box[2]
-        self.dome_l = status_box[4]
+        #status_box = req.status
+        self.memb = req.memb_pos#status_box[6]
+        self.dome_r = req.right_pos#status_box[2]
+        self.dome_l = req.left_pos#status_box[4]
         
     def callback_azel(self, req):
         self.az_list = req.az_list/3600.
