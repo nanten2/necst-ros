@@ -37,7 +37,7 @@ class dome_controller(object):
     def __init__(self):
         self.start_status_check()
         pass
-    
+
     def move_track(self):
         print('dome_trakcking start', self.end_flag)
         ret = self.read_domepos()
@@ -49,7 +49,7 @@ class dome_controller(object):
             enc_az = float(enc_az)
             enc_az = enc_az/3600.
             if math.fabs(enc_az - dome_az) >= 2.0:
-                self.move(enc_az)
+                self.move(enc_az, track=True)
             time.sleep(0.01)
             if self.end_flag == True:
                 break
@@ -75,7 +75,7 @@ class dome_controller(object):
         self.move(dist)    #move_org
         return
     
-    def move(self, dist):
+    def move(self, dist, track=False):
         pos_arcsec = float(self.dome_enc)#[arcsec]
         pos = pos_arcsec/3600.
         pos = pos % 360.0
@@ -106,6 +106,10 @@ class dome_controller(object):
             global buffer
             self.buffer[1] = 1
             self.calc(turn, speed)
+            print(track)
+            if track:
+                time.sleep(0.1)
+                return
             while dir != 0:
                 pos_arcsec = float(self.dome_enc)
                 pos = pos_arcsec/3600.
@@ -169,9 +173,11 @@ class dome_controller(object):
             self.right_pos = 'OPEN'
             self.left_pos = 'OPEN'
             d_door = self.get_door_status()
+            """
             while ret[1] != 'OPEN':
-                time.sleep(5)
+                time.sleep(0.01)
                 ret = self.get_door_status()
+            """
         buff = [0, 0]
         return
     
@@ -184,9 +190,11 @@ class dome_controller(object):
             time.sleep(3)
             self.right_pos = 'CLOSE'
             self.left_pos = 'CLOSE'
+            """
             while ret[1] != 'CLOSE':
-                time.sleep(5)
+                time.sleep(0.01)
                 ret = self.get_door_status()
+            """
         buff = [0, 0]
         #self.dio.do_output(buff, 5, 2)
         #self.dio.output_point(buff, 5)
@@ -201,9 +209,11 @@ class dome_controller(object):
             self.memb_pos = 'MOVE'
             time.sleep(3)
             self.memb_pos = 'OPEN'
+            """
             while ret[1] != 'OPEN':
-                time.sleep(5)
+                time.sleep(0.01)
                 #ret = self.get_memb_status()
+            """
         buff = [0, 0]
         #self.dio.do_output(buff, 7, 2)
         #self.dio.output_point(buff, 7)
@@ -215,12 +225,14 @@ class dome_controller(object):
             buff = [0, 1]
             #self.dio.do_output(buff, 7, 2)
             #self.dio.output_point(buff, 7)
-            self.memb = 'MOVE'
+            self.memb_pos = 'MOVE'
             time.sleep(3)
-            self.memb = 'CLOSE'
+            self.memb_pos = 'CLOSE'
+            """
             while ret[1] != 'CLOSE':
-                time.sleep(5)
+                time.sleep(0.01)
                 ret = self.get_memb_status()
+            """
         buff = [0, 0]
         #self.dio.do_output(buff, 7, 2)
         #self.dio.output_point(buff, 7)
@@ -505,6 +517,7 @@ class dome_controller(object):
     ###function call to dome/memb action 
     def act_dome(self):
         while True:
+            print('wait command...')
             if self.flag == 1:
                 time.sleep(0.01)
                 continue
@@ -540,7 +553,7 @@ class dome_controller(object):
     def stop_dome(self):
         while True:
             if self.flag == 1:
-                time.sleep(1)
+                time.sleep(0.01)
                 continue
             elif self.parameters['command'] == 'dome_stop':
                 self.dome_stop()
@@ -559,8 +572,17 @@ class dome_controller(object):
         while True:
             pub = rospy.Publisher('status_dome', Status_dome_msg, queue_size=10, latch = True)
             s = Status_dome_msg()
-            s.status = self.status_box[:8]
+            s.move_status = self.status_box[0]
+            s.right_act = self.status_box[1]
+            s.right_pos = self.status_box[2]
+            s.left_act = self.status_box[3]
+            s.left_pos = self.status_box[4]
+            s.memb_act = self.status_box[5]
+            s.memb_pos = self.status_box[6]
+            s.remote_status = self.status_box[7]
+            #s.status = self.status_box[:8]
             s.dome_enc = float(self.status_box[8])
+            
             pub.publish(s)
             time.sleep(0.1)
         
@@ -588,6 +610,6 @@ if __name__ == '__main__':
     d.start_thread_ROS()
     print('[ROS_dome.py] : START SUBSCRIBE')
     sub1 = rospy.Subscriber('status_encoder', Status_encoder_msg, d.set_enc_parameter)
-    sub2 = rospy.Subscriber('dome_move', Dome_msg, d.set_command)
+    sub2 = rospy.Subscriber('dome_move', Dome_msg, d.set_command, queue_size = 1)
     rospy.spin()
     
