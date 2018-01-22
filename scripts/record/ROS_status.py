@@ -17,6 +17,7 @@ from necst.msg import Status_hot_msg
 from necst.msg import Status_drive_msg
 from necst.msg import Status_m4_msg
 from necst.msg import Status_limit_msg
+from necst.msg import Read_status_msg
 
 
 class status_main(object):
@@ -73,6 +74,9 @@ class status_main(object):
         th = threading.Thread(target = self.tel_status)
         th.setDaemon(True)
         th.start()
+        self.args = sys.argv
+        self.args.append("")
+        self.pub = rospy.Publisher("read_status", Read_status_msg, queue_size=1)
         pass
 
     def status_check(self):
@@ -223,7 +227,10 @@ class status_main(object):
                 print(self.param8["error_msg"])
             if self.param10["alert_msg"]:
                 print(self.param10["alert_msg"])
+<<<<<<< HEAD
+=======
 
+>>>>>>> e3bdd655047dd88b62f65aeb1d4dc4cbcc1acd33
 
             if self.args[1]:
                 if drive[0] == 1:
