@@ -13,6 +13,7 @@ from necst.msg import Dome_msg
 class dome_controller(object):
 
     ###parameter
+    enc_az = 0
     dome_enc = 0
     move_status = 'DRIVE'#OFF/DRIVE
     right_act = 'DRIVE'#OFF/DRIVE
@@ -610,6 +611,6 @@ if __name__ == '__main__':
     d.start_thread_ROS()
     print('[ROS_dome.py] : START SUBSCRIBE')
     sub1 = rospy.Subscriber('status_encoder', Status_encoder_msg, d.set_enc_parameter)
-    sub2 = rospy.Subscriber('dome_move', Dome_msg, d.set_command, queue_size = 1)
+    sub2 = rospy.Subscriber('dome_move', Dome_msg, d.set_command)
     rospy.spin()
     
