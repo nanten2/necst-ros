@@ -112,8 +112,6 @@ class antenna(object):
             end_x = req.off_x + req.dx * (req.num - 0.5)
             end_y = req.off_y + req.dy * (req.num - 0.5)
             obs_start =  datetime(req.start_on[0], req.start_on[1], req.start_on[2], req.start_on[3], req.start_on[4], req.start_on[5], req.start_on[6]) - timedelta(seconds=float(req.rampt))
-            print("$$$$$$$$$$$$$$$$$$$$$$$$$$$")
-            print(obs_start)
             obs_end = obs_start + timedelta(seconds=float(total_t))
             off_dx_vel = (end_x - start_x) / total_t #(obs_end - obs_start)
             off_dy_vel = (end_y - start_y) / total_t #(obs_end - obs_start)
