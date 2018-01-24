@@ -7,4 +7,7 @@
   <node pkg='necst' name='m2_controller' type='S_ROS_m2.py'/>
   <node pkg='necst' name='weather_status' type='S_ROS_weather.py'/>
   <node pkg='necst' name='pc_status' type='ROS_pc_status.py' args='necst'/>
+  <node pkg='necst' name='tracking' type='ROS_tracking.py'/>
+  <node pkg='necst' name='dome_tracking' type='ROS_dome_track_check.py'/>
+  <node pkg='necst' name='antenna_assist' type='ROS_antenna_assist.py'/>
 </launch>
