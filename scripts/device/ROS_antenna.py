@@ -89,11 +89,11 @@ class antenna(object):
             now = datetime.utcnow()
             if req.coord.lower() == "horizontal":
                 ret = self.calc.azel_calc(req.x, req.y,
-                                          req.off_x/3600., req.off_y/3600.,
+                                          req.off_x, req.off_y,
                                           req.offcoord, now, req.vel_x, req.vel_y, req.movetime)
             else:
                 ret = self.calc.coordinate_calc(req.x, req.y, req.coord, req.planet,
-                                                req.off_x/3600., req.off_y/3600.,
+                                                req.off_x, req.off_y,
                                                 req.offcoord, req.hosei, req.lamda,
                                                 req.dcos, self.temp, self.press, self.humi,
                                                 now, req.movetime)

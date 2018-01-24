@@ -206,7 +206,7 @@ class controller(object):
         time.sleep(0.2)
         return
 
-    def otf_scan(self, x, y, coord, dx, dy, dt, num, rampt, delay, start_on,  off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., movetime=0.1, limit=True):
+    def otf_scan(self, x, y, coord, dx, dy, dt, num, rampt, delay, start_on,  off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., movetime=0.01, limit=True):
         """ otf scan
 
         Parameters
@@ -227,7 +227,7 @@ class controller(object):
         dcos     : projection (no:0, yes:1)
         hosei    : hosei file name (default ; hosei_230.txt)
         lamda    : observation wavelength [um] (default ; 2600)
-        movetime : azel_list length [s] (otf_mode = 0.1)
+        movetime : azel_list length [s] (otf_mode = 0.01)
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
         """
         
