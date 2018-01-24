@@ -203,9 +203,10 @@ class controller(object):
     def move_stop(self):
         print("move_stop")
         self.pub11.publish("stop")
+        time.sleep(0.2)
         return
 
-    def otf_scan(self, x, y, coord, dx, dy, dt, num, rampt, delay=10., off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., movetime=0.1, limit=True):
+    def otf_scan(self, x, y, coord, dx, dy, dt, num, rampt, delay, start_on,  off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., movetime=0.1, limit=True):
         """ otf scan
 
         Parameters
@@ -219,6 +220,7 @@ class controller(object):
         num      : scan point [ num / 1 line]
         rampt    : ramp time [s]
         delay    : (start observation time)-(now time) [s]
+        start_on : start on position scan [utctime]
         off_x    : (target_x)-(scan start_x) [arcsec]
         off_y    : (target_y)-(scan start_y) [arcsec]
         offcoord : equal coord (no implementation)
@@ -230,9 +232,9 @@ class controller(object):
         """
         
         print("start OTF scan!!")
-        self.pub12.publish(x, y, coord, dx, dy, dt, num,
-                           rampt, delay, off_x, off_y, offcoord, dcos,
-                           hosei, lamda, movetime, limit)
+        self.pub12.publish(x, y, coord, dx, dy, dt, num,rampt,
+                           delay, start_on, off_x, off_y, offcoord,
+                           dcos, hosei, lamda, movetime, limit)
         
         return 
 

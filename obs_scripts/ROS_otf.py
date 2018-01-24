@@ -41,6 +41,9 @@ import os
 import shutil
 import time
 import numpy
+from datetime import datetime, timedelta
+
+from astropy.time import Time
 import sys
 sys.path.append("/home/amigos/necst-obsfiles")
 sys.path.append("/home/amigos/ros/src/necst/lib")
@@ -302,7 +305,7 @@ while rp_num < rp:
         print('observation :'+str(num))
         print('tracking start')
         con.move_stop()
-        
+
         if coord_sys == 'EQUATORIAL':
             con.radec_move(lambda_off, beta_off, coordsys,
                            off_x=lamdel_off, off_y=betdel_off, 
@@ -470,11 +473,17 @@ while rp_num < rp:
 
         print(' OTF scan_start!! ')
         print('move ON')
-        start_on = con.otf_scan(lambda_on, beta_on, coord_sys, dx, dy, dt, scan_point, rampt, delay=10, off_x = sx + num*gridx, off_y = sy + num*gridy, off_coord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, movwtime=0.1, limit=True)
+        delay = 3.
+        st = datetime.utcnow() + timedelta(seconds=float(rampt + delay))
+        start_on = [st.year, st.month, st.day, st.hour, st.minute, st.second, st.microsecond]
+        print("%%%%%%%%%%%%%%%%")
+        print(start_on)
+        con.otf_scan(lambda_on, beta_on, coord_sys, dx, dy, dt, scan_point, rampt, delay=delay, start_on=start_on, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, movetime=0.1, limit=True)
 
         print('getting_data...')
+        start_on = Time(st).mjd
         #d = con.oneshot_achilles(repeat = scan_point ,exposure = integ_on ,stime = start_on)
-        d ={'dfs1': [[1]*16384,0], 'dfs2': [[2]*16384,1]}
+        d ={'dfs1': [[1]*16384]*scan_point, 'dfs2': [[2]*16384]*scan_point}
         print("start_on:",start_on)
         while start_on + obs['otflen']/24./3600. > 40587 + time.time()/(24.*3600.):
             #while obs['otflen']/24./3600. > 40587 + time.time()/(24.*3600.):    
@@ -556,7 +565,8 @@ temp = float(status.CabinTemp1) + 273.15
         
 print('Temp: %.2f'%(temp))
 print('get spectrum...')
-d = con.oneshot_achilles(exposure=integ_off)
+#d = con.oneshot_achilles(exposure=integ_off)
+d = {'dfs1': [[10]*16384,0], 'dfs2': [[20]*16384,1]}
 d1 = d['dfs1'][0]
 d2 = d['dfs2'][0]
 d1_list.append(d1)
@@ -801,7 +811,7 @@ read2 = {
     "LOCKSTAT" : 'F'#未使用                                                    
     }
 
-con.tracking_end()
+con.move_stop()
 
 f1 = os.path.join(savedir,'n%s_%s_%s_otf_%s.fits'%(timestamp ,obs['molecule_1'],obs['transiti_1'].split('=')[1],obs['object']))
 f2 = os.path.join(savedir,'n%s_%s_%s_otf_%s.fits'%(timestamp ,obs['molecule_2'],obs['transiti_2'].split('=')[1],obs['object']))
