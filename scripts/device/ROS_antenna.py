@@ -12,8 +12,7 @@ from necst.msg import Otf_mode_msg
 from necst.msg import Status_encoder_msg
 from necst.msg import Status_weather_msg
 from necst.msg import list_azelmsg
-from datetime import datetime as date
-from datetime import timedelta
+from datetime import datetime,timedelta
 sys.path.append("/home/necst/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/lib")
 import azel_calc
@@ -87,7 +86,7 @@ class antenna(object):
             rospy.logerr("weather_node is not move!!")
         else:
             print("start calculation")
-            now = date.utcnow()
+            now = datetime.utcnow()
             if req.coord.lower() == "horizontal":
                 ret = self.calc.azel_calc(req.x, req.y,
                                           req.off_x/3600., req.off_y/3600.,
@@ -112,7 +111,7 @@ class antenna(object):
             total_t = req.rampt + req.dt * req.num
             end_x = req.off_x + req.dx * (req.num - 0.5)
             end_y = req.off_y + req.dy * (req.num - 0.5)
-            obs_start =  date.utcnow() + timedelta(seconds=float(req.delay))
+            obs_start =  datetime(req.start_on[0], req.start_on[1], req.start_on[2], req.start_on[3], req.start_on[4], req.start_on[5], req.start_on[6]) - timedelta(seconds=float(req.rampt))
             obs_end = obs_start + timedelta(seconds=float(total_t))
             off_dx_vel = (end_x - start_x) / total_t #(obs_end - obs_start)
             off_dy_vel = (end_y - start_y) / total_t #(obs_end - obs_start)
@@ -126,7 +125,7 @@ class antenna(object):
                                             self.humi, obs_start, req.movetime)
         
             self.azel_publish(ret[0], ret[1], ret[2], req.limit)
-        return
+        return 
 
     def limit_check(self, az_list, el_list):
         for i in az_list:

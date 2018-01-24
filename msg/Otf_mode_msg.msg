@@ -7,6 +7,7 @@ float64 dt
 int64 num
 float64 rampt
 float64 delay
+int64[] start_on
 float64 off_x
 float64 off_y
 string offcoord
