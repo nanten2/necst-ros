@@ -48,12 +48,15 @@ if args.name is not None: filename = args.name
 #timestamp = time.strftime('%Y%m%d_%H%M%S') #time.strftime("%Y%m%d_%H%M%S", time.gmtime())
 #timestamp = timestamp+memo
 star_list = []
-planet_list = {"MERCURY":1, "VENUS":2, "MARS":4, "JUPITER":5, "SATURN":6, "URANUS":7, "NEPTUNE":8}
+planet_list = {"MERCURY":1, "VENUS":2, "MARS":4, "JUPITER":5, "SATURN":6, "URANUS":7, "NEPTUNE":8, "MOON":10, "SUN":11}
 planet = 0
 target = []
 
 #read star list
-f = open("/home/amigos/ros/src/necst/lib/1st_star_list.txt")
+try:
+    f = open("/home/amigos/ros/src/necst/lib/1st_star_list.txt")
+except:
+    f = open("/home/necst/ros/src/necst/lib/1st_star_list.txt")
 line = f.readline()
 while line:
     line = line.split()
@@ -72,7 +75,6 @@ if len(target) == 0:
         print('!!Can not find the name of star!!')
         sys.exit()
 
-#ccd = ccd.ccd_client("172.20.0.12", 8010)
 ctrl = ROS_controller.controller()
 
 def handler(num, flame):
