@@ -41,7 +41,6 @@ import os
 import time
 import numpy
 import matplotlib.pyplot
-#import urllib.request
 import datetime
 matplotlib.pyplot.rcParams['font.size'] = 9
 
@@ -61,43 +60,14 @@ else:
     pass
 
 savedir = "/home/amigos/data/experiment/rsky/"
-'''
-fp = urllib.request.urlopen("http://200.91.8.66/WeatherMonitor/WeatherMenu.html")
-html = fp.readline()
-text = []
-while html:
-    html = html.decode('utf-8')
-    text.append(html)
-    html = fp.readline()
-_list = []
-for i in range(len(text)):
-    try:
-        aa = text[i].split(">")[1].split("<")[0]
-    except:
-        aa = text[i]
-    _list.append(aa)
-fp.close()
-'''
-#cabin_temp = float(_list[35].split()[0])
-try:
-    now = time.time()-12*3600.
-    d = datetime.datetime.utcfromtimestamp(now)
-    data = str(d.year)+str(d.month)+"/"+str(d.year)+str(d.month)+str(d.day)+".nwd"
-    f = open("/home/amigos/data/monitor/"+data,"r")
-    last_data = f.readlines()[-1]
-    f.close()
-    data_list = last_data.strip()
-    data_list = data_list.split(",")
-    data = [0]*18
-    for i in range(len(data_list)):
-        data[i] = float(data_list[i].strip())
-    cabin_temp = data[14]
-except:
-    cabin_temp = 28.5
+
+
 # Data aquisition
 # ---------------
 
 con = ROS_controller.controller()
+status = con.read_status()
+cabin_temp = status.CabinTemp1
 
 d1_list = []
 d2_list = []
@@ -115,6 +85,7 @@ print('cabin_temp: %.2f'%(cabin_temp))
 
 print('get spectrum...')
 d = con.oneshot_achilles(exposure=integ)
+#d = {"dfs1":[[100]*16384,0], "dfs2":[[200]*16384,0]}
 d1 = d['dfs1'][0]
 d2 = d['dfs2'][0]
 d1_list.append(d1)
@@ -127,6 +98,7 @@ time.sleep(1)
 
 print('get spectrum...')
 d = con.oneshot_achilles(exposure=integ)
+#d = {"dfs1":[[10]*16384,0], "dfs2":[[20]*16384,0]}
 d1 = d['dfs1'][0]
 d2 = d['dfs2'][0]
 d1_list.append(d1)

@@ -19,7 +19,9 @@ class opt_point_controller(object):
     #reference : ccd.py, imageppm.cpp, imagepgm.cpp
     
     
-    pointing_list = "/home/amigos/NECST/soft/core/pointing.list"
+    #pointing_list = "/home/amigos/NECST/soft/core/pointing.list"
+    pointing_list = "/home/amigos/ros/src/necst/lib/pointing.list"
+    pointing_list2 = "/home/necst/ros/src/necst/lib/pointing.list"
     tai_utc = 36.0 # tai_utc=TAI-UTC  2015 July from ftp://maia.usno.navy.mil/ser7/tai-utc.dat
     dut1 = 0.14708
     
@@ -54,8 +56,10 @@ class opt_point_controller(object):
 
     def create_table(self):
         #create target_list
-        
-        f = open(self.pointing_list)
+        try:
+            f = open(self.pointing_list)
+        except:
+            f = open(self.pointing_list2)
         line = f.readline()
         target_list = []
         
@@ -82,14 +86,14 @@ class opt_point_controller(object):
             list.append(dec)
             list.append(line[21]) #magnitude
             
-            ret = self.calc.coordinate_calc(ra, dec, 0, "j2000", 0, 0, off_x=0, off_y=0, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, loop = 1, time_rate=0.)
-            list.append(ret[0]) #az
+            ret = self.calc.coordinate_calc(ra, dec, "j2000", 0, off_x=0, off_y=0, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime=0.1)
+            list.append(ret[0][0]) #az
             #list = [number, ra, dec, magnitude, az]
             
             #print(ret[1])
             print(str(ra)+"  "+str(dec))
             
-            if ret[1] >= 30 and ret[1] <= 80:
+            if ret[1][0] >= 30 and ret[1][0] <= 80:
                 print("============")
                 num = len(target_list)
                 if num == 0:
@@ -131,12 +135,10 @@ class opt_point_controller(object):
         
         
         for _tbl in table:
-            ret = self.calc.coordinate_calc(_tbl[1],_tbl[2], 0, "j2000", 0, 0, off_x=0, off_y=0, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, loop=1, time_rate=0.)
-            real_el = ret[1]
-            '''
-            test
+            ret = self.calc.coordinate_calc(_tbl[1],_tbl[2], "j2000", 0, off_x=0, off_y=0, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime=0.1)
+            real_el = ret[1][0]
             if real_el >= 30. and real_el <= 80.:
-                self.ctrl.radec_move(_tbl[1], _tbl[2], "J2000", 0, 0, hosei = 'hosei_opt.txt', offcoord = 'HORIZONTAL', lamda = 0.5)
+                self.ctrl.radec_move(_tbl[1], _tbl[2], "J2000", 0, 0, offcoord = 'HORIZONTAL', hosei = 'hosei_opt.txt', lamda = 0.5)
                 print(_tbl[1], _tbl[2])
                 print(ret)
                 
@@ -145,12 +147,12 @@ class opt_point_controller(object):
                 
                 now = dt.now()
                 #n_star = self.calc_star_azel(_tbl[1], _tbl[2], _date)
-                ret = self.calc.coordinate_calc(_tbl[1],_tbl[2] 0, "j2000", 0, 0, off_x=0, off_y=0, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, loop = 1, time_rate=0.)
-                ccd.all_sky_shot(_tbl[0], _tbl[3], ret[0], ret[1], data_name, status)
+                ret = self.calc.coordinate_calc(_tbl[1],_tbl[2] , "j2000", 0, off_x=0, off_y=0, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime=0.1)
+                #ccd.all_sky_shot(_tbl[0], _tbl[3], ret[0][0], ret[1][0], data_name, status)
             else:
                 #out of range(El)
                 pass
-                '''
+
 
         self.ctrl.move_stop()
         print("OBSERVATION END")

@@ -48,7 +48,7 @@ if args.name is not None: filename = args.name
 #timestamp = time.strftime('%Y%m%d_%H%M%S') #time.strftime("%Y%m%d_%H%M%S", time.gmtime())
 #timestamp = timestamp+memo
 star_list = []
-planet_list = {"MERCURY":1, "VENUS":2, "MARS":4, "JUPITER":5, "SATURN":6, "URANUS":7, "NEPTUNE":8}
+planet_list = {"MERCURY":1, "VENUS":2, "MARS":4, "JUPITER":5, "SATURN":6, "URANUS":7, "NEPTUNE":8, "MOON":10}
 planet = 0
 target = []
 
@@ -72,7 +72,6 @@ if len(target) == 0:
         print('!!Can not find the name of star!!')
         sys.exit()
 
-#ccd = ccd.ccd_client("172.20.0.12", 8010)
 ctrl = ROS_controller.controller()
 
 def handler(num, flame):
@@ -90,9 +89,9 @@ ctrl.move_stop()
 for i in range(5):
     minsec = 15
     n = i-2
-    print("observation", str(n))    
+    print("observation point", str(n))    
     if planet:
-        ctrl.planet_move(planet, off_x = n*minsec*60hosei = "hosei_opt.txt", lamda = 0.5)
+        ctrl.planet_move(planet, off_x = n*minsec*60, off_y = 0, hosei = "hosei_opt.txt", lamda = 0.5)
     else:
         ctrl.radec_move(target[0], target[1], 'J2000', off_x=n*minsec*60, off_y=0, offcoord="HORIZONTAL", hosei='hosei_opt.txt', lamda = 0.5)
 
@@ -101,9 +100,9 @@ for i in range(5):
     ctrl.antenna_tracking_check()#test
 
     if not filename:
-        filename = time.strftime("%H%M%S") + "_"str(n)
+        filename = time.strftime("%H%M%S") + "_"+ str(n)
     dirname = time.strftime("%Y%m%d")
-    ccd.oneshot(dirname, filename)
+    #ccd.oneshot(dirname, filename)
     print(dirname, filename)
     
 

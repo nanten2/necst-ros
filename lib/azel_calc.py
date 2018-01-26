@@ -23,7 +23,7 @@ class azel_calc(object):
     off_el = 0.
     loop_rate = 0.1
 
-    planet = {0:"sun", 1:"mercury", 2:"venus", 3:"earth", 4:"mars", 5:"jupiter", 6:"saturn", 7:"uranus", 8:"neptune", }
+    planet = {1:"mercury", 2:"venus", 3:"earth", 4:"mars", 5:"jupiter", 6:"saturn", 7:"uranus", 8:"neptune", 10:"moon", 11:"sun"}
 
     def __init__(self):
         self.coord = coord.coord_calc()
@@ -123,7 +123,7 @@ class azel_calc(object):
         real_coord.obswl = lamda*u.um#param
         altaz = real_coord.transform_to(AltAz(obstime=time_list))
 
-        if int(movetime*10) == 1:
+        if int(movetime*100) == 1:
             list_num = int(len(x))
             print("###otf_mode###")
         else:
