@@ -1,4 +1,5 @@
 <launch>
+  <node pkg="necst" name="antenna" type="S_ROS_antenna.py"/>
   <node pkg="necst" name="antenna_move" type="S_ROS_antenna_move.py" output="screen"/>
   <node pkg="necst" name="encoder_status" type="S_ROS_encoder.py"/>
   <node pkg="necst" name='dome' type='S_ROS_dome.py'/>
@@ -10,4 +11,5 @@
   <node pkg='necst' name='tracking' type='ROS_tracking.py'/>
   <node pkg='necst' name='dome_tracking' type='ROS_dome_track_check.py'/>
   <node pkg='necst' name='antenna_assist' type='ROS_antenna_assist.py'/>
+  <node pkg='necst' name='alert' type='ROS_alert.py' output="screen"/>
 </launch>

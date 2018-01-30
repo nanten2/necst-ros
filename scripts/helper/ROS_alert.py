@@ -174,6 +174,7 @@ class alert(object):
             else:
                 if self.state:
                     self.state = "error release !!\n\n\n"
+                    time.sleep(0.5)
                     rospy.loginfo(self.state)
                     self.state = ""
                     time.sleep(0.5)
