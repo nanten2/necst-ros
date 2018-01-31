@@ -39,7 +39,7 @@ class enc_controller(object):
         self.vel_el = req.command_elspeed
         self.enc_Az += self.vel_az*0.01
         self.enc_El += self.vel_el*0.01
-        pass
+        return
 
     """
     def board_initialize(self):
