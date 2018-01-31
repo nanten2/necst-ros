@@ -3,6 +3,7 @@
 import time
 import rospy
 import threading
+from std_msgs.msg import String
 from necst.msg import Move_mode_msg
 from necst.msg import Otf_mode_msg
 
@@ -29,7 +30,12 @@ class antenna_assist(object):
     def __init__(self):
         self.start_time = time.time()
         self.pub = rospy.Publisher("assist_antenna", Move_mode_msg, queue_size = 1, latch = True)
+        self.sub = rospy.Subscriber("move_stop", String, self.move_stop)
         pass
+
+    def move_stop(self, req):
+        self.start_time = time.time()
+        return
 
     def start_thread(self):
         th1 = threading.Thread(target = self.pub_antenna)
@@ -38,6 +44,7 @@ class antenna_assist(object):
         return
 
     def antenna_assist(self, req):
+        """
         self.x = req.x
         self.y = req.y
         self.coord = req.coord
@@ -52,8 +59,10 @@ class antenna_assist(object):
         self.vel_y = req.vel_y
         self.movetime = req.movetime
         self.limit = req.limit
-        self.controller_time =req.time
-        if self.controller_time > self.start_time:
+        self.controller_time = req.time
+        """
+        self.param = req
+        if req.time > self.start_time:
             self.r_flag = 1
         else:
             pass
@@ -64,9 +73,11 @@ class antenna_assist(object):
             time.sleep(0.1)
         else:
             while not rospy.is_shutdown():
-                self.pub.publish(self.x, self.y, self.coord, self.planet, self.off_x, self.off_y, self.offcoord, self.hosei, self.lamda, self.dcos, self.vel_x, self.vel_y, self.movetime, self.limit, self.controller_time)
+                self.pub.publish(self.param)
+                #self.pub.publish(self.x, self.y, self.coord, self.planet, self.off_x, self.off_y, self.offcoord, self.hosei, self.lamda, self.dcos, self.vel_x, self.vel_y, self.movetime, self.limit, self.controller_time)
                 print('published')
-                print(self.x, self.y, self.coord, self.planet, self.off_x, self.off_y, self.offcoord, self.hosei, self.lamda, self.dcos, self.vel_x, self.vel_y, self.limit, self.controller_time)
+                print(self.param)
+                #print(self.x, self.y, self.coord, self.planet, self.off_x, self.off_y, self.offcoord, self.hosei, self.lamda, self.dcos, self.vel_x, self.vel_y, self.limit, self.controller_time)
                 time.sleep(5)
                 continue
         return
