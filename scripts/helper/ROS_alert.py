@@ -14,6 +14,8 @@ from std_msgs.msg import Bool
 from necst.msg import Status_weather_msg
 from necst.msg import Status_dome_msg
 from necst.msg import Dome_msg
+from necst.msg import Status_encoder_msg
+from necst.msg import list_azelmsg
 
 
 class alert(object):
@@ -25,10 +27,13 @@ class alert(object):
     memb = ''
     dome_r = ''
     dome_l = ''
+    enc_az = ""
+    enc_el = ""
 
     nanten2 = ""
     az_list = ""
     el_list = ""
+    encoder_error = False
     
     def __init__(self):
         self.pub_alert = rospy.Publisher("alert", String, queue_size=10, latch=True)
@@ -37,6 +42,8 @@ class alert(object):
         self.pub_dome = rospy.Publisher('dome_move', Dome_msg, queue_size = 10, latch = True)
         self.sub = rospy.Subscriber("status_weather", Status_weather_msg, self.callback_weather)
         self.sub = rospy.Subscriber("status_dome", Status_dome_msg, self.callback_dome)
+        self.sub = rospy.Subscriber("list_azel", list_azelmsg, self.callback_azel)
+        self.sub = rospy.Subscriber("status_encoder", Status_encoder_msg, self.callback_encoder)        
         self.nanten2 = EarthLocation(lat = -22.96995611*u.deg, lon = -67.70308139*u.deg, height = 4863.85*u.m)
 
         self.args = sys.argv
@@ -48,6 +55,7 @@ class alert(object):
         self.wind_speed = req.wind_sp
         self.rain = req.rain
         self.out_humi = req.out_humi
+        return
         
     def callback_dome(self, req):
         """ callback : status_dome """
@@ -55,12 +63,72 @@ class alert(object):
         self.memb = req.memb_pos#status_box[6]
         self.dome_r = req.right_pos#status_box[2]
         self.dome_l = req.left_pos#status_box[4]
+        return
         
     def callback_azel(self, req):
-        self.az_list = req.az_list/3600.
-        self.el_list = req.el_list/3600.
-        pass
+        """ callback : azel_list """
+        self.az_list = req.az_list
+        self.el_list = req.el_list
+        return
 
+    def callback_encoder(self, req):
+        """ callback : encoder_status """
+        self.enc_az = req.enc_az
+        self.enc_el = req.enc_el
+        return
+
+    def check_encoder_error(self):
+        while not self.encoder_error:
+            az_list = self.az_list
+            el_list = self.el_list
+            move_flag = 0
+            az_flag = el_flag = 0
+            error = False
+            for i in range(len(az_list)):
+                if az_list[i] == az_list[0]:
+                    pass
+                else:
+                    az_flag = 1
+                    pass
+                if el_list[i] == el_list[0]:
+                    pass
+                else:
+                    el_flag = 1
+                    pass
+                if az_flag == el_flag == 1:
+                    break
+            if az_flag == 1 or el_flag == 1:
+                time.sleep(3)
+                initial_az = self.enc_az
+                initial_el = self.enc_el
+                if az_flag == 1:
+                    for i in range(100):
+                        print(i, initial_az/3600, self.enc_az/3600, az_list[-1]/3600)
+                        if initial_az == self.enc_az :
+                            error = True
+                            pass
+                        else:
+                            error = False
+                            break
+                        time.sleep(0.01)
+
+                if el_flag == 1:
+                    for i in range(100):
+                        if initial_el == self.enc_el and self.enc_el != el_list[-1]:
+                            error = True
+                            pass
+                        else:
+                            error = False
+                            break
+                        time.sleep(0.01)
+            else:
+                pass
+        else:
+            pass
+        self.encoder_error = error
+        return self.encoder_error
+            
+            
     def check_sun_position(self):
         now = dt.utcnow()
         sun = get_body("sun", Time(now))
@@ -75,24 +143,24 @@ class alert(object):
         el_list = self.el_list
         for i in range(len(az_list)):
             if sun_az+15 > +240.:
-                if (sun_az-360. + 15 >= az_list[i] >= -120.) or (sun_az-15 <= az_list[i] <= +240.):
+                if (sun_az-360. + 15 >= az_list[i]/3600. >= -120.) or (sun_az-15 <= az_list[i]/3600. <= +240.):
                     stop_flag = True
                 else:
                     pass
             elif sun_az-15 < -240.:
-                if (sun_az+360. - 15 <= az_list[i] <= +120.) or (sun_az+15 >= az_list[i] >= -240.):
+                if (sun_az+360. - 15 <= az_list[i]/3600. <= +120.) or (sun_az+15 >= az_list[i]/3600. >= -240.):
                     stop_flag = True
                 else:
                     pass
-            elif sun_az-15 <= az_list[i] <= sun_az+15:
+            elif sun_az-15 <= az_list[i]/3600. <= sun_az+15:
                 stop_flag = True
             else:
                 pass
-            if sun_el -15 <= el_list[i] <= sun_el + 15:
+            if sun_el -15 <= el_list[i]/3600. <= sun_el + 15:
                 stop_flag = True
         return stop_flag
         
-        
+    
     def alert(self):
         """ publish : alert """
         msg = String()
@@ -106,8 +174,15 @@ class alert(object):
     def thread_start(self):
         """ checking alert """
         self.stop_thread = threading.Event()
-        self.thread = threading.Thread(target=self.check_thread,name="alert_check_thread")
-        self.thread.start()
+        self.thread_alert = threading.Thread(target=self.check_thread,name="alert_check_thread")
+        self.thread_alert.setDaemon(True)
+        self.thread_alert.start()
+        
+        self.thread_encoder = threading.Thread(target=self.check_encoder_error)
+        self.thread_encoder.setDaemon(True)
+        self.thread_encoder.start()
+
+        
         
     def check_thread(self):
         """ checking alert 
@@ -152,6 +227,12 @@ class alert(object):
                 self.state = "Emergency : wind_speed over 15.\n"
                 emergency = self.state
 
+            if self.encoder_error:
+                self.state = "Emergency : encoder can't count!! \n"
+                emergency = self.state
+            else:
+                pass
+                    
             if self.args[1] == "radio":
                 pass
             else:
