@@ -9,6 +9,9 @@
   <node pkg='necst' name='pc_status' type='ROS_pc_status.py' args='necst'/>
   <node pkg='necst' name='tracking' type='ROS_tracking.py'/>
   <node pkg='necst' name='dome_tracking' type='ROS_dome_track_check.py'/>
+  <node pkg='necst' name='antenna_server' type='ROS_antenna.py'/>  
   <node pkg='necst' name='antenna_assist' type='ROS_antenna_assist.py'/>
   <node pkg='necst' name='alert' type='ROS_alert.py' output="screen"/>
+  <node pkg='necst' name='check_alert' type='ROS_check_alert.py' output="screen"/>  
+  
 </launch>
