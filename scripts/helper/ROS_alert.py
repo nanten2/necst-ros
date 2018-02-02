@@ -15,6 +15,7 @@ from necst.msg import Status_weather_msg
 from necst.msg import Status_dome_msg
 from necst.msg import Dome_msg
 from necst.msg import Status_encoder_msg
+from necst.msg import Status_antenna_msg
 from necst.msg import list_azelmsg
 
 
@@ -29,6 +30,8 @@ class alert(object):
     dome_l = ''
     enc_az = ""
     enc_el = ""
+    vel_az = ""
+    vel_el = ""
 
     nanten2 = ""
     az_list = ""
@@ -42,8 +45,9 @@ class alert(object):
         self.pub_dome = rospy.Publisher('dome_move', Dome_msg, queue_size = 10, latch = True)
         self.sub = rospy.Subscriber("status_weather", Status_weather_msg, self.callback_weather)
         self.sub = rospy.Subscriber("status_dome", Status_dome_msg, self.callback_dome)
+        self.sub = rospy.Subscriber("status_antenna", Status_antenna_msg, self.callback_command)
+        self.sub = rospy.Subscriber("status_encoder", Status_encoder_msg, self.callback_encoder)
         self.sub = rospy.Subscriber("list_azel", list_azelmsg, self.callback_azel)
-        self.sub = rospy.Subscriber("status_encoder", Status_encoder_msg, self.callback_encoder)        
         self.nanten2 = EarthLocation(lat = -22.96995611*u.deg, lon = -67.70308139*u.deg, height = 4863.85*u.m)
 
         self.args = sys.argv
@@ -65,10 +69,16 @@ class alert(object):
         self.dome_l = req.left_pos#status_box[4]
         return
         
-    def callback_azel(self, req):
-        """ callback : azel_list """
+    def callback_azel(self,req):
+        """callback : azel list"""
         self.az_list = req.az_list
         self.el_list = req.el_list
+        return
+        
+    def callback_command(self, req):
+        """ callback : command azel """
+        self.vel_az = req.command_azspeed
+        self.vel_el = req.command_elspeed
         return
 
     def callback_encoder(self, req):
@@ -79,55 +89,26 @@ class alert(object):
 
     def check_encoder_error(self):
         while not self.encoder_error:
-            az_list = self.az_list
-            el_list = self.el_list
-            move_flag = 0
-            az_flag = el_flag = 0
-            error = False
-            for i in range(len(az_list)):
-                if az_list[i] == az_list[0]:
-                    pass
-                else:
-                    az_flag = 1
-                    pass
-                if el_list[i] == el_list[0]:
-                    pass
-                else:
-                    el_flag = 1
-                    pass
-                if az_flag == el_flag == 1:
-                    break
-            if az_flag == 1 or el_flag == 1:
-                time.sleep(3)
-                initial_az = self.enc_az
-                initial_el = self.enc_el
-                if az_flag == 1:
-                    for i in range(100):
-                        print(i, initial_az/3600, self.enc_az/3600, az_list[-1]/3600)
-                        if initial_az == self.enc_az :
-                            error = True
-                            pass
-                        else:
-                            error = False
-                            break
-                        time.sleep(0.01)
-
-                if el_flag == 1:
-                    for i in range(100):
-                        if initial_el == self.enc_el and self.enc_el != el_list[-1]:
-                            error = True
-                            pass
-                        else:
-                            error = False
-                            break
-                        time.sleep(0.01)
+            if self.vel_az != 0:
+                start_az = self.enc_az
             else:
-                pass
-        else:
-            pass
-        self.encoder_error = error
+                start_az = ""
+            if self.vel_el != 0:
+                start_el = self.enc_el
+            else:
+                start_el = ""
+            time.sleep(10.)
+            if start_az:
+                if self.enc_az == start_az:
+                    self.encoder_error = True
+                else:
+                    start_az = ""
+            if start_el:
+                if self.enc_el == start_el:
+                    self.encoder_error =True
+                else:
+                    start_el = ""
         return self.encoder_error
-            
             
     def check_sun_position(self):
         now = dt.utcnow()
@@ -199,10 +180,13 @@ class alert(object):
         ---------
         out humi > 80 [%]
         wind_speed > 15 [km/s]
-        
+        |sun_az - real_az| < 15 [deg]
+        |sun_el - real_el| < 15 [deg]
+        if encoder is not move
         """
         
         print("alert check start !!\n")
+        self.pub_alert.publish("")
         while not rospy.is_shutdown():
             #print(self.state, self.wind_speed, self.rain, self.out_humi, self.memb, self.dome_r, self.dome_l)
             emergency = warning = ""
