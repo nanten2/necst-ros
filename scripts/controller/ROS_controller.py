@@ -8,6 +8,7 @@
 2018/01/16 : kondo
 ------------------------------------------------
 """
+import os
 import sys
 import time
 from datetime import datetime as dt
@@ -18,6 +19,7 @@ from necst.msg import Move_mode_msg
 from necst.msg import Otf_mode_msg
 from necst.msg import Dome_msg
 from necst.msg import Read_status_msg
+from necst.msg import Achilles_msg
 from std_msgs.msg import Bool
 from std_msgs.msg import String
 from std_msgs.msg import Float64
@@ -53,6 +55,7 @@ class controller(object):
         self.pub14 = rospy.Publisher('m4', String, queue_size = 1, latch = True)
         self.pub15 = rospy.Publisher("hot", String, queue_size = 1, latch = True)
         self.pub16 = rospy.Publisher("m2", Int64, queue_size=1, latch=True)
+        self.pub17 = rospy.Publisher("achilles", Achilles_msg, queue_size=1)
         time.sleep(0.5)
 
 
@@ -381,12 +384,22 @@ class controller(object):
 # ===================
 
     def oneshot_achilles(self, repeat=1, exposure=1.0, stime=0.0):
-        # only python2
-        sys.path.append("/home/amigos/ros/src/necst/lib")
-        import achilles
-        self.dfs = achilles.dfs()
-        data = self.dfs.oneshot(repeat, exposure, stime)
-        data_dict = {'dfs1': data[0], 'dfs2': data[1]}
+        day = dt.utcnow().strftime("%y%m%d_%H%M%S")
+        self.pub17.publish(repeat, exposure, stime, day)
+        dir_name = "/home/amigos/data/experiment/achilles/" + str(day) + "/"
+        file_name = day + "_fin.txt"
+        while not rospy.is_shutdown():
+            if not os.path.exists(dir_name + file_name):
+                print("get data now...")
+                pass
+            else:
+                break
+            time.sleep(1)
+        with open(dir_name+day + "_1.txt", "r") as f1:
+            dfs1 = f1.readline()
+        with open(dir_name+day + "_2.txt", "r") as f2:
+            dfs2 = f2.readline()
+        data_dict = {'dfs1': eval(dfs1), 'dfs2': eval(dfs2)}
         return data_dict
 
     def spectrometer(self, exposure):
@@ -421,6 +434,11 @@ class controller(object):
 
 if __name__ == "__main__":
     con = controller()
-    a = float(input("x : "))
-    b = float(input("y : "))
-    con.otf_scan(a, b, "j2000", 30, 0, 0.6, 9, 0.6*4, delay=10., off_x=-900, off_y=0, offcoord="j2000")
+    #a = float(input("x : "))
+    #b = float(input("y : "))
+    #con.otf_scan(a, b, "j2000", 30, 0, 0.6, 9, 0.6*4, delay=10., off_x=-900, off_y=0, offcoord="j2000")
+    from astropy.time import Time
+    import datetime
+    tt = Time(dt.utcnow() + datetime.timedelta(seconds=5)).mjd
+    aa = con.oneshot_achilles(3, 1, tt)
+    print(aa)

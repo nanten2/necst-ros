@@ -73,6 +73,7 @@ add_message_files(
   Read_status_msg.msg
   oneshot_msg.msg
   Status_node_msg.msg
+  Achilles_msg.msg
 )
 
 ## Generate services in the 'srv' folder
