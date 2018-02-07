@@ -182,24 +182,22 @@ num = 0
 n = int(obs['nSeq'])
 latest_hottime = 0
 while num < n: 
-    print('observation :'+str(num+1))
+    print('observation :'+str(num+1) + "\n")
         
     if coord_sys == 'EQUATRIAL':
-        print("radec_move")
         con.radec_move(lambda_off, beta_off, coordsys, off_x=lamdel_off, off_y=betdel_off, offcoord = cosydel)
 
     elif coord_sys == 'GALACTIC':
-        print("galactic_move")
         con.galactic_move(lambda_off, beta_off, off_x=lamdel_off, off_y=betdel_off, offcoord = cosydel)
 
-    print("check_track")
     con.antenna_tracking_check()
     con.dome_tracking_check()
-    print('tracking OK')
+    print('tracking OK'+ "\n")
 
     _now = time.time()
     if _now > latest_hottime+60*obs['load_interval']:
-        print('R')
+        print('R'+ "\n")
+        
         con.move_hot('in')
 
         print('get spectrum...')
@@ -207,7 +205,7 @@ while num < n:
         dp1 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, lamdel_on, betdel_on, dcos, cosydel, 
                            integ_off*2, obs['restfreq_1']/1000., obs['restfreq_2']/1000., 
                            sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
-        con.observation("start", integ_off)# getting one_shot_data 
+        #con.observation("start", integ_off)# getting one_shot_data 
         time.sleep(integ_off)
 
         status = con.read_status()
@@ -221,8 +219,8 @@ while num < n:
         tdim6_list.append([16384,1,1])
         date_list.append(status.Time)
         thot_list.append(temp)
-        vframe_list.append(dp1[0])
-        vframe2_list.append(dp1[0])
+        vframe_list.append(0),#dp1[0])
+        vframe2_list.append(0),#dp1[0])
         lst_list.append(status.LST)
         az_list.append(status.Current_Az)
         el_list.append(status.Current_El)
@@ -239,21 +237,22 @@ while num < n:
         latest_hottime = time.time()
         P_hot = numpy.sum(d1)
         tsys_list.append(0)
-        _2NDLO_list1.append(dp1[3]['sg21']*1000)
-        _2NDLO_list2.append(dp1[3]['sg22']*1000)
-        print(dp1[3]['sg21']*1000)
-        print(dp1[3]['sg22']*1000)
+        _2NDLO_list1.append(0),#dp1[3]['sg21']*1000)
+        _2NDLO_list2.append(0),#dp1[3]['sg22']*1000)
+        #print("sg21 : ", dp1[3]['sg21']*1000)
+        #print("sg22 : ", dp1[3]['sg22']*1000, "\n")
         pass
 
 
     else:
-        dp1 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, lamdel_on, betdel_on, dcos, cosydel,
-                           integ_off, obs['restfreq_1']/1000., obs['restfreq_2']/1000., 
-                           sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
-    print('OFF')
+        #dp1 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, lamdel_on, betdel_on, dcos, cosydel,
+                           #integ_off, obs['restfreq_1']/1000., obs['restfreq_2']/1000., 
+                           #sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
+        pass
+    print('OFF'+ "\n")
     con.move_hot('out')
     print('get spectrum...')
-    con.observation("start", integ_off)# getting one_shot_data
+    #con.observation("start", integ_off)# getting one_shot_data
     time.sleep(integ_off)
 
     status = con.read_status()
@@ -267,8 +266,8 @@ while num < n:
     tdim6_list.append([16384,1,1])
     date_list.append(status.Time)
     thot_list.append(temp)
-    vframe_list.append(dp1[0])
-    vframe2_list.append(dp1[0])
+    vframe_list.append(0),#dp1[0])
+    vframe2_list.append(0),#dp1[0])
     lst_list.append(status.LST)
     az_list.append(status.Current_Az)
     el_list.append(status.Current_El)
@@ -285,13 +284,13 @@ while num < n:
     P_sky = numpy.sum(d1)
     tsys = temp/(P_hot/P_sky-1)
     tsys_list.append(tsys)
-    _2NDLO_list1.append(dp1[3]['sg21']*1000)
-    _2NDLO_list2.append(dp1[3]['sg22']*1000)
-    print(dp1[3]['sg21']*1000)
-    print(dp1[3]['sg22']*1000)
+    _2NDLO_list1.append(0),#dp1[3]['sg21']*1000)
+    _2NDLO_list2.append(0),#dp1[3]['sg22']*1000)
+    #print("sg21 : ", dp1[3]['sg21']*1000)
+    #print("sg22 : ", dp1[3]['sg22']*1000, "\n")
 
 
-    print('move ON')
+    print('move ON'+ "\n")
 
     if coord_sys == 'EQUATRIAL':
         con.radec_move(lambda_on, beta_on, coordsys, off_x=lamdel_on, off_y=betdel_on, offcoord = cosydel)
@@ -300,13 +299,12 @@ while num < n:
         con.galactic_move(lambda_on, beta_on, off_x=lamdel_on, off_y=betdel_on, offcoord = cosydel)
 
 
-    print("check_track")
     con.antenna_tracking_check()
     con.dome_tracking_check()
-    print('tracking OK')
+    print('tracking OK'+"\n")
 
     print('get spectrum...')
-    con.observation("start", integ_on)# getting one_shot_data
+    #con.observation("start", integ_on)# getting one_shot_data
     time.sleep(integ_on)
 
 
@@ -322,8 +320,8 @@ while num < n:
     tdim6_list.append([16384,1,1])
     date_list.append(status.Time)
     thot_list.append(temp)
-    vframe_list.append(dp1[0])
-    vframe2_list.append(dp1[0])
+    vframe_list.append(0),#dp1[0])
+    vframe2_list.append(0),#dp1[0])
     lst_list.append(status.LST)
     az_list.append(status.Current_Az)
     el_list.append(status.Current_El)
@@ -338,20 +336,20 @@ while num < n:
     secofday_list.append(status.Secofday)
     subref_list.append(status.Current_M2)
     tsys_list.append(tsys)
-    _2NDLO_list1.append(dp1[3]['sg21']*1000)    
-    _2NDLO_list2.append(dp1[3]['sg22']*1000)
-    print(dp1[3]['sg21']*1000)
-    print(dp1[3]['sg22']*1000)
+    _2NDLO_list1.append(0),#dp1[3]['sg21']*1000)    
+    _2NDLO_list2.append(0),#dp1[3]['sg22']*1000)
+    #print("sg21 : ", dp1[3]['sg21']*1000)
+    #print("sg22 : ", dp1[3]['sg22']*1000,"\n")
 
 
-    print('stop')
+    print('stop'+"\n")
         
     num += 1
     continue
 
-print('R')#最初と最後をhotではさむ
-#con.move_hot('in')
-con.observation("start", integ_off)
+print('R'+"\n")#最初と最後をhotではさむ
+con.move_hot('in')
+#con.observation("start", integ_off)
 time.sleep(integ_off)
 
 
@@ -368,8 +366,8 @@ d2_list.append(d2)
 tdim6_list.append([16384,1,1])
 date_list.append(status.Time)
 thot_list.append(temp)
-vframe_list.append(dp1[0])
-vframe2_list.append(dp1[0])
+vframe_list.append(0),#dp1[0])
+vframe2_list.append(0),#dp1[0])
 lst_list.append(status.LST)
 az_list.append(status.Current_Az)
 el_list.append(status.Current_El)
@@ -385,15 +383,15 @@ secofday_list.append(status.Secofday)
 subref_list.append(status.Current_M2)
 P_hot = numpy.sum(d1)
 tsys_list.append(0)
-_2NDLO_list1.append(dp1[3]['sg21']*1000)
-_2NDLO_list2.append(dp1[3]['sg22']*1000)
+_2NDLO_list1.append(0),#dp1[3]['sg21']*1000)
+_2NDLO_list2.append(0),#dp1[3]['sg22']*1000)
+#print("sg21 : ", dp1[3]['sg21']*1000)
+#print("sg22 : ", dp1[3]['sg22']*1000, "\n")
 
-
-con.move_hot('out')
-print('observation end')
+con.move_hot('out'+"\n")
+print('observation end'+"\n")
 con.move_stop()
 con.dome_stop()
-
 
 
 if obs['lo1st_sb_1'] == 'U':
@@ -416,7 +414,7 @@ if obs['lo3rd_sb_1'] == 'U':
 else:
     ul1_3 = -1
 ul1 = ul1_1 * ul1_2 * ul1_3
-print(ul1)
+#print(ul1)
 cdelt1_1 = (-1)*ul1*0.079370340319607024 #[(km/s)/ch]
 #dv1 = (300000*cdelt1_1)/obs['restfreq_1']
 crpix1_1 = 8191.5 - obs['vlsr']/cdelt1_1 - (500-obs['if3rd_freq_1'])/0.061038881767686015
@@ -442,7 +440,7 @@ if obs['lo3rd_sb_2'] == 'U':
 else:
     ul2_3 = -1
 ul2 = ul2_1 * ul2_2 * ul2_3
-print(ul2)
+#print(ul2)
 cdelt1_2 = (-1)*ul2*0.0830267951512371 #[(km/s)/ch]                           
 #dv2 = (300000*cdelt2)/obs['restfreq_2']
 crpix1_2 = 8191.5 - obs['vlsr']/cdelt1_2 - (500-obs['if3rd_freq_2'])/0.061038881767686015
@@ -602,8 +600,7 @@ read2 = {
     }
 
 
-print(_2NDLO_list1)
-print(_2NDLO_list2)
+
 f1 = os.path.join(savedir,'n2ps_%s_IF1.fits'%(timestamp))
 f2 = os.path.join(savedir,'n2ps_%s_IF2.fits'%(timestamp))
 #numpy.save(f1+".npy",read1)
@@ -617,5 +614,5 @@ n2fits_write.write(read2,f2)
 
 timestamp = time.strftime('%Y%m%d_%H%M%S')
 dirname = timestamp
-obs_log.end_script(name, dirname)
+#obs_log.end_script(name, dirname)
 
