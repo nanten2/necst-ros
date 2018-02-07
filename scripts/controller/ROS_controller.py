@@ -401,9 +401,18 @@ class controller(object):
 
     def read_status(self):
         self.sub = rospy.Subscriber("read_status", Read_status_msg, self.write_status)
-        time.sleep(1.)
-        print("read end")
-        return self.status
+        while not rospy.is_shutdown():
+            if self.status:
+                status = self.status
+                self.status = ""
+                rospy.loginfo("read end")
+                break
+            else:
+                rospy.loginfo("read now...")
+                status = ""
+                time.sleep(1.)
+
+        return status
 
     def write_status(self, req):
         self.status = req

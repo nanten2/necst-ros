@@ -70,6 +70,7 @@ time.sleep(1.5)
 
 print("dome_move")
 ctrl.dome_move(90)
+ctrl.dome_tracking_check()
 ctrl.drive("off")
 print("End observation")
 obs_log.end_script(name)

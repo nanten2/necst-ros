@@ -1,0 +1,3 @@
+string node_name
+string pub_name
+string frame_name

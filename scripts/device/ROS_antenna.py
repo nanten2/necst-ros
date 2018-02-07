@@ -5,6 +5,7 @@ sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 import rospy
 import time
 import math
+import threading
 from std_msgs.msg import String
 from necst.msg import Velocity_mode_msg
 from necst.msg import Move_mode_msg
@@ -16,7 +17,7 @@ from datetime import datetime,timedelta
 sys.path.append("/home/necst/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/lib")
 import azel_calc
-
+from status_wraps import deco
 
 class antenna(object):
     
@@ -40,10 +41,16 @@ class antenna(object):
     soft_limit_az = 240.
     soft_limit_up = 80.
     soft_limit_down = 20.
+
+    az_list = ""
+    el_list = ""
+    limit = True
+    start_time = ""
     
     def __init__(self):
         self.calc = azel_calc.azel_calc()
         self.stime = time.time()
+        self.pub = rospy.Publisher("list_azel", list_azelmsg, queue_size = 1,)
 
     def note_encoder(self, req):
         self.enc_az = req.enc_az
@@ -54,31 +61,42 @@ class antenna(object):
         self.temp = req.out_temp #[deg_C]
         self.press = req.press/100. #[Pa]
         self.humi = req.out_humi/100. #[%]
-
+        return
+        
     def move_stop(self, req):
         self.stime = time.time()
         rospy.logwarn("move stop!!")
-        
-    def azel_publish(self, az_list, el_list, start_time, limit = True):
-        pub = rospy.Publisher("list_azel", list_azelmsg, queue_size = 1, latch=True)
-        msg = list_azelmsg()
-        msg.az_list = az_list
-        msg.el_list = el_list
-        msg.start_time = start_time
-        if limit:
-            ret = self.limit_check(az_list, el_list)
-        else:
-            ret = ""
-            pass
-        if ret:
-            rospy.logerr("Publish False...")
-        else:
-            pub.publish(msg)
-            rospy.loginfo('Publish ok.')
-            print("\n")
-            pass
         return
-
+        
+    def server_start(self):
+        rospy.loginfo(" Read ok ")
+        azel_thread = threading.Thread(target=self.azel_publish)
+        azel_thread.start()
+        return
+        
+    @deco("antenna_server", "list_azel", "list_azelmsg")
+    def azel_publish(self):
+        while not rospy.is_shutdown():
+            if self.start_time:
+                if self.limit:
+                    ret = self.limit_check(self.az_list, self.el_list)
+                else:
+                    ret = ""
+                    pass
+                if ret:
+                    rospy.logerr("Publish False...")
+                else:
+                    self.pub.publish(az_list=self.az_list, el_list=self.el_list, start_time=self.start_time)
+                    rospy.loginfo('Publish ok.')
+                    print("\n")
+                    pass
+                self.az_list = self.el_list = self.start_time = ""
+                self.limit = True
+            else:
+                pass
+            time.sleep(1)
+        return
+    
     def antenna_move(self, req):
         if req.time < self.stime:
             pass
@@ -97,15 +115,22 @@ class antenna(object):
                                                 req.offcoord, req.hosei, req.lamda,
                                                 req.dcos, self.temp, self.press, self.humi,
                                                 now, req.movetime)
+
                 pass
+            
+            self.limit = req.limit
+            self.az_list = ret[0]
+            self.el_list = ret[1]
+            self.start_time = ret[2]
+
             print("end calculation")
-            self.azel_publish(ret[0], ret[1], ret[2], req.limit)
         return
 
     def otf_start(self, req):
         if not self.temp:
             rospy.logerr("weather_node is not move!!")
         else:
+            print("start calculation")
             start_x = req.off_x-float(req.dx)/2.-float(req.dx)/float(req.dt)*req.rampt
             start_y = req.off_y-float(req.dy)/2.-float(req.dy)/float(req.dt)*req.rampt
             total_t = req.rampt + req.dt * req.num
@@ -123,8 +148,13 @@ class antenna(object):
                                             req.offcoord, req.hosei, req.lamda,
                                             req.dcos, self.temp, self.press,
                                             self.humi, obs_start, req.movetime)
-        
-            self.azel_publish(ret[0], ret[1], ret[2], req.limit)
+            self.limit = req.limit
+            self.az_list = ret[0]
+            self.el_list = ret[1]
+            self.start_time = ret[2]
+            
+            print("end calculation")
+
         return 
 
     def limit_check(self, az_list, el_list):
@@ -151,8 +181,8 @@ class antenna(object):
 
 if __name__ == "__main__":    
     rospy.init_node("antenna_server")
-    rospy.loginfo(" Read ok ")
     at = antenna()
+    at.server_start()
     rospy.Subscriber("status_encoder", Status_encoder_msg, at.note_encoder)
     rospy.Subscriber('status_weather', Status_weather_msg, at.note_weather)
     rospy.Subscriber("move_stop", String, at.move_stop)

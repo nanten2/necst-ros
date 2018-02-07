@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import sys
-sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
+sys.path.append("/home/amigos/ros/src/necst/lib")
+sys.path.append("/home/necst/ros/src/necst/lib")
 import time
 import threading
 import astropy.units as u
@@ -17,7 +18,7 @@ from necst.msg import Dome_msg
 from necst.msg import Status_encoder_msg
 from necst.msg import Status_antenna_msg
 from necst.msg import list_azelmsg
-
+from status_wraps import deco
 
 class alert(object):
 
@@ -37,11 +38,13 @@ class alert(object):
     az_list = ""
     el_list = ""
     encoder_error = False
+    error_flag = False
+    alert_msg = ""
     
     def __init__(self):
         self.pub_alert = rospy.Publisher("alert", String, queue_size=10, latch=True)
         #self.pub_emergency = rospy.Publisher('emergency_stop', Bool, queue_size = 10, latch = True)
-        self.pub_stop = rospy.Publisher("move_stop", String, queue_size = 1, latch = True)
+        self.pub_antenna = rospy.Publisher("move_stop", String, queue_size = 1, latch = True)
         self.pub_dome = rospy.Publisher('dome_move', Dome_msg, queue_size = 10, latch = True)
         self.sub = rospy.Subscriber("status_weather", Status_weather_msg, self.callback_weather)
         self.sub = rospy.Subscriber("status_dome", Status_dome_msg, self.callback_dome)
@@ -89,25 +92,28 @@ class alert(object):
 
     def check_encoder_error(self):
         while not self.encoder_error:
+            az_flag = el_flag = False
             if self.vel_az != 0:
                 start_az = self.enc_az
+                az_flag = True
             else:
-                start_az = ""
+                pass
             if self.vel_el != 0:
                 start_el = self.enc_el
+                el_flag = True
             else:
-                start_el = ""
+                pass
             time.sleep(10.)
-            if start_az:
+            if az_flag:
                 if self.enc_az == start_az:
                     self.encoder_error = True
                 else:
-                    start_az = ""
-            if start_el:
+                    az_flag = False
+            if el_flag:
                 if self.enc_el == start_el:
                     self.encoder_error =True
                 else:
-                    start_el = ""
+                    el_flag = False
         return self.encoder_error
             
     def check_sun_position(self):
@@ -141,31 +147,27 @@ class alert(object):
                 stop_flag = True
         return stop_flag
         
-    
+    @deco("alert", "alert", "String")
     def alert(self):
         """ publish : alert """
-        msg = String()
         while not rospy.is_shutdown():
-            if self.state:
-                msg.data = self.state
-                self.pub_alert.publish(msg)
-            time.sleep(0.3)
+            self.pub_alert.publish(data=self.alert_msg)
+            time.sleep(0.1)
         return
     
     def thread_start(self):
         """ checking alert """
         self.stop_thread = threading.Event()
-        self.thread_alert = threading.Thread(target=self.check_thread,name="alert_check_thread")
-        self.thread_alert.setDaemon(True)
-        self.thread_alert.start()
-        
         self.thread_encoder = threading.Thread(target=self.check_encoder_error)
         self.thread_encoder.setDaemon(True)
         self.thread_encoder.start()
 
+        self.thread_alert = threading.Thread(target=self.alert)
+        self.thread_alert.setDaemon(True)
+        self.thread_alert.start()
         
         
-    def check_thread(self):
+    def check_alert(self):
         """ checking alert 
         warning state --> only alert message
         emergency state --> [alert message] and [move stop] and [dome/membrane close]
@@ -186,34 +188,30 @@ class alert(object):
         """
         
         print("alert check start !!\n")
-        self.pub_alert.publish("")
+        self.alert("")
+        error_flag = False
         while not rospy.is_shutdown():
             #print(self.state, self.wind_speed, self.rain, self.out_humi, self.memb, self.dome_r, self.dome_l)
-            emergency = warning = ""
-
+            emergency = ""
+            warning = ""
+            
             if self.rain > 1.:
-                self.state = "Warning : probably rainning...\n"
-                warning =  self.state
+                warning += "Warning : probably rainning...\n"
             else:
                 pass
-            if self.out_humi > 60:
-                self.state = "Warning : out_humi over 60 % \n"
-                warning = self.state
+            if 60 < self.out_humi <= 80:
+                warning += "Warning : out_humi over 60 % \n"
             elif self.out_humi > 80:
-                self.state = "Emergency : out_humi over 80 % \n"
-                emergency = self.state
+                emergency += "Emergency : out_humi over 80 % \n"
             else:
                 pass            
             if 10. < self.wind_speed < 15.:
-                self.state = "Warning : wind_speed over 10.\n"
-                warning = self.state
-            elif self.wind_speed > 15:
-                self.state = "Emergency : wind_speed over 15.\n"
-                emergency = self.state
+                warning += "Warning : wind_speed over 10.\n"
+            elif self.wind_speed >= 15:
+                emergency += "Emergency : wind_speed over 15.\n"
 
             if self.encoder_error:
-                self.state = "Emergency : encoder can't count!! \n"
-                emergency = self.state
+                emergency += "Emergency : encoder can't count!! \n"
             else:
                 pass
                     
@@ -222,28 +220,32 @@ class alert(object):
             else:
                 sun_pos = self.check_sun_position()
                 if sun_pos:
-                    self.state = "Emergency : antenna position near sun!! \n"
-                    emergency = self.state
+                    emergency += "Emergency : antenna position near sun!! \n"
                 
             if emergency:
                 rospy.logfatal(emergency)
-                self.pub_stop.publish(data = "stop")#antenna
+                self.pub_antenna.publish(data = "stop")#antenna
+                self.pub_dome.publish(name='command', value='dome_stop')
                 if self.memb.lower() == 'open':
                     self.pub_dome.publish(name='command', value='memb_close')
                 if self.dome_r.lower() == 'open' or self.dome_l.lower() == 'open':
                     self.pub_dome.publish(name="command", value='dome_close')
-                emergency = ""
+                self.alert_msg = emergency
+                error_flag = True
             elif warning:
                 rospy.logwarn(warning)
-                warning = ""
+                self.alert_msg = warning
+                error_flag = True
             else:
-                if self.state:
-                    self.state = "error release !!\n\n\n"
+                if error_flag:
+                    self.alert_msg = "error release !!\n\n\n"
+                    rospy.loginfo(self.alert_msg)
                     time.sleep(0.5)
-                    rospy.loginfo(self.state)
-                    self.state = ""
-                    time.sleep(0.5)
-                    self.pub_alert.publish(self.state)
+                    self.alert_msg = ""
+                    rospy.loginfo(self.alet_msg)
+                    error_flag = False
+                else:
+                    pass
                 pass
             time.sleep(0.1)
         return
@@ -252,4 +254,4 @@ if __name__ == "__main__":
     rospy.init_node("alert")
     al = alert()
     al.thread_start()
-    al.alert()
+    rospy.spin()

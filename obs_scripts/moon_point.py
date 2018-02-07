@@ -100,9 +100,11 @@ for i in range(5):
     ctrl.antenna_tracking_check()#test
 
     if not filename:
-        filename = time.strftime("%H%M%S") + "_"+ str(n)
-    dirname = time.strftime("%Y%m%d")
-    #ccd.oneshot(dirname, filename)
+        filename = time.strftime("%H%M%S")
+    dirname = "/home/amigos/data/experiment/" + time.strftime("%Y%m%d")
+    if not os.path.exists(dirname):
+        os.mkdir(dirname)
+    ccd.oneshot(dirname, filename)
     print(dirname, filename)
     
 

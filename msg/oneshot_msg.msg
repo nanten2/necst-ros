@@ -1,0 +1,2 @@
+string filename
+float64 filesize
