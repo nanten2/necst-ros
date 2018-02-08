@@ -188,7 +188,7 @@ class alert(object):
         """
         
         print("alert check start !!\n")
-        self.alert("")
+        self.alert_msg = ""
         error_flag = False
         while not rospy.is_shutdown():
             #print(self.state, self.wind_speed, self.rain, self.out_humi, self.memb, self.dome_r, self.dome_l)
@@ -254,4 +254,4 @@ if __name__ == "__main__":
     rospy.init_node("alert")
     al = alert()
     al.thread_start()
-    rospy.spin()
+    al.check_alert()
