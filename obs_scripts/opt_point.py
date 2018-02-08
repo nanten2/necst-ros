@@ -35,6 +35,7 @@ class opt_point_controller(object):
         print("!!ctrl+C!!")
         print("STOP MOVING")
         self.ctrl.move_stop()
+        self.ctrl.dome_stop()
         sys.exit()
 
 
@@ -87,13 +88,13 @@ class opt_point_controller(object):
             list.append(line[21]) #magnitude
             
             ret = self.calc.coordinate_calc(ra, dec, "j2000", 0, off_x=0, off_y=0, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime=0.1)
-            list.append(ret[0][0]) #az
+            list.append(ret[0][0]) #arcsec
             #list = [number, ra, dec, magnitude, az]
             
             #print(ret[1])
             print(str(ra)+"  "+str(dec))
             
-            if ret[1][0] >= 30 and ret[1][0] <= 80:
+            if ret[1][0]/3600. >= 30 and ret[1][0]/3600. < 80:
                 print("============")
                 num = len(target_list)
                 if num == 0:
@@ -111,7 +112,6 @@ class opt_point_controller(object):
                         if i == num-1:
                             target_list.insert(num, list)
             
-            #print(target_list)
             line = f.readline()
         
         f.close()
@@ -122,7 +122,7 @@ class opt_point_controller(object):
         table = self.create_table()
         num = len(table)
         
-        #self.ctrl.dome_track()#test
+        self.ctrl.dome_track()
         print(table)
         
         date = dt.today()
@@ -135,20 +135,22 @@ class opt_point_controller(object):
         
         
         for _tbl in table:
+            now = dt.utcnow()
             ret = self.calc.coordinate_calc(_tbl[1],_tbl[2], "j2000", 0, off_x=0, off_y=0, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime=0.1)
-            real_el = ret[1][0]
-            if real_el >= 30. and real_el <= 80.:
+            real_el = ret[1][0]/3600.
+            if real_el >= 30. and real_el < 80.:
                 self.ctrl.radec_move(_tbl[1], _tbl[2], "J2000", 0, 0, offcoord = 'HORIZONTAL', hosei = 'hosei_opt.txt', lamda = 0.5)
-                print(_tbl[1], _tbl[2])
-                print(ret)
+                #print(_tbl[1], _tbl[2])
+                #print(ret)
                 
                 self.ctrl.antenna_tracking_check()
                 self.ctrl.dome_tracking_check()
                 
                 now = dt.now()
+                status = ctrl.read_status()
                 #n_star = self.calc_star_azel(_tbl[1], _tbl[2], _date)
                 ret = self.calc.coordinate_calc(_tbl[1],_tbl[2] , "j2000", 0, off_x=0, off_y=0, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime=0.1)
-                #ccd.all_sky_shot(_tbl[0], _tbl[3], ret[0][0], ret[1][0], data_name, status)
+                ccd.all_sky_shot(_tbl[0], _tbl[3], ret[0][0]/3600., ret[1][0]/3600., data_name, status)
             else:
                 #out of range(El)
                 pass
