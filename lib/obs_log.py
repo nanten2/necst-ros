@@ -26,11 +26,9 @@ def day_start():
     daystmp = time.strftime("%Y%m%d")
     if os.path.isfile("/tmp/"+daystmp+".txt") == False:
     #if os.path.isfile("/home/amigos/NECST/script/data/obs_log/"+daystmp+".txt") == False:
-        print('in')
         f = open("/tmp/"+daystmp+".txt", "a")
         f.write("*** JST "+time.strftime("%y/%m/%d")+" ***\n")
         f.close()
-    print('out')
 
 def start_script(name, list = ""):
     day_start()

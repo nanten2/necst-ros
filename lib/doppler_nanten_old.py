@@ -1,15 +1,11 @@
 #! /usr/bin/env python3
+#-*- coding: utf-8 -*-
 
 #import csv
 from pyslalib import slalib
-import sys
-sys.path.append('/home/amigos/.pyenv/versions/anaconda3-4.4.0/lib/python3.6/site-packages/astropy/coordinates/__init__.py')
-from astropy.coordinates import SkyCoord, EarthLocation
-from astropy.time import Time
-import astropy.units as u
-from datetime import datetime as dt
 import math
 import time
+import sys
 sys.path.append("/home/amigos/NECRX_system/base_param")
 #import SG
 
@@ -22,6 +18,7 @@ class doppler(object):
     def callibrate_doppler(self, x, y, coord, offset_x=0, offset_y=0,
                            offset_dcos=1, offset_coord="SAME",
                            vlsrs=0., stime=0):
+        #ドップラーシフトの補正
 
         vobs = self.doppler.set_track(x, y, coord, vlsrs, offset_x, offset_y,
                                       offset_dcos, offset_coord, stime)
@@ -82,17 +79,17 @@ class doppler_nanten (object):
     """
 
 
-    coord_dict = {"equatorial" :"altaz",
-                  "j2000"     : "fk5",
-                  "b1950"     : "fk4",
-                  "lb"        : "galactic",
-                  "galactic"  : "galactic",
-                  "gal"       : "galactic",
+    coord_dict = {"equatorial" : 1,
+                  "j2000"     : 1,
+                  "b1950"     : 2,
+                  "lb"        : 3,
+                  "galactic"  : 3,
+                  "gal"  : 3,
                   #"APPARENT"  : 10,
-                  "HORIZONTAL": "altaz",
+                  #"HORIZONTAL": 100,
                   "same"      : 0}
 
-    nanten2 = EarthLocation(lat = -22.96995611*u.deg, lon = -67.70308139*u.deg, height = 4863.85*u.m)
+
 
     def __init__(self):
         #sys.path.append("/home/amigos/RX_system/base_param")
@@ -116,9 +113,8 @@ class doppler_nanten (object):
         """
         mjd = 40587.0 + time.time()/(24.*3600.)
         vobs_mjd = mjd + stime/24./3600.
-        vobs = self.get_vobs(vobs_mjd,x,y,coord,
+        vobs = self.get_vobs(vobs_mjd,math.radians(x),math.radians(y),coord,
                              offset_x, offset_y, offset_dcos, offset_coord)
-        #x, y [deg], offset_x, offset_y [arcsec]
         c = self.dic1["LIGHT_SPEED"]
         for band in range(1, self.dic1["bandnum"]+1):
             if band == 1:
@@ -213,20 +209,50 @@ class doppler_nanten (object):
         return {"freq":freq, "power":power}
     """
     def get_vobs(self, mjdtmp, xtmp, ytmp, mode, offx, offy, dcos, offmode):
-        utc = Time(dt.utcnow())
         mode = mode.lower()
         offmode = offmode.lower()
         mode = self.coord_dict[mode]
         offmode = self.coord_dict[offmode]
-        on_coord = SkyCoord(xtmp, ytmp, unit="deg", frame=mode, obstime=utc, location=self.nanten2)
-        if mode == offmode:
-            yytmp = on_coord.fk5.dec.arcsec + offy
-            xxtmp = on_coord.fk5.ra.arcsec + offx
-        else:
+        if offmode == self.coord_dict["same"]:
+            ytmp += offy
+            if dcos == 0 :
+                xtmp += offx
+            else :
+                xtmp += offx/math.cos(ytmp)
+        elif offmode == mode :
+            ytmp += offy
+            if dcos == 0 :
+                xtmp += offx
+            else :
+                xtmp += offx/math.cos(ytmp)
+        else :
+            print("error coord != off_coord")
             pass
-        xxtmp = math.radians(xxtmp)
-        yytmp = math.radians(yytmp)
+        if mode == self.coord_dict["j2000"] :
+            xxtmp = xtmp
+            yytmp = ytmp
+        elif mode == self.coord_dict["b1950"] :
+            ret = slalib.sla_fk45z(xtmp, ytmp, 1950)
+            xxtmp = ret[0]
+            yytmp = ret[1]
+        elif mode == self.coord_dict["lb"] :
+            ret = slalib.sla_galeq(xtmp, ytmp)
+            xxtmp = ret[0]
+            yytmp = ret[1]
+        elif mode == self.coord_dict["galactic"] :
+            ret = slalib.sla_galeq(xtmp, ytmp)
+            xxtmp = ret[0]
+            yytmp = ret[1]
+        elif mode == self.coord_dict["gal"] :
+            ret = slalib.sla_galeq(xtmp, ytmp)
+            xxtmp = ret[0]
+            yytmp = ret[1]
+        else :
+            xxtmp = xtmp
+            yytmp = ytmp
         print(xxtmp, yytmp)
+        print(xxtmp/3600.)
+        print(xxtmp*360./2*3.14)
         vobs = self.calc_vobs(mjdtmp+2400000.5, xxtmp, yytmp)
         print('vobs',vobs,type(vobs))
         return vobs

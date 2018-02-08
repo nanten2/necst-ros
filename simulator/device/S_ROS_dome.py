@@ -158,6 +158,10 @@ class dome_controller(object):
             self.dome_enc += dome_speed
         else:
             self.dome_enc -= dome_speed
+        if self.dome_enc >=360.*3600.:
+            self.dome_enc -= 360.*3600.
+        elif self.dome_enc <=-360.*3600.:
+            self.dome_enc += 360.*3600.
         pass
     def dome_stop(self):
         buff = [0]
