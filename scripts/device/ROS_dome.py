@@ -532,7 +532,15 @@ class dome_controller(object):
         while True:
             pub = rospy.Publisher('status_dome', Status_dome_msg, queue_size=10, latch = True)
             s = Status_dome_msg()
-            s.status = self.status_box[:8]
+            #s.status = self.status_box[:8]
+            s.move_status = self.status_box[0]
+            s.right_act = self.status_box[1]
+            s.right_pos = self.status_box[2]
+            s.left_act = self.status_box[3]
+            s.left_pos = self.status_box[4]
+            s.memb_act = self.status_box[5]
+            s.memb_pos = self.status_box[6]
+            s.remote_status = self.status_box[7]
             s.dome_enc = float(self.status_box[8])
             pub.publish(s)
             time.sleep(0.1)
