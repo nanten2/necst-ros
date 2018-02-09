@@ -429,6 +429,7 @@ class dome_controller(object):
             ret3 = self.get_memb_status()
             ret4 = self.get_remote_status()
             ret5 = str(self.get_domepos())
+            self.status_box = [ret1, ret2[0], ret2[1], ret2[2], ret2[3], ret3[0], ret3[1], ret4, ret5]
             time.sleep(0.01)
         return
     
