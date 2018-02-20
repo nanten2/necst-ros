@@ -248,6 +248,10 @@ class antenna_move(object):
         while True:
             if self.stop_flag:
                 print('stop_flag ON')
+                self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#az
+                self.dio.output_word('OUT17_32',[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#el
+                self.command_az_speed = 0
+                self.command_el_speed = 0
                 time.sleep(1)
                 continue
 
