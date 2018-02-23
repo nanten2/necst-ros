@@ -1,3 +1,3 @@
 string node_name
-string pub_name
-string frame_name
+string frame
+string message

@@ -18,7 +18,6 @@ from necst.msg import Dome_msg
 from necst.msg import Status_encoder_msg
 from necst.msg import Status_antenna_msg
 from necst.msg import list_azelmsg
-from status_wraps import deco
 
 class alert(object):
 
@@ -147,7 +146,6 @@ class alert(object):
                 stop_flag = True
         return stop_flag
         
-    @deco("alert", "alert", "String")
     def alert(self):
         """ publish : alert """
         while not rospy.is_shutdown():
