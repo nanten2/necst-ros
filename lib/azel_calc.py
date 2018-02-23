@@ -43,7 +43,7 @@ class azel_calc(object):
         ret_azel = self.dcos_calc(altaz.az.arcsec, altaz.alt.arcsec, self.off_az, self.off_el, dcos)
         #ret_azel = self.dcos_calc(40, 50, self.off_az, self.off_el, dcos)
         #ret_azel = [60,30]
-        #print(num)
+        #print(str(num))
         _az = np.radians(ret_azel[0]/3600.)
         _el = np.radians(ret_azel[1]/3600.)
         ret = self.coord.apply_kisa_test(_az, _el, hosei)

@@ -5,6 +5,7 @@
   <node pkg='necst' name='abs_controller' type='S_ROS_abs.py'/>
   <node pkg='necst' name='m4_controller' type='S_ROS_m4.py'/>
   <node pkg='necst' name='m2_controller' type='S_ROS_m2.py'/>
+  <node pkg='necst' name='drive' type='S_ROS_drive.py'/>
   <node pkg='necst' name='weather_status' type='S_ROS_weather.py'/>
   <node pkg='necst' name='pc_status' type='ROS_pc_status.py' args='necst'/>
   <node pkg='necst' name='tracking' type='ROS_tracking.py'/>
@@ -13,5 +14,4 @@
   <node pkg='necst' name='antenna_assist' type='ROS_antenna_assist.py'/>
   <node pkg='necst' name='alert' type='ROS_alert.py' output="screen"/>
   <node pkg='necst' name='check_alert' type='ROS_check_alert.py' output="screen"/>  
-  
 </launch>
