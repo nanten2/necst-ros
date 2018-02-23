@@ -533,6 +533,7 @@ class dome_controller(object):
             pub = rospy.Publisher('status_dome', Status_dome_msg, queue_size=10, latch = True)
             s = Status_dome_msg()
             #s.status = self.status_box[:8]
+<<<<<<< Updated upstream
             s.move_status = self.status_box[0]
             s.right_act = self.status_box[1]
             s.right_pos = self.status_box[2]
@@ -542,6 +543,17 @@ class dome_controller(object):
             s.memb_pos = self.status_box[6]
             s.remote_status = self.status_box[7]
             s.dome_enc = float(self.status_box[8])
+=======
+            s.move_status = self.move_status
+            s.right_act = self.right_act
+            s.right_pos = self.right_pos
+            s.left_act = self.left_act
+            s.left_pos = self.left_pos
+            s.memb_act = self.memb_act
+            s.memb_pos = self.memb_pos
+            s.remote_status = self.remote_status
+            s.dome_enc = float(self.dome_enc)
+>>>>>>> Stashed changes
             pub.publish(s)
             time.sleep(0.1)
         

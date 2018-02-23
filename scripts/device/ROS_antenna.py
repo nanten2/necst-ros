@@ -35,6 +35,7 @@ class antenna(object):
     press = 500#""
     humi = 0.80#""
 
+    
     limit = 0
     stime = 0
 

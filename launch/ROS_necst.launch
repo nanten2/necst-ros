@@ -5,7 +5,8 @@
   <node pkg="necst" name="encoder_status" type="ROS_encoder.py"/>
   <node pkg="necst" name="authority_change" type="ROS_authority_check.py"/>
   <node pkg="necst" name="drive" type="ROS_drive.py"/>
-  <node pkg="necst" name="dome" type="ROS_dome.py"/>
+  #<node pkg="necst" name="dome" type="ROS_dome.py"/>
   <node pkg="necst" name="dome_tracking" type="ROS_dome_track_check.py"/>
   <node pkg="necst" name="limit_check" type="ROS_limit_check.py"/>
+  <node pkg='necst' name='antenna_assist' type='ROS_antenna_assist.py'/>
 </launch>
