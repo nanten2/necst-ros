@@ -116,6 +116,7 @@ class controller(object):
         """drive_on"""
         msg = String()
         msg.data = "on"
+        self.move_stop()
         self.pub5.publish(msg) 
         return
 
@@ -123,18 +124,21 @@ class controller(object):
         """drive_off"""
         msg = String()
         msg.data = "off"
+        self.move_stop()
         self.pub5.publish(msg)
         return
 
     def contactor_on(self):
         msg = String()
         msg.data = "on"
+        self.move_stop()
         self.pub6.publish(msg)
         return
 
     def contactor_off(self):
         msg = String()
         msg.data = "off"
+        self.move_stop()
         self.pub6.publish(msg)
         return
 
