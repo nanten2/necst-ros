@@ -24,7 +24,10 @@ from std_msgs.msg import Bool
 from std_msgs.msg import String
 from std_msgs.msg import Float64
 from std_msgs.msg import Int64
-
+sys.path.append("/home/amigos/ros/src/necst/lib")
+import status_publish
+st = status_publish.status_msg("controller")
+        
 class controller(object):
 
     task_flag = False
@@ -58,7 +61,6 @@ class controller(object):
         self.pub17 = rospy.Publisher("achilles", Achilles_msg, queue_size=1)
         time.sleep(0.5)
 
-
         return
     
     def authority_check(self, req):
@@ -91,6 +93,7 @@ class controller(object):
         return
 
     def antenna_tracking_check(self):
+        """antenna_tracking_check"""
         rospy.loginfo(" tracking now... \n")
         time.sleep(3.)
         while not self.antenna_tracking_flag:
@@ -98,7 +101,13 @@ class controller(object):
             pass
 
     def drive(self, switch = ""):
-        """change drive"""
+        """change drive
+
+        Parameters
+        ----------
+        swith : on or off
+        
+        """
         if not switch:
             switch = str(input("drive change (on/off) : "))
         if switch.lower() == "on":
@@ -129,6 +138,7 @@ class controller(object):
         return
 
     def contactor_on(self):
+        """contactor on"""
         msg = String()
         msg.data = "on"
         self.move_stop()
@@ -136,6 +146,7 @@ class controller(object):
         return
 
     def contactor_off(self):
+        """contactor off"""
         msg = String()
         msg.data = "off"
         self.move_stop()
@@ -200,10 +211,13 @@ class controller(object):
     def planet_move(self, number, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt', lamda=2600, dcos=0, vel_x=0, vel_y=0, movetime=10, limit=True, assist=True):
         """
         planet_move
-        1.Mercury 2.Venus 3. 4.Mars 5.Jupiter 6.Saturn 7.Uranus 8.Neptune, 9.Pluto, 10.Moon, 11.Sun
+        1.Mercury 2.Venus 3. 4.Mars 5.Jupiter 6.Saturn 7.Uranus 8.Neptune, 10.Moon, 11.Sun
         More detail is move()
         """
         print("start planet_move!!")
+        planet_list = {"mercury":1, "venus":2, "mars":4, "jupiter":5, "saturn":6, "uranus":7, "neptune":8, "moon":10, "sun":11}
+        if isinstance(number, str):
+            number = planet_list[number.lower()]
         self.move(0, 0, "planet", number, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, assist)
         return
 
@@ -246,6 +260,12 @@ class controller(object):
         return 
 
     def dome_move(self,dist):
+        """ dome move
+        
+        Parameters
+        ----------
+        dist : distance [deg]
+        """
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_move'
@@ -257,69 +277,49 @@ class controller(object):
 
     
     def dome_open(self):
-        #"""Dome\u306eopen"""
-        #self.ant.dome_open()
-        #return
+        """Dome open"""
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_open'
         self.pub13.publish(dome)
     
     def dome_close(self):
-        #"""Dome\u306eclose"""
-        #self.ant.dome_close()
-        #return
+        """Dome close"""
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_close'
         self.pub13.publish(dome)
         
     def memb_open(self):
-        """\u30e1\u30f3\u30d6\u30ec\u30f3\u306eopen"""
-        #self.ant.memb_open()
-        #return
+        """membrane open"""
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'memb_open'
         self.pub13.publish(dome)
 
     def memb_close(self):
-        #"""\u30e1\u30f3\u30d6\u30ec\u30f3\u306eopenclose"""
-        #self.ant.memb_close()
-        #return
+        """membrane close"""
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'memb_close'
         self.pub13.publish(dome)
         
-    #def dome_move(self, dome_az):
-       # """Dome\u3092(dome_az)\u306b\u52d5\u4f5c"""
-        #self.ant.dome_move(dome_az)
-        #return
-
     def dome_stop(self):
-        """Dome\u306eclose\u52d5\u4f5c\u3092\u505c\u6b62"""
-        #self.dome_track_end()
-        #self.ant.dome_stop()
-        #return
+        """Dome stop"""
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_stop'
         self.pub13.publish(dome)
         
     def dome_track(self):
-        """Dome\u3068\u671b\u9060\u93e1\u306esync"""
-        #self.ant.dome_track()
-        #return
+        """Dome sync antenna_az"""
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_tracking'
         self.pub13.publish(dome)
 
     def dome_track_end(self):
-        """Dome\u3068\u671b\u9060\u93e1\u306esync\u306e\u7d42\u4e86"""
-        #self.ant.dome_track_end()
-        #return
+        """Dome stop antenna_az sync"""
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_track_end'
@@ -330,6 +330,7 @@ class controller(object):
         return
 
     def dome_tracking_check(self):
+        """dome tracking check"""
         rospy.loginfo(" dome_tracking now... \n")
         time.sleep(3.)
         while not self.dome_tracking_flag:
@@ -341,7 +342,13 @@ class controller(object):
 # ===================
 
     def move_m4(self, position):
-        """mirror4\u3092\u52d5\u304b\u3059("in"or"out")"""
+        """mirror4 move
+        
+        Parameter
+        ---------
+        position : in or out
+        
+        """
         status = String()
         status.data = position
         self.pub14.publish(status)
@@ -349,18 +356,25 @@ class controller(object):
 
     
     def move_hot(self, position):
-        """hotload\u3092\u52d5\u304b\u3059("in"or"out")"""
-        #if position == "in": self.beam.hot_in()
-        #elif position == "out": self.beam.hot_out()
-        #else : print('set hotposition error')
-        #return
+        """hotload move
+
+        Parameter
+        ---------
+        position : in or out
+        """
         status = String()
         status.data = position
         self.pub15.publish(status)
         return
 
     def m2_move(self, dist):
-        """m2\u3092\u52d5\u304b\u3059(um)"""
+        """m2 move
+
+        Parameter
+        ---------
+        dist : distance [um]
+        
+        """
         status = Int64()
         status.data = dist
         self.pub16.publish(status)
@@ -374,7 +388,7 @@ class controller(object):
         msg = Bool()
         if command == "start":
             msg.data = True
-            #msg.data2 = exposure                                                                                                                                                 
+            #msg.data2 = exposure                                                                                                                                        
         elif command == "end":
             msg.data = False
         else:
@@ -388,6 +402,15 @@ class controller(object):
 # ===================
 
     def oneshot_achilles(self, repeat=1, exposure=1.0, stime=0.0):
+        """get spectrum by ac240
+
+        Parameter
+        ---------
+        repeat : repeat number
+        exposure : exposure time [s]
+        stime : start mjd time [day]
+        
+        """
         day = dt.utcnow().strftime("%y%m%d_%H%M%S")
         self.pub17.publish(repeat, exposure, stime, day)
         dir_name = "/home/amigos/data/experiment/achilles/" + str(day) + "/"
@@ -417,6 +440,17 @@ class controller(object):
 # ===================
 
     def read_status(self):
+        """read status
+
+        attention!!
+        -----------
+        you need execution this script.
+
+        $rosrun necst ROS_status.py 1
+        or 
+        $python ROS_status.py 1
+
+        """
         self.sub = rospy.Subscriber("read_status", Read_status_msg, self.write_status)
         while not rospy.is_shutdown():
             if self.status:

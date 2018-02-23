@@ -12,6 +12,7 @@ import time
 import rospy
 from std_msgs.msg import String
 from necst.msg import Status_drive_msg
+from necst.msg import Status_limit_msg
 import threading
 
 #import pyinterface
@@ -39,6 +40,7 @@ class drive(object):
         self.move_thread = threading.Thread(target = self.move)
         self.move_thread.setDaemon(True)
         self.move_thread.start()
+        self.limit = rospy.Publisher("limit_check", Status_limit_msg, queue_size=1)
 
     def current_position(self):
         pos = self.dio_input.input_byte("IN1_8").to_list()
@@ -74,10 +76,15 @@ class drive(object):
             elif self.drive_move != self.drive_pos and self.drive_move != "":
                 if self.drive_move == "on":
                     #ret = self.dio.output_point([1,1], 1) #output_byte([1,1,0,0,0,0,0,0],OUT1_8)
+                    
+                    self.limit.publish([1]*32,"")
                     self.drive_pos = self.drive_move
                     print("drive_on")
                 elif self.drive_move == "off":
                     #ret = self.dio.output_point([0,0], 1) #output_byte([0,0,0,0,0,0,0,0], 'OUT1_8')
+                    off = [0,0,0,0]
+                    off.extend([1]*28)
+                    self.limit.publish(off,"")
                     self.drive_pos = self.drive_move
                     print("drive_off")
                 else:
