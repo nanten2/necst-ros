@@ -16,8 +16,7 @@ from necst.msg import list_azelmsg
 from datetime import datetime,timedelta
 sys.path.append("/home/necst/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/lib")
-import azel_calc
-from status_wraps import deco
+#import status_wraps
 
 class antenna(object):
     
@@ -75,7 +74,6 @@ class antenna(object):
         azel_thread.start()
         return
         
-    @deco("antenna_server", "list_azel", "list_azelmsg")
     def azel_publish(self):
         while not rospy.is_shutdown():
             if self.start_time:
@@ -91,13 +89,14 @@ class antenna(object):
                     rospy.loginfo('Publish ok.')
                     print("\n")
                     pass
+
                 self.az_list = self.el_list = self.start_time = ""
                 self.limit = True
             else:
                 pass
             time.sleep(1)
         return
-    
+    #@status_wraps.deco("antenna", "antenna_move")
     def antenna_move(self, req):
         if req.time < self.stime:
             pass
@@ -177,11 +176,12 @@ class antenna(object):
                 pass
             limit = limit_az + "" + limit_el
         if limit:
-            rospy.loginfo(limit)
+            rospy.logwarn(limit)
         return limit
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
     rospy.init_node("antenna_server")
+    import azel_calc
     at = antenna()
     at.server_start()
     rospy.Subscriber("status_encoder", Status_encoder_msg, at.note_encoder)
