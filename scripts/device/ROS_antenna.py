@@ -16,7 +16,7 @@ from necst.msg import list_azelmsg
 from datetime import datetime,timedelta
 sys.path.append("/home/necst/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/lib")
-import status_wraps
+#import status_wraps
 
 class antenna(object):
     
@@ -96,7 +96,7 @@ class antenna(object):
                 pass
             time.sleep(1)
         return
-    @status_wraps.deco("antenna", "antenna_move")
+    #@status_wraps.deco("antenna", "antenna_move")
     def antenna_move(self, req):
         if req.time < self.stime:
             pass
