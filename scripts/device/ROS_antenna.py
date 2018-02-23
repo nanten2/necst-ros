@@ -31,9 +31,9 @@ class antenna(object):
 
     enc_az = ""
     enc_el = ""
-    temp = ""
-    press = ""
-    humi = ""
+    temp = 300#""
+    press = 500#""
+    humi = 0.80#""
 
     limit = 0
     stime = 0
