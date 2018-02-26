@@ -259,6 +259,29 @@ class controller(object):
         
         return 
 
+    def dome(self, value):
+        """dome controll
+
+        Parameter
+        =========
+        value : "open"         --> dome_open()
+                "close"        --> dome_close()
+                distance [deg] --> dome_move(value)
+                "stop"         --> dome_stop()
+        """
+        if value == "open":
+            self.dome_open()
+        elif value == "close":
+            self.dome_close()
+        elif value == "stop":
+            self.dome_stop()
+        elif isinstance(value,int) or isinstance(value, float):
+            self.dome_move(dist)
+        else:
+            print("parameter error")
+            pass
+        return
+    
     def dome_move(self,dist):
         """ dome move
         
@@ -275,7 +298,6 @@ class controller(object):
         dome.value = str(dist)
         self.pub13.publish(dome)
 
-    
     def dome_open(self):
         """Dome open"""
         dome = Dome_msg()
@@ -289,6 +311,24 @@ class controller(object):
         dome.name = 'command'
         dome.value = 'dome_close'
         self.pub13.publish(dome)
+
+    def memb(self, value):
+        """memb move
+
+        Parameter
+        =========
+        value : "open"  --> memb_open()
+                "close" --> memb_close()
+        """
+        if value == "open":
+            self.memb_open()
+        elif value == "close":
+            self.memb_close()
+        else:
+            print("parameter error")
+            pass
+        return
+
         
     def memb_open(self):
         """membrane open"""
