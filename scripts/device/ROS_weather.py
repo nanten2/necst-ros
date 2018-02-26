@@ -54,10 +54,10 @@ class weather_controller(object):
         if not os.path.exists(path):
             os.makedirs(path)
             print("make_dir")
-        scp = pexpect.spawn('scp %s:%s %s' % (self.host, self.dir+data, self.copy_dir+data))
-        scp.expect('.*ssword:')
-        scp.sendline(self.passwd)
-        scp.interact()
+        access = pexpect.spawn('scp %s:%s %s' % (self.host, self.dir+data, self.copy_dir+data))
+        access.expect('.*ssword:')
+        access.sendline(self.passwd)
+        access.interact()
         time.sleep(0.1)
         return
 
