@@ -25,8 +25,6 @@ from std_msgs.msg import String
 from std_msgs.msg import Float64
 from std_msgs.msg import Int64
 sys.path.append("/home/amigos/ros/src/necst/lib")
-import status_publish
-st = status_publish.status_msg("controller")
         
 class controller(object):
 
