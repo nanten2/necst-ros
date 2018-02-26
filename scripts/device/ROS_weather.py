@@ -62,7 +62,7 @@ class weather_controller(object):
         return
 
     def get_weather(self):
-        now = time.time()-17*3600.#-17h(nanmeteo time)
+        now = time.time()#-17*3600.#-17h(nanmeteo time)
         d = datetime.datetime.utcfromtimestamp(now)
         
         if d.month < 10:
