@@ -55,10 +55,10 @@ class status_main(object):
               'left_act':0,
               'left_pos':0,
               'memb_act':0,
-              'memb_pos':0,
-              'remote_status':0,
+              'memb_pos':"none",
+              'remote_status':"none",
               'dome_pos':0,
-              'dome_status':0
+              'dome_status':"none"
               }
     param5 = {'position':'none'}
     param6 = {"drive":0,
