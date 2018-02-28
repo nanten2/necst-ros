@@ -26,7 +26,7 @@ class weather_controller(object):
     def __init__(self):
         rospy.init_node("weather_status")
         self.passwd = getpass.getpass()
-        self.sub = rospy.Subscriber("outer_ondotori", tr7nw_values, get_ondotori)
+        self.sub = rospy.Subscriber("outer_ondotori", tr7nw_values, self.get_ondotori)
         pass
 
     def pub_func(self):
