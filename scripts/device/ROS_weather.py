@@ -9,6 +9,7 @@ import pexpect
 import getpass
 import rospy
 from necst.msg import Status_weather_msg
+from ondo.msg import tr7nw_values
 
 
 class weather_controller(object):
@@ -19,9 +20,13 @@ class weather_controller(object):
     data = [0]*20
     passwd = ""
 
+    OutTemp = 0
+    OutHumi = 0
+    
     def __init__(self):
         rospy.init_node("weather_status")
         self.passwd = getpass.getpass()
+        self.sub = rospy.Subscriber("outer_ondotori", tr7nw_values, get_ondotori)
         pass
 
     def pub_func(self):
@@ -30,9 +35,9 @@ class weather_controller(object):
         while not rospy.is_shutdown():
             ret = self.get_weather()
             msg.in_temp = ret[6]
-            msg.out_temp = ret[7]
+            msg.out_temp = self.OutTemp#ret[7]
             msg.in_humi = ret[8]
-            msg.out_humi = ret[9]
+            msg.out_humi = self.OutHumi#ret[9]
             msg.wind_sp = ret[11]
             msg.wind_dir = ret[10]
             msg.press = ret[12]
@@ -61,6 +66,12 @@ class weather_controller(object):
         time.sleep(0.1)
         return
 
+    def get_ondotori(self,req):
+        self.OutTemp = req.ch1_value
+        self.OutHumi = req.ch2_value
+        return
+
+    
     def get_weather(self):
         now = time.time()#-17*3600.#-17h(nanmeteo time)
         d = datetime.datetime.utcfromtimestamp(now)
