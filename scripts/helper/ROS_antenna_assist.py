@@ -25,7 +25,7 @@ class antenna_assist(object):
     r_flag = 0
     g_flag = 0
     p_flag = 0
-    assist_flag = True
+    old_time = 0
 
     def __init__(self):
         self.start_time = time.time()
@@ -76,14 +76,17 @@ class antenna_assist(object):
                 if self.param.assist == True:
                     self.pub.publish(self.param)
                     self.assist_flag = True
-                    #self.pub.publish(self.x, self.y, self.coord, self.planet, self.off_x, self.off_y, self.offcoord, self.hosei, self.lamda, self.dcos, self.vel_x, self.vel_y, self.movetime, self.limit, self.controller_time)
                     print('published')
                     print(self.param)
-                elif self.param.assist == False and self.assist_flag == True:
-                    self.pub.publish(self.param)
-                    self.assist_flag = False
+                elif self.param.assist == False:
+                    now = self.param.time
+                    if now != self.old_time:
+                        self.pub.publish(self.param)
+                    else:
+                        pass
+                    self.old_time = now
                     pass
-                elif self.assist_flag == False:
+                else:
                     pass
                 time.sleep(5)
                 continue
