@@ -108,7 +108,7 @@ class antenna(object):
             if req.coord.lower() == "horizontal":
                 ret = self.calc.azel_calc(req.x, req.y,
                                           req.off_x, req.off_y,
-                                          req.offcoord, now, req.vel_x, req.vel_y, req.movetime)
+                                          req.offcoord, now, req.func_x, req.func_y, req.movetime)
             else:
                 ret = self.calc.coordinate_calc(req.x, req.y, req.coord, req.planet,
                                                 req.off_x, req.off_y,

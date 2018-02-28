@@ -173,19 +173,16 @@ class controller(object):
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
         assist   : ROS_antenna_assist is on or off (True:on, False:off)
         """
-        if assist:
-            self.pub8.publish(x, y, coord, planet, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, time.time())
-        else:
-            self.pub9.publish(x, y, coord, planet, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, time.time())
+        self.pub8.publish(x, y, coord, planet, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, assist, time.time())
         return
 
 
-    def azel_move(self, az, el, off_x = 0, off_y = 0, offcoord = 'horizontal', hosei = 'hosei_230.txt', lamda=2600, dcos=0, vel_x=0, vel_y=0, movetime=10, limit=True, assist=True):
+    def azel_move(self, az, el, off_x = 0, off_y = 0, offcoord = 'horizontal', hosei = 'hosei_230.txt', lamda=2600, dcos=0, func_x=0, func_y=0, movetime=10, limit=True, assist=True):
         """
         azel_move
         More detail is move()
         """
-        self.move(az, el, "horizontal", 0, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, assist)
+        self.move(az, el, "horizontal", 0, off_x, off_y, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), movetime, limit, assist)
         return
 
     def radec_move(self, ra, dec, coord, off_x = 0, off_y = 0, offcoord = 'horizontal', hosei = 'hosei_230.txt', lamda=2600, dcos=0, vel_x=0, vel_y=0, movetime=10, limit=True, assist=True):
