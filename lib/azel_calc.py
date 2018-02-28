@@ -51,15 +51,17 @@ class azel_calc(object):
         target_el = ret_azel[1]+ret[1]
         return target_az, target_el
 
-    def azel_calc(self, az, el, off_x, off_y, off_coord, now, vel_x=0, vel_y=0, movetime=10):
+    def azel_calc(self, az, el, off_x, off_y, off_coord, now, func_x=0, func_y=0, movetime=10):
         if off_coord.lower() != "horizontal":
             print("Please, off_coord is HORIZONTAL")
             return
         else:
             pass
         tv = time.time()
-        az_list = [(az+off_x)*3600.+vel_x*0.1*i for i in range(int(movetime*10))]
-        el_list = [(el+off_y)*3600.+vel_y*0.1*i for i in range(int(movetime*10))]
+        param_x = lambda x: eval(str(func_x))
+        param_y = lambda y: eval(str(func_y))
+        az_list = [(az+off_x)*3600.+ param_x(x*0.1) for x in range(int(movetime*10))]
+        el_list = [(el+off_y)*3600.+ param_y(y*0.1) for y in range(int(movetime*10))]
         return [az_list, el_list, tv]
 
     def coordinate_calc(self, x, y, coord, ntarg, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, movetime = 10):

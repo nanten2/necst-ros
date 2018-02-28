@@ -38,6 +38,7 @@ class alert(object):
     el_list = ""
     encoder_error = False
     error_flag = False
+    sun_pos = False
     alert_msg = ""
     
     def __init__(self):
@@ -144,7 +145,7 @@ class alert(object):
                 pass
             if sun_el -15 <= el_list[i]/3600. <= sun_el + 15:
                 stop_flag = True
-        return stop_flag
+        return self.sun_pos
         
     def alert(self):
         """ publish : alert """
@@ -216,15 +217,19 @@ class alert(object):
             if self.args[1] == "radio":
                 pass
             else:
-                sun_pos = self.check_sun_position()
-                if sun_pos:
+                self.sun_pos = self.check_sun_position()
+                if self.sun_pos:
                     emergency += "Emergency : antenna position near sun!! \n"
                 
             if emergency:
                 rospy.logfatal(emergency)
-                self.pub_antenna.publish(data = "stop")#antenna
-                self.pub_dome.publish(name='command', value='dome_stop')
+                if self.sun_pos:
+                    pass
+                else:
+                    self.pub_antenna.publish(data = "stop")#antenna
+                    self.pub_dome.publish(name='command', value='dome_stop')
                 if self.memb.lower() == 'open':
+                    self.pub_antenna.publish(data = "stop")#antenna
                     self.pub_dome.publish(name='command', value='memb_close')
                 if self.dome_r.lower() == 'open' or self.dome_l.lower() == 'open':
                     self.pub_dome.publish(name="command", value='dome_close')

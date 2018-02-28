@@ -8,8 +8,9 @@ string offcoord
 string hosei
 float64 lamda
 int64 dcos
-float64 vel_x
-float64 vel_y
+string func_x
+string func_y
 float64 movetime
 bool limit
+bool assist
 float64 time
