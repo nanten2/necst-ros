@@ -151,7 +151,7 @@ class controller(object):
         self.pub6.publish(msg)
         return
 
-    def move(self, x, y, coord, planet= 0, off_x=0, off_y=0, offcoord='horizontal', hosei='hosei_230.txt',  lamda=2600, dcos=0, vel_x=0, vel_y=0, movetime=10, limit=True, assist=True):
+    def move(self, x, y, coord, planet= 0, off_x=0, off_y=0, offcoord='horizontal', hosei='hosei_230.txt',  lamda=2600, dcos=0, func_x="0", func_y="0", movetime=10, limit=True, assist=True):
         """ azel_move, radec_move, galactic_move, planet_move
         
         Parameters
@@ -167,46 +167,43 @@ class controller(object):
         hosei    : hosei file name (default ; hosei_230.txt)
         lamda    : observation wavelength [um] (default ; 2600)
         dcos     : projection (no:0, yes:1)
-        vel_x    : constant speed scan [arcsec/s] (horizontal)
-        vel_y    : constant speed scan [arcsec/s] (horizontal)
+        func_x   : free scan [arcsec/s] (cf:20*x or math.sin(x) or etc...)
+        func_y   : free scan [arcsec/s] (cf:20*y or math.sin(y) or etc...)
         movetime : azel_list length [s]
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
         assist   : ROS_antenna_assist is on or off (True:on, False:off)
         """
-        if assist:
-            self.pub8.publish(x, y, coord, planet, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, time.time())
-        else:
-            self.pub9.publish(x, y, coord, planet, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, time.time())
+        self.pub8.publish(x, y, coord, planet, off_x, off_y, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), movetime, limit, assist, time.time())
         return
 
 
-    def azel_move(self, az, el, off_x = 0, off_y = 0, offcoord = 'horizontal', hosei = 'hosei_230.txt', lamda=2600, dcos=0, vel_x=0, vel_y=0, movetime=10, limit=True, assist=True):
+    def azel_move(self, az, el, off_x = 0, off_y = 0, offcoord = 'horizontal', hosei = 'hosei_230.txt', lamda=2600, dcos=0, func_x=0, func_y=0, movetime=10, limit=True, assist=True):
         """
         azel_move
         More detail is move()
         """
-        self.move(az, el, "horizontal", 0, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, assist)
+        self.move(az, el, "horizontal", 0, off_x, off_y, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), movetime, limit, assist)
         return
 
-    def radec_move(self, ra, dec, coord, off_x = 0, off_y = 0, offcoord = 'horizontal', hosei = 'hosei_230.txt', lamda=2600, dcos=0, vel_x=0, vel_y=0, movetime=10, limit=True, assist=True):
+    def radec_move(self, ra, dec, coord, off_x = 0, off_y = 0, offcoord = 'horizontal', hosei = 'hosei_230.txt', lamda=2600, dcos=0, func_x=0, func_y=0, movetime=10, limit=True, assist=True):
         """
         radec_move
         More detail is move()
         """
         print("start radec_move!!")
-        self.move(ra, dec, coord, 0, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, assist)
+        self.move(ra, dec, coord, 0, off_x, off_y, offcoord, hosei, lamda, dcos, func_x, func_y, movetime, limit, assist)
         return
     
-    def galactic_move(self, l, b, off_x = 0, off_y = 0, offcoord = 'horizontal', hosei = 'hosei_230.txt', lamda=2600, dcos=0, vel_x=0, vel_y=0, movetime=10, limit=True, assist=True):
+    def galactic_move(self, l, b, off_x = 0, off_y = 0, offcoord = 'horizontal', hosei = 'hosei_230.txt', lamda=2600, dcos=0, func_x=0, func_y=0, movetime=10, limit=True, assist=True):
         """
         galactic_move
         More detail is move()
         """
         print("start galactic_move!!")
-        self.move(l, b, "galactic", 0, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, assist)
+        self.move(l, b, "galactic", 0, off_x, off_y, offcoord, hosei, lamda, dcos, func_x, func_y, movetime, limit, assist)
         return
 
-    def planet_move(self, number, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt', lamda=2600, dcos=0, vel_x=0, vel_y=0, movetime=10, limit=True, assist=True):
+    def planet_move(self, number, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt', lamda=2600, dcos=0, func_x=0, func_y=0, movetime=10, limit=True, assist=True):
         """
         planet_move
         1.Mercury 2.Venus 3. 4.Mars 5.Jupiter 6.Saturn 7.Uranus 8.Neptune, 10.Moon, 11.Sun
@@ -216,7 +213,7 @@ class controller(object):
         planet_list = {"mercury":1, "venus":2, "mars":4, "jupiter":5, "saturn":6, "uranus":7, "neptune":8, "moon":10, "sun":11}
         if isinstance(number, str):
             number = planet_list[number.lower()]
-        self.move(0, 0, "planet", number, off_x, off_y, offcoord, hosei, lamda, dcos, vel_x, vel_y, movetime, limit, assist)
+        self.move(0, 0, "planet", number, off_x, off_y, offcoord, hosei, lamda, dcos, func_x, func_y, movetime, limit, assist)
         return
 
     def move_stop(self):
