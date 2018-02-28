@@ -18,14 +18,14 @@ class antenna_assist(object):
     hosei = 'hosei_230.txt'
     lamda = 2600
     dcos = 0
-    vel_x = 0
-    vel_y = 0
+    func_x = 0
+    func_y = 0
     limit = True
 
     r_flag = 0
     g_flag = 0
     p_flag = 0
-    
+    old_time = 0
 
     def __init__(self):
         self.start_time = time.time()
@@ -73,11 +73,21 @@ class antenna_assist(object):
             time.sleep(0.1)
         else:
             while not rospy.is_shutdown():
-                self.pub.publish(self.param)
-                #self.pub.publish(self.x, self.y, self.coord, self.planet, self.off_x, self.off_y, self.offcoord, self.hosei, self.lamda, self.dcos, self.vel_x, self.vel_y, self.movetime, self.limit, self.controller_time)
-                print('published')
-                print(self.param)
-                #print(self.x, self.y, self.coord, self.planet, self.off_x, self.off_y, self.offcoord, self.hosei, self.lamda, self.dcos, self.vel_x, self.vel_y, self.limit, self.controller_time)
+                if self.param.assist == True:
+                    self.pub.publish(self.param)
+                    self.assist_flag = True
+                    print('published')
+                    print(self.param)
+                elif self.param.assist == False:
+                    now = self.param.time
+                    if now != self.old_time:
+                        self.pub.publish(self.param)
+                    else:
+                        pass
+                    self.old_time = now
+                    pass
+                else:
+                    pass
                 time.sleep(5)
                 continue
         return
