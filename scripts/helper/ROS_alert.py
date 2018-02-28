@@ -245,7 +245,7 @@ class alert(object):
                     rospy.loginfo(self.alert_msg)
                     time.sleep(0.5)
                     self.alert_msg = ""
-                    rospy.loginfo(self.alet_msg)
+                    rospy.loginfo(self.alert_msg)
                     error_flag = False
                 else:
                     pass
