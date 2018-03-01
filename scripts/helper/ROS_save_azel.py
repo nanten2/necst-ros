@@ -61,7 +61,7 @@ if __name__ == '__main__':
     st = save_azel()
     rospy.init_node(node_name)
     ut = time.gmtime()
-    print('start recording [filename :'+time.strftime("%Y_%m_%d_%H_%M_%S", ut)+'.txt]')
+    print('start recording')
     sub = rospy.Subscriber('status_encoder', Status_encoder_msg, st.callback)
     sub1 = rospy.Subscriber('status_antenna', Status_antenna_msg, st.callback2)
     st.write_file()
