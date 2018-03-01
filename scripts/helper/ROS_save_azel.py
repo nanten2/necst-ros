@@ -3,6 +3,7 @@
 import rospy
 import time
 import os
+import sys
 from necst.msg import Status_encoder_msg
 from necst.msg import Status_antenna_msg
 
@@ -19,6 +20,10 @@ class save_azel(object):
     command_el = 45*3600.
 
     def __init__(self):
+        try:
+            self.file_name = sys.argv[1]
+        except:
+            self.file_name = ''
         pass
 
     def callback(self, req):
@@ -33,7 +38,10 @@ class save_azel(object):
         
     def write_file(self):
         ut = time.gmtime()
-        filename = time.strftime("%Y_%m_%d_%H_%M_%S.txt", ut)
+        if self.file_name == '':
+            filename = time.strftime("%Y_%m_%d_%H_%M_%S.txt", ut)
+        else:
+            filename = self.file_name
         saveto = os.path.join(home_dir, filename)
         while not rospy.is_shutdown():
             ctime = time.time()
