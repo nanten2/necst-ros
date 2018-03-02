@@ -895,7 +895,7 @@ class antenna_move(object):
     def pub_status(self):
         rate = rospy.Rate(100)
         pub = rospy.Publisher('status_antenna',Status_antenna_msg, queue_size=1, latch = True)
-        pub2 = rospy.Publisher('task_check', Bool, queue_size =1, latch = True)
+        #pub2 = rospy.Publisher('task_check', Bool, queue_size =1, latch = True)
         while not rospy.is_shutdown():
             #publisher1
             #---------
@@ -908,6 +908,7 @@ class antenna_move(object):
             status.command_azspeed = self.command_az_speed
             status.command_elspeed = self.command_el_speed
             status.node_status = self.node_status
+            """
             #publisher2
             #----------
             task = Bool()
@@ -915,10 +916,11 @@ class antenna_move(object):
                 task.data = True
             else :
                 task.data = False
-                
+            """    
             pub.publish(status)
-            pub2.publish(task)
-            rate.sleep()
+            #pub2.publish(task)
+            #rate.sleep()
+            time.sleep(0.001)
             continue
 
 if __name__ == '__main__':
@@ -926,9 +928,9 @@ if __name__ == '__main__':
     ant = antenna_move()
     ant.start_thread()
     print('[ROS_antenna_move.py] : START SUBSCRIBE')
-    rospy.Subscriber('list_azel', list_azelmsg, ant.set_parameter)
+    rospy.Subscriber('list_azel', list_azelmsg, ant.set_parameter, queue_size=1)
     rospy.Subscriber('move_stop', String, ant.stop_move)
     rospy.Subscriber('emergency_stop', Bool, ant.emergency)
-    rospy.Subscriber('status_encoder', Status_encoder_msg, ant.set_enc_parameter)
+    rospy.Subscriber('status_encoder', Status_encoder_msg, ant.set_enc_parameter, queue_size=1)
     rospy.spin()
     

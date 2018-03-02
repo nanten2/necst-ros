@@ -62,6 +62,6 @@ if __name__ == '__main__':
     rospy.init_node(node_name)
     ut = time.gmtime()
     print('start recording')
-    sub = rospy.Subscriber('status_encoder', Status_encoder_msg, st.callback)
-    sub1 = rospy.Subscriber('status_antenna', Status_antenna_msg, st.callback2)
+    sub = rospy.Subscriber('status_encoder', Status_encoder_msg, st.callback, queue_size=1)
+    sub1 = rospy.Subscriber('status_antenna', Status_antenna_msg, st.callback2, queue_size=1)
     st.write_file()
