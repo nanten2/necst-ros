@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+
+import rospy
+import time
+import os
+import sys
+from necst.msg import Status_encoder_msg
+from necst.msg import Status_antenna_msg
+
+# --
+data_exp_dir = '/home/amigos/data/experiment'
+node_name = 'save_azel'
+home_dir = os.path.join(data_exp_dir, node_name)
+# --
+
+class save_azel(object):
+    enc_az = 0
+    enc_el = 45*3600.
+    command_az = 0
+    command_el = 45*3600.
+    command_azspeed = 0
+    command_elspeed = 0
+
+    def __init__(self):
+        try:
+            self.file_name = sys.argv[1]
+        except:
+            self.file_name = ''
+        pass
+
+    def callback(self, req):
+        self.enc_az = req.enc_az
+        self.enc_el = req.enc_el
+        return
+    
+    def callback2(self, req):
+        self.command_azspeed = req.command_azspeed
+        self.command_elspeed = req.command_elspeed
+        self.command_az = req.command_az
+        self.command_el = req.command_el
+        return
+        
+    def write_file(self):
+        ut = time.gmtime()
+        if self.file_name == '':
+            filename = time.strftime("%Y_%m_%d_%H_%M_%S.txt", ut)
+        else:
+            filename = self.file_name
+        saveto = os.path.join(home_dir, filename)
+        while not rospy.is_shutdown():
+            ctime = time.time()
+            print('%13.2f %3.4f %3.4f %3.4f %3.4f %5i %5i'%(ctime, self.enc_az/3600., self.enc_el/3600., self.command_az/3600., self.command_el/3600., self.command_azspeed, self.command_elspeed))
+            f = open(saveto,'a')
+            f.write('%s %s %s %s %s %s %s \n'%(str(ctime), str(self.enc_az), str(self.enc_el), str(self.command_az), str(self.command_el), str(self.command_azspeed), str(self.command_elspeed)))
+            f.close()
+            time.sleep(0.01)
+            continue
+        return
+    
+if __name__ == '__main__':
+    if not os.path.exists(home_dir):
+        os.makedirs(home_dir)
+        pass
+    
+    st = save_azel()
+    rospy.init_node(node_name)
+    ut = time.gmtime()
+    print('start recording')
+    sub = rospy.Subscriber('status_encoder', Status_encoder_msg, st.callback, queue_size=1)
+    sub1 = rospy.Subscriber('status_antenna', Status_antenna_msg, st.callback2, queue_size=1)
+    st.write_file()
