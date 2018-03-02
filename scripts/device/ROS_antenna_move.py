@@ -146,7 +146,7 @@ class antenna_move(object):
         ===========
         This function recieves azel_list and start_time from publisher in ROS_antenna.py 
         """
-        print('set_parameter')
+        #print('set_parameter')
         self.parameters['az_list'] = req.az_list
         self.parameters['el_list'] = req.el_list
         self.parameters['start_time'] = req.start_time
@@ -155,7 +155,7 @@ class antenna_move(object):
             self.stop_flag = 1
             return
         """
-        print('start_time : ', self.parameters['start_time'])
+        #print('start_time : ', self.parameters['start_time'])
         self.stop_flag = 0
         return
 
@@ -205,7 +205,7 @@ class antenna_move(object):
         st = self.parameters['start_time']
         ct = time.time()
         st_e = float(st) + float(n*0.1)#0.1 = interval
-        print(n, st, ct, st_e, 'n, st, ct ,st_e')
+        #print(n, st, ct, st_e, 'n, st, ct ,st_e')
 
         #time check
         #----------
@@ -241,13 +241,13 @@ class antenna_move(object):
             y1 = self.parameters['el_list'][num]
             y2 = self.parameters['el_list'][num+1]
             rospy.loginfo('send comp azel')
-            print(x1,x2,y1,y2,st2)
+            #print(x1,x2,y1,y2,st2)
             return (x1,x2,y1,y2,st2)
 
     def act_azel(self):
         while True:
             if self.stop_flag:
-                print('stop_flag ON')
+                print('STOP')
                 self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#az
                 self.dio.output_word('OUT17_32',[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#el
                 self.command_az_speed = 0
@@ -282,7 +282,7 @@ class antenna_move(object):
                 self.command_el = tar_el
                 d_t = st - c
                 a_time3=time.time()
-                print(az, el, c, st, tar_az, tar_el,"####az,el,c,st,tar_az,tar_el")
+                #print(az, el, c, st, tar_az, tar_el,"####az,el,c,st,tar_az,tar_el")
                 #print(a_time3-b_time3,'check#%#%')
                 #rospy.loginfo(d_t)
                 #print(d_t)
@@ -380,8 +380,8 @@ class antenna_move(object):
         
         self.enc_az = self.enc_parameter['az_enc']
         self.enc_el = self.enc_parameter['el_enc']
-            
-        if abs(az_arcsec - self.enc_az) >= 1 or abs(el_arcsec - self.enc_el) > 1:###self.enc_az is provisonal
+        if True:#shiotani changed   
+        #if abs(az_arcsec - self.enc_az) >= 1 or abs(el_arcsec - self.enc_el) > 1:###self.enc_az is provisonal
             b_time = time.time()
             self.move_azel(az_arcsec, el_arcsec, az_max_rate, el_max_rate)
                 
@@ -516,7 +516,7 @@ class antenna_move(object):
         if stop_flag:
             rospy.logwarn('')
             sys.exit()
-        print('move check')
+        #print('move check')
         return [Az_track_flag, El_track_flag]
 
 
