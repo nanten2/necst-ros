@@ -123,6 +123,9 @@ class antenna_move(object):
     i_el_coeff = 3.0
     d_el_coeff = 0
     s_el_coeff = 0
+
+    #check
+    hensa_az = 0
     
     def __init__(self):
         board_name = 2724
@@ -631,6 +634,7 @@ class antenna_move(object):
         target_el = el_arcsec
         hensa_az = target_az - az_enc
         hensa_el = target_el - el_enc
+        self.hensa_az = hensa_az
         ret = self.ave_calc(hensa_az, hensa_el) #average of hensa_az(ret[0]) and hensa_el(ret[1])
         
         if 3 > math.fabs(ret[0]):
@@ -903,7 +907,7 @@ class antenna_move(object):
             status.limit_az = self.limit_az
             status.limit_el = self.limit_el
             status.command_az = self.command_az
-            status.command_el = self.command_el
+            status.command_el = self.hensa_az
             status.emergency = self.emergency_flag
             status.command_azspeed = self.command_az_speed
             status.command_elspeed = self.command_el_speed
