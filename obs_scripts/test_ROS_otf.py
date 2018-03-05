@@ -478,7 +478,7 @@ while rp_num < rp:
         start_on = [st.year, st.month, st.day, st.hour, st.minute, st.second, st.microsecond]
         print("%%%%%%%%%%%%%%%%")
         print(start_on)
-        con.otf_scan(lambda_on, beta_on, coord_sys, dx, dy, dt, scan_point, rampt, delay=delay, start_on=start_on, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, movetime=0.1, limit=True)
+        con.otf_scan(lambda_on, beta_on, coordsys, dx, dy, dt, scan_point, rampt, delay=delay, start_on=start_on, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, movetime=0.01, limit=True)
 
         print('getting_data...')
         start_on = Time(st).mjd

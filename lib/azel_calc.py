@@ -112,8 +112,14 @@ class azel_calc(object):
         
         # convert_azel
         nanten2 = EarthLocation(lat = self.latitude*u.deg, lon = self.longitude*u.deg, height = self.height*u.m)
+        if int(movetime*100) == 1:
+            list_num = int(len(x))
+            print("###otf_mode###")
+        else:
+            list_num = int(movetime*10)
+            
         #tstr = now.strftime('%Y-%m-%d %H:%M:%S')
-        time_list = [Time(now)-self.utc_offset*u.hour+(i*self.loop_rate)*u.s for i in range(int(movetime*10))]
+        time_list = [Time(now)-self.utc_offset*u.hour+(i*self.loop_rate)*u.s for i in range(list_num)]
         if coord.lower() =="planet":
             real_coord = get_body(self.planet[ntarg], Time(now))
         else:
@@ -125,11 +131,6 @@ class azel_calc(object):
         real_coord.obswl = lamda*u.um#param
         altaz = real_coord.transform_to(AltAz(obstime=time_list))
 
-        if int(movetime*100) == 1:
-            list_num = int(len(x))
-            print("###otf_mode###")
-        else:
-            list_num = int(movetime*10)
         print("create_list : start!!")
         altaz_list = [altaz[i] for i in range(list_num)]# shorting calc time
         #az_list = [self.kisa_calc(altaz_list[i], dcos, hosei)[0] for i in range(int(movetime*10))]
@@ -170,6 +171,6 @@ if __name__ == "__main__":
     qq = azel_calc()
     from datetime import datetime as dt
     now = dt.utcnow()
-    qq.coordinate_calc([30,23,23], [40,23,34], "j2000", 7, off_x=10, off_y=10, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime = 0.1)
+    qq.coordinate_calc([30,23,23], [40,23,34], "j2000", 7, off_x=10, off_y=10, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime = 0.01)
     
     
