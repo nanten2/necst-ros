@@ -270,8 +270,8 @@ class antenna_move(object):
                 el = ret[3] - ret[2]
                 c = time.time()
                 st = ret[4]
-                tar_az = ret[0] + az*(c-st)
-                tar_el = ret[2] + el*(c-st)
+                tar_az = ret[0] + az*(c-st)*10
+                tar_el = ret[2] + el*(c-st)*10
                 #2nd limit check (1st limit check is in ROS_antenna.py)
                 if tar_az > 240*3600. or tar_el < -240*3600.:
                     self.stop_flag = False
