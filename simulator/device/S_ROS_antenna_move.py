@@ -195,6 +195,7 @@ class antenna_move(object):
                 return True
 
     def comp(self):
+        print('checkpoint#5 comp')
         """
         DESCRIPTION
         ===========
@@ -211,6 +212,7 @@ class antenna_move(object):
         #----------
         
         if st - ct >=0:
+            print('checkpoint #3')
             #print(st - ct,' [sec] waiting...')
             #print('wait starting azel list or send another list')
             #time.sleep(st-ct)
@@ -235,11 +237,18 @@ class antenna_move(object):
                     #num = i
                     break
             if num + 1 == len((self.parameters['az_list'])):
-                return                    
+                return
+            param = self.parameters
+            """
             x1 = self.parameters['az_list'][num]
             x2 = self.parameters['az_list'][num+1]
             y1 = self.parameters['el_list'][num]
             y2 = self.parameters['el_list'][num+1]
+            """
+            x1 = param['az_list'][num]
+            x2 = param['az_list'][num+1]
+            y1 = param['el_list'][num]
+            y2 = param['el_list'][num+1]
             #rospy.loginfo('send comp azel')
             #print(x1,x2,y1,y2,st2)
             return (x1,x2,y1,y2,st2)
@@ -247,7 +256,7 @@ class antenna_move(object):
     def act_azel(self):
         while True:
             if self.stop_flag:
-                #print('stop_flag ON')
+                print('stop_flag ON')
                 time.sleep(1)
                 self.command_az_speed = 0
                 self.command_el_speed = 0
@@ -257,16 +266,18 @@ class antenna_move(object):
             ret = self.comp()
             a_time2=time.time()
             if ret == None:
+                print('check_point#2')
                 time.sleep(0.1)
                 continue
             else:
+                print('checkpoint#7 act_azel')
                 b_time3 = time.time()
                 az = ret[1] - ret[0]
                 el = ret[3] - ret[2]
                 c = time.time()
                 st = ret[4]
-                tar_az = ret[0] + az*(c-st)
-                tar_el = ret[2] + el*(c-st)
+                tar_az = ret[0] + az*(c-st)*10
+                tar_el = ret[2] + el*(c-st)*10
                 #2nd limit check (1st limit check is in ROS_antenna.py)
                 if tar_az > 240*3600. or tar_el < -240*3600.:
                     self.stop_flag = False
@@ -287,6 +298,7 @@ class antenna_move(object):
                 #print(type(d_t))
                 #time.sleep(d_t)###for check
                 if self.emergency_flag:
+                    print('checkpoint#9')
                     time.sleep(0.1)
                     continue
                 #self.move_azel(tar_az,tar_el,10000,12000)
@@ -371,6 +383,7 @@ class antenna_move(object):
     #ROS_version
     #cur_az cur_el means encoder_azel
     def azel_move(self, az_arcsec, el_arcsec, az_max_rate, el_max_rate):
+        print('checkpoint#10 azel_move')
         test_flag = 1
 
         self.indaz = az_arcsec
@@ -379,15 +392,25 @@ class antenna_move(object):
         self.enc_az = self.enc_parameter['az_enc']
         self.enc_el = self.enc_parameter['el_enc']
             
-        if abs(az_arcsec - self.enc_az) >= 1 or abs(el_arcsec - self.enc_el) > 1:###self.enc_az is provisonal
+        #if abs(az_arcsec - self.enc_az) >= 1 or abs(el_arcsec - self.enc_el) > 1:###self.enc_az is provisonal
+        if True:
+            print('az_arcsec - self.enc_az', az_arcsec - self.enc_az)
+            print('el_arcsec - self.enc_el',el_arcsec - self.enc_el)
+            print('az_arcsec : {0}'.format(az_arcsec))
+            print('el_arcsec : {0}'.format(el_arcsec))
+            print('self.enc_az : {0}'.format(self.enc_az))
+            print('self.enc_el : {0}'.format(self.enc_el))
             b_time = time.time()
             self.move_azel(az_arcsec, el_arcsec, az_max_rate, el_max_rate)
                 
             interval = time.time()-b_time
             if interval <= 0.01:
-                time.sleep(0.01-interval)
+                print('check_point#1')
+                print(0.01-interval)
+                #time.sleep(0.01-interval)
                     
             else:
+                print('check_point#11 else')
                 #self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#az
                 #self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#el
                 self.command_az_speed = 0
@@ -398,6 +421,7 @@ class antenna_move(object):
             
             
     def move_azel(self, az_arcsec, el_arcsec, az_max_rate = 16000, el_max_rate = 12000, m_bStop = 'FALSE'):
+        print('check point #6 move_azel')
         MOTOR_MAXSTEP = 1000
         #MOTOR_AZ_MAXRATE = 16000
         MOTOR_AZ_MAXRATE = 10000
@@ -519,6 +543,7 @@ class antenna_move(object):
 
 
     def calc_pid(self, az_arcsec, el_arcsec, az_max_rate, el_max_rate):
+        print('checkpoint#4 calc pid')
         """
         DESCRIPTION
         ===========
