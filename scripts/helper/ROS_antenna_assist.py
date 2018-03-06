@@ -88,7 +88,8 @@ class antenna_assist(object):
                     pass
                 else:
                     pass
-                time.sleep(5)
+                #time.sleep(5)
+                time.sleep(0.2)
                 continue
         return
         

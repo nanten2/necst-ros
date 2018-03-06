@@ -83,32 +83,34 @@ def handler(num, flame):
 
 signal.signal(signal.SIGINT, handler)
 
-ctrl.dome_track()
+#ctrl.dome_track()
 ctrl.move_stop()
 
-for i in range(5):
-    minsec = 15
-    n = i-2
+for i in range(11):
+    minsec = 10
+    n = i-5
+    xmin=float(n)-9-2
+    ymin=0
     print("observation point", str(n))    
     if planet:
-        ctrl.planet_move(planet, off_x = n*minsec*60, off_y = 0, hosei = "hosei_opt.txt", lamda = 0.5)
+        ctrl.planet_move(planet, off_x = xmin*minsec*60, off_y = ymin*minsec*60, hosei = "hosei_opt.txt", lamda = 0.5)
     else:
         ctrl.radec_move(target[0], target[1], 'J2000', off_x=n*minsec*60, off_y=0, offcoord="HORIZONTAL", hosei='hosei_opt.txt', lamda = 0.5)
 
     b_az = 0
-    ctrl.dome_tracking_check()#test
+    #ctrl.dome_tracking_check()#test
     ctrl.antenna_tracking_check()#test
 
-    if not filename:
-        filename = time.strftime("%H%M%S")
-    dirname = "/home/amigos/data/experiment/" + time.strftime("%Y%m%d")
+    #if not filename:
+    filename = time.strftime("%H%M%S")+str(n)
+    dirname = time.strftime("%Y%m%d")
     if not os.path.exists(dirname):
         os.mkdir(dirname)
     ccd.oneshot(dirname, filename)
     print(dirname, filename)
     
 
-ctrl.dome_track_end()#test
+#ctrl.dome_track_end()#test
 ctrl.move_stop()#test
 print("Finish observation")
 

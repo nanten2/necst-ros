@@ -479,7 +479,7 @@ while rp_num < rp:
         print("%%%%%%%%%%%%%%%%")
         print(start_on)
         con.otf_scan(lambda_on, beta_on, coordsys, dx, dy, dt, scan_point, rampt, delay=delay, start_on=start_on, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, movetime=0.01, limit=True)
-
+        time.sleep(delay+rampt+dt)
         print('getting_data...')
         start_on = Time(st).mjd
         #d = con.oneshot_achilles(repeat = scan_point ,exposure = integ_on ,stime = start_on)

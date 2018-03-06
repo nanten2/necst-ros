@@ -140,8 +140,8 @@ class antenna(object):
             obs_end = obs_start + timedelta(seconds=float(total_t))
             off_dx_vel = (end_x - start_x) / total_t #(obs_end - obs_start)
             off_dy_vel = (end_y - start_y) / total_t #(obs_end - obs_start)
-            x_list = [req.x+(start_x+off_dx_vel*i)/3600. for i in range(int(round(total_t/req.dt)))]
-            y_list = [req.y+(start_y+off_dy_vel*i)/3600. for i in range(int(round(total_t/req.dt)))]
+            x_list = [req.x+(start_x+off_dx_vel*i*0.1)/3600. for i in range(int(round(total_t/req.dt))*10)]
+            y_list = [req.y+(start_y+off_dy_vel*i*0.1)/3600. for i in range(int(round(total_t/req.dt))*10)]
             
             ret = self.calc.coordinate_calc(x_list, y_list, req.coord_sys,
                                             req.num, req.off_x, req.off_y,
