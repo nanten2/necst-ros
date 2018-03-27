@@ -142,7 +142,10 @@ class antenna(object):
             off_dy_vel = (end_y - start_y) / total_t #(obs_end - obs_start)
             x_list = [req.x+(start_x+off_dx_vel*i)/3600. for i in range(int(round(total_t/req.dt)))]
             y_list = [req.y+(start_y+off_dy_vel*i)/3600. for i in range(int(round(total_t/req.dt)))]
-            
+
+            print(x_list)
+            print("\n")
+            print(y_list)
             ret = self.calc.coordinate_calc(x_list, y_list, req.coord_sys,
                                             req.num, req.off_x, req.off_y,
                                             req.offcoord, req.hosei, req.lamda,
