@@ -16,15 +16,12 @@ from necst.msg import Status_dome_msg
 from necst.msg import Dome_msg
 
 class dome_controller(object):
-    ###dome.py parameter
-    #speed = 3600 #[arcsec/sec]
     touchsensor_pos = [-391,-586,-780,-974,-1168,-1363,-1561,-1755,-1948,-2143, 0, -197]
     dome_encoffset = 10000
     buffer = [0,0,0,0,0,0]
     stop = [0]
     error = []
     count = 0
-    #status_box = ['0']*9 ### for ROS
     dome_enc = 0
     limit = 0
 
@@ -39,7 +36,7 @@ class dome_controller(object):
     remote_status = ''
 
     ###ROS_dome.py parameter
-    enc_az = '0'###antenna az for dome tracking
+    enc_az = 0###antenna az for dome tracking
 
     parameters = {
         'target_az':0,
@@ -56,9 +53,18 @@ class dome_controller(object):
         rsw_id = 2
         self.dome_pos = dome_pos.dome_pos_controller()
         self.dio = pyinterface.open(board_name, rsw_id)
+        self.read_init_domepos()
         self.start_status_check()
         pass
-    
+
+    def read_init_domepos(self):
+        try:
+            a = open('dome_enc.txt', 'r')
+            self.dome_enc = float(a.read())
+            print(self.dome_enc)
+        except:
+            pass
+        
     def start_thread(self):
         tlist = threading.enumerate()
         for i in tlist:
@@ -281,62 +287,62 @@ class dome_controller(object):
     def get_action(self):
         ret = self.dio.input_point(1, 1)
         if ret == 0:
-            move_status = 'OFF'
+            self.move_status = 'OFF'
         else:
-            move_status = 'DRIVE'
-        return move_status
+            self.move_status = 'DRIVE'
+        return
     
     def get_door_status(self):
         ret = self.dio.input_point(2, 6)
         if ret[0] == 0:
-            right_act = 'OFF'
+            self.right_act = 'OFF'
         else:
-            right_act = 'DRIVE'
+            self.right_act = 'DRIVE'
         
         if ret[1] == 0:
             if ret[2] == 0:
-                right_pos = 'MOVE'
+                self.right_pos = 'MOVE'
             else:
-                right_pos = 'CLOSE'
+                self.right_pos = 'CLOSE'
         else:
-            right_pos = 'OPEN'
+            self.right_pos = 'OPEN'
         
         if ret[3] == 0:
-            left_act = 'OFF'
+            self.left_act = 'OFF'
         else:
-            left_act = 'DRIVE'
+            self.left_act = 'DRIVE'
         
         if ret[4] == 0:
             if ret[5] == 0:
-                left_pos = 'MOVE'
+                self.left_pos = 'MOVE'
             else:
-                left_pos = 'CLOSE'
+                self.left_pos = 'CLOSE'
         else:
-            left_pos = 'OPEN'
-        return [right_act, right_pos, left_act, left_pos]
+            self.left_pos = 'OPEN'
+        return
         
     def get_memb_status(self):
         ret = self.dio.input_point(8, 3)
         if ret[0] == 0:
-            memb_act = 'OFF'
+            self.memb_act = 'OFF'
         else:
-            memb_act = 'DRIVE'
+            self.memb_act = 'DRIVE'
         
         if ret[1] == 0:
             if ret[2] == 0:
-                memb_pos = 'MOVE'
+                self.memb_pos = 'MOVE'
             else:
-                memb_pos = 'CLOSE'
+                self.memb_pos = 'CLOSE'
         else:
-            memb_pos = 'OPEN'
-        return [memb_act, memb_pos]
+            self.memb_pos = 'OPEN'
+        return
     
     def get_remote_status(self):
         ret = self.dio.input_point(11, 1)
         if ret[0] == 0:
-            status = 'REMOTE'
+            self.remote_status = 'REMOTE'
         else:
-            status = 'LOCAL'
+            self.remote_status = 'LOCAL'
         return status
     
     def error_check(self):
@@ -408,10 +414,10 @@ class dome_controller(object):
         self.dome_enc = self.dome_pos.dome_encoder_acq()
         dome_enc_print = float(self.dome_enc)
         dome_enc_print = self.dome_enc/3600.
-        f = open('./dome_enc1.txt', 'a')
+        f = open('./dome_enc.txt', 'a')
         f.write(str(dome_enc_print)+'\n')
         f.close()
-        return self.dome_enc
+        return 
     
     def read_limit(self):
         return self.limit
@@ -424,14 +430,12 @@ class dome_controller(object):
     
     def status_check(self):
         while not rospy.is_shutdown():
-            ret1 = self.get_action()
-            ret2 = self.get_door_status()
-            ret3 = self.get_memb_status()
-            ret4 = self.get_remote_status()
-            ret5 = str(self.get_domepos())
-            self.status_box = [ret1, ret2[0], ret2[1], ret2[2], ret2[3], ret3[0], ret3[1], ret4, ret5]
-            time.sleep(0.01)
-        return
+            self.get_action()
+            self.get_door_status()
+            self.get_memb_status()
+            self.get_remote_status()
+            self.get_domepos()
+            time.sleep(0.1)
     
     def stop_status_check(self):
         self.stop_staus_flag.set()
@@ -529,10 +533,9 @@ class dome_controller(object):
 
     ###publish status
     def pub_status(self):
+        pub = rospy.Publisher('status_dome', Status_dome_msg, queue_size=10, latch = True)
+        s = Status_dome_msg()
         while True:
-            pub = rospy.Publisher('status_dome', Status_dome_msg, queue_size=10, latch = True)
-            s = Status_dome_msg()
-            #s.status = self.status_box[:8]
             s.move_status = self.move_status
             s.right_act = self.right_act
             s.right_pos = self.right_pos
