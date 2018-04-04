@@ -65,7 +65,7 @@ class azel_calc(object):
         el_list = [(el+off_y)*3600.+ param_y(y*0.1) for y in range(int(movetime*10))]
         return [az_list, el_list, tv]
 
-    def coordinate_calc(self, x, y, coord, ntarg, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, movetime=10, limit=True):
+    def coordinate_calc(self, x, y, coord, ntarg, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, movetime = 10):
         #print("parameter : ", x, y, ntarg, coord, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, movetime)
         #print("site position(latitude,longitude) : ", (self.latitude*u.deg, self.longitude*u.deg))
         # coordinate check
@@ -142,29 +142,31 @@ class azel_calc(object):
             azel_list = self.kisa_calc(altaz_list[i], dcos, hosei)
             az_list.append(azel_list[0])
             el_list.append(azel_list[1])
-        if limit == True:
-            check_list1 = list(filter(lambda x:0.<x<240.*3600., az_list))
-            check_list2 = list(filter(lambda x:120.*3600.<x<360.*3600., az_list))
-        elif limit == False:
-            check_list1 = list(filter(lambda x:0.<x<270.*3600., az_list))
-            check_list2 = list(filter(lambda x:90.*3600.<x<360.*3600., az_list))
-        else:
-            print("!!!!!limit set error!!!!!")
-
-        if  check_list1 == az_list:
+        check_list1 = [i for i in az_list if 0 <= i <= self.soft_limit*3600. ]
+        check_list2 = [i for i in az_list if (360-self.soft_limit)*3600. <= i <= 360*3600. ]
+        
+        if check_list1 == az_list:
             pass
         elif check_list2 == az_list:
-            az_list = list(map(lambda x:x-360.*3600.,az_list))
+            az_list = [i-360.*3600. for i in az_list]
         else:
-            print("warning : range is over 270 [deg] !!")
-            pass
-        #print("az list!! : ", az_list)
+            check_list3 = [i for i in az_list if 0 <= i < 270.*3600. ]
+            check_list4 = [i for i in az_list if 90*3600. < i <= 360.*3600. ]
+            if check_list3 == az_list:
+                pass
+            elif check_list4 == az_list:
+                az_list = [i-360.*3600. for i in az_list]
+            else:
+                pass
+        
+    
+                
         print("create_list : end!!")
 
         now = float(now.strftime("%s")) + float(now.strftime("%f"))*1e-6#utc
         print("az :",az_list[0]/3600.,"el :", el_list[0]/3600., "time : ", now)
-        #self.test2 = time.time()
-        #print("!!!!!time!!!!!", self.test2-self.test1)
+        self.test2 = time.time()
+        print("!!!!!time!!!!!", self.test2-self.test1)
         return[az_list, el_list, now]
             
 
@@ -172,6 +174,6 @@ if __name__ == "__main__":
     qq = azel_calc()
     from datetime import datetime as dt
     now = dt.utcnow()
-    qq.coordinate_calc([229,230,231], [-29,-30,-31], "j2000", 7, off_x=10, off_y=10, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime = 0.01,limit=False)
+    qq.coordinate_calc([229,230,231], [-29,-30,-31], "j2000", 7, off_x=10, off_y=10, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime = 0.01)
     
     
