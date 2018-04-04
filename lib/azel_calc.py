@@ -27,6 +27,7 @@ class azel_calc(object):
 
     def __init__(self):
         self.coord = coord.coord_calc()
+        self.test1 = time.time()
         pass
 
 
@@ -65,8 +66,8 @@ class azel_calc(object):
         return [az_list, el_list, tv]
 
     def coordinate_calc(self, x, y, coord, ntarg, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, movetime = 10):
-        print("parameter : ", x, y, ntarg, coord, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, movetime)
-        print("site position(latitude,longitude) : ", (self.latitude*u.deg, self.longitude*u.deg))
+        #print("parameter : ", x, y, ntarg, coord, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, movetime)
+        #print("site position(latitude,longitude) : ", (self.latitude*u.deg, self.longitude*u.deg))
         # coordinate check
         if coord.lower() == "j2000":
             on_coord = SkyCoord(x, y,frame='fk5', unit='deg',)
@@ -164,6 +165,8 @@ class azel_calc(object):
 
         now = float(now.strftime("%s")) + float(now.strftime("%f"))*1e-6#utc
         print("az :",az_list[0]/3600.,"el :", el_list[0]/3600., "time : ", now)
+        self.test2 = time.time()
+        print("!!!!!time!!!!!", self.test2-self.test1)
         return[az_list, el_list, now]
             
 
@@ -171,6 +174,6 @@ if __name__ == "__main__":
     qq = azel_calc()
     from datetime import datetime as dt
     now = dt.utcnow()
-    qq.coordinate_calc([30,23,23], [40,23,34], "j2000", 7, off_x=10, off_y=10, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime = 0.01)
+    qq.coordinate_calc([229,230,231], [-29,-30,-31], "j2000", 7, off_x=10, off_y=10, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime = 0.01)
     
     
