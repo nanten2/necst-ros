@@ -13,8 +13,7 @@ import sys
 import time
 from datetime import datetime as dt
 import rospy
-from necst.msg import drive_msg
-from necst.msg import Velocity_mode_msg
+#from necst.msg import drive_msg
 from necst.msg import Move_mode_msg
 from necst.msg import Otf_mode_msg
 from necst.msg import Dome_msg
@@ -22,7 +21,7 @@ from necst.msg import Read_status_msg
 from necst.msg import Achilles_msg
 from std_msgs.msg import Bool
 from std_msgs.msg import String
-from std_msgs.msg import Float64
+#from std_msgs.msg import Float64
 from std_msgs.msg import Int64
 sys.path.append("/home/amigos/ros/src/necst/lib")
         
@@ -42,21 +41,21 @@ class controller(object):
         rospy.Subscriber("dome_tracking_check", Bool, self.dome_tracking)
         rospy.Subscriber("authority_check", String, self.authority_check)
 
-        self.pub1 = rospy.Publisher("observation_start_", Bool, queue_size=1)#observation
-        self.pub2 = rospy.Publisher("authority_change", String, queue_size = 1,latch=True)
-        self.pub5 = rospy.Publisher("antenna_drive", String, queue_size = 1)
-        self.pub6 = rospy.Publisher("antenna_contactor", String, queue_size = 1)
-        self.pub7 = rospy.Publisher("antenna_vel", Velocity_mode_msg, queue_size = 1, latch = True)
-        self.pub8 = rospy.Publisher("antenna_command", Move_mode_msg, queue_size=1, latch=True)
-        self.pub9 = rospy.Publisher("assist_antenna", Move_mode_msg, queue_size=1, latch=True)
-        self.pub11 = rospy.Publisher("move_stop", String, queue_size = 1, latch = True)
-        self.pub12 = rospy.Publisher("antenna_otf", Otf_mode_msg, queue_size = 1, latch = True)
+        #self.pub1 = rospy.Publisher("observation_start_", Bool, queue_size=1)#observation
+        #self.pub2 = rospy.Publisher("authority_change", String, queue_size = 1,latch=True)
+        self.pub_drive = rospy.Publisher("antenna_drive", String, queue_size = 1)
+        self.pub_contactor = rospy.Publisher("antenna_contactor", String, queue_size = 1)
+        #self.pub7 = rospy.Publisher("antenna_vel", Velocity_mode_msg, queue_size = 1, latch = True)
+        self.pub_antenna = rospy.Publisher("antenna_command", Move_mode_msg, queue_size=1, latch=True)
+        #self.pub9 = rospy.Publisher("assist_antenna", Move_mode_msg, queue_size=1, latch=True)
+        self.pub_stop = rospy.Publisher("move_stop", String, queue_size = 1, latch = True)
+        self.pub_otf = rospy.Publisher("antenna_otf", Otf_mode_msg, queue_size = 1, latch = True)
 
-        self.pub13 = rospy.Publisher("dome_move", Dome_msg, queue_size = 1, latch = True)
-        self.pub14 = rospy.Publisher('m4', String, queue_size = 1, latch = True)
-        self.pub15 = rospy.Publisher("hot", String, queue_size = 1, latch = True)
-        self.pub16 = rospy.Publisher("m2", Int64, queue_size=1, latch=True)
-        self.pub17 = rospy.Publisher("achilles", Achilles_msg, queue_size=1)
+        self.pub_dome = rospy.Publisher("dome_move", Dome_msg, queue_size = 1, latch = True)
+        self.pub_m4 = rospy.Publisher('m4', String, queue_size = 1, latch = True)
+        self.pub_hot = rospy.Publisher("hot", String, queue_size = 1, latch = True)
+        self.pub_m2 = rospy.Publisher("m2", Int64, queue_size=1, latch=True)
+        self.pub_achilles = rospy.Publisher("achilles", Achilles_msg, queue_size=1)
         time.sleep(0.5)
 
         return
@@ -106,52 +105,18 @@ class controller(object):
         swith : on or off
         
         """
+        self.move_stop()
         if not switch:
             switch = str(input("drive change (on/off) : "))
-        if switch.lower() == "on":
-            self.drive_on()
-            self.contactor_on()
-            print("driver on!!")
-        elif switch.lower() == "off":
-            self.drive_off()
-            self.contactor_off()
-            print("driver off...")
+        command =  switch.lower()
+        if command == "on" or command == "off":
+            self.pub_drive.publish(command)
+            self.pub_contactor.publish(command)
+            print("drive : ", command, "!!")
         else:
             print("!!bad command!!")
 
-    def drive_on(self):
-        """drive_on"""
-        msg = String()
-        msg.data = "on"
-        self.move_stop()
-        self.pub5.publish(msg) 
-        return
-
-    def drive_off(self):
-        """drive_off"""
-        msg = String()
-        msg.data = "off"
-        self.move_stop()
-        self.pub5.publish(msg)
-        return
-
-    def contactor_on(self):
-        """contactor on"""
-        msg = String()
-        msg.data = "on"
-        self.move_stop()
-        self.pub6.publish(msg)
-        return
-
-    def contactor_off(self):
-        """contactor off"""
-        msg = String()
-        msg.data = "off"
-        self.move_stop()
-        self.pub6.publish(msg)
-        return
-
-    def move(self, x, y, coord, planet= 0, off_x=0, off_y=0, offcoord='horizontal', hosei='hosei_230.txt',  lamda=2600, dcos=0, func_x="0", func_y="0", movetime=10, limit=True, assist=True):
+    def move(self, x, y, coord="horizontal", planet= 0, off_x=0, off_y=0, offcoord='horizontal', hosei='hosei_230.txt',  lamda=2600, dcos=0, func_x="0", func_y="0", movetime=10, limit=True, assist=True):
         """ azel_move, radec_move, galactic_move, planet_move
         
         Parameters
@@ -161,8 +126,8 @@ class controller(object):
         coord    : "horizontal" or "j2000" or "b1950" or "galactic" or "planet" 
         planet   : planet_number (only when using "planet_move"!!)
                    1.Mercury 2.Venus 3. 4.Mars 5.Jupiter 6.Saturn 7.Uranus 8.Neptune, 9.Pluto, 10.Moon, 11.Sun
-        off_x    : offset_x [deg]
-        off_y    : offset_y [deg]
+        off_x    : offset_x [arcsec]
+        off_y    : offset_y [arcsec]
         offcoord : "horizontal" or "j2000" or "b1950" or "galactic" or "planet" 
         hosei    : hosei file name (default ; hosei_230.txt)
         lamda    : observation wavelength [um] (default ; 2600)
@@ -173,56 +138,21 @@ class controller(object):
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
         assist   : ROS_antenna_assist is on or off (True:on, False:off)
         """
-        self.pub8.publish(x, y, coord, planet, off_x, off_y, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), movetime, limit, assist, time.time())
-        return
-
-
-    def azel_move(self, az, el, off_x = 0, off_y = 0, offcoord = 'horizontal', hosei = 'hosei_230.txt', lamda=2600, dcos=0, func_x=0, func_y=0, movetime=10, limit=True, assist=True):
-        """
-        azel_move
-        More detail is move()
-        """
-        self.move(az, el, "horizontal", 0, off_x, off_y, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), movetime, limit, assist)
-        return
-
-    def radec_move(self, ra, dec, coord, off_x = 0, off_y = 0, offcoord = 'horizontal', hosei = 'hosei_230.txt', lamda=2600, dcos=0, func_x=0, func_y=0, movetime=10, limit=True, assist=True):
-        """
-        radec_move
-        More detail is move()
-        """
-        print("start radec_move!!")
-        self.move(ra, dec, coord, 0, off_x, off_y, offcoord, hosei, lamda, dcos, func_x, func_y, movetime, limit, assist)
-        return
-    
-    def galactic_move(self, l, b, off_x = 0, off_y = 0, offcoord = 'horizontal', hosei = 'hosei_230.txt', lamda=2600, dcos=0, func_x=0, func_y=0, movetime=10, limit=True, assist=True):
-        """
-        galactic_move
-        More detail is move()
-        """
-        print("start galactic_move!!")
-        self.move(l, b, "galactic", 0, off_x, off_y, offcoord, hosei, lamda, dcos, func_x, func_y, movetime, limit, assist)
-        return
-
-    def planet_move(self, number, off_x = 0, off_y = 0, offcoord = 'HORIZONTAL', hosei = 'hosei_230.txt', lamda=2600, dcos=0, func_x=0, func_y=0, movetime=10, limit=True, assist=True):
-        """
-        planet_move
-        1.Mercury 2.Venus 3. 4.Mars 5.Jupiter 6.Saturn 7.Uranus 8.Neptune, 10.Moon, 11.Sun
-        More detail is move()
-        """
-        print("start planet_move!!")
-        planet_list = {"mercury":1, "venus":2, "mars":4, "jupiter":5, "saturn":6, "uranus":7, "neptune":8, "moon":10, "sun":11}
-        if isinstance(number, str):
-            number = planet_list[number.lower()]
-        self.move(0, 0, "planet", number, off_x, off_y, offcoord, hosei, lamda, dcos, func_x, func_y, movetime, limit, assist)
+        if isinstance(planet, str):
+            planet_list = {"mercury":1, "venus":2, "mars":4, "jupiter":5,"saturn":6, "uranus":7, "neptune":8, "moon":10, "sun":11}
+            planet = planet_list[planet.lower()]
+        else:
+            pass
+        self.pub_antenna.publish(x, y, coord, planet, off_x, off_y, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), movetime, limit, assist, time.time())
         return
 
     def move_stop(self):
         print("move_stop")
-        self.pub11.publish("stop")
+        self.pub_stop.publish("stop")
         time.sleep(0.2)
         return
 
-    def otf_scan(self, x, y, coord, dx, dy, dt, num, rampt, delay, start_on,  off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., movetime=0.01, limit=True):
+    def otf_scan(self, x, y, coord, dx, dy, dt, num, rampt, delay, start_on,  off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., movetime=0.01, limit=True, assist=False):
         """ otf scan
 
         Parameters
@@ -248,9 +178,10 @@ class controller(object):
         """
         
         print("start OTF scan!!")
-        self.pub12.publish(x, y, coord, dx, dy, dt, num,rampt,
-                           delay, start_on, off_x, off_y, offcoord,
-                           dcos, hosei, lamda, movetime, limit)
+        self.pub_otf.publish(x, y, coord, dx, dy, dt, num,rampt,
+                             delay, start_on, off_x, off_y, offcoord,
+                             dcos, hosei, lamda, movetime, limit, assist,
+                             time.time())
         
         return 
 
@@ -287,25 +218,25 @@ class controller(object):
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_move'
-        self.pub13.publish(dome)
+        self.pub_dome.publish(dome)
         dome = Dome_msg()
         dome.name = 'target_az'
         dome.value = str(dist)
-        self.pub13.publish(dome)
+        self.pub_dome.publish(dome)
 
     def dome_open(self):
         """Dome open"""
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_open'
-        self.pub13.publish(dome)
+        self.pub_dome.publish(dome)
     
     def dome_close(self):
         """Dome close"""
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_close'
-        self.pub13.publish(dome)
+        self.pub_dome.publish(dome)
 
     def memb(self, value):
         """memb move
@@ -330,35 +261,35 @@ class controller(object):
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'memb_open'
-        self.pub13.publish(dome)
+        self.pub_dome.publish(dome)
 
     def memb_close(self):
         """membrane close"""
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'memb_close'
-        self.pub13.publish(dome)
+        self.pub_dome.publish(dome)
         
     def dome_stop(self):
         """Dome stop"""
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_stop'
-        self.pub13.publish(dome)
+        self.pub_dome.publish(dome)
         
     def dome_track(self):
         """Dome sync antenna_az"""
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_tracking'
-        self.pub13.publish(dome)
+        self.pub_dome.publish(dome)
 
     def dome_track_end(self):
         """Dome stop antenna_az sync"""
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_track_end'
-        self.pub13.publish(dome)
+        self.pub_dome.publish(dome)
 
     def dome_tracking(self, req):
         self.dome_tracking_flag = req.data
@@ -386,7 +317,7 @@ class controller(object):
         """
         status = String()
         status.data = position
-        self.pub14.publish(status)
+        self.pub_m4.publish(status)
         return
 
     
@@ -399,7 +330,7 @@ class controller(object):
         """
         status = String()
         status.data = position
-        self.pub15.publish(status)
+        self.pub_hot.publish(status)
         return
 
     def m2_move(self, dist):
@@ -412,7 +343,7 @@ class controller(object):
         """
         status = Int64()
         status.data = dist
-        self.pub16.publish(status)
+        self.pub_m2.publish(status)
         return
 
 # ===================
@@ -447,7 +378,7 @@ class controller(object):
         
         """
         day = dt.utcnow().strftime("%y%m%d_%H%M%S")
-        self.pub17.publish(repeat, exposure, stime, day)
+        self.pub_achilles.publish(repeat, exposure, stime, day)
         dir_name = "/home/amigos/data/experiment/achilles/" + str(day) + "/"
         file_name = day + "_fin.txt"
         while not rospy.is_shutdown():
@@ -507,11 +438,14 @@ class controller(object):
 
 if __name__ == "__main__":
     con = controller()
-    #a = float(input("x : "))
-    #b = float(input("y : "))
-    #con.otf_scan(a, b, "j2000", 30, 0, 0.6, 9, 0.6*4, delay=10., off_x=-900, off_y=0, offcoord="j2000")
-    from astropy.time import Time
-    import datetime
-    tt = Time(dt.utcnow() + datetime.timedelta(seconds=5)).mjd
-    aa = con.oneshot_achilles(3, 1, tt)
-    print(aa)
+    a = float(input("x : "))
+    b = float(input("y : "))
+    from datetime import datetime as dt
+    utc = dt.utcnow()
+    utc_list = [utc.year,utc.month,utc.day,utc.hour,utc.minute,utc.second,utc.microsecond]
+    con.otf_scan(a, b, "j2000", 30, 0, 0.6, 9, 0.6*4, delay=10., start_on=utc_list, off_x=-900, off_y=0, offcoord="j2000")
+    #from astropy.time import Time
+    #import datetime
+    #tt = Time(dt.utcnow() + datetime.timedelta(seconds=5)).mjd
+    #aa = con.oneshot_achilles(3, 1, tt)
+    #print(aa)
