@@ -251,6 +251,7 @@ class antenna_move(object):
             y2 = param['el_list'][num+1]
             #rospy.loginfo('send comp azel')
             #print(x1,x2,y1,y2,st2)
+
             return (x1,x2,y1,y2,st2)
 
     def act_azel(self):
