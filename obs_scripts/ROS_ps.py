@@ -185,11 +185,12 @@ while num < n:
     print('observation :'+str(num+1) + "\n")
         
     if coord_sys == 'EQUATRIAL':
-        con.radec_move(lambda_off, beta_off, coordsys, off_x=lamdel_off, off_y=betdel_off, offcoord = cosydel)
+        con.move(lambda_off, beta_off, coordsys, 0, off_x=lamdel_off, off_y=betdel_off, offcoord = cosydel)
 
     elif coord_sys == 'GALACTIC':
-        con.galactic_move(lambda_off, beta_off, off_x=lamdel_off, off_y=betdel_off, offcoord = cosydel)
-
+        con.move(lambda_off, beta_off, "galactic", 0, off_x=lamdel_off, off_y=betdel_off, offcoord = cosydel)
+    else:
+        pass
     con.antenna_tracking_check()
     con.dome_tracking_check()
     print('tracking OK'+ "\n")
@@ -257,7 +258,7 @@ while num < n:
 
     status = con.read_status()
     temp = float(status.CabinTemp1) + 273.15
-    d = con.oneshot(exposure=integ_off)
+    d = con.oneshot_achilles(exposure=integ_off)
     #d = {'dfs1': [[1]*16384,1], 'dfs2': [[10]*16384,11]}
     d1 = d['dfs1'][0]
     d2 = d['dfs2'][0]
@@ -293,11 +294,12 @@ while num < n:
     print('move ON'+ "\n")
 
     if coord_sys == 'EQUATRIAL':
-        con.radec_move(lambda_on, beta_on, coordsys, off_x=lamdel_on, off_y=betdel_on, offcoord = cosydel)
+        con.move(lambda_on, beta_on, coordsys, 0, off_x=lamdel_on, off_y=betdel_on, offcoord = cosydel)
 
     elif coord_sys == 'GALACTIC':
-        con.galactic_move(lambda_on, beta_on, off_x=lamdel_on, off_y=betdel_on, offcoord = cosydel)
-
+        con.move(lambda_on, beta_on, "galactic", 0, off_x=lamdel_on, off_y=betdel_on, offcoord = cosydel)
+    else:
+        pass
 
     con.antenna_tracking_check()
     con.dome_tracking_check()
@@ -311,7 +313,7 @@ while num < n:
     #print(dp1)
     status = con.read_status()
     temp = float(status.CabinTemp1) + 273.15
-    d = con.oneshot(exposure=integ_on)
+    d = con.oneshot_achilles(exposure=integ_on)
     #d = {'dfs1': [[1]*16384,1], 'dfs2': [[10]*16384,11]}
     d1 = d['dfs1'][0]
     d2 = d['dfs2'][0]
@@ -357,7 +359,7 @@ status = con.read_status()
 temp = float(status.CabinTemp1) + 273.15
 print('Temp: %.2f'%(temp))
 print('get spectrum...')
-d = con.oneshot(exposure=integ_off)
+d = con.oneshot_achilles(exposure=integ_off)
 #d = {'dfs1': [[100]*16384,1], 'dfs2': [[10]*16384,11]}
 d1 = d['dfs1'][0]
 d2 = d['dfs2'][0]
