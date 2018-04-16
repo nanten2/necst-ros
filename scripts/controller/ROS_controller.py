@@ -24,6 +24,9 @@ from std_msgs.msg import String
 #from std_msgs.msg import Float64
 from std_msgs.msg import Int64
 sys.path.append("/home/amigos/ros/src/necst/lib")
+import node_authority
+auth = node_authority.authority()
+
         
 class controller(object):
 
@@ -36,18 +39,18 @@ class controller(object):
     
 
     def __init__(self):
-        rospy.init_node('controller_client')
+        """start authority check"""
+        self.name = auth.initialize()
+        rospy.init_node(self.name)
+        auth.start()
+        
+        """init"""
         rospy.Subscriber("tracking_check", Bool, self.antenna_tracking)
         rospy.Subscriber("dome_tracking_check", Bool, self.dome_tracking)
-        rospy.Subscriber("authority_check", String, self.authority_check)
 
-        #self.pub1 = rospy.Publisher("observation_start_", Bool, queue_size=1)#observation
-        #self.pub2 = rospy.Publisher("authority_change", String, queue_size = 1,latch=True)
         self.pub_drive = rospy.Publisher("antenna_drive", String, queue_size = 1)
         self.pub_contactor = rospy.Publisher("antenna_contactor", String, queue_size = 1)
-        #self.pub7 = rospy.Publisher("antenna_vel", Velocity_mode_msg, queue_size = 1, latch = True)
         self.pub_antenna = rospy.Publisher("antenna_command", Move_mode_msg, queue_size=1, latch=True)
-        #self.pub9 = rospy.Publisher("assist_antenna", Move_mode_msg, queue_size=1, latch=True)
         self.pub_stop = rospy.Publisher("move_stop", String, queue_size = 1, latch = True)
         self.pub_otf = rospy.Publisher("antenna_otf", Otf_mode_msg, queue_size = 1, latch = True)
 
@@ -60,30 +63,12 @@ class controller(object):
 
         return
     
-    def authority_check(self, req):
-        self.access_authority = req.data
+    def get_authority(self):
+        auth.registration(self.name)
         return
 
-
-    def authority(self, user = "release"):
-        while self.access_authority == "no_data":
-            print("wait")
-            time.sleep(1)
-        if self.access_authority == "release" and user == "release":
-            rospy.loginfo("Already release...")
-        elif user == "release":
-            rospy.loginfo("release authority")
-        elif self.access_authority == "release":
-            rospy.loginfo("Authority_change.")
-        elif self.access_authority == user:
-            rospy.loginfo("Authority is already you.")
-        else:
-            rospy.loginfo("Authority is other!!")
-            #sys.exit()
-        msg = String()
-        msg.data = user
-        self.pub2.publish(msg)
-        time.sleep(0.01)
+    def release_authority(self):
+        auth.registration("")
 
     def antenna_tracking(self, req):
         self.antenna_tracking_flag = req.data
@@ -96,7 +81,7 @@ class controller(object):
         while not self.antenna_tracking_flag:
             time.sleep(0.01)
             pass
-
+    @auth.deco_check
     def drive(self, switch = ""):
         """change drive
 
