@@ -26,11 +26,15 @@ class antenna_assist(object):
     g_flag = 0
     p_flag = 0
     old_time = 0
+    switch = "nomal"
 
     def __init__(self):
         self.start_time = time.time()
-        self.pub = rospy.Publisher("assist_antenna", Move_mode_msg, queue_size = 1, latch = True)
-        self.sub = rospy.Subscriber("move_stop", String, self.move_stop)
+        self.pub_nomal = rospy.Publisher("assist_antenna", Move_mode_msg, queue_size = 1, latch = True)
+        self.pub_otf = rospy.Publisher("assist_otf", Otf_mode_msg, queue_size = 1, latch = True)
+        rospy.Subscriber("move_stop", String, self.move_stop, queue_size=1)
+        rospy.Subscriber("antenna_command", Move_mode_msg, self.antenna_assist, queue_size = 1)
+        rospy.Subscriber('antenna_otf', Otf_mode_msg, self.otf_assist,queue_size = 1)
         pass
 
     def move_stop(self, req):
@@ -38,7 +42,7 @@ class antenna_assist(object):
         return
 
     def start_thread(self):
-        th1 = threading.Thread(target = self.pub_antenna)
+        th1 = threading.Thread(target = self.pub_func)
         th1.setDaemon(True)
         th1.start()
         return
@@ -61,6 +65,7 @@ class antenna_assist(object):
         self.limit = req.limit
         self.controller_time = req.time
         """
+        self.switch = "nomal"
         self.param = req
         if req.time > self.start_time:
             self.r_flag = 1
@@ -68,20 +73,33 @@ class antenna_assist(object):
             pass
         return
 
-    def pub_antenna(self):
+    def otf_assist(self, req):
+         self.switch = "otf"
+         self.param = req
+         if req.time > self.start_time:
+             self.r_flag = 1
+         else:
+             pass
+         return
+
+    def pub_func(self):
         while self.r_flag == 0 :
             time.sleep(0.1)
         else:
             while not rospy.is_shutdown():
                 if self.param.assist == True:
-                    self.pub.publish(self.param)
-                    self.assist_flag = True
+                    self.pub_nomal.publish(self.param)
                     print('published')
                     print(self.param)
                 elif self.param.assist == False:
                     now = self.param.time
                     if now != self.old_time:
-                        self.pub.publish(self.param)
+                        if self.switch == "nomal":
+                            self.pub_nomal.publish(self.param)
+                        elif self.switch == "otf":
+                            self.pub_otf.publish(self.param)
+                        else:
+                            pass
                     else:
                         pass
                     self.old_time = now
@@ -98,6 +116,5 @@ if __name__ == "__main__":
     rospy.loginfo(" assist start ")
     at_as = antenna_assist()
     at_as.start_thread()
-    rospy.Subscriber("antenna_command", Move_mode_msg, at_as.antenna_assist, queue_size = 1)
     rospy.spin()
     

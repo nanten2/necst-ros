@@ -27,7 +27,7 @@ class azel_calc(object):
 
     def __init__(self):
         self.coord = coord.coord_calc()
-        self.test1 = time.time()
+        self.first_time = time.time()
         pass
 
 
@@ -61,13 +61,14 @@ class azel_calc(object):
         tv = time.time()
         param_x = lambda x: eval(str(func_x))
         param_y = lambda y: eval(str(func_y))
-        az_list = [(az+off_x)*3600.+ param_x(x*0.1) for x in range(int(movetime*10))]
-        el_list = [(el+off_y)*3600.+ param_y(y*0.1) for y in range(int(movetime*10))]
+        az_list = [az*3600.+ off_x + param_x(x*0.1) for x in range(int(movetime*10))]
+        el_list = [el*3600.+ off_y + param_y(y*0.1) for y in range(int(movetime*10))]
         return [az_list, el_list, tv]
 
     def coordinate_calc(self, x, y, coord, ntarg, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, movetime=10, limit=True):
         #print("parameter : ", x, y, ntarg, coord, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, movetime)
         #print("site position(latitude,longitude) : ", (self.latitude*u.deg, self.longitude*u.deg))
+
         # coordinate check
         if coord.lower() == "j2000":
             on_coord = SkyCoord(x, y,frame='fk5', unit='deg',)
@@ -160,7 +161,7 @@ class azel_calc(object):
             pass
         #print("az list!! : ", az_list)
         print("create_list : end!!")
-
+        print("#######time#######",str(time.time()-self.first_time))
         now = float(now.strftime("%s")) + float(now.strftime("%f"))*1e-6#utc
         print("az :",az_list[0]/3600.,"el :", el_list[0]/3600., "time : ", now)
         #self.test2 = time.time()
