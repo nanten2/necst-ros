@@ -24,17 +24,23 @@ class drive(object):
     drive_move = ""
 
     flag = True
+
+    board_name = 2724
+    output_rsw_id = 1
+    input_rsw_id = 0
+
     
     def __init__(self):
         """initialize"""
-        board_name = 2724
-        output_rsw_id = 1
-        input_rsw_id = 0
-        self.dio = pyinterface.open(board_name, output_rsw_id)
-        self.dio_input = pyinterface.open(board_name, input_rsw_id)
+        rospy.Subscriber("antenna_drive", String, self.drive)
+        rospy.Subscriber("antenna_contactor", String, self.contactor)
+        self.dio = pyinterface.open(self.board_name, self.output_rsw_id)
+        self.dio_input = pyinterface.open(self.board_name, self.input_rsw_id)
         self.pub = rospy.Publisher('status_drive', Status_drive_msg, queue_size=10, latch=True)#test
         self.msg = Status_drive_msg()#test
         self.current_position()
+
+    def start(self):
         self.stop_thread = threading.Event()
         self.move_thread = threading.Thread(target = self.move)
         self.move_thread.setDaemon(True)
@@ -130,7 +136,6 @@ if __name__ == "__main__":
     rospy.init_node("drive")
     rospy.loginfo("ROS_drive start.")
     dr = drive()
-    rospy.Subscriber("antenna_drive", String, dr.drive)
-    rospy.Subscriber("antenna_contactor", String, dr.contactor)
+    dr.start()
     rospy.spin()
 

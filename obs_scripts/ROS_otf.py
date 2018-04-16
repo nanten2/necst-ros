@@ -204,28 +204,7 @@ if obs['otadel'].lower() == 'y':
 else:
     offset_dcos = 0
     dcos = 0
-if obs['coordsys'].lower() == 'j2000' or obs['coordsys'].lower() == 'b1950':
-    coord_sys = 'EQUATORIAL'
-elif obs['coordsys'].lower() == 'galactic':
-    coord_sys = 'GALACTIC'
-elif obs['coordsys'].lower() == 'horizontal':
-    coord_sys = 'HORIZONTAL'
-else:
-    con.move_stop()
-    con.dome_stop()
-    print('coord_sys:Error')
-    sys.exit()
-if obs['cosydel'].lower() == 'j2000' or obs['cosydel'].lower() == 'b1950':
-    cosydel = 'EQUATORIAL'
-elif obs['cosydel'].lower() == 'galactic':
-    cosydel = 'GALACTIC'
-elif obs['cosydel'].lower() == 'horizontal':
-    cosydel = 'HORIZONTAL'
-else:
-    con.move_stop()
-    con.dome_stop
-    print('cosydel:Error')
-    sys.exit()
+
 if obs['lo1st_sb_1'] == 'U':#後半に似たのがあるけど気にしない
     sb1 = 1
 else:
@@ -245,7 +224,6 @@ print(scan_point)
 #if scan_point > int(scan_point):
     #print("!!ERROR scan number!!")
 
-print('coord_sys = '+coord_sys)
 total_count = int(obs['N'])#total scan_line
 
 
@@ -306,17 +284,9 @@ while rp_num < rp:
         print('tracking start')
         con.move_stop()
 
-        if coord_sys == 'EQUATORIAL':
-            con.radec_move(lambda_off, beta_off, coordsys,
-                           off_x=lamdel_off, off_y=betdel_off, 
-                           offcoord = cosydel)
-            pass
-        elif coord_sys == 'GALACTIC':
-            con.galactic_move(lambda_off, beta_off,
-                              off_x=lamdel_off, off_y=betdel_off, 
-                              offcoord = cosydel)
-        elif coord_sys == 'HORIZONTAL':
-            pass
+        con.move(lambda_off, beta_off, coordsys,
+                 off_x=lamdel_off, off_y=betdel_off, 
+                 offcoord = cosydel)
 
         print("check_track")
         con.antenna_tracking_check()
@@ -341,7 +311,7 @@ while rp_num < rp:
                                integ_off*2+rampt, obs['restfreq_1']/1000., obs['restfreq_2']/1000., 
                                sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
             
-            con.observation("start", integ_off)
+            #con.observation("start", integ_off)
             time.sleep(integ_off)
 
             status = con.read_status()
@@ -448,20 +418,10 @@ while rp_num < rp:
         con.move_stop()
         ssx = (sx + num*gridx) - float(dx)/float(dt)*rampt-float(dx)/2.#rampの始まり
         ssy = (sy + num*gridy) - float(dy)/float(dt)*rampt-float(dy)/2.#rampの始まり
-        if coord_sys == 'EQUATORIAL':
-            con.radec_move(lambda_on, beta_on, coordsys,
-                           off_x = ssx,
-                           off_y = ssy,
-                           offcoord = cosydel,
-                           dcos = dcos)
-        elif coord_sys == 'GALACTIC':
-            con.galactic_move(lambda_on, beta_on,
-                              off_x= ssx, 
-                              off_y= ssy, 
-                              offcoord = cosydel,
-                              dcos = dcos)
-        else:
-            pass
+        con.move(lambda_on, beta_on, coordsys,
+                 off_x = ssx, off_y = ssy,
+                 offcoord = cosydel,
+                 dcos = dcos)
 
         print('moving...')
         con.antenna_tracking_check()
@@ -476,7 +436,7 @@ while rp_num < rp:
         start_on = [st.year, st.month, st.day, st.hour, st.minute, st.second, st.microsecond]
         print("%%%%%%%%%%%%%%%%")
         print(start_on)
-        con.otf_scan(lambda_on, beta_on, coord_sys, dx, dy, dt, scan_point, rampt, delay=delay, start_on=start_on, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, movetime=0.1, limit=True)
+        con.otf_scan(lambda_on, beta_on, coordsys, dx, dy, dt, scan_point, rampt, delay=delay, start_on=start_on, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, movetime=0.01, limit=True)
 
         print('getting_data...')
         start_on = Time(st).mjd

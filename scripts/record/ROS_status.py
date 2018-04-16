@@ -147,8 +147,8 @@ class status_main(object):
             self.param4['dome_status'] = 'CLOSE'
         pass
         
-    def callback5(self, req):
-        self.param5['position'] = req.hot_position
+    def callback5(self, req):#hot
+        self.param5['position'] = req.data
         pass
 
     def callback6(self, req):
@@ -254,7 +254,7 @@ class read_status(status_main):
         sub2 = rospy.Subscriber('status_weather', Status_weather_msg, self.callback2)
         sub3 = rospy.Subscriber('status_encoder', Status_encoder_msg, self.callback3)
         sub4 = rospy.Subscriber('status_dome', Status_dome_msg, self.callback4)
-        sub5 = rospy.Subscriber('status_hot', Status_hot_msg, self.callback5)
+        sub5 = rospy.Subscriber('status_hot', String, self.callback5)
         sub6 = rospy.Subscriber('status_drive', Status_drive_msg, self.callback6)
         sub7 = rospy.Subscriber('status_m4', Status_m4_msg, self.callback7)
         sub8 = rospy.Subscriber('limit_check', Status_limit_msg, self.callback8)
@@ -272,7 +272,7 @@ if __name__ == '__main__':
     sub2 = rospy.Subscriber('status_weather', Status_weather_msg, st.callback2)
     sub3 = rospy.Subscriber('status_encoder', Status_encoder_msg, st.callback3)
     sub4 = rospy.Subscriber('status_dome', Status_dome_msg, st.callback4)
-    sub5 = rospy.Subscriber('status_hot', Status_hot_msg, st.callback5)
+    sub5 = rospy.Subscriber('status_hot', String, st.callback5)
     sub6 = rospy.Subscriber('status_drive', Status_drive_msg, st.callback6)
     sub7 = rospy.Subscriber('status_m4', Status_m4_msg, st.callback7)
     sub8 = rospy.Subscriber('limit_check', Status_limit_msg, st.callback8)

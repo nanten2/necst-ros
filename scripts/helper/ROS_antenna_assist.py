@@ -100,6 +100,8 @@ class antenna_assist(object):
                             self.pub_otf.publish(self.param)
                         else:
                             pass
+                        print('published')
+                        print(self.param)
                     else:
                         pass
                     self.old_time = now
@@ -112,7 +114,7 @@ class antenna_assist(object):
         return
         
 if __name__ == "__main__":
-    rospy.init_node('antennna_assist')
+    rospy.init_node('antenna_assist')
     rospy.loginfo(" assist start ")
     at_as = antenna_assist()
     at_as.start_thread()
