@@ -74,6 +74,7 @@ add_message_files(
   oneshot_msg.msg
   Status_node_msg.msg
   Achilles_msg.msg
+  String_necst.msg
 )
 
 ## Generate services in the 'srv' folder
