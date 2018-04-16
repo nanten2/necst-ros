@@ -42,8 +42,8 @@ class antenna(object):
     soft_limit_up = 80.
     soft_limit_down = 20.
 
-    az_list = ""
-    el_list = ""
+    #az_list = ""
+    #el_list = ""
     limit = True
     start_time = ""
     
@@ -51,12 +51,13 @@ class antenna(object):
         self.calc = azel_calc.azel_calc()
         self.stime = time.time()
         self.pub = rospy.Publisher("list_azel", list_azelmsg, queue_size = 1,)
-        rospy.Subscriber('status_weather', Status_weather_msg, self.note_weather)
-        rospy.Subscriber("move_stop", String, self.move_stop)
+        self.msg = list_azelmsg()
+        rospy.Subscriber('status_weather', Status_weather_msg, self.note_weather,queue_size=1)
+        rospy.Subscriber("move_stop", String, self.move_stop,queue_size=1)
         time.sleep(3.)
-        rospy.Subscriber("status_encoder", Status_encoder_msg, self.note_encoder)
-        rospy.Subscriber('assist_antenna', Move_mode_msg, self.antenna_move)
-        rospy.Subscriber('assist_otf', Otf_mode_msg, self.otf_start)
+        rospy.Subscriber("status_encoder", Status_encoder_msg, self.note_encoder,queue_size=1)
+        rospy.Subscriber('assist_antenna', Move_mode_msg, self.antenna_move,queue_size=1)
+        rospy.Subscriber('assist_otf', Otf_mode_msg, self.otf_start,queue_size=1)
 
     def note_encoder(self, req):
         self.enc_az = req.enc_az
@@ -82,21 +83,21 @@ class antenna(object):
         
     def azel_publish(self):
         while not rospy.is_shutdown():
-            if self.start_time:
+            if self.msg.start_time:
                 if self.limit:
-                    ret = self.limit_check(self.az_list, self.el_list)
+                    ret = self.limit_check(self.msg.az_list, self.msg.el_list)
                 else:
                     ret = ""
                     pass
                 if ret:
                     rospy.logerr("Publish False...")
                 else:
-                    self.pub.publish(az_list=self.az_list, el_list=self.el_list, start_time=self.start_time)
+                    self.pub.publish(self.msg)
                     rospy.loginfo('Publish ok.')
                     print("\n")
                     pass
 
-                self.az_list = self.el_list = self.start_time = ""
+                self.msg.az_list = self.msg.el_list = self.msg.start_time = ""
                 self.limit = True
             else:
                 pass
@@ -104,6 +105,7 @@ class antenna(object):
         return
 
     def antenna_move(self, req):
+        print(req)
         if req.time < self.stime:
             pass
         elif not self.temp:
@@ -125,9 +127,12 @@ class antenna(object):
                 pass
             
             self.limit = req.limit
-            self.az_list = ret[0]
-            self.el_list = ret[1]
-            self.start_time = ret[2]
+            #self.az_list = ret[0]
+            #self.el_list = ret[1]
+            #self.start_time = ret[2]
+            self.msg.az_list = ret[0]
+            self.msg.el_list = ret[1]
+            self.msg.start_time = ret[2]
 
             print("end calculation")
         return
@@ -156,9 +161,9 @@ class antenna(object):
                                             req.dcos, self.temp, self.press,
                                             self.humi, obs_start, req.movetime,req.limit)
             self.limit = req.limit
-            self.az_list = ret[0]
-            self.el_list = ret[1]
-            self.start_time = ret[2]
+            self.msg.az_list = ret[0]
+            self.msg.el_list = ret[1]
+            self.msg.start_time = ret[2]
             #print("###################")
             #print(list(map(lambda x : x*3600., x_list)))
             #print("\n\n\n\n")

@@ -26,8 +26,6 @@ class enc_controller(object):
         board_name = 6204
         rsw_id = 0
         rospy.init_node("encoder_status")
-        sub = rospy.Subscriber("pyinterface", Status_encoder_msg, self.sub_enc)
-        #sub = rospy.Subscriber("status_board", Test_board_msg, self.sub_enc)
         self.dio = pyinterface.open(board_name, rsw_id)
         self.board_initialize()
         pass
@@ -51,7 +49,6 @@ class enc_controller(object):
         while not rospy.is_shutdown():
             print("loop...")
             ret = self.get_azel()
-            #ret = self.test()
             msg.enc_az = ret[0]
             msg.enc_el = ret[1]
             msg.utc = ret[2]
@@ -60,20 +57,6 @@ class enc_controller(object):
             rospy.loginfo('Az :'+str(msg.enc_az/3600.))
             rospy.loginfo('El :'+str(msg.enc_el/3600.))
         return
-
-    def test(self):
-        #self.Az = 40*3600.
-        #self.El = 30*3600.
-        self.enc_Az += self.vel_az * 0.1
-        self.enc_El += self.vel_el * 0.1
-        return [self.enc_Az, self.enc_El]
-
-    def sub_enc(self, req):
-        self.vel_az = req.enc_az
-        self.vel_el = req.enc_el
-        #print(req.enc_az, req.enc_el)
-        return
-
 
     def get_azel(self):
         cntAz = int(self.dio.get_counter(1).to_int())
