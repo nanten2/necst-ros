@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import sys
-sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 import rospy
 import time
 import math
@@ -16,7 +15,7 @@ from necst.msg import list_azelmsg
 from datetime import datetime,timedelta
 sys.path.append("/home/necst/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/lib")
-#import status_wraps
+import azel_calc
 
 class antenna(object):
     
@@ -37,6 +36,7 @@ class antenna(object):
     
     limit = 0
     stime = 0
+    calc_delay = 2.
 
     soft_limit_az = 240.
     soft_limit_up = 80.
@@ -51,6 +51,12 @@ class antenna(object):
         self.calc = azel_calc.azel_calc()
         self.stime = time.time()
         self.pub = rospy.Publisher("list_azel", list_azelmsg, queue_size = 1,)
+        rospy.Subscriber('status_weather', Status_weather_msg, self.note_weather)
+        rospy.Subscriber("move_stop", String, self.move_stop)
+        time.sleep(3.)
+        rospy.Subscriber("status_encoder", Status_encoder_msg, self.note_encoder)
+        rospy.Subscriber('assist_antenna', Move_mode_msg, self.antenna_move)
+        rospy.Subscriber('assist_otf', Otf_mode_msg, self.otf_start)
 
     def note_encoder(self, req):
         self.enc_az = req.enc_az
@@ -96,7 +102,7 @@ class antenna(object):
                 pass
             time.sleep(1)
         return
-    #@status_wraps.deco("antenna", "antenna_move")
+
     def antenna_move(self, req):
         if req.time < self.stime:
             pass
@@ -104,7 +110,7 @@ class antenna(object):
             rospy.logerr("weather_node is not move!!")
         else:
             print("start calculation")
-            now = datetime.utcnow()
+            now = datetime.utcnow() + timedelta(seconds=self.calc_delay)
             if req.coord.lower() == "horizontal":
                 ret = self.calc.azel_calc(req.x, req.y,
                                           req.off_x, req.off_y,
@@ -137,7 +143,7 @@ class antenna(object):
             end_x = req.off_x + req.dx * (req.num - 0.5)
             end_y = req.off_y + req.dy * (req.num - 0.5)
             obs_start =  datetime(req.start_on[0], req.start_on[1], req.start_on[2], req.start_on[3], req.start_on[4], req.start_on[5], req.start_on[6]) - timedelta(seconds=float(req.rampt))
-            obs_end = obs_start + timedelta(seconds=float(total_t))
+            #obs_end = obs_start + timedelta(seconds=float(total_t))
             off_dx_vel = (end_x - start_x) / total_t #(obs_end - obs_start)
             off_dy_vel = (end_y - start_y) / total_t #(obs_end - obs_start)
 
@@ -153,7 +159,10 @@ class antenna(object):
             self.az_list = ret[0]
             self.el_list = ret[1]
             self.start_time = ret[2]
-            
+            #print("###################")
+            #print(list(map(lambda x : x*3600., x_list)))
+            #print("\n\n\n\n")
+            #print(list(map(lambda x : x*3600., y_list)))
             print("end calculation")
 
         return 
@@ -182,14 +191,6 @@ class antenna(object):
 
 if __name__ == "__main__":
     rospy.init_node("antenna_server")
-    import azel_calc
     at = antenna()
     at.server_start()
-    rospy.Subscriber("status_encoder", Status_encoder_msg, at.note_encoder)
-    rospy.Subscriber('status_weather', Status_weather_msg, at.note_weather)
-    rospy.Subscriber("move_stop", String, at.move_stop)
-    time.sleep(3.)
-    #rospy.Subscriber('antenna_vel', Velocity_mode_msg, at.velocity_move)
-    rospy.Subscriber('assist_antenna', Move_mode_msg, at.antenna_move)
-    rospy.Subscriber('antenna_otf', Otf_mode_msg, at.otf_start)
     rospy.spin()

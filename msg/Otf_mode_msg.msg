@@ -16,3 +16,5 @@ string hosei
 float64 lamda
 float64 movetime
 bool limit
+bool assist
+float64 time
