@@ -122,7 +122,7 @@ class antenna(object):
                                                 req.off_x, req.off_y,
                                                 req.offcoord, req.hosei, req.lamda,
                                                 req.dcos, self.temp, self.press, self.humi,
-                                                now, req.movetime)
+                                                now, req.movetime, req.limit)
 
                 pass
             
@@ -159,7 +159,7 @@ class antenna(object):
                                             req.num, req.off_x, req.off_y,
                                             req.offcoord, req.hosei, req.lamda,
                                             req.dcos, self.temp, self.press,
-                                            self.humi, obs_start, req.movetime)
+                                            self.humi, obs_start, req.movetime,req.limit)
             self.limit = req.limit
             self.msg.az_list = ret[0]
             self.msg.el_list = ret[1]
