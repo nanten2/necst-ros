@@ -9,7 +9,6 @@ sys.path.append('/home/amigos/ros/src/necst/lib')
 sys.path.append('/home/necst/ros/src/necst/lib')
 import coord
 import numpy as np
-import func_calc
 
 class azel_calc(object):
     
@@ -28,7 +27,7 @@ class azel_calc(object):
 
     def __init__(self):
         self.coord = coord.coord_calc()
-        self.first_time = time.time()
+        self.test1 = time.time()
         pass
 
 
@@ -60,30 +59,15 @@ class azel_calc(object):
         else:
             pass
         tv = time.time()
-        param_x = param_y = lambda x:0
-        """
-        if func_x:
-            func_x.append([0]*(4-len(func_x)))
-            param_x = func_calc.calc(func_x[0],func_x[1], func_x[2], func_x[3])
-        else:
-            param_x = lambda x : 0
-            pass
-        if func_y:
-            func_y.append([0]*(4-len(func_y)))
-            param_y = func_calc.calc(func_y[0],func_y[1], func_y[2], func_y[3])
-        else:
-            param_y = lambda x : 0
-            pass
-        """
-        az_list = [az*3600.+ off_x + param_x(x*0.1) for x in range(int(movetime*10))]
-        el_list = [el*3600.+ off_y + param_y(y*0.1) for y in range(int(movetime*10))]
-        print("az : ", az_list[0],"el : ",el_list[0] )
+        param_x = lambda x: eval(str(func_x))
+        param_y = lambda y: eval(str(func_y))
+        az_list = [(az+off_x)*3600.+ param_x(x*0.1) for x in range(int(movetime*10))]
+        el_list = [(el+off_y)*3600.+ param_y(y*0.1) for y in range(int(movetime*10))]
         return [az_list, el_list, tv]
 
-    def coordinate_calc(self, x, y, coord, ntarg, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, movetime=10, limit=True):
+    def coordinate_calc(self, x, y, coord, ntarg, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, movetime = 10):
         #print("parameter : ", x, y, ntarg, coord, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, movetime)
         #print("site position(latitude,longitude) : ", (self.latitude*u.deg, self.longitude*u.deg))
-
         # coordinate check
         if coord.lower() == "j2000":
             on_coord = SkyCoord(x, y,frame='fk5', unit='deg',)
@@ -158,29 +142,31 @@ class azel_calc(object):
             azel_list = self.kisa_calc(altaz_list[i], dcos, hosei)
             az_list.append(azel_list[0])
             el_list.append(azel_list[1])
-        if limit == True:
-            check_list1 = list(filter(lambda x:0.<x<240.*3600., az_list))
-            check_list2 = list(filter(lambda x:120.*3600.<x<360.*3600., az_list))
-        elif limit == False:
-            check_list1 = list(filter(lambda x:0.<x<270.*3600., az_list))
-            check_list2 = list(filter(lambda x:90.*3600.<x<360.*3600., az_list))
-        else:
-            print("!!!!!limit set error!!!!!")
-
-        if  check_list1 == az_list:
+        check_list1 = [i for i in az_list if 0 <= i <= self.soft_limit*3600. ]
+        check_list2 = [i for i in az_list if (360-self.soft_limit)*3600. <= i <= 360*3600. ]
+        
+        if check_list1 == az_list:
             pass
         elif check_list2 == az_list:
-            az_list = list(map(lambda x:x-360.*3600.,az_list))
+            az_list = [i-360.*3600. for i in az_list]
         else:
-            print("warning : range is over 270 [deg] !!")
-            pass
-        #print("az list!! : ", az_list)
+            check_list3 = [i for i in az_list if 0 <= i < 270.*3600. ]
+            check_list4 = [i for i in az_list if 90*3600. < i <= 360.*3600. ]
+            if check_list3 == az_list:
+                pass
+            elif check_list4 == az_list:
+                az_list = [i-360.*3600. for i in az_list]
+            else:
+                pass
+        
+    
+                
         print("create_list : end!!")
-        print("#######time#######",str(time.time()-self.first_time))
+
         now = float(now.strftime("%s")) + float(now.strftime("%f"))*1e-6#utc
         print("az :",az_list[0]/3600.,"el :", el_list[0]/3600., "time : ", now)
-        #self.test2 = time.time()
-        #print("!!!!!time!!!!!", self.test2-self.test1)
+        self.test2 = time.time()
+        print("!!!!!time!!!!!", self.test2-self.test1)
         return[az_list, el_list, now]
             
 
@@ -188,8 +174,6 @@ if __name__ == "__main__":
     qq = azel_calc()
     from datetime import datetime as dt
     now = dt.utcnow()
-    #qq.coordinate_calc([30,23,23]*10, [40,23,34]*10, "j2000", 7, off_x=10, off_y=10, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime = 0.01)
-    qq.azel_calc(0,45,0,0,"horizontal", now, ["a*cos(x)",100,10,5],movetime=10)
-    qq.coordinate_calc([229,230,231], [-29,-30,-31], "j2000", 7, off_x=10, off_y=10, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime = 0.01,limit=False)
+    qq.coordinate_calc([229,230,231], [-29,-30,-31], "j2000", 7, off_x=10, off_y=10, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime = 0.01)
     
     
