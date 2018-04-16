@@ -9,6 +9,7 @@ sys.path.append('/home/amigos/ros/src/necst/lib')
 sys.path.append('/home/necst/ros/src/necst/lib')
 import coord
 import numpy as np
+import func_calc
 
 class azel_calc(object):
     
@@ -59,10 +60,24 @@ class azel_calc(object):
         else:
             pass
         tv = time.time()
-        param_x = lambda x: eval(str(func_x))
-        param_y = lambda y: eval(str(func_y))
+        param_x = param_y = lambda x:0
+        """
+        if func_x:
+            func_x.append([0]*(4-len(func_x)))
+            param_x = func_calc.calc(func_x[0],func_x[1], func_x[2], func_x[3])
+        else:
+            param_x = lambda x : 0
+            pass
+        if func_y:
+            func_y.append([0]*(4-len(func_y)))
+            param_y = func_calc.calc(func_y[0],func_y[1], func_y[2], func_y[3])
+        else:
+            param_y = lambda x : 0
+            pass
+        """
         az_list = [az*3600.+ off_x + param_x(x*0.1) for x in range(int(movetime*10))]
         el_list = [el*3600.+ off_y + param_y(y*0.1) for y in range(int(movetime*10))]
+        print("az : ", az_list[0],"el : ",el_list[0] )
         return [az_list, el_list, tv]
 
     def coordinate_calc(self, x, y, coord, ntarg, off_x, off_y, offcoord, hosei, lamda, dcos, temp, press, humi, now, movetime = 10):
@@ -173,6 +188,13 @@ if __name__ == "__main__":
     qq = azel_calc()
     from datetime import datetime as dt
     now = dt.utcnow()
-    qq.coordinate_calc([30,23,23]*10, [40,23,34]*10, "j2000", 7, off_x=10, off_y=10, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime = 0.01)
+    #qq.coordinate_calc([30,23,23]*10, [40,23,34]*10, "j2000", 7, off_x=10, off_y=10, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime = 0.01)
+    qq.azel_calc(0,45,0,0,"horizontal", now, ["ax^2+bx+c",1,0,0],movetime=10)
+    print("\n")
+    qq.azel_calc(0,45,0,0,"horizontal", now, ["a*tan(x)",100,10,5],movetime=10)
+    print("\n")
+    qq.azel_calc(0,45,0,0,"horizontal", now, ["a*sin(x)",100,10,5],movetime=10)
+    print("\n")
+    qq.azel_calc(0,45,0,0,"horizontal", now, ["a*cos(x)",100,10,5],movetime=10)
     
     

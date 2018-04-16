@@ -116,7 +116,7 @@ class controller(object):
         else:
             print("!!bad command!!")
 
-    def move(self, x, y, coord="horizontal", planet= 0, off_x=0, off_y=0, offcoord='horizontal', hosei='hosei_230.txt',  lamda=2600, dcos=0, func_x="0", func_y="0", movetime=10, limit=True, assist=True):
+    def move(self, x, y, coord="horizontal", planet= 0, off_x=0, off_y=0, offcoord='horizontal', hosei='hosei_230.txt',  lamda=2600, dcos=0, func_x="", func_y="", movetime=10, limit=True, assist=True):
         """ azel_move, radec_move, galactic_move, planet_move
         
         Parameters

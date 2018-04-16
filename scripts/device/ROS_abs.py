@@ -7,13 +7,11 @@ import threading
 import pyinterface
 
 from std_msgs.msg import String 
-from necst.msg import Status_hot_msg
+
 
 class abs_controller(object):
-    #abs = abs.abs_controller()
     pro = 0x00
     buff = [1,0,0,0]
-    error = []
 
     position = ''
     move_position = ''
@@ -23,66 +21,52 @@ class abs_controller(object):
 
 
     def __init__(self):
+        self.sub1 = rospy.Subscriber('hot', String, self.move_pos)
+        self.sub2 = rospy.Subscriber('emergency', String, self.emergency)
+        self.pub = rospy.Publisher('status_hot', String, queue_size=10, latch = True)
+        self.msg = String()
         pass
 
     def open(self):
         self.dio = pyinterface.open(self.board_name, self.rsw_id)
         self.dio.initialize()
-        self.get_pos()
         return
 
     def start_thread(self):
-        th = threading.Thread(target = self.pub_status)
-        th.setDaemon(True)
-        th.start()
+        get_pos_thread = threading.Thread(target=self.get_pos)
+        get_pos_thread.setDaemon(True)
+        get_pos_thread.start()
+        time.sleep(0.1)
         move_thread = threading.Thread(target=self.move)
         move_thread.setDaemon(True)
         move_thread.start()
+        th = threading.Thread(target = self.pub_status)
+        th.setDaemon(True)
+        th.start()
         return
-    
-
-    def print_msg(self, msg):
-        print(msg)
-        return
-        
-    def print_error(self, msg):
-        self.error.append(msg)
-        self.print_msg('!!!! ERROR !!!! ' + msg)
-        return
-
-    '''
-    def pos_tel(self):
-        ret = self.board_abs.in_byte('FBIDIO_IN1_8')
-
-if ret == 0x02:
-            print('position : IN')
-            elif ret == 0x01:   
-                print('position : OUT')
-                elif ret == 0x03:   
-                    print('position : MOVE')
-                    else:
-                        self.print_error('limit error')
-            print(ret)
-        return
-    '''
-
-    def get_pos(self):
-        ret = self.dio.input_byte('IN1_8').to_list()
-        print(ret)
-        if ret[0] == 0 and ret[1] == 1:#ret == 0x02
-            self.position = 'IN'
-        elif ret[0] == 1 and ret[1] == 0:#ret == 0x01
-            self.position = 'OUT'
-        elif ret[0] == 1 and ret[1] == 1:#ret == 0x03
-            self.position = 'MOVE'
-        else:
-            self.print_error('limit error')
-            return
-        return self.position
 
     def move_pos(self, req):
         self.move_position = req.data.upper()
         return self.move_position
+
+    
+    def get_pos(self):
+        while not rospy.is_shutdown():
+            ret = self.dio.input_byte('IN1_8').to_list()
+            print(ret)
+            if ret[0] == 0 and ret[1] == 1:#ret == 0x02
+                self.position = 'IN'
+            elif ret[0] == 1 and ret[1] == 0:#ret == 0x01
+                self.position = 'OUT'
+            elif ret[0] == 1 and ret[1] == 1:#ret == 0x03
+                self.position = 'MOVE'
+            else:
+                self.print_error('limit error')
+                return
+            self.msg.data = self.position
+            time.sleep(0.5)            
+        return self.position
+
 
     def move(self):
         print('move start')
@@ -114,63 +98,25 @@ if ret == 0x02:
             time.sleep(0.5)
         return
 
+    def pub_status(self):
+        while not rospy.is_shutdown():
+            self.pub.publish(self.msg)
+            rospy.loginfo(self.msg)
+            time.sleep(0.5)
+        return
+
+
     def emergency(self,req):
         rospy.loginfo('!!!emergency!!!')
         rospy.loginfo('!!!stop azel_move!!!')
         self.emergency_flag = 1
         return
-
-    def pub_status(self):
-        pub = rospy.Publisher('status_hot', Status_hot_msg, queue_size=10, latch = True)
-        msg = Status_hot_msg()
-
-        while not rospy.is_shutdown():
-            pos = self.get_pos()
-            print(pos)
-            msg.hot_position = pos
-            pub.publish(msg)
-            rospy.loginfo(pos)
-            time.sleep(0.5)
-        return
-
-    def move_r(self):
-        self.move('IN')
-        return
-
-    def move_sky(self):
-        self.move('OUT')
-        return
-
-    '''
-    def stop(self):
-    self.buff = 0x04
-    self.board_abs.out_byte('FBIDIO_OUT1_8', self.buff)
-return
-
-    '''
-
-
+    
 if __name__ == '__main__':
     hot = abs_controller()
     hot.open()
     rospy.init_node('abs_controller')
     rospy.loginfo('waiting publish abs')
     hot.start_thread()
-    sub = rospy.Subscriber('hot', String, hot.move_pos)
-    sub = rospy.Subscriber('emergency', String, hot.emergency)
     rospy.spin()
-"""
-def abs_client(host, port):
-    client = pyinterface.server_client_wrapper.control_client_wrapper(abs_controller, host, port)
-    return client
 
-def abs_monitor_client(host, port):
-    client = pyinterface.server_client_wrapper.monitor_client_wrapper(abs_controller, host, port)
-    return client
-
-def start_abs_server(port1 = 6001, port2 = 6002):
-    abs = abs_controller()
-    server = pyinterface.server_client_wrapper.server_wrapper(abs,'', port1, port2)
-    server.start()
-    return server
-"""

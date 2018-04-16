@@ -56,9 +56,9 @@ except:
 #print("antenna_move")
 time.sleep(0.3)
 if snow:
-    ctrl.azel_move(-90, 0.0, limit=False)
+    ctrl.move(-90, 0.0, limit=False)
 else:
-    ctrl.azel_move(0, 45)
+    ctrl.move(0, 45)
 ctrl.antenna_tracking_check()
 print("memb_close")
 ctrl.memb_close()
