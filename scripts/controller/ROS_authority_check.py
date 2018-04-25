@@ -1,48 +1,62 @@
 #!/usr/bin/env python3
 
 import sys
-sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
-import threading
 import time
 import rospy
-from std_msgs.msg import String
-#from ros_start.msg import access_authority_msg
-#from ros_start.msg import remote_authority_msg
+import rosnode
+from necst.msg import String_necst
 
 class authority(object):
-    authority = "release"
+
+    authority = ""
 
     def __init__(self):
-        th = threading.Thread(target = self.authority_pub)
-        th.setDaemon(True)
-        th.start()
-        
-    def authority_pub(self):
-        pub = rospy.Publisher("authority_check", String, queue_size = 10)
-        msg = String()
-        _msg = self.authority
-        rospy.loginfo("sty...")
-        #while self.authority == _msg:
-            #msg.data = self.authority
-            #pub.publish(msg)
-
-        while True:
-            #if self.authority != _msg:
-            msg.data = self.authority
-            pub.publish(msg)
-            rospy.loginfo(self.authority)
-            _msg = self.authority
-            time.sleep(1)
-
-    def authority_change(self, req):
-        print("change :", req.data)
-        self.authority = req.data
+        self.pub = rospy.Publisher("authority_check", String_necst, queue_size = 1)
+        self.sub = rospy.Subscriber("authority_regist", String_necst, self.registration, queue_size=1)
         return
 
+    def registration(self, req):
+        if req.data == "":
+            if req.from_node == self.authority:
+                self.authority = req.data
+                print("release authority !!","\n")
+            else:
+                print("Can't release...")
+                print("current authority :", self.authority,"\n")
+                pass
+        elif self.authority:
+            print("current authority :", self.authority, "\n")
+        else:
+            self.authority = req.data
+            print("change authority : ", self.authority,"\n")
+            pass
+        return
+    
+    def authority_check(self):
+        msg = String_necst()
+        while not rospy.is_shutdown():
+            self.node_alive()
+            msg.data = self.authority
+            self.pub.publish(msg)
+            time.sleep(1.)
+        return
 
-rospy.init_node("Authority")
-au = authority()
-print("start")
-sub = rospy.Subscriber("authority_change", String, au.authority_change)
-rospy.spin()
+    def node_alive(self):
+        node_data = rosnode.get_node_names()
+        if not self.authority:
+            pass
+        elif not ("/"+self.authority) in node_data:
+            self.authority = ""
+            print("old_node authority is removed..."+"\n")
+        else:
+            pass
+        return
+    
+
+if __name__ == "__main__":
+    rospy.init_node("Authority_check")
+    print("start"+"\n")
+    au = authority()
+    au.authority_check()
+
 
