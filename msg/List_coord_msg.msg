@@ -1,0 +1,11 @@
+float64[] x_list
+float64[] y_list
+float64[] time_list
+string coord
+float32 off_az
+float32 off_el
+string hosei
+float64 lamda
+bool limit
+string from_node
+float64 timestamp

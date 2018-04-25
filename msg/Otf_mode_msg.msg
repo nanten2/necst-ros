@@ -7,14 +7,13 @@ float64 dt
 int64 num
 float64 rampt
 float64 delay
-int64[] start_on
+float64 start_on
 float64 off_x
 float64 off_y
 string offcoord
 int64 dcos
 string hosei
 float64 lamda
-float64 movetime
 bool limit
-bool assist
-float64 time
+string from_node
+float64 timestamp

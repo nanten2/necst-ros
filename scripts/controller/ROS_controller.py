@@ -50,10 +50,11 @@ class controller(object):
 
         self.pub_drive = rospy.Publisher("antenna_drive", String, queue_size = 1)
         self.pub_contactor = rospy.Publisher("antenna_contactor", String, queue_size = 1)
-        self.pub_antenna = rospy.Publisher("antenna_command", Move_mode_msg, queue_size=1, latch=True)
-        self.pub_stop = rospy.Publisher("move_stop", String, queue_size = 1, latch = True)
+        self.pub_onepoint = rospy.Publisher("onepoint_command", Move_mode_msg, queue_size=1, latch=True)
+        self.pub_planet = rospy.Publisher("planet_command", Move_mode_msg, queue_size=1, latch=True)        
+        self.pub_stop = rospy.Publisher("move_stop", Bool, queue_size = 1, latch = True)
         self.pub_otf = rospy.Publisher("antenna_otf", Otf_mode_msg, queue_size = 1, latch = True)
-
+        self.pub_planet_scan = rospy.Publisher("planet_otf", Otf_mode_msg, queue_size = 1, latch = True)        
         self.pub_dome = rospy.Publisher("dome_move", Dome_msg, queue_size = 1, latch = True)
         self.pub_m4 = rospy.Publisher('m4', String, queue_size = 1, latch = True)
         self.pub_hot = rospy.Publisher("hot", String, queue_size = 1, latch = True)
@@ -101,19 +102,39 @@ class controller(object):
         else:
             print("!!bad command!!")
 
-    def move(self, x, y, coord="horizontal", planet= 0, off_x=0, off_y=0, offcoord='horizontal', hosei='hosei_230.txt',  lamda=2600, dcos=0, func_x="", func_y="", movetime=10, limit=True, assist=True):
-        """ azel_move, radec_move, galactic_move, planet_move
+    def onepoint_move(self, x, y, coord="horizontal", off_x=0, off_y=0, offcoord='horizontal', hosei='hosei_230.txt',  lamda=2600, dcos=0, func_x="", func_y="", movetime=10, limit=True,):
+        """ azel_move, radec_move, galactic_move
         
         Parameters
         ----------
         x        : target_x [deg]
         y        : target_y [deg]
-        coord    : "horizontal" or "j2000" or "b1950" or "galactic" or "planet" 
+        coord    : "horizontal" or "j2000" or "b1950" or "galactic"  
+        off_x    : offset_x [arcsec]
+        off_y    : offset_y [arcsec]
+        offcoord : "horizontal" or "j2000" or "b1950" or "galactic" 
+        hosei    : hosei file name (default ; hosei_230.txt)
+        lamda    : observation wavelength [um] (default ; 2600)
+        dcos     : projection (no:0, yes:1)
+        func_x   : free scan [arcsec/s] (cf:20*x or math.sin(x) or etc...)
+        func_y   : free scan [arcsec/s] (cf:20*y or math.sin(y) or etc...)
+        movetime : azel_list length [s]
+        limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
+        assist   : ROS_antenna_assist is on or off (True:on, False:off)
+        """
+        self.pub_onepoint.publish(x, y, coord, 0, off_x, off_y, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), limit, self.name, time.time())
+        return
+
+    def planet_move(self):
+        """ planet_move
+        
+        Parameters
+        ----------
         planet   : planet_number (only when using "planet_move"!!)
                    1.Mercury 2.Venus 3. 4.Mars 5.Jupiter 6.Saturn 7.Uranus 8.Neptune, 9.Pluto, 10.Moon, 11.Sun
         off_x    : offset_x [arcsec]
         off_y    : offset_y [arcsec]
-        offcoord : "horizontal" or "j2000" or "b1950" or "galactic" or "planet" 
+        offcoord : "horizontal" or "j2000" or "b1950" or "galactic" 
         hosei    : hosei file name (default ; hosei_230.txt)
         lamda    : observation wavelength [um] (default ; 2600)
         dcos     : projection (no:0, yes:1)
@@ -128,17 +149,47 @@ class controller(object):
             planet = planet_list[planet.lower()]
         else:
             pass
-        self.pub_antenna.publish(x, y, coord, planet, off_x, off_y, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), movetime, limit, assist, time.time())
+        
+        self.pub_planet.publish(0, 0, coord, planet, off_x, off_y, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), movetime, limit, time.time())
         return
+        
+        pass
 
-    def move_stop(self):
-        print("move_stop")
-        self.pub_stop.publish("stop")
-        time.sleep(0.2)
-        return
-
-    def otf_scan(self, x, y, coord, dx, dy, dt, num, rampt, delay, start_on,  off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., movetime=0.01, limit=True, assist=False):
+    def otf_scan(self, x, y, coord, dx, dy, dt, num, rampt, delay, start_on,  off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., limit=True):
         """ otf scan
+
+        Parameters
+        ----------
+        x        : target_x [deg]
+        y        : target_y [deg]
+        coord    : "j2000" or "b1950" or "galactic"
+        dx       : x_grid length [arcsec]
+        dy       : y_grid length [arcsec]
+        dt       : exposure time [s]
+        num      : scan point [ num / 1 line]
+        rampt    : ramp time [s]
+        delay    : (start observation time)-(now time) [s]
+        start_on : start on position scan [utctime]
+        off_x    : (target_x)-(scan start_x) [arcsec]
+        off_y    : (target_y)-(scan start_y) [arcsec]
+        offcoord : equal coord (no implementation)
+        dcos     : projection (no:0, yes:1)
+        hosei    : hosei file name (default ; hosei_230.txt)
+        lamda    : observation wavelength [um] (default ; 2600)
+        movetime : azel_list length [s] (otf_mode = 0.01)
+        limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
+        """
+        current_time = time.time()
+        print("start OTF scan!!")
+        self.pub_otf.publish(x, y, coord, dx, dy, dt, num, rampt,
+                             delay, start_on, off_x, off_y, offcoord,
+                             dcos, hosei, lamda, limit, self.name,
+                             current_time)
+        
+        return 
+
+    def planet_scan(self):
+        """ planet otf scan
 
         Parameters
         ----------
@@ -163,13 +214,19 @@ class controller(object):
         """
         
         print("start OTF scan!!")
-        self.pub_otf.publish(x, y, coord, dx, dy, dt, num,rampt,
-                             delay, start_on, off_x, off_y, offcoord,
-                             dcos, hosei, lamda, movetime, limit, assist,
-                             time.time())
+        self.pub_planet_scan.publish(x, y, coord, dx, dy, dt, num,rampt,
+                                      delay, start_on, off_x, off_y, offcoord,
+                                      dcos, hosei, lamda, movetime, limit,
+                                      assist,time.time())
         
-        return 
 
+    
+    def move_stop(self):
+        print("move_stop")
+        self.pub_stop.publish(True)
+        time.sleep(0.2)
+        return
+        
     def dome(self, value):
         """dome controll
 
@@ -426,11 +483,8 @@ if __name__ == "__main__":
     a = float(input("x : "))
     b = float(input("y : "))
     from datetime import datetime as dt
+    import time
     utc = dt.utcnow()
     utc_list = [utc.year,utc.month,utc.day,utc.hour,utc.minute,utc.second,utc.microsecond]
-    con.otf_scan(a, b, "j2000", 30, 0, 0.6, 9, 0.6*4, delay=10., start_on=utc_list, off_x=-900, off_y=0, offcoord="j2000")
-    #from astropy.time import Time
-    #import datetime
-    #tt = Time(dt.utcnow() + datetime.timedelta(seconds=5)).mjd
-    #aa = con.oneshot_achilles(3, 1, tt)
-    #print(aa)
+    #con.otf_scan(a, b, "j2000", 30, 0, 0.6, 9, 0.6*4, delay=10., start_on=utc_list, off_x=-900, off_y=0, offcoord="j2000")
+    con.otf_scan(-30, 20, "j2000", 30, 0, 0.6, 9, 0.6*4, 3, start_on=0,  off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., limit=True)
