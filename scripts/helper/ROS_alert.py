@@ -17,7 +17,7 @@ from necst.msg import Status_dome_msg
 from necst.msg import Dome_msg
 from necst.msg import Status_encoder_msg
 from necst.msg import Status_antenna_msg
-from necst.msg import list_azelmsg
+from necst.msg import List_coord_msg
 
 class alert(object):
 
@@ -38,19 +38,19 @@ class alert(object):
     el_list = ""
     encoder_error = False
     error_flag = False
-    sun_pos = False
+    sun_limit = False
     alert_msg = ""
     
     def __init__(self):
         self.pub_alert = rospy.Publisher("alert", String, queue_size=10, latch=True)
         #self.pub_emergency = rospy.Publisher('emergency_stop', Bool, queue_size = 10, latch = True)
-        self.pub_antenna = rospy.Publisher("move_stop", String, queue_size = 1, latch = True)
+        self.pub_antenna = rospy.Publisher("move_stop", Bool, queue_size = 1, latch = True)
         self.pub_dome = rospy.Publisher('dome_move', Dome_msg, queue_size = 10, latch = True)
         self.sub = rospy.Subscriber("status_weather", Status_weather_msg, self.callback_weather)
         self.sub = rospy.Subscriber("status_dome", Status_dome_msg, self.callback_dome)
         self.sub = rospy.Subscriber("status_antenna", Status_antenna_msg, self.callback_command)
         self.sub = rospy.Subscriber("status_encoder", Status_encoder_msg, self.callback_encoder)
-        self.sub = rospy.Subscriber("list_azel", list_azelmsg, self.callback_azel)
+        self.sub = rospy.Subscriber("list_azel", List_coord_msg, self.callback_azel)
         self.nanten2 = EarthLocation(lat = -22.96995611*u.deg, lon = -67.70308139*u.deg, height = 4863.85*u.m)
 
         self.args = sys.argv
@@ -74,8 +74,8 @@ class alert(object):
         
     def callback_azel(self,req):
         """callback : azel list"""
-        self.az_list = req.az_list
-        self.el_list = req.el_list
+        self.az_list = req.x_list
+        self.el_list = req.y_list
         return
         
     def callback_command(self, req):
@@ -91,7 +91,7 @@ class alert(object):
         return
 
     def check_encoder_error(self):
-        while not self.encoder_error:
+        while not rospy.is_shutdown():
             az_flag = el_flag = False
             if self.vel_az != 0:
                 start_az = self.enc_az
@@ -145,7 +145,7 @@ class alert(object):
                 pass
             if sun_el -15 <= el_list[i]/3600. <= sun_el + 15:
                 stop_flag = True
-        return self.sun_pos
+        return stop_flag
         
     def alert(self):
         """ publish : alert """
@@ -217,19 +217,18 @@ class alert(object):
             if self.args[1] == "radio":
                 pass
             else:
-                self.sun_pos = self.check_sun_position()
-                if self.sun_pos:
+                self.sun_limit = self.check_sun_position()
+                if self.sun_limit:
                     emergency += "Emergency : antenna position near sun!! \n"
                 
             if emergency:
                 rospy.logfatal(emergency)
-                if self.sun_pos:
-                    pass
-                else:
-                    self.pub_antenna.publish(data = "stop")#antenna
-                    self.pub_dome.publish(name='command', value='dome_stop')
+                #if self.sun_limit:
+                #    pass
+                #else:
+                self.pub_antenna.publish(True)#antenna
+                self.pub_dome.publish(name='command', value='dome_stop')
                 if self.memb.lower() == 'open':
-                    self.pub_antenna.publish(data = "stop")#antenna
                     self.pub_dome.publish(name='command', value='memb_close')
                 if self.dome_r.lower() == 'open' or self.dome_l.lower() == 'open':
                     self.pub_dome.publish(name="command", value='dome_close')

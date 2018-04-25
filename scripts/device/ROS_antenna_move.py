@@ -19,7 +19,7 @@ import pyinterface
 #ROS/import field
 #----------------
 from necst.msg import Status_antenna_msg
-from necst.msg import list_azelmsg
+from necst.msg import List_coord_msg
 from necst.msg import Status_encoder_msg
 from std_msgs.msg import String
 from std_msgs.msg import Bool
@@ -29,9 +29,9 @@ class antenna_move(object):
     #initial parameter
     #-----------------
     parameters = {
-        'az_list':[0]*300,
-        'el_list':[0]*300,
-        'start_time':0,
+        'az_list':[],#[0]*300,
+        'el_list':[],#[0]*300,
+        'start_time_list':[],#0,
         'flag':0
         }
     enc_parameter = {
@@ -150,9 +150,9 @@ class antenna_move(object):
         This function recieves azel_list and start_time from publisher in ROS_antenna.py 
         """
         #print('set_parameter')
-        self.parameters['az_list'] = req.az_list
-        self.parameters['el_list'] = req.el_list
-        self.parameters['start_time'] = req.start_time
+        self.parameters['az_list'].extend(req.x_list)
+        self.parameters['el_list'].extend(req.y_list)
+        self.parameters['start_time_list'].extend(req.time_list)
         """
         if not self.limit_check():
             self.stop_flag = 1
@@ -169,8 +169,11 @@ class antenna_move(object):
         This function recieves encoder parameter(antenna's Az and El) from publisher in ROS_encoder.py
         This parameter is needed for PID control
         """
-        self.enc_parameter['az_enc'] = req.enc_az
-        self.enc_parameter['el_enc'] = req.enc_el 
+        if not self.stop_flag:
+            self.enc_parameter['az_enc'] = req.enc_az
+            self.enc_parameter['el_enc'] = req.enc_el
+        else:
+            pass
         return
 
     def limit_check(self):
@@ -205,21 +208,23 @@ class antenna_move(object):
         """
         
         n = len(self.parameters['az_list'])
-        st = self.parameters['start_time']
+        st = self.parameters['start_time_list']
         ct = time.time()
-        st_e = float(st) + float(n*0.1)#0.1 = interval
+        #st_e = float(st) + float(n*0.1)#0.1 = interval
         #print(n, st, ct, st_e, 'n, st, ct ,st_e')
 
         #time check
         #----------
+        if st == []:
+            st = [0]
         
-        if st - ct >=0:
+        if st[0] - ct >=0:
             print(st - ct,' [sec] waiting...')
             #print('wait starting azel list or send another list')
             #time.sleep(st-ct)
             return
 
-        if ct - st_e >=0:
+        if ct - st[n] >=0:
             rospy.loginfo('!!!azel_list is end!!!')
             self.stop_flag = 1
             for i in range(5):
@@ -232,7 +237,7 @@ class antenna_move(object):
 
         else:
             for i in range(len(self.parameters['az_list'])):
-                st2 = st + (i*0.1)
+                st2 = st[i]
                 num = i
                 if st2 - ct >0:
                     #num = i
@@ -274,11 +279,11 @@ class antenna_move(object):
                 tar_el = ret[2] + el*(c-st)*10
                 #2nd limit check (1st limit check is in ROS_antenna.py)
                 if tar_az > 240*3600. or tar_el < -240*3600.:
-                    self.stop_flag = False
+                    self.stop_flag = True#?False
                     print('!!!target az limit!!! : ', tar_az)
                     continue
                 if tar_el > 89*3600. or tar_el < 0:
-                    self.stop_flag = False
+                    self.stop_flag = True#?False
                     print('!!!target el limit!!! : ', tar_el)
                     continue
                 self.command_az = tar_az
@@ -863,7 +868,7 @@ class antenna_move(object):
     
     def stop_move(self, req):
         rospy.loginfo('***subscribe move stop***')
-        self.stop_flag = 1
+        self.stop_flag = req.data
         return
         
 
@@ -932,8 +937,8 @@ if __name__ == '__main__':
     ant = antenna_move()
     ant.start_thread()
     print('[ROS_antenna_move.py] : START SUBSCRIBE')
-    rospy.Subscriber('list_azel', list_azelmsg, ant.set_parameter, queue_size=1)
-    rospy.Subscriber('move_stop', String, ant.stop_move)
+    rospy.Subscriber('list_azel', List_coord_msg, ant.set_parameter, queue_size=1)
+    rospy.Subscriber('move_stop', Bool, ant.stop_move)
     rospy.Subscriber('emergency_stop', Bool, ant.emergency)
     rospy.Subscriber('status_encoder', Status_encoder_msg, ant.set_enc_parameter, queue_size=1)
     rospy.spin()
