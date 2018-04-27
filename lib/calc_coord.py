@@ -24,7 +24,7 @@ class azel_calc(object):
     off_el = 0.
     loop_rate = 0.1
 
-    coord_list = {"icrs":"icrs", "j2000":"fk5", "fk5":"fk5", "b1950":"fk4", "fk4":"fk4", "gal":"galactic", "galactic":"galactic","altaz":"horizontal", "horizontal":"horizontal",}
+    coord_list = {"icrs":"icrs", "j2000":"fk5", "fk5":"fk5", "b1950":"fk4", "fk4":"fk4", "gal":"galactic", "galactic":"galactic","altaz":"altaz", "horizontal":"altaz",}
     
     def __init__(self):
         self.coord = coord.coord_calc()
@@ -40,27 +40,33 @@ class azel_calc(object):
         target_el = altaz.alt.arcsec+ret[1]
         return target_az, target_el
 
-    def coordinate_calc(self, x_list, y_list, time_list,  coord, off_x, off_y, hosei, lamda, press, temp, humi, limit=True):
+    def coordinate_calc(self, x_list, y_list, time_list,  coord, off_az, off_el, hosei, lamda, press, temp, humi, limit=True):
 
         # coordinate check len(x_list)=len(y_list)=len(time_list)
         frame = self.coord_list[coord.lower()]
-        on_coord = SkyCoord(x_list, y_list,frame=frame, unit='arcsec',)
+        if frame == "altaz":
+            az_list = list(map(lambda k :k+off_az, x_list))
+            el_list = list(map(lambda k :k+off_el, y_list))
+        else:
+            on_coord = SkyCoord(x_list, y_list,frame=frame, unit='arcsec',)
 
-        # convert_azel
-        nanten2 = EarthLocation(lat = self.latitude*u.deg, lon = self.longitude*u.deg, height = self.height*u.m)
-        on_coord.location=nanten2
-        on_coord.pressure=press*u.Pa#param
-        on_coord.temperature=temp*u.deg_C#param
-        on_coord.relative_humidity=humi#param
-        on_coord.obswl = lamda*u.um#param
+            # convert_azel
+            nanten2 = EarthLocation(lat = self.latitude*u.deg, lon = self.longitude*u.deg, height = self.height*u.m)
+            on_coord.location=nanten2
+            on_coord.pressure=press*u.Pa#param
+            on_coord.temperature=temp*u.deg_C#param
+            on_coord.relative_humidity=humi#param
+            on_coord.obswl = lamda*u.um#param
         
-        altaz_list = on_coord.transform_to(AltAz(obstime=time_list))
-        az_list=[]
-        el_list=[]
-        for i in range(len(altaz_list)):
-            azel_list = self.kisa_calc(altaz_list[i], hosei)
-            az_list.append(azel_list[0])
-            el_list.append(azel_list[1])
+            altaz_list = on_coord.transform_to(AltAz(obstime=time_list))
+            az_list=[]
+            el_list=[]
+            for i in range(len(altaz_list)):
+                azel_list = self.kisa_calc(altaz_list[i], hosei)
+                az_list.append(azel_list[0]+off_az)
+                el_list.append(azel_list[1]+off_el)
+            pass
+        
         if limit == True:
             check_list1 = list(filter(lambda x:0.<x<240.*3600., az_list))
             check_list2 = list(filter(lambda x:120.*3600.<x<360.*3600., az_list))
@@ -82,9 +88,3 @@ class azel_calc(object):
         return[az_list, el_list]
             
 
-if __name__ == "__main__":
-    qq = azel_calc()
-    
-
-    
-    

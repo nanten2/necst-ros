@@ -122,6 +122,7 @@ class controller(object):
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
         assist   : ROS_antenna_assist is on or off (True:on, False:off)
         """
+        self.pub_stop.publish(False)
         self.pub_onepoint.publish(x, y, coord, 0, off_x, off_y, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), limit, self.name, time.time())
         return
 
@@ -149,7 +150,7 @@ class controller(object):
             planet = planet_list[planet.lower()]
         else:
             pass
-        
+        self.pub_stop.publish(False)
         self.pub_planet.publish(0, 0, coord, planet, off_x, off_y, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), movetime, limit, time.time())
         return
         
@@ -181,6 +182,7 @@ class controller(object):
         """
         current_time = time.time()
         print("start OTF scan!!")
+        self.pub_stop.publish(False)
         self.pub_otf.publish(x, y, coord, dx, dy, dt, num, rampt,
                              delay, start_on, off_x, off_y, offcoord,
                              dcos, hosei, lamda, limit, self.name,
@@ -214,6 +216,7 @@ class controller(object):
         """
         
         print("start OTF scan!!")
+        self.pub_stop.publish(False)
         self.pub_planet_scan.publish(x, y, coord, dx, dy, dt, num,rampt,
                                       delay, start_on, off_x, off_y, offcoord,
                                       dcos, hosei, lamda, movetime, limit,

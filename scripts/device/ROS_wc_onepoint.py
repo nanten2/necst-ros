@@ -35,7 +35,7 @@ class worldcoord(object):
                 print("start_create_list")
                 ret = calc_offset.calc_offset(command.x, command.y, command.coord,
                                               command.off_x, command.off_y, command.offcoord,
-                                              command.dcos)
+                                              command.dcos, command.timestamp)
                 current_time = time.time()
                 
                 msg.x_list = [ret[0], ret[0]]
