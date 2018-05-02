@@ -15,4 +15,6 @@
   <node pkg="necst" name="worldcoordinate_onepoint" type="ROS_wc_onepoint.py"/>
   <node pkg="necst" name="worldcoordinate_otf" type="ROS_wc_otf.py"/>
   <node pkg="necst" name="worldcoordinate_planet" type="ROS_wc_planet.py"/>
+  <node pkg="necst" name="worldcoordinate_linear" type="ROS_wc_linear.py"/>  
+  <node pkg="necst" name="azel_list" type="ROS_azel_list.py"/>  
 </launch>
