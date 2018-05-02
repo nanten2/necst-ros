@@ -223,11 +223,11 @@ class alert(object):
                 
             if emergency:
                 rospy.logfatal(emergency)
-                #if self.sun_limit:
-                #    pass
-                #else:
-                self.pub_antenna.publish(True)#antenna
-                self.pub_dome.publish(name='command', value='dome_stop')
+                if self.sun_limit:
+                    pass
+                else:
+                    self.pub_antenna.publish(True)#antenna
+                    self.pub_dome.publish(name='command', value='dome_stop')
                 if self.memb.lower() == 'open':
                     self.pub_dome.publish(name='command', value='memb_close')
                 if self.dome_r.lower() == 'open' or self.dome_l.lower() == 'open':

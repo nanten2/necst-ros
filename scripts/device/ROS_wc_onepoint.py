@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 import rospy
 from necst.msg import Move_mode_msg
 from necst.msg import List_coord_msg
@@ -40,7 +42,7 @@ class worldcoord(object):
                 
                 msg.x_list = [ret[0], ret[0]]
                 msg.y_list = [ret[1], ret[1]]
-                msg.time_list = [current_time, current_time+3600.]
+                msg.time_list = [command.timestamp, command.timestamp+3600.]
                 msg.coord = command.coord
                 msg.off_az = ret[2]
                 msg.off_el = ret[3]

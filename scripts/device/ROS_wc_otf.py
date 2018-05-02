@@ -1,3 +1,5 @@
+#! /usr/bin/env python3
+
 import rospy
 from necst.msg import Otf_mode_msg
 from necst.msg import List_coord_msg
