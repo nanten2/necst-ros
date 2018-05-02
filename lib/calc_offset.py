@@ -12,7 +12,7 @@ longitude = -67.70308139
 height = 4863.85
 nanten2 = EarthLocation(lat = latitude*u.deg, lon = longitude*u.deg, height = height*u.m)
 
-def calc_offset(input_x, input_y, coord, input_off_x, input_off_y, offcoord, dcos,timestamp):
+def calc_offset(input_x, input_y, coord, input_off_x, input_off_y, offcoord, dcos):
     x = input_x*u.deg
     y = input_y*u.deg
     off_x = input_off_x*u.arcsec
@@ -22,8 +22,6 @@ def calc_offset(input_x, input_y, coord, input_off_x, input_off_y, offcoord, dco
     off_y = off_y.to("deg")
     off_y = off_y.value
     
-    dt_time = Time(dt.fromtimestamp(timestamp))
-    
     # coordinate check
     try:
         on_frame = coord_list[coord.lower()]
@@ -31,7 +29,7 @@ def calc_offset(input_x, input_y, coord, input_off_x, input_off_y, offcoord, dco
     except:
         print("### !!error coord!! ###")
         pass
-    on_coord = SkyCoord(x, y, frame=on_frame, location=nanten2,obstime=dt_time)
+    on_coord = SkyCoord(x, y, frame=on_frame, location=nanten2,)
     off_az = 0
     off_el = 0
     

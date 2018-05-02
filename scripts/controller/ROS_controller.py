@@ -51,6 +51,7 @@ class controller(object):
         self.pub_drive = rospy.Publisher("antenna_drive", String, queue_size = 1)
         self.pub_contactor = rospy.Publisher("antenna_contactor", String, queue_size = 1)
         self.pub_onepoint = rospy.Publisher("onepoint_command", Move_mode_msg, queue_size=1, latch=True)
+        self.pub_linear = rospy.Publisher("linear_command", Move_mode_msg, queue_size=1, latch=True)        
         self.pub_planet = rospy.Publisher("planet_command", Move_mode_msg, queue_size=1, latch=True)        
         self.pub_stop = rospy.Publisher("move_stop", Bool, queue_size = 1, latch = True)
         self.pub_otf = rospy.Publisher("antenna_otf", Otf_mode_msg, queue_size = 1, latch = True)
@@ -152,6 +153,29 @@ class controller(object):
         return
         
         pass
+
+    def linear_move(self, x, y, coord="horizontal", dx=0, dy=0, offcoord='horizontal', hosei='hosei_230.txt',  lamda=2600, dcos=0, func_x="", func_y="", limit=True,):
+        """ azel_move, radec_move, galactic_move
+        
+        Parameters
+        ----------
+        x        : target_x [deg]
+        y        : target_y [deg]
+        coord    : "horizontal" or "j2000" or "b1950" or "galactic"  
+        dx    : delta_x [arcsec/s]
+        dy    : delta_y [arcsec/s]
+        offcoord : "horizontal" or "j2000" or "b1950" or "galactic" 
+        hosei    : hosei file name (default ; hosei_230.txt)
+        lamda    : observation wavelength [um] (default ; 2600)
+        dcos     : projection (no:0, yes:1)
+        func_x   : free scan [arcsec/s] (cf:20*x or math.sin(x) or etc...)
+        func_y   : free scan [arcsec/s] (cf:20*y or math.sin(y) or etc...)
+        limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
+        """
+        self.pub_stop.publish(False)
+        self.pub_linear.publish(x, y, coord, "", dx, dy, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), limit, self.name, time.time())
+        return
+    
 
     def otf_scan(self, x, y, coord, dx, dy, dt, num, rampt, delay, start_on,  off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., limit=True):
         """ otf scan

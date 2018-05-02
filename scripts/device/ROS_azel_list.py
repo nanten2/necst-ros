@@ -38,6 +38,7 @@ class azel_list(object):
         self.weather = req
     
     def receive_list(self, req):
+        ### x,y is [arcsec]
         if req.timestamp < self.start_time:
             print("receive_old_list...")
         else:
