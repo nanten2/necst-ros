@@ -16,7 +16,12 @@ def calc_offset(input_x, input_y, coord, input_off_x, input_off_y, offcoord, dco
     x = input_x*u.deg
     y = input_y*u.deg
     off_x = input_off_x*u.arcsec
+    off_x = off_x.to("deg")
+    off_x = off_x.value
     off_y = input_off_y*u.arcsec
+    off_y = off_y.to("deg")
+    off_y = off_y.value
+    
     dt_time = Time(dt.fromtimestamp(timestamp))
     
     # coordinate check
@@ -37,14 +42,13 @@ def calc_offset(input_x, input_y, coord, input_off_x, input_off_y, offcoord, dco
         pass
     elif off_frame == "galactic":
         on_coord = on_coord.transform_to(off_frame)
-        off_coord = SkyCoord(off_x, off_y, frame=off_frame)
 
         if dcos == 1:
-            real_b = on_coord.b.deg + off_coord.b.deg
-            real_l = on_coord.l.deg + off_coord.l.deg/np.cos(np.radians(real_b))
+            real_b = on_coord.b.deg + off_y
+            real_l = on_coord.l.deg + off_x/np.cos(np.radians(real_b))
         else:
-            real_b = on_coord.b.deg + off_coord.b.deg
-            real_l = on_coord.l.deg + off_coord.l.deg
+            real_b = on_coord.b.deg + off_y
+            real_l = on_coord.l.deg + off_x
             pass
 
         ret_coord = SkyCoord(real_l, real_b, frame=off_frame, unit="deg")
@@ -52,14 +56,13 @@ def calc_offset(input_x, input_y, coord, input_off_x, input_off_y, offcoord, dco
         
     else:
         on_coord = on_coord.transform_to(off_frame)
-        off_coord = SkyCoord(off_x, off_y, frame=off_frame)
 
         if dcos == 1:
-            real_dec = on_coord.dec.deg + off_coord.dec.deg
-            real_ra = on_coord.ra.deg + off_coord.ra.deg/np.cos(np.radians(real_dec))
+            real_dec = on_coord.dec.deg + off_y
+            real_ra = on_coord.ra.deg + off_x/np.cos(np.radians(real_dec))
         else:
-            real_dec = on_coord.dec.deg + off_coord.dec.deg
-            real_ra = on_coord.ra.deg + off_coord.ra.deg
+            real_dec = on_coord.dec.deg + off_y
+            real_ra = on_coord.ra.deg + off_x
             pass
 
         ret_coord = SkyCoord(real_ra, real_dec, frame=off_frame, unit="deg")

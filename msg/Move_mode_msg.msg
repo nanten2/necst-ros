@@ -1,7 +1,7 @@
 float64 x
 float64 y
 string coord
-int64 planet
+string planet
 float64 off_x
 float64 off_y
 string offcoord

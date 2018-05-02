@@ -142,8 +142,7 @@ class antenna_move(object):
         th2.start()
 
     def set_parameter(self, req):
-        #print("$$$$$$$$$")
-        #print(req.x_list)
+
         """
         DESCRIPTION
         ===========
@@ -151,12 +150,11 @@ class antenna_move(object):
         """
         #print('set_parameter')
         if not self.stop_flag and self.start_time<req.time_list[0]:
-            print(self.stop_flag, self.start_time, req.time_list[0])
+            print("st,ct", self.stop_flag, self.start_time, req.time_list[0])
             if self.parameters['start_time_list'] != []:
                 time_len = len(self.parameters['start_time_list'])
                 for i in range(time_len):
                     if req.time_list[0]< self.parameters['start_time_list'][-1]:
-                        print("######################")
                         del self.parameters['az_list'][-1]
                         del self.parameters['el_list'][-1]
                         del self.parameters['start_time_list'][-1]
@@ -168,7 +166,7 @@ class antenna_move(object):
             self.parameters['el_list'].extend(req.y_list)
             self.parameters['start_time_list'].extend(req.time_list)
         else:
-            print(self.start_time<req.time_list[0])
+            print(self.start_time, req.time_list[0])
             self.parameters['az_list'] = []
             self.parameters['el_list'] = []
             self.parameters['start_time_list'] = []
@@ -228,7 +226,7 @@ class antenna_move(object):
         """
         loop = 0
         first_st = self.parameters['start_time_list']
-        for i in range(5):
+        for i in range(10):
             n = len(self.parameters['az_list'])
             st = self.parameters['start_time_list']
             if st == []:
@@ -255,7 +253,7 @@ class antenna_move(object):
                 continue
             else:
                 break
-            print(ct, st[n-1])
+            print("ct, st",ct, st[n-1])
             rospy.loginfo('!!!azel_list is end!!!')
             self.stop_flag = 1
             for i in range(5):

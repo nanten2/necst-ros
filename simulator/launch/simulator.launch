@@ -11,5 +11,8 @@
   <node pkg='necst' name='tracking' type='ROS_tracking.py'/>
   <node pkg='necst' name='dome_tracking' type='ROS_dome_track_check.py'/>
   <node pkg='necst' name='alert' type='ROS_alert.py' output="screen"/>
-  <node pkg='necst' name='check_alert' type='ROS_check_alert.py' output="screen"/>  
+  <node pkg='necst' name='check_alert' type='ROS_check_alert.py' output="screen"/>
+  <node pkg="necst" name="worldcoordinate_onepoint" type="ROS_wc_onepoint.py"/>
+  <node pkg="necst" name="worldcoordinate_otf" type="ROS_wc_otf.py"/>
+  <node pkg="necst" name="worldcoordinate_planet" type="ROS_wc_planet.py"/>
 </launch>

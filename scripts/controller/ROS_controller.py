@@ -123,10 +123,10 @@ class controller(object):
         assist   : ROS_antenna_assist is on or off (True:on, False:off)
         """
         self.pub_stop.publish(False)
-        self.pub_onepoint.publish(x, y, coord, 0, off_x, off_y, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), limit, self.name, time.time())
+        self.pub_onepoint.publish(x, y, coord, "", off_x, off_y, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), limit, self.name, time.time())
         return
 
-    def planet_move(self):
+    def planet_move(self, planet, off_x=0, off_y=0, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=0, limit=True):
         """ planet_move
         
         Parameters
@@ -139,19 +139,16 @@ class controller(object):
         hosei    : hosei file name (default ; hosei_230.txt)
         lamda    : observation wavelength [um] (default ; 2600)
         dcos     : projection (no:0, yes:1)
-        func_x   : free scan [arcsec/s] (cf:20*x or math.sin(x) or etc...)
-        func_y   : free scan [arcsec/s] (cf:20*y or math.sin(y) or etc...)
-        movetime : azel_list length [s]
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
-        assist   : ROS_antenna_assist is on or off (True:on, False:off)
         """
-        if isinstance(planet, str):
-            planet_list = {"mercury":1, "venus":2, "mars":4, "jupiter":5,"saturn":6, "uranus":7, "neptune":8, "moon":10, "sun":11}
-            planet = planet_list[planet.lower()]
+        if isinstance(planet, int):
+            planet_list = {1:"mercury", 2:"venus", 4:"mars", 5:"jupiter",6:"saturn", 7:"uranus", 8:"neptune", 10:"moon", 11:"sun"}
+            planet = planet_list[int(planet)]
         else:
             pass
         self.pub_stop.publish(False)
-        self.pub_planet.publish(0, 0, coord, planet, off_x, off_y, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), movetime, limit, time.time())
+        print(planet)
+        self.pub_planet.publish(0, 0, "planet", planet, off_x, off_y, offcoord, hosei, lamda, dcos, "0","0",limit, self.name, time.time())
         return
         
         pass
