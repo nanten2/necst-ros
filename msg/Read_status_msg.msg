@@ -40,3 +40,5 @@ float64 Current_M2
 float64 MJD
 int64 LST
 float64 Secofday
+string from_node
+float64 timestamp

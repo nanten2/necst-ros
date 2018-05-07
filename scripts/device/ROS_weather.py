@@ -11,6 +11,7 @@ import rospy
 from necst.msg import Status_weather_msg
 from ondo.msg import tr7nw_values
 
+node_name = "weather_status"
 
 class weather_controller(object):
     host = "amigos@200.91.8.66"
@@ -24,7 +25,6 @@ class weather_controller(object):
     OutHumi = 0
     
     def __init__(self):
-        rospy.init_node("weather_status")
         self.passwd = getpass.getpass()
         self.sub = rospy.Subscriber("outer_ondotori", tr7nw_values, self.get_ondotori)
         pass
@@ -48,6 +48,8 @@ class weather_controller(object):
             msg.dome_temp2 = ret[17]
             msg.gen_temp1 = ret[18]
             msg.gen_temp2 = ret[19]
+            msg.from_node = node_name
+            msg.timestamp = time.time()
             pub.publish(msg)
             print(msg)
             time.sleep(1)
@@ -100,5 +102,6 @@ class weather_controller(object):
         return self.data
 
 if __name__ == "__main__":
+    rospy.init_node(node_name)
     wc = weather_controller()
     wc.pub_func()

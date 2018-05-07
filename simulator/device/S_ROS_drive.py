@@ -10,12 +10,13 @@
 import sys
 import time
 import rospy
-from std_msgs.msg import String
+from necst.msg import String_necst
 from necst.msg import Status_drive_msg
 from necst.msg import Status_limit_msg
 import threading
 
 #import pyinterface
+node_name = "drive"
 
 class drive(object):
 
@@ -33,8 +34,6 @@ class drive(object):
         input_rsw_id = 0
         #self.dio = pyinterface.open(board_name, output_rsw_id)
         #self.dio_input = pyinterface.open(board_name, input_rsw_id)
-        self.pub = rospy.Publisher('status_drive', Status_drive_msg, queue_size=10, latch=True)#test
-        self.msg = Status_drive_msg()#test
         #self.current_position()
         self.stop_thread = threading.Event()
         self.move_thread = threading.Thread(target = self.move)
@@ -77,14 +76,14 @@ class drive(object):
                 if self.drive_move == "on":
                     #ret = self.dio.output_point([1,1], 1) #output_byte([1,1,0,0,0,0,0,0],OUT1_8)
                     
-                    self.limit.publish([1]*32,"")
+                    self.limit.publish([1]*32,"", node_name, time.time())
                     self.drive_pos = self.drive_move
                     print("drive_on")
                 elif self.drive_move == "off":
                     #ret = self.dio.output_point([0,0], 1) #output_byte([0,0,0,0,0,0,0,0], 'OUT1_8')
                     off = [0,0,0,0]
                     off.extend([1]*28)
-                    self.limit.publish(off,"")
+                    self.limit.publish(off,"", node_name, time.time())
                     self.drive_pos = self.drive_move
                     print("drive_off")
                 else:
@@ -134,10 +133,10 @@ class drive(object):
         time.sleep(1.)
 
 if __name__ == "__main__":
-    rospy.init_node("drive")
+    rospy.init_node(node_name)
     rospy.loginfo("ROS_drive start.")
     dr = drive()
-    rospy.Subscriber("antenna_drive", String, dr.drive)
-    rospy.Subscriber("antenna_contactor", String, dr.contactor)
+    rospy.Subscriber("antenna_drive", String_necst, dr.drive)
+    rospy.Subscriber("antenna_contactor", String_necst, dr.contactor)
     rospy.spin()
 

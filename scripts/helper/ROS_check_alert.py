@@ -3,11 +3,13 @@
 import time
 import rospy
 import rosnode
-from std_msgs.msg import Bool
+from necst.msg import Bool_necst
 from necst.msg import Dome_msg
 
+node_name = "check_alert"
+
 def check_alert_node():
-    pub_antenna = rospy.Publisher("move_stop", Bool, queue_size = 1)
+    pub_antenna = rospy.Publisher("move_stop", Bool_necst, queue_size = 1)
     pub_dome = rospy.Publisher('dome_move', Dome_msg, queue_size = 1 )
     error_flag = False
     while not rospy.is_shutdown():
@@ -18,7 +20,7 @@ def check_alert_node():
         elif "/alert" in node_data:
             pass
         else:
-            pub_antenna.publish(True)
+            pub_antenna.publish(True, node_name, time.time())
             pub_dome.publish(name='command', value='dome_stop')
             pub_dome.publish(name='command', value='memb_close')
             pub_dome.publish(name="command", value='dome_close')
@@ -27,7 +29,7 @@ def check_alert_node():
         time.sleep(0.1)
 
 if __name__ == "__main__":
-    rospy.init_node("check_alert")
+    rospy.init_node(node_name)
     rospy.loginfo("check start!! : ROS_alert.py ")
     time.sleep(5.)
     check_alert_node()

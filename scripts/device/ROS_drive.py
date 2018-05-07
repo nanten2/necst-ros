@@ -10,11 +10,12 @@
 import sys
 import time
 import rospy
-from std_msgs.msg import String
-from necst.msg import Status_drive_msg
 import threading
-
 import pyinterface
+
+from necst.msg import String_necst
+
+node_name = "drive"
 
 class drive(object):
 
@@ -32,12 +33,10 @@ class drive(object):
     
     def __init__(self):
         """initialize"""
-        rospy.Subscriber("antenna_drive", String, self.drive)
-        rospy.Subscriber("antenna_contactor", String, self.contactor)
+        rospy.Subscriber("antenna_drive", String_necst, self.drive)
+        rospy.Subscriber("antenna_contactor", String_necst, self.contactor)
         self.dio = pyinterface.open(self.board_name, self.output_rsw_id)
         self.dio_input = pyinterface.open(self.board_name, self.input_rsw_id)
-        self.pub = rospy.Publisher('status_drive', Status_drive_msg, queue_size=10, latch=True)#test
-        self.msg = Status_drive_msg()#test
         self.current_position()
 
     def start(self):
@@ -133,7 +132,7 @@ class drive(object):
         time.sleep(1.)
 
 if __name__ == "__main__":
-    rospy.init_node("drive")
+    rospy.init_node(node_name)
     rospy.loginfo("ROS_drive start.")
     dr = drive()
     dr.start()

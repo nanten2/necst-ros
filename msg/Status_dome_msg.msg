@@ -7,3 +7,5 @@ string memb_act
 string memb_pos
 string remote_status
 float32 dome_enc
+string from_node
+float64 timestamp

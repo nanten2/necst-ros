@@ -5,7 +5,9 @@ import threading
 import rospy
 from necst.msg import Status_antenna_msg
 from necst.msg import Status_encoder_msg
-from std_msgs.msg import Bool
+from necst.msg import Bool_necst
+
+node_name = 'tracking'
 
 class tracking_check(object):
     enc_param = {
@@ -19,7 +21,6 @@ class tracking_check(object):
     tracking = False
 
     def __init__(self):
-        rospy.init_node('tracking')
         self.start_thread()
         pass
 
@@ -72,17 +73,21 @@ class tracking_check(object):
         return self.tracking
 
     def pub_tracking(self):
-        pub = rospy.Publisher('tracking_check', Bool, queue_size = 10, latch = True)
-        track_status = Bool()
+        pub = rospy.Publisher('tracking_check', Bool_necst, queue_size = 10, latch = True)
+        track_status = Bool_necst()
         while not rospy.is_shutdown():
             if self.tracking:
                 track_status.data = True
             else:
                 track_status.data = False
+                pass
+            track_status.from_node = node_name
+            track_status.timestamp = time.time()
             pub.publish(track_status)
             time.sleep(0.01)
 
 if __name__ == '__main__':
+    rospy.init_node(node_name)
     t = tracking_check()
     sub1 = rospy.Subscriber('status_antenna', Status_antenna_msg, t.set_ant_param)
     sub2 = rospy.Subscriber('status_encoder',Status_encoder_msg, t.set_enc_param)

@@ -3,3 +3,5 @@ string time
 float32 cpu_per
 int32 used_memory
 float32 memory_per
+string from_node
+float64 timestamp
