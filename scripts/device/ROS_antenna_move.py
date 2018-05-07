@@ -21,8 +21,9 @@ import pyinterface
 from necst.msg import Status_antenna_msg
 from necst.msg import List_coord_msg
 from necst.msg import Status_encoder_msg
-from std_msgs.msg import String
-from std_msgs.msg import Bool
+from necst.msg import Bool_necst
+
+node_name = 'antenna_move'
 
 class antenna_move(object):
     
@@ -895,9 +896,11 @@ class antenna_move(object):
             sys.exit
             
     def pub_error(self):
-        pub = rospy.Publisher('error', Bool, queue_size = 1, latch = True)
-        error = Bool()
+        pub = rospy.Publisher('error', Bool_necst, queue_size = 1, latch = True)
+        error = Bool_necst()
         error.data = self.error
+        error.from_node = node_name
+        error.timestamp = time.time()
         pub.publish(error)
         
             
@@ -917,6 +920,8 @@ class antenna_move(object):
             status.command_azspeed = self.command_az_speed
             status.command_elspeed = self.command_el_speed
             status.node_status = self.node_status
+            status.from_node = node_name
+            status.timestamp = time.time()
             """
             #publisher2
             #----------
@@ -933,13 +938,13 @@ class antenna_move(object):
             continue
 
 if __name__ == '__main__':
-    rospy.init_node('antenna_move')
+    rospy.init_node(node_name)
     ant = antenna_move()
     ant.start_thread()
     print('[ROS_antenna_move.py] : START SUBSCRIBE')
     rospy.Subscriber('list_azel', List_coord_msg, ant.set_parameter, queue_size=1)
-    rospy.Subscriber('move_stop', Bool, ant.stop_move)
-    rospy.Subscriber('emergency_stop', Bool, ant.emergency)
+    rospy.Subscriber('move_stop', Bool_necst, ant.stop_move)
+    rospy.Subscriber('emergency_stop', Bool_necst, ant.emergency)
     rospy.Subscriber('status_encoder', Status_encoder_msg, ant.set_enc_parameter, queue_size=1)
     rospy.spin()
     

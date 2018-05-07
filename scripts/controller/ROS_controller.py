@@ -5,7 +5,7 @@
 ------------------------------------------------
 [History]
 2017/10/18 : kondo takashi
-2018/01/16 : kondo
+2018/05/07 : kondo
 ------------------------------------------------
 """
 import os
@@ -13,16 +13,14 @@ import sys
 import time
 from datetime import datetime as dt
 import rospy
-#from necst.msg import drive_msg
 from necst.msg import Move_mode_msg
 from necst.msg import Otf_mode_msg
 from necst.msg import Dome_msg
 from necst.msg import Read_status_msg
 from necst.msg import Achilles_msg
-from std_msgs.msg import Bool
-from std_msgs.msg import String
-#from std_msgs.msg import Float64
-from std_msgs.msg import Int64
+from necst.msg import Bool_necst
+from necst.msg import String_necst
+from necst.msg import Int64_necst
 sys.path.append("/home/amigos/ros/src/necst/lib")
 import node_authority
 auth = node_authority.authority()
@@ -40,33 +38,33 @@ class controller(object):
 
     def __init__(self):
         """start authority check"""
-        self.name = auth.initialize()
-        rospy.init_node(self.name)
+        self.node_name = auth.initialize()
+        rospy.init_node(self.node_name)
         auth.start()
         
         """init"""
-        rospy.Subscriber("tracking_check", Bool, self.antenna_tracking)
-        rospy.Subscriber("dome_tracking_check", Bool, self.dome_tracking)
+        rospy.Subscriber("tracking_check", Bool_necst, self.antenna_tracking)
+        rospy.Subscriber("dome_tracking_check", Bool_necst, self.dome_tracking)
 
-        self.pub_drive = rospy.Publisher("antenna_drive", String, queue_size = 1)
-        self.pub_contactor = rospy.Publisher("antenna_contactor", String, queue_size = 1)
+        self.pub_drive = rospy.Publisher("antenna_drive", String_necst, queue_size = 1)
+        self.pub_contactor = rospy.Publisher("antenna_contactor", String_necst, queue_size = 1)
         self.pub_onepoint = rospy.Publisher("onepoint_command", Move_mode_msg, queue_size=1, latch=True)
         self.pub_linear = rospy.Publisher("linear_command", Move_mode_msg, queue_size=1, latch=True)        
         self.pub_planet = rospy.Publisher("planet_command", Move_mode_msg, queue_size=1, latch=True)        
-        self.pub_stop = rospy.Publisher("move_stop", Bool, queue_size = 1, latch = True)
+        self.pub_stop = rospy.Publisher("move_stop", Bool_necst, queue_size = 1, latch = True)
         self.pub_otf = rospy.Publisher("antenna_otf", Otf_mode_msg, queue_size = 1, latch = True)
         self.pub_planet_scan = rospy.Publisher("planet_otf", Otf_mode_msg, queue_size = 1, latch = True)        
         self.pub_dome = rospy.Publisher("dome_move", Dome_msg, queue_size = 1, latch = True)
-        self.pub_m4 = rospy.Publisher('m4', String, queue_size = 1, latch = True)
-        self.pub_hot = rospy.Publisher("hot", String, queue_size = 1, latch = True)
-        self.pub_m2 = rospy.Publisher("m2", Int64, queue_size=1, latch=True)
+        self.pub_m4 = rospy.Publisher('m4', String_necst, queue_size = 1, latch = True)
+        self.pub_hot = rospy.Publisher("hot", String_necst, queue_size = 1, latch = True)
+        self.pub_m2 = rospy.Publisher("m2", Int64_necst, queue_size=1, latch=True)
         self.pub_achilles = rospy.Publisher("achilles", Achilles_msg, queue_size=1)
         time.sleep(0.5)
 
         return
     
     def get_authority(self):
-        auth.registration(self.name)
+        auth.registration(self.node_name)
         return
 
     def release_authority(self):
@@ -92,13 +90,16 @@ class controller(object):
         swith : on or off
         
         """
+        msg = String_necst()
         self.move_stop()
         if not switch:
             switch = str(input("drive change (on/off) : "))
-        command =  switch.lower()
+        msg.data =  switch.lower()
+        msg.from_node = self.node_name
+        msg.timestamp = time.time()
         if command == "on" or command == "off":
-            self.pub_drive.publish(command)
-            self.pub_contactor.publish(command)
+            self.pub_drive.publish(msg)
+            self.pub_contactor.publish(msg)
             print("drive : ", command, "!!")
         else:
             print("!!bad command!!")
@@ -123,8 +124,8 @@ class controller(object):
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
         assist   : ROS_antenna_assist is on or off (True:on, False:off)
         """
-        self.pub_stop.publish(False)
-        self.pub_onepoint.publish(x, y, coord, "", off_x, off_y, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), limit, self.name, time.time())
+        self.pub_stop.publish(False, self.node_name, time.time())
+        self.pub_onepoint.publish(x, y, coord, "", off_x, off_y, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), limit, self.node_name, time.time())
         return
 
     def planet_move(self, planet, off_x=0, off_y=0, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=0, limit=True):
@@ -147,9 +148,9 @@ class controller(object):
             planet = planet_list[int(planet)]
         else:
             pass
-        self.pub_stop.publish(False)
+        self.pub_stop.publish(False, self.node_name, time.time())
         print(planet)
-        self.pub_planet.publish(0, 0, "planet", planet, off_x, off_y, offcoord, hosei, lamda, dcos, "0","0",limit, self.name, time.time())
+        self.pub_planet.publish(0, 0, "planet", planet, off_x, off_y, offcoord, hosei, lamda, dcos, "0","0",limit, self.node_name, time.time())
         return
         
         pass
@@ -172,8 +173,8 @@ class controller(object):
         func_y   : free scan [arcsec/s] (cf:20*y or math.sin(y) or etc...)
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
         """
-        self.pub_stop.publish(False)
-        self.pub_linear.publish(x, y, coord, "", dx, dy, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), limit, self.name, time.time())
+        self.pub_stop.publish(False, self.node_name, time.time())
+        self.pub_linear.publish(x, y, coord, "", dx, dy, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), limit, self.node_name, time.time())
         return
     
 
@@ -203,10 +204,10 @@ class controller(object):
         """
         current_time = time.time()
         print("start OTF scan!!")
-        self.pub_stop.publish(False)
+        self.pub_stop.publish(False, self.node_name, time.time())
         self.pub_otf.publish(x, y, coord, dx, dy, dt, num, rampt,
                              delay, start_on, off_x, off_y, offcoord,
-                             dcos, hosei, lamda, limit, self.name,
+                             dcos, hosei, lamda, limit, self.node_name,
                              current_time)
         
         return 
@@ -237,17 +238,17 @@ class controller(object):
         """
         
         print("start OTF scan!!")
-        self.pub_stop.publish(False)
+        self.pub_stop.publish(False,self.node_name, time.time())
         self.pub_planet_scan.publish(x, y, coord, dx, dy, dt, num,rampt,
                                       delay, start_on, off_x, off_y, offcoord,
-                                      dcos, hosei, lamda, movetime, limit,
-                                      assist,time.time())
+                                      dcos, hosei, lamda, limit,
+                                      self.node_name, time.time())
         
 
     
     def move_stop(self):
         print("move_stop")
-        self.pub_stop.publish(True)
+        self.pub_stop.publish(True, self.node_name, time.time())
         time.sleep(0.2)
         return
         
@@ -288,6 +289,8 @@ class controller(object):
         dome = Dome_msg()
         dome.name = 'target_az'
         dome.value = str(dist)
+        dome.from_node = self.node_name
+        dome.timestamp = time.time()
         self.pub_dome.publish(dome)
 
     def dome_open(self):
@@ -295,6 +298,8 @@ class controller(object):
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_open'
+        dome.from_node = self.node_name
+        dome.timestamp = time.time()        
         self.pub_dome.publish(dome)
     
     def dome_close(self):
@@ -302,6 +307,8 @@ class controller(object):
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_close'
+        dome.from_node = self.node_name
+        dome.timestamp = time.time()        
         self.pub_dome.publish(dome)
 
     def memb(self, value):
@@ -327,6 +334,8 @@ class controller(object):
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'memb_open'
+        dome.from_node = self.node_name
+        dome.timestamp = time.time()        
         self.pub_dome.publish(dome)
 
     def memb_close(self):
@@ -334,6 +343,8 @@ class controller(object):
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'memb_close'
+        dome.from_node = self.node_name
+        dome.timestamp = time.time()        
         self.pub_dome.publish(dome)
         
     def dome_stop(self):
@@ -341,6 +352,8 @@ class controller(object):
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_stop'
+        dome.from_node = self.node_name
+        dome.timestamp = time.time()
         self.pub_dome.publish(dome)
         
     def dome_track(self):
@@ -348,6 +361,8 @@ class controller(object):
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_tracking'
+        dome.from_node = self.node_name
+        dome.timestamp = time.time()        
         self.pub_dome.publish(dome)
 
     def dome_track_end(self):
@@ -355,6 +370,8 @@ class controller(object):
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_track_end'
+        dome.from_node = self.node_name
+        dome.timestamp = time.time()        
         self.pub_dome.publish(dome)
 
     def dome_tracking(self, req):
@@ -381,8 +398,10 @@ class controller(object):
         position : in or out
         
         """
-        status = String()
+        status = String_necst()
         status.data = position
+        status.from_node = self.node_name
+        status.timestamp = time.time()        
         self.pub_m4.publish(status)
         return
 
@@ -394,8 +413,10 @@ class controller(object):
         ---------
         position : in or out
         """
-        status = String()
+        status = String_necst()
         status.data = position
+        status.from_node = self.node_name
+        status.timestamp = time.time()        
         self.pub_hot.publish(status)
         return
 
@@ -407,8 +428,10 @@ class controller(object):
         dist : distance [um]
         
         """
-        status = Int64()
+        status = Int64_necst()
         status.data = dist
+        status.from_node = self.node_name
+        status.timestamp = time.time()        
         self.pub_m2.publish(status)
         return
 
@@ -417,7 +440,7 @@ class controller(object):
 # ===================
 
     def observation(self, command, exposure):
-        msg = Bool()
+        msg = Bool_necst()
         if command == "start":
             msg.data = True
             #msg.data2 = exposure                                                                                                                                        
@@ -426,6 +449,8 @@ class controller(object):
         else:
             rospy.logerr("argument is error!!")
             sys.exit()
+        msg.from_node = self.node_name
+        msg.timestamp = time.time()            
         self.pub1.publish(msg)
         return
 
@@ -443,8 +468,14 @@ class controller(object):
         stime : start mjd time [day]
         
         """
-        day = dt.utcnow().strftime("%y%m%d_%H%M%S")
-        self.pub_achilles.publish(repeat, exposure, stime, day)
+        msg = Achilles_msg()
+        msg.repeat = repeat
+        msg.exposure = exposure
+        msg.stime = stime
+        msg.day = dt.utcnow().strftime("%y%m%d_%H%M%S")
+        msg.from_node = self.node_name
+        msg.timestamp = time.time()        
+        self.pub_achilles.publish(msg)
         dir_name = "/home/amigos/data/experiment/achilles/" + str(day) + "/"
         file_name = day + "_fin.txt"
         while not rospy.is_shutdown():

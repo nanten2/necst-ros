@@ -52,21 +52,15 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
-  Velocity_mode_msg.msg
   Move_mode_msg.msg
   Otf_mode_msg.msg
-  drive_msg.msg
-  list_azelmsg.msg
   NECST_msg.msg
   Status_antenna_msg.msg
   Status_weather_msg.msg
   Status_encoder_msg.msg
-  Test_board_msg.msg
   Dome_msg.msg
   Status_dome_msg.msg
-  Status_hot_msg.msg
   Status_drive_msg.msg
-  Status_m4_msg.msg
   Status_limit_msg.msg
   Status_pc_msg.msg
   Record_param_msg.msg
@@ -74,8 +68,11 @@ add_message_files(
   oneshot_msg.msg
   Status_node_msg.msg
   Achilles_msg.msg
-  String_necst.msg
   List_coord_msg.msg
+  String_necst.msg
+  Bool_necst.msg
+  Int64_necst.msg
+  Float64_necst.msg
 )
 
 ## Generate services in the 'srv' folder

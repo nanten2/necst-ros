@@ -6,8 +6,9 @@ import time
 import threading
 import pyinterface
 
-from std_msgs.msg import String 
+from necst.msg import String_necst
 
+node_name = 'abs_controller'
 
 class abs_controller(object):
     pro = 0x00
@@ -21,10 +22,10 @@ class abs_controller(object):
 
 
     def __init__(self):
-        self.sub1 = rospy.Subscriber('hot', String, self.move_pos)
-        self.sub2 = rospy.Subscriber('emergency', String, self.emergency)
-        self.pub = rospy.Publisher('status_hot', String, queue_size=10, latch = True)
-        self.msg = String()
+        self.sub1 = rospy.Subscriber('hot', String_necst, self.move_pos)
+        self.sub2 = rospy.Subscriber('emergency', String_necst, self.emergency)
+        self.pub = rospy.Publisher('status_hot', String_necst, queue_size=10, latch = True)
+        self.msg = String_necst()
         pass
 
     def open(self):
@@ -64,6 +65,7 @@ class abs_controller(object):
                 self.print_error('limit error')
                 return
             self.msg.data = self.position
+            self.msg.from_node = node_name
             time.sleep(0.5)            
         return self.position
 
@@ -100,6 +102,7 @@ class abs_controller(object):
 
     def pub_status(self):
         while not rospy.is_shutdown():
+            self.msg.timestamp = time.time()
             self.pub.publish(self.msg)
             rospy.loginfo(self.msg)
             time.sleep(0.5)
@@ -115,7 +118,7 @@ class abs_controller(object):
 if __name__ == '__main__':
     hot = abs_controller()
     hot.open()
-    rospy.init_node('abs_controller')
+    rospy.init_node(node_name)
     rospy.loginfo('waiting publish abs')
     hot.start_thread()
     rospy.spin()

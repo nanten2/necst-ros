@@ -8,9 +8,10 @@ import rospy
 
 from necst.msg import Status_encoder_msg
 from necst.msg import Status_antenna_msg
-from necst.msg import Test_board_msg
 
 from datetime import datetime as dt
+
+node_name = "encoder_status"
 
 class enc_controller(object):
 
@@ -25,9 +26,7 @@ class enc_controller(object):
     def __init__(self):
         #board_name = 6204
         #rsw_id = 0
-        rospy.init_node("encoder_status")
         sub = rospy.Subscriber("pyinterface", Status_encoder_msg, self.sub_enc)
-        sub = rospy.Subscriber("status_board", Test_board_msg, self.sub_enc)
         sub2 = rospy.Subscriber('status_antenna', Status_antenna_msg, self.sub_antenna)
         #self.dio = pyinterface.open(board_name, rsw_id)
         #self.board_initialize()
@@ -65,7 +64,8 @@ class enc_controller(object):
             
             msg.enc_az = self.enc_Az
             msg.enc_el = self.enc_El
-            msg.utc = dt.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            msg.from_node = node_name
+            msg.timestamp = time.time()
             time.sleep(0.01)
             pub.publish(msg)
             rospy.loginfo('Az :'+str(msg.enc_az/3600.))
@@ -119,6 +119,7 @@ class enc_controller(object):
     '''
 
 if __name__ == "__main__":
+    rospy.init_node(node_name)
     enc = enc_controller()
     enc.pub_status()
     

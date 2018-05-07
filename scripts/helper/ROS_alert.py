@@ -10,14 +10,16 @@ from astropy.coordinates import SkyCoord, EarthLocation, AltAz, get_body
 from astropy.time import Time
 from datetime import datetime as dt
 import rospy
-from std_msgs.msg import String
-from std_msgs.msg import Bool
+from necst.msg import String_necst
+from necst.msg import Bool_necst
 from necst.msg import Status_weather_msg
 from necst.msg import Status_dome_msg
 from necst.msg import Dome_msg
 from necst.msg import Status_encoder_msg
 from necst.msg import Status_antenna_msg
 from necst.msg import List_coord_msg
+
+node_name = "alert"
 
 class alert(object):
 
@@ -42,9 +44,9 @@ class alert(object):
     alert_msg = ""
     
     def __init__(self):
-        self.pub_alert = rospy.Publisher("alert", String, queue_size=10, latch=True)
-        #self.pub_emergency = rospy.Publisher('emergency_stop', Bool, queue_size = 10, latch = True)
-        self.pub_antenna = rospy.Publisher("move_stop", Bool, queue_size = 1, latch = True)
+        self.pub_alert = rospy.Publisher("alert", String_necst, queue_size=10, latch=True)
+        #self.pub_emergency = rospy.Publisher('emergency_stop', Bool_necst, queue_size = 10, latch = True)
+        self.pub_antenna = rospy.Publisher("move_stop", Bool_necst, queue_size = 1, latch = True)
         self.pub_dome = rospy.Publisher('dome_move', Dome_msg, queue_size = 10, latch = True)
         self.sub = rospy.Subscriber("status_weather", Status_weather_msg, self.callback_weather)
         self.sub = rospy.Subscriber("status_dome", Status_dome_msg, self.callback_dome)
@@ -149,8 +151,9 @@ class alert(object):
         
     def alert(self):
         """ publish : alert """
+        timestamp = time.time()
         while not rospy.is_shutdown():
-            self.pub_alert.publish(data=self.alert_msg)
+            self.pub_alert.publish(data=self.alert_msg, from_node=node_name, timestamp=timestamp)
             time.sleep(0.1)
         return
     
@@ -222,16 +225,17 @@ class alert(object):
                     emergency += "Emergency : antenna position near sun!! \n"
                 
             if emergency:
+                timestamp = time.time()
                 rospy.logfatal(emergency)
                 if self.sun_limit:
                     pass
                 else:
-                    self.pub_antenna.publish(True)#antenna
-                    self.pub_dome.publish(name='command', value='dome_stop')
+                    self.pub_antenna.publish(True, from_node=node_name, timestamp=timestamp)#antenna
+                    self.pub_dome.publish(name='command', value='dome_stop', from_node=node_name, timestamp=timestamp)
                 if self.memb.lower() == 'open':
-                    self.pub_dome.publish(name='command', value='memb_close')
+                    self.pub_dome.publish(name='command', value='memb_close', from_node=node_name, timestamp=timestamp)
                 if self.dome_r.lower() == 'open' or self.dome_l.lower() == 'open':
-                    self.pub_dome.publish(name="command", value='dome_close')
+                    self.pub_dome.publish(name="command", value='dome_close', from_node=node_name, timestamp=timestamp)
                 self.alert_msg = emergency
                 error_flag = True
             elif warning:
@@ -253,7 +257,7 @@ class alert(object):
         return
 
 if __name__ == "__main__":
-    rospy.init_node("alert")
+    rospy.init_node(node_name)
     al = alert()
     al.thread_start()
     al.check_alert()

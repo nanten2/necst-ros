@@ -10,7 +10,6 @@ import enc
 
 from necst.msg import Status_encoder_msg
 from necst.msg import Status_antenna_msg
-from necst.msg import Test_board_msg
 
 class enc_controller(object):
 
@@ -22,10 +21,6 @@ class enc_controller(object):
     
 
     def __init__(self):
-        rospy.init_node("encoder_status")
-        #stop_thread = threading.Event()
-        #start_thread = threading.Thread(target=self.counter_thread)
-        #start_thread.start()
         pass
     """
     def pub_status(self):
@@ -51,12 +46,15 @@ class enc_controller(object):
             self.enc_El = int(pls[1])*self.resolution + 45*3600.
             msg.enc_az = self.enc_Az
             msg.enc_el = self.enc_El
+            msg.from_node = "smartcounter_status"
+            msg.timestamp = time.time()
             time.sleep(0.05)
             pub.publish(msg)
             rospy.loginfo('Az :'+str(msg.enc_az/3600.))
             rospy.loginfo('El :'+str(msg.enc_el/3600.))
             
 if __name__ == "__main__":
+    rospy.init_node("smartcounter_status")
     encoder = enc_controller()
     encoder.counter_thread()
     rospy.spin()
