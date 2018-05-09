@@ -35,6 +35,7 @@ class antenna_move(object):
         'start_time_list':[],#0,
         'flag':0
         }
+
     enc_parameter = {
         'az_enc':0,
         'el_enc':0
@@ -150,6 +151,10 @@ class antenna_move(object):
         This function recieves azel_list and start_time from publisher in ROS_antenna.py 
         """
         #print('set_parameter')
+        if not req.time_list:
+            return
+        else:
+            pass
         if not self.stop_flag and self.start_time<req.time_list[0]:
             print("st,ct", self.stop_flag, self.start_time, req.time_list[0])
             if self.parameters['start_time_list'] != []:
@@ -167,6 +172,7 @@ class antenna_move(object):
             self.parameters['el_list'].extend(req.y_list)
             self.parameters['start_time_list'].extend(req.time_list)
         else:
+            print("########################################", self.stop_flag)
             print(self.start_time, req.time_list[0])
             self.parameters['az_list'] = []
             self.parameters['el_list'] = []
@@ -290,7 +296,6 @@ class antenna_move(object):
             y2 = param['el_list'][num+1]
             #rospy.loginfo('send comp azel')
             #print(x1,x2,y1,y2,st2)
-
             return (x1,x2,y1,y2,st2)
 
     def act_azel(self):
@@ -327,6 +332,7 @@ class antenna_move(object):
                     print('!!!target az limit!!! : ', tar_az)
                     continue
                 if tar_el > 89*3600. or tar_el < 0:
+                    print("re,old",ret, old_ret)
                     self.stop_flag = True#False?
                     print('!!!target el limit!!! : ', tar_el)
                     continue

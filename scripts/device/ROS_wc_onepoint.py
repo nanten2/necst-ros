@@ -24,7 +24,10 @@ class worldcoord(object):
         pass
 
     def note_command(self,req):
-        self.command = req
+        if abs(req.x) > 360. or abs(req.y)>90:
+            pass
+        else:
+            self.command = req
         return
 
     def create_list(self):

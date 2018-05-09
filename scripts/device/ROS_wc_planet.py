@@ -20,6 +20,7 @@ class worldcoord(object):
     
     command = ""
     msg = ""
+    planet_list = ['earth', 'sun', 'moon', 'mercury', 'venus', 'earth-moon-barycenter', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune']
     
     def __init__(self):
         self.sub = rospy.Subscriber("planet_command", Move_mode_msg, self.note_command, queue_size=1)
@@ -54,6 +55,10 @@ class worldcoord(object):
             #time_list = Time(time_list)
             print("####################")
             print(time_list)
+            if not command.planet.lower() in self.planet_list:
+                logerr("planet name is false...")
+            else:
+                pass
             target_list = get_body(command.planet.lower(), Time(time_list))#gcrs
             print(target_list)
             target_list.location = nanten2
