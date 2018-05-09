@@ -69,6 +69,7 @@ add_message_files(
   Status_node_msg.msg
   Achilles_msg.msg
   List_coord_msg.msg
+  Alert_msg.msg
   String_necst.msg
   Bool_necst.msg
   Int64_necst.msg

@@ -83,7 +83,6 @@ class azel_calc(object):
         else:
             print("warning : range is over 270 [deg] !!")
             pass
-
         #print("az :",az_list[0]/3600.,"el :", el_list[0]/3600.)
         return[az_list, el_list]
             

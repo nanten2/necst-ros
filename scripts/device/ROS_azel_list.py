@@ -112,14 +112,26 @@ class azel_list(object):
                                                 param.coord, param.off_az, param.off_el, 
                                                 param.hosei, param.lamda, self.weather.press,
                                                 self.weather.out_temp, self.weather.out_humi, param.limit)
-                msg.x_list = ret[0]
-                msg.y_list = ret[1]
-                msg.time_list = time_list2
-                msg.from_node =node_name
-                msg.timestamp = time.time()
-                self.pub.publish(msg)
-                print(msg)
-                loop += 1
+                """limit check"""
+                for i in range(len(time_list2)):
+                    if not -270*3600<ret[0][i]<270*3600 or not 0<ret[1][i]<90*3600.:
+                        self.stop_flag = True
+                        limit_flag = True
+                        break
+                    else:
+                        pass
+                    limit_flag = False
+                if not limit_flag:
+                    msg.x_list = ret[0]
+                    msg.y_list = ret[1]
+                    msg.time_list = time_list2
+                    msg.from_node =node_name
+                    msg.timestamp = time.time()
+                    self.pub.publish(msg)
+                    print(msg)
+                    loop += 1
+                else:
+                    limit_flag = False
             else:                
                 loop = 0
                 self.param = ""

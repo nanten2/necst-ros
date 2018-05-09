@@ -1,255 +1,137 @@
 #!/usr/bin/env python3
 
 import sys
-sys.path.append("/home/amigos/ros/src/necst/lib")
-sys.path.append("/home/necst/ros/src/necst/lib")
 import time
 import threading
-import astropy.units as u
-from astropy.coordinates import SkyCoord, EarthLocation, AltAz, get_body
-from astropy.time import Time
-from datetime import datetime as dt
+
 import rospy
 from necst.msg import String_necst
 from necst.msg import Bool_necst
-from necst.msg import Status_weather_msg
-from necst.msg import Status_dome_msg
 from necst.msg import Dome_msg
-from necst.msg import Status_encoder_msg
-from necst.msg import Status_antenna_msg
-from necst.msg import List_coord_msg
+from necst.msg import Alert_msg
+from necst.msg import Status_dome_msg
+
 
 node_name = "alert"
 
 class alert(object):
 
-    state = ''
-    wind_speed = 0
-    rain = 0
-    out_humi = 0
     memb = ''
     dome_r = ''
     dome_l = ''
-    enc_az = ""
-    enc_el = ""
-    vel_az = ""
-    vel_el = ""
 
-    nanten2 = ""
-    az_list = ""
-    el_list = ""
-    encoder_error = False
     error_flag = False
     sun_limit = False
     alert_msg = ""
+    emergency = ""
+    warning = ""
+
+    antenna_stop = ""
+    dome_stop = ""
+    dome_close = ""
+    memb_close = ""
     
     def __init__(self):
         self.pub_alert = rospy.Publisher("alert", String_necst, queue_size=10, latch=True)
-        #self.pub_emergency = rospy.Publisher('emergency_stop', Bool_necst, queue_size = 10, latch = True)
-        self.pub_antenna = rospy.Publisher("move_stop", Bool_necst, queue_size = 1, latch = True)
+        self.pub_antenna_stop = rospy.Publisher("move_stop", Bool_necst, queue_size = 1, latch = True)
         self.pub_dome = rospy.Publisher('dome_move', Dome_msg, queue_size = 10, latch = True)
-        self.sub = rospy.Subscriber("status_weather", Status_weather_msg, self.callback_weather)
-        self.sub = rospy.Subscriber("status_dome", Status_dome_msg, self.callback_dome)
-        self.sub = rospy.Subscriber("status_antenna", Status_antenna_msg, self.callback_command)
-        self.sub = rospy.Subscriber("status_encoder", Status_encoder_msg, self.callback_encoder)
-        self.sub = rospy.Subscriber("list_azel", List_coord_msg, self.callback_azel)
-        self.nanten2 = EarthLocation(lat = -22.96995611*u.deg, lon = -67.70308139*u.deg, height = 4863.85*u.m)
-
-        self.args = sys.argv
-        self.args.append("")
-        
-
-    def callback_weather(self, req):
-        """ callback : status_weather """
-        self.wind_speed = req.wind_sp
-        self.rain = req.rain
-        self.out_humi = req.out_humi
+        self.sub = rospy.Subscriber("status_dome", Status_dome_msg, self.callback_dome)        
+        self.sub = rospy.Subscriber("alert_warning", Alert_msg, self.call_warning, queue_size=1)
+        self.sub = rospy.Subscriber("alert_emergency", Alert_msg, self.call_emergency, queue_size=1)
+        self.start_time = time.time()
         return
-        
+
     def callback_dome(self, req):
         """ callback : status_dome """
-        #status_box = req.status
-        self.memb = req.memb_pos#status_box[6]
-        self.dome_r = req.right_pos#status_box[2]
-        self.dome_l = req.left_pos#status_box[4]
-        return
-        
-    def callback_azel(self,req):
-        """callback : azel list"""
-        self.az_list = req.x_list
-        self.el_list = req.y_list
-        return
-        
-    def callback_command(self, req):
-        """ callback : command azel """
-        self.vel_az = req.command_azspeed
-        self.vel_el = req.command_elspeed
-        return
-
-    def callback_encoder(self, req):
-        """ callback : encoder_status """
-        self.enc_az = req.enc_az
-        self.enc_el = req.enc_el
-        return
-
-    def check_encoder_error(self):
-        while not rospy.is_shutdown():
-            az_flag = el_flag = False
-            if self.vel_az != 0:
-                start_az = self.enc_az
-                az_flag = True
-            else:
-                pass
-            if self.vel_el != 0:
-                start_el = self.enc_el
-                el_flag = True
-            else:
-                pass
-            time.sleep(10.)
-            if az_flag:
-                if self.enc_az == start_az:
-                    self.encoder_error = True
-                else:
-                    az_flag = False
-            if el_flag:
-                if self.enc_el == start_el:
-                    self.encoder_error =True
-                else:
-                    el_flag = False
-        return self.encoder_error
-            
-    def check_sun_position(self):
-        now = dt.utcnow()
-        sun = get_body("sun", Time(now))
-        sun.location = self.nanten2
-        azel = sun.altaz
-        sun_az = azel.az.deg
-        if sun_az > 240.:
-            sun_az -= 360.
-        sun_el = azel.alt.deg
-        stop_flag = False
-        az_list = self.az_list
-        el_list = self.el_list
-        for i in range(len(az_list)):
-            if sun_az+15 > +240.:
-                if (sun_az-360. + 15 >= az_list[i]/3600. >= -120.) or (sun_az-15 <= az_list[i]/3600. <= +240.):
-                    stop_flag = True
-                else:
-                    pass
-            elif sun_az-15 < -240.:
-                if (sun_az+360. - 15 <= az_list[i]/3600. <= +120.) or (sun_az+15 >= az_list[i]/3600. >= -240.):
-                    stop_flag = True
-                else:
-                    pass
-            elif sun_az-15 <= az_list[i]/3600. <= sun_az+15:
-                stop_flag = True
-            else:
-                pass
-            if sun_el -15 <= el_list[i]/3600. <= sun_el + 15:
-                stop_flag = True
-        return stop_flag
-        
-    def alert(self):
-        """ publish : alert """
-        timestamp = time.time()
-        while not rospy.is_shutdown():
-            self.pub_alert.publish(data=self.alert_msg, from_node=node_name, timestamp=timestamp)
-            time.sleep(0.1)
+        self.memb = req.memb_pos
+        self.dome_r = req.right_pos
+        self.dome_l = req.left_pos
         return
     
+    def call_warning(self, req):
+        if self.start_time > req.timestamp:
+            pass
+        else:
+            self.warning = req.data
+            self.antenna_stop = req.antenna_stop
+            self.dome_stop = req.dome_stop
+            self.dome_close = req.dome_close
+            self.memb_close = req.memb_close
+            self.error_flag = True 
+            return
+
+    def call_emergency(self, req):
+        if self.start_time > req.timestamp:
+            pass
+        else:
+            self.emergency = req.data                        
+            self.antenna_stop = req.antenna_stop
+            self.dome_stop = req.dome_stop
+            self.dome_close = req.dome_close
+            self.memb_close = req.memb_close
+            self.error_flag = True
+            return
+            
     def thread_start(self):
         """ checking alert """
-        self.stop_thread = threading.Event()
-        self.thread_encoder = threading.Thread(target=self.check_encoder_error)
-        self.thread_encoder.setDaemon(True)
-        self.thread_encoder.start()
-
         self.thread_alert = threading.Thread(target=self.alert)
         self.thread_alert.setDaemon(True)
         self.thread_alert.start()
-        
-        
+        return
+
+    def alert(self):
+        """ publish : alert """
+        msg = String_necst()
+        msg.from_node = node_name
+        while not rospy.is_shutdown():
+            msg.data = self.alert_msg
+            msg.timestamp = time.time()
+            self.pub_alert.publish(msg)
+            time.sleep(0.01)
+        return
+
     def check_alert(self):
         """ checking alert 
         warning state --> only alert message
         emergency state --> [alert message] and [move stop] and [dome/membrane close]
-        
-        Warning
-        -------
-        rain > 1 [mm]
-        out humi > 60 [%]
-        wind_speed > 10 [km/s]
-
-        Emergency
-        ---------
-        out humi > 80 [%]
-        wind_speed > 15 [km/s]
-        |sun_az - real_az| < 15 [deg]
-        |sun_el - real_el| < 15 [deg]
-        if encoder is not move
         """
-        
         print("alert check start !!\n")
-        self.alert_msg = ""
-        error_flag = False
         while not rospy.is_shutdown():
-            #print(self.state, self.wind_speed, self.rain, self.out_humi, self.memb, self.dome_r, self.dome_l)
-            emergency = ""
-            warning = ""
-            
-            if self.rain > 1.:
-                warning += "Warning : probably rainning...\n"
-            else:
-                pass
-            if 60 < self.out_humi <= 80:
-                warning += "Warning : out_humi over 60 % \n"
-            elif self.out_humi > 80:
-                emergency += "Emergency : out_humi over 80 % \n"
-            else:
-                pass            
-            if 10. < self.wind_speed < 15.:
-                warning += "Warning : wind_speed over 10.\n"
-            elif self.wind_speed >= 15:
-                emergency += "Emergency : wind_speed over 15.\n"
-
-            if self.encoder_error:
-                emergency += "Emergency : encoder can't count!! \n"
-            else:
-                pass
-                    
-            if self.args[1] == "radio":
-                pass
-            else:
-                self.sun_limit = self.check_sun_position()
-                if self.sun_limit:
-                    emergency += "Emergency : antenna position near sun!! \n"
-                
-            if emergency:
+            if self.emergency:
                 timestamp = time.time()
-                rospy.logfatal(emergency)
-                if self.sun_limit:
-                    pass
-                else:
-                    self.pub_antenna.publish(True, from_node=node_name, timestamp=timestamp)#antenna
-                    self.pub_dome.publish(name='command', value='dome_stop', from_node=node_name, timestamp=timestamp)
-                if self.memb.lower() == 'open':
-                    self.pub_dome.publish(name='command', value='memb_close', from_node=node_name, timestamp=timestamp)
-                if self.dome_r.lower() == 'open' or self.dome_l.lower() == 'open':
-                    self.pub_dome.publish(name="command", value='dome_close', from_node=node_name, timestamp=timestamp)
-                self.alert_msg = emergency
-                error_flag = True
-            elif warning:
-                rospy.logwarn(warning)
-                self.alert_msg = warning
-                error_flag = True
+                rospy.logfatal(self.emergency)
+                if self.antenna_stop:
+                    self.pub_antenna_stop.publish(data=True, from_node=node_name, timestamp=timestamp)
+                msg = Dome_msg()
+                msg.name = "command"
+                msg.from_node = node_name
+                msg.timestamp = time.time()
+
+                if self.dome_stop:
+                    msg.value = "dome_stop"
+                    self.pub_dome.publish(msg)
+                if self.memb_close:
+                    if self.memb.lower() == 'open':
+                        msg.value = "memb_close"                    
+                        self.pub_dome.publish(msg)
+                if self.dome_close:
+                    if self.dome_r.lower() == 'open' or self.dome_l.lower() == 'open':
+                        msg.value = "dome_close"
+                        self.pub_dome.publish(msg)
+                self.alert_msg = self.emergency
+                self.error_flag = True
+            elif self.warning:
+                rospy.logwarn(self.warning)
+                self.alert_msg = self.warning
+                self.error_flag = True
             else:
-                if error_flag:
+                if self.error_flag:
                     self.alert_msg = "error release !!\n\n\n"
                     rospy.loginfo(self.alert_msg)
                     time.sleep(0.5)
                     self.alert_msg = ""
                     rospy.loginfo(self.alert_msg)
-                    error_flag = False
+                    self.error_flag = False
                 else:
                     pass
                 pass
