@@ -12,19 +12,24 @@ def check_alert_node():
     pub_antenna = rospy.Publisher("move_stop", Bool_necst, queue_size = 1)
     pub_dome = rospy.Publisher('dome_move', Dome_msg, queue_size = 1 )
     error_flag = False
+    node_data = rosnode.get_node_names()
+    start_node = [i for i in node_data if i.startswith("/alert")]
+    print("start_alert : ", start_node)
     while not rospy.is_shutdown():
         node_data = rosnode.get_node_names()
-        if ("/alert" in node_data) and error_flag == True:
-            rospy.loginfo("ROS_alert.py start moving !!")
+        move_node = [i for i in node_data if i.startswith("/alert")]
+        if start_node == move_node and error_flag == True:
+            rospy.loginfo("All alert start moving !!")
             error_flag = False
-        elif "/alert" in node_data:
+        elif start_node == move_node:
             pass
         else:
             pub_antenna.publish(True, node_name, time.time())
             pub_dome.publish(name='command', value='dome_stop')
             pub_dome.publish(name='command', value='memb_close')
             pub_dome.publish(name="command", value='dome_close')
-            rospy.logfatal("ROS_alert.py is down...\n\n")
+            rospy.logfatal("Alert node is some down...")
+            print("start_node, move_node : ",start_node, move_node)
             error_flag = True
         time.sleep(0.1)
 
