@@ -31,6 +31,9 @@ class azel_list(object):
         self.pub = rospy.Publisher("list_azel", List_coord_msg, queue_size=1)
         #self.stop = rospy.Publisher("move_stop", Bool_necst, queue_size=1)
         self.stop = rospy.Subscriber("move_stop", Bool_necst, self.stop, queue_size=1)
+        self.move = rospy.Publisher("move_stop", Bool_necst, queue_size=1)
+        self.msg = Bool_necst()
+        self.msg.from_node = node_name
         self.calc = calc_coord.azel_calc()
         pass
 
@@ -42,6 +45,9 @@ class azel_list(object):
         if req.timestamp < self.start_time:
             print("receive_old_list...")
         else:
+            self.msg.data = False
+            self.msg.timestamp = time.time()
+            self.move.publish(self.msg)
             self.param = req
             pass
         return
@@ -59,6 +65,7 @@ class azel_list(object):
             time.sleep(0.1)
         print("start_calclation!!")
         loop = 0
+        check = 0
         param = self.param        
         while not rospy.is_shutdown():
             if not self.param:
@@ -66,13 +73,15 @@ class azel_list(object):
                 continue
             if param != self.param:
                 loop = 0
+                check = 0
                 param = self.param
             else:
                 pass
             if self.stop_flag == False:
                 if len(param.x_list) > 2:
                     dt = 0.1                    
-                    temp_time_list = [i-param.time_list[0] for i in param.time_list]
+                    #temp_time_list = [i-param.time_list[0] for i in param.time_list]
+                    """curve fitting
                     self.p0 = param.x_list[0]
                     curve_x, cov_x = curve_fit(self.curve2_fit, temp_time_list, param.x_list)
                     x_list2 = [self.curve2_fit(dt*(i+loop*10), *curve_x) for i in range(10)]
@@ -80,11 +89,41 @@ class azel_list(object):
                     curve_y, cov_y = curve_fit(self.curve2_fit, temp_time_list, param.y_list)
                     y_list2 = [self.curve2_fit(dt*(i+loop*10), *curve_y) for i in range(10)]                                                   
                     time_list2 = [param.time_list[0]+dt*(i+loop*10) for i in range(10)]
+                    """
+                    # linear fitting
+                    len_x = param.x_list[loop+1] - param.x_list[loop]
+                    len_y = param.y_list[loop+1] - param.y_list[loop]
+                    len_t = param.time_list[loop+1] - param.time_list[loop]
+                
+                    dx = len_x/(len_t*10)#[arcsec/100ms]
+                    dy = len_y/(len_t*10)#[arcsec/100ms]
+                    dt = 0.1
+
+                    x_list2 = [param.x_list[loop] + dx*(i+check*10) for i in range(10)]
+                    y_list2 = [param.y_list[loop] + dy*(i+check*10) for i in range(10)]
+                    time_list2 = [param.time_list[loop]+dt*(i+check*10) for i in range(10)]
+                    loop_count = 0
+                    check_count = 1
+                    for i in range(10):
+                        if param.time_list[loop+1]< time_list2[-1]:
+                            del x_list2[-1]
+                            del y_list2[-1]
+                            del time_list2[-1]
+                            loop_count = 1
+                            check = 0
+                            check_count = 0
+                        else:
+                            break
+                    if loop == len(param.time_list)-2:
+                        self.stop_flag = True                        
+                    loop += loop_count
+                    check +=  check_count
                     """ debug
                     plt.plot(param.time_list, param.x_list,label="target",linestyle='None',marker='.')
                     plt.plot(time_list2, x_list2,label="v2",linestyle='None',marker='.')
                     plt.show()
                     """
+                    
                 else:
                     len_x = param.x_list[1] - param.x_list[0]
                     len_y = param.y_list[1] - param.y_list[0]
@@ -97,9 +136,10 @@ class azel_list(object):
                     x_list2 = [param.x_list[0] + dx*(i+loop*10) for i in range(10)]
                     y_list2 = [param.y_list[0] + dy*(i+loop*10) for i in range(10)]
                     time_list2 = [param.time_list[0]+dt*(i+loop*10) for i in range(10)]
+                    loop += 1
                     
                 for i in range(10):
-                    if param.time_list[1]< time_list2[-1]:
+                    if param.time_list[-1]< time_list2[-1]:
                         del x_list2[-1]
                         del y_list2[-1]
                         del time_list2[-1]
@@ -129,7 +169,6 @@ class azel_list(object):
                     msg.timestamp = time.time()
                     self.pub.publish(msg)
                     print(msg)
-                    loop += 1
                 else:
                     limit_flag = False
             else:                

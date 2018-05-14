@@ -40,7 +40,8 @@ class worldcoord(object):
         msg = List_coord_msg()
         msg.from_node = node_name
         nanten2 = EarthLocation(lat = -22.96995611*u.deg, lon = -67.70308139*u.deg, height = 4863.85*u.m)
-        list_num = 50
+        list_num = 600
+        delta_t = 1 #[s]
         while not rospy.is_shutdown():
             command = self.command
             self.command = ""
@@ -51,7 +52,7 @@ class worldcoord(object):
                 time.sleep(0.1)
                 continue
 
-            time_list = [dt.fromtimestamp(command.timestamp+3600*i) for i in range(list_num)]
+            time_list = [dt.fromtimestamp(command.timestamp+delta_t*i) for i in range(list_num)]
             #time_list = Time(time_list)
             print("####################")
             print(time_list)
@@ -64,19 +65,11 @@ class worldcoord(object):
             target_list.location = nanten2
             altaz_list = target_list.altaz
             
-            x_list = []
-            y_list = []
-            for i in altaz_list:
-                x_list.append(i.az.arcsec)
-                y_list.append(i.alt.arcsec)
-            
             current_time = time.time()
 
-            print(x_list)
-            print(y_list)
-            msg.x_list = x_list
-            msg.y_list = y_list
-            msg.time_list = [command.timestamp+3600.*i for i in range(list_num)]
+            msg.x_list = altaz_list.az.arcsec
+            msg.y_list = altaz_list.alt.arcsec
+            msg.time_list = [command.timestamp+delta_t*i for i in range(list_num)]
             msg.coord = "altaz"
             msg.off_az = command.off_x
             msg.off_el = command.off_y
@@ -88,7 +81,6 @@ class worldcoord(object):
             print(msg)
             print("publish status!!\n")
             print("end_create_list\n")
-
         return
 
 if __name__ == "__main__":
