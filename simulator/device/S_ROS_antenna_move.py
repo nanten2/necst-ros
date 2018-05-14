@@ -252,9 +252,11 @@ class antenna_move(object):
             #time.sleep(st-ct)
             return
             """
-            if loop == 4:
+            if loop == 9:
                 pass
             elif ct - st[n-1] >=0 and first_st == st:
+                print("$$$$$$$$$$$$$")
+                print(ct, st[n-1])
                 loop += 1
                 time.sleep(0.1)
                 continue
@@ -332,7 +334,6 @@ class antenna_move(object):
                     print('!!!target az limit!!! : ', tar_az)
                     continue
                 if tar_el > 89*3600. or tar_el < 0:
-                    print("re,old",ret, old_ret)
                     self.stop_flag = True#False?
                     print('!!!target el limit!!! : ', tar_el)
                     continue

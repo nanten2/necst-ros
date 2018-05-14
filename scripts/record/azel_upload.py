@@ -8,7 +8,7 @@ class encoder_up(object):
         pass
 
     def make_list(self, req):
-        self.save_list.append([req.utc, req.enc_az/3600., req.enc_el/3600.])
+        self.save_list.append([req.timestamp, req.enc_az/3600., req.enc_el/3600.])
         time.sleep(1)
         pass
 

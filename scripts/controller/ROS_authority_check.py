@@ -6,6 +6,8 @@ import rospy
 import rosnode
 from necst.msg import String_necst
 
+node_name = "authority_check"
+
 class authority(object):
 
     authority = ""
@@ -54,7 +56,7 @@ class authority(object):
     
 
 if __name__ == "__main__":
-    rospy.init_node("Authority_check")
+    rospy.init_node(node_name)
     print("start"+"\n")
     au = authority()
     au.authority_check()
