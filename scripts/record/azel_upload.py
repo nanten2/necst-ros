@@ -1,6 +1,7 @@
 #example
 import upload, time, rospy
 from necst.msg import Status_encoder_msg
+from datetime import datetime as dt
 
 class encoder_up(object):
     def __init__(self):
@@ -8,7 +9,9 @@ class encoder_up(object):
         pass
 
     def make_list(self, req):
-        self.save_list.append([req.timestamp, req.enc_az/3600., req.enc_el/3600.])
+        ctime = dt.fromtimestamp(req.timestamp)
+        now = ctime.strftime("%Y-%m-%d %H:%M:%S")
+        self.save_list.append([now, req.enc_az/3600., req.enc_el/3600.])
         time.sleep(1)
         pass
 

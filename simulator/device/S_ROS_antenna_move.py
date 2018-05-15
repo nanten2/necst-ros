@@ -258,7 +258,7 @@ class antenna_move(object):
                 print("$$$$$$$$$$$$$")
                 print(ct, st[n-1])
                 loop += 1
-                time.sleep(0.1)
+                time.sleep(1.)
                 continue
             else:
                 break
