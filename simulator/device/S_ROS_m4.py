@@ -10,8 +10,9 @@ import rospy
 import time
 import threading
 
-from necst.msg import Status_m4_msg
-from std_msgs.msg import String
+from necst.msg import String_necst
+
+node_name = 'm4_controller'
 
 class m4_controller(object):
     speed = 3000
@@ -27,7 +28,6 @@ class m4_controller(object):
     
     shutdown_flag = False
 
-    #M4 = M4.m4_controller()
 
     def __init__(self):
         pass
@@ -136,38 +136,26 @@ class m4_controller(object):
         return
 
     def pub_status(self):
-        pub = rospy.Publisher('status_m4',Status_m4_msg, queue_size=10, latch = True)
-        msg = Status_m4_msg()
+        pub = rospy.Publisher('status_m4',String_necst, queue_size=10, latch = True)
+        msg = String_necst()
 
         while not rospy.is_shutdown():
             pos = self.get_pos()
-            msg.m4_position = self.position
+            msg.data = self.position
+            msg.from_node = node_name
+            msg.timestamp = time.time()
             pub.publish(msg)
             rospy.loginfo(self.position)
             time.sleep(0.5)
         return
 
 if __name__ == '__main__':
+    rospy.init_node(node_name)    
     m4 = m4_controller()
     m4.open()
-    rospy.init_node('m4_controller')
     rospy.loginfo('waiting publish M4')
     m4.start_thread()
-    sub = rospy.Subscriber('m4', String, m4.move_pos)
-    sub = rospy.Subscriber('emergency', String, m4.emergency)
+    sub = rospy.Subscriber('m4', String_necst, m4.move_pos)
+    sub = rospy.Subscriber('emergency', String_necst, m4.emergency)
     rospy.spin()
-"""
-def m4_client(host,port):
-    client = pyinterface.server_client_wrapper.control_client_wrapper(m4_controller, host, port)
-    return client
 
-def m4_monitor_client(host,port):
-    client = pyinterface.server_client_wrapper.monitor_client_wrapper(m4_controller, host, port)
-    return client
-
-def start_m4_server(port1=6003, port2=6004):
-    m4 = m4_controller()
-    server = pyinterface.server_client_wrapper.server_wrapper(m4,'', port1, port2)
-    server.start()
-    return server
-"""

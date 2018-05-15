@@ -12,4 +12,6 @@ float64 dome_temp1
 float64 dome_temp2
 float64 gen_temp1
 float64 gen_temp2
+string from_node
+float64 timestamp
 

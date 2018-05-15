@@ -1,5 +1,6 @@
 <launch>
   <node pkg="necst" name="antenna_move" type="S_ROS_antenna_move.py" output="screen"/>
+  <node pkg='necst' name='authority_check' type='ROS_authority_check.py'/>
   <node pkg="necst" name="encoder_status" type="S_ROS_encoder.py"/>
   <node pkg="necst" name='dome' type='S_ROS_dome.py'/>
   <node pkg='necst' name='abs_controller' type='S_ROS_abs.py'/>
@@ -10,8 +11,14 @@
   <node pkg='necst' name='pc_status' type='ROS_pc_status.py' args='necst'/>
   <node pkg='necst' name='tracking' type='ROS_tracking.py'/>
   <node pkg='necst' name='dome_tracking' type='ROS_dome_track_check.py'/>
-  <node pkg='necst' name='antenna_server' type='ROS_antenna.py'/>  
-  <node pkg='necst' name='antenna_assist' type='ROS_antenna_assist.py'/>
-  <node pkg='necst' name='alert' type='ROS_alert.py' output="screen"/>
-  <node pkg='necst' name='check_alert' type='ROS_check_alert.py' output="screen"/>  
+  <node pkg="necst" name="worldcoordinate_onepoint" type="ROS_scan_onepoint.py"/>
+  <node pkg="necst" name="worldcoordinate_otf" type="ROS_scan_otf.py"/>
+  <node pkg="necst" name="worldcoordinate_planet" type="ROS_scan_planet.py"/>
+  <node pkg="necst" name="worldcoordinate_linear" type="ROS_scan_linear.py"/>  
+  <node pkg="necst" name="azel_list" type="ROS_azel_list.py"/>  
+  <node pkg='necst' name='check_alert' type='ROS_check_alert.py' output="screen"/>
+  <node pkg='necst' name='alert_sun' type='ROS_alert_sun.py' output="screen"/>
+  <node pkg='necst' name='alert_weather' type='ROS_alert_weather.py' output="screen"/>
+  <node pkg='necst' name='alert_encoder' type='ROS_alert_encoder.py' output="screen"/>
+
 </launch>

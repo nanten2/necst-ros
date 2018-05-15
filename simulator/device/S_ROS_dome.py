@@ -10,6 +10,8 @@ from necst.msg import Status_encoder_msg
 from necst.msg import Status_dome_msg
 from necst.msg import Dome_msg
 
+node_name = "dome"
+
 class dome_controller(object):
 
     ###parameter
@@ -587,7 +589,8 @@ class dome_controller(object):
             s.remote_status = self.status_box[7]
             #s.status = self.status_box[:8]
             s.dome_enc = float(self.status_box[8])
-            
+            s.from_node = node_name
+            s.timestamp = time.time()
             pub.publish(s)
             time.sleep(0.1)
         
@@ -610,7 +613,7 @@ def start_dome_server(port1 = 8007, port2 = 8008):
 
 
 if __name__ == '__main__':
-    rospy.init_node('dome')
+    rospy.init_node(node_name)
     d = dome_controller()
     d.start_thread_ROS()
     print('[ROS_dome.py] : START SUBSCRIBE')

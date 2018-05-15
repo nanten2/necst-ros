@@ -1,7 +1,7 @@
 float64 x
 float64 y
 string coord
-int64 planet
+string planet
 float64 off_x
 float64 off_y
 string offcoord
@@ -10,7 +10,6 @@ float64 lamda
 int64 dcos
 string func_x
 string func_y
-float64 movetime
 bool limit
-bool assist
-float64 time
+string from_node
+float64 timestamp
