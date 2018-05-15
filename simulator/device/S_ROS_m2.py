@@ -12,10 +12,11 @@ import threading
 import struct
 
 #from necst.msg import Status_m2_msg
-from std_msgs.msg import String
-from std_msgs.msg import Float64
-from std_msgs.msg import Int64
+from necst.msg import String_necst
+from necst.msg import Float64_necst
+from necst.msg import Int64_necst
 
+node_name = 'm2_controller'
 
 class m2_controller(object):
     #reference  /src/obs/modules/hal/subref.cpp
@@ -117,42 +118,24 @@ class m2_controller(object):
         return
 
     def pub_status(self):
-        pub = rospy.Publisher('status_m2',Float64, queue_size=10, latch = True)
-        msg = Float64()
+        pub = rospy.Publisher('status_m2',Float64_necst, queue_size=10, latch = True)
+        msg = Float64_necst()
         
         while not rospy.is_shutdown():
             pos = self.get_pos()
             msg.data = pos
+            msg.from_node = node_name
+            msg.timestamp = time.time()
             pub.publish(msg)
             rospy.loginfo(msg)
             time.sleep(0.5)
         return
 
 if __name__ == '__main__':
+    rospy.init_node(node_name)
     m2 = m2_controller()
-    rospy.init_node('m2_controller')
     rospy.loginfo('waiting publish M2')
     m2.start_thread()
-    sub = rospy.Subscriber('m2', Int64, m2.move)
-    sub = rospy.Subscriber('emergency', String, m2.emergency)
-    rospy.spin()
-    
-"""
-
-
-
-def m2_client(host, port):
-    client = pyinterface.server_client_wrapper.control_client_wrapper(m2_controller, host, port)
-    return client
-
-def m2_monitor_client(host, port):
-    client = pyinterface.server_client_wrapper.monitor_client_wrapper(m2_controller, host, port)
-    return client
-
-def start_m2_server(port1 = 9999, port2 = 9998):
-    m2 = m2_controller()
-    server = pyinterface.server_client_wrapper.server_wrapper(m2,'', port1, port2)
-    server.start()
-    return server
-
-"""
+    sub = rospy.Subscriber('m2', Int64_necst, m2.move)
+    sub = rospy.Subscriber('emergency', String_necst, m2.emergency)
+    rospy.spin()    

@@ -4,7 +4,9 @@ import threading
 import rospy
 from necst.msg import Status_dome_msg
 from necst.msg import Status_encoder_msg
-from std_msgs.msg import Bool
+from necst.msg import Bool_necst
+
+node_name = 'dome_tracking'
 
 class dome_tracking_check(object):
     enc_param = {
@@ -16,7 +18,6 @@ class dome_tracking_check(object):
     tracking = False
 
     def __init__(self):
-        rospy.init_node('dome_tracking')
         self.start_thread()
         pass
 
@@ -53,18 +54,22 @@ class dome_tracking_check(object):
         rospy.loginfo('tracking : %s'%self.tracking)
 
     def pub_tracking(self):
-        pub = rospy.Publisher('dome_tracking_check', Bool, queue_size = 10, latch = True)
-        track_status = Bool()
+        pub = rospy.Publisher('dome_tracking_check', Bool_necst, queue_size = 10, latch = True)
+        track_status = Bool_necst()
         while not rospy.is_shutdown():
             self.check_dome_track()
             if self.tracking:
                 track_status.data = True
             else:
                 track_status.data = False
+                pass
+            track_status.from_node = node_name
+            track_status.timestamp = time.time()
             pub.publish(track_status)
             time.sleep(0.01)
 
 if __name__ == '__main__':
+    rospy.init_node(node_name)
     dc = dome_tracking_check()
     sub1 = rospy.Subscriber('status_dome', Status_dome_msg, dc.set_dome_param)
     sub2 = rospy.Subscriber('status_encoder',Status_encoder_msg, dc.set_enc_param)

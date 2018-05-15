@@ -15,6 +15,8 @@ from necst.msg import Status_encoder_msg
 from necst.msg import Status_dome_msg
 from necst.msg import Dome_msg
 
+node_name = "dome"
+
 class dome_controller(object):
     touchsensor_pos = [-391,-586,-780,-974,-1168,-1363,-1561,-1755,-1948,-2143, 0, -197]
     dome_encoffset = 10000
@@ -545,11 +547,13 @@ class dome_controller(object):
             s.memb_pos = self.memb_pos
             s.remote_status = self.remote_status
             s.dome_enc = float(self.dome_enc)
+            s.from_node = node_name
+            s.timestamp = time.time()
             pub.publish(s)
             time.sleep(0.1)
         
 if __name__ == '__main__':
-    rospy.init_node('dome')
+    rospy.init_node(node_name)
     d = dome_controller()
     d.start_thread_ROS()
     print('[ROS_dome.py] : START SUBSCRIBE')

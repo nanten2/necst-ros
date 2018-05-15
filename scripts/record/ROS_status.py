@@ -7,17 +7,17 @@ import math
 import rospy
 import threading
 from datetime import datetime as dt
-from std_msgs.msg import Float64
-from std_msgs.msg import String
+from necst.msg import Float64_necst
+from necst.msg import String_necst
 from necst.msg import Status_antenna_msg
 from necst.msg import Status_weather_msg
 from necst.msg import Status_encoder_msg
 from necst.msg import Status_dome_msg
-from necst.msg import Status_hot_msg
 from necst.msg import Status_drive_msg
-from necst.msg import Status_m4_msg
 from necst.msg import Status_limit_msg
 from necst.msg import Read_status_msg
+
+node_name = 'Status'
 
 class status_main(object):
     param1 = {
@@ -158,7 +158,7 @@ class status_main(object):
         pass
 
     def callback7(self,req):
-        self.param7['position'] = req.m4_position
+        self.param7['position'] = req.data
         pass
 
     def callback8(self,req):
@@ -234,7 +234,7 @@ class status_main(object):
                     drive = "off"
                 lst =int(lst_hh)*3600+int(lst_mm)*60+int(lst_ss)
                 try:
-                    self.pub.publish(Time=tv, Limit=self.param8["error_msg"], Current_Az=enc_az, Current_El=enc_el, Command_Az=command_az, Command_El=command_el, Deviation_Az=command_az-enc_az, Deviation_El=command_el-enc_el, Drive_ready_Az=drive, Drive_ready_El=drive, Authority=antenna_status, Current_Dome=dome_enc, Door_Dome=doom_door, Door_Membrane=memb_status, Door_Authority=remote_status, Current_M4=m4_position, Current_Hot=hot_position, Year=float(ntime.strftime("%Y")), Month=float(ntime.strftime("%m")), Day=float(ntime.strftime("%d")), Hour=float(ntime.strftime("%H")), Min=float(ntime.strftime("%M")), Sec=float(ntime.strftime("%S")), InTemp=self.param2["in_temp"], OutTemp=self.param2["out_temp"], InHumi=self.param2["in_humi"], OutHumi=self.param2["out_humi"], WindDir=self.param2["wind_dir"], WindSp=self.param2["wind_sp"], Press=self.param2["press"], Rain=self.param2["rain"], CabinTemp1= self.param2["cabin_temp1"], CabinTemp2= self.param2["cabin_temp2"], DomeTemp1=self.param2["dome_temp1"], DomeTemp2=self.param2["dome_temp2"], GenTemp1=self.param2["gen_temp1"], GenTemp2=self.param2["gen_temp2"], Current_M2=m2_position, MJD=mjd, LST=lst, Secofday=secofday)
+                    self.pub.publish(Time=tv, Limit=self.param8["error_msg"], Current_Az=enc_az, Current_El=enc_el, Command_Az=command_az, Command_El=command_el, Deviation_Az=command_az-enc_az, Deviation_El=command_el-enc_el, Drive_ready_Az=drive, Drive_ready_El=drive, Authority=antenna_status, Current_Dome=dome_enc, Door_Dome=doom_door, Door_Membrane=memb_status, Door_Authority=remote_status, Current_M4=m4_position, Current_Hot=hot_position, Year=float(ntime.strftime("%Y")), Month=float(ntime.strftime("%m")), Day=float(ntime.strftime("%d")), Hour=float(ntime.strftime("%H")), Min=float(ntime.strftime("%M")), Sec=float(ntime.strftime("%S")), InTemp=self.param2["in_temp"], OutTemp=self.param2["out_temp"], InHumi=self.param2["in_humi"], OutHumi=self.param2["out_humi"], WindDir=self.param2["wind_dir"], WindSp=self.param2["wind_sp"], Press=self.param2["press"], Rain=self.param2["rain"], CabinTemp1= self.param2["cabin_temp1"], CabinTemp2= self.param2["cabin_temp2"], DomeTemp1=self.param2["dome_temp1"], DomeTemp2=self.param2["dome_temp2"], GenTemp1=self.param2["gen_temp1"], GenTemp2=self.param2["gen_temp2"], Current_M2=m2_position, MJD=mjd, LST=lst, Secofday=secofday, from_node=node_name, timestamp=time.time())
                 except Exception as e:
                     print('error {0}'.format(e))
                     print("Propably not running launch.")
@@ -254,12 +254,12 @@ class read_status(status_main):
         sub2 = rospy.Subscriber('status_weather', Status_weather_msg, self.callback2)
         sub3 = rospy.Subscriber('status_encoder', Status_encoder_msg, self.callback3)
         sub4 = rospy.Subscriber('status_dome', Status_dome_msg, self.callback4)
-        sub5 = rospy.Subscriber('status_hot', String, self.callback5)
+        sub5 = rospy.Subscriber('status_hot', String_necst, self.callback5)
         sub6 = rospy.Subscriber('status_drive', Status_drive_msg, self.callback6)
         sub7 = rospy.Subscriber('status_m4', Status_m4_msg, self.callback7)
         sub8 = rospy.Subscriber('limit_check', Status_limit_msg, self.callback8)
-        sub9 = rospy.Subscriber('status_m2', Float64, self.callback9)
-        sub10 = rospy.Subscriber('alert', String, self.callback10)
+        sub9 = rospy.Subscriber('status_m2', Float64_necst, self.callback9)
+        sub10 = rospy.Subscriber('alert', String_necst, self.callback10)
         rospy.spin()
     
     def read_status(self):
@@ -267,16 +267,16 @@ class read_status(status_main):
             
 if __name__ == '__main__':
     st = status_main()
-    rospy.init_node('Status')
+    rospy.init_node(node_name)
     sub1 = rospy.Subscriber('status_antenna', Status_antenna_msg, st.callback1)
     sub2 = rospy.Subscriber('status_weather', Status_weather_msg, st.callback2)
     sub3 = rospy.Subscriber('status_encoder', Status_encoder_msg, st.callback3)
     sub4 = rospy.Subscriber('status_dome', Status_dome_msg, st.callback4)
-    sub5 = rospy.Subscriber('status_hot', String, st.callback5)
+    sub5 = rospy.Subscriber('status_hot', String_necst, st.callback5)
     sub6 = rospy.Subscriber('status_drive', Status_drive_msg, st.callback6)
-    sub7 = rospy.Subscriber('status_m4', Status_m4_msg, st.callback7)
+    sub7 = rospy.Subscriber('status_m4', String_necst, st.callback7)
     sub8 = rospy.Subscriber('limit_check', Status_limit_msg, st.callback8)
-    sub9 = rospy.Subscriber('status_m2', Float64, st.callback9)
-    sub10 = rospy.Subscriber('alert', String, st.callback10)
+    sub9 = rospy.Subscriber('status_m2', Float64_necst, st.callback9)
+    sub10 = rospy.Subscriber('alert', String_necst, st.callback10)
     print("Subscribe Start")
     rospy.spin()
