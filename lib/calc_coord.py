@@ -66,7 +66,7 @@ class azel_calc(object):
                 az_list.append(azel_list[0]+off_az)
                 el_list.append(azel_list[1]+off_el)
             pass
-        
+        """
         if limit == True:
             check_list1 = list(filter(lambda x:0.<x<240.*3600., az_list))
             check_list2 = list(filter(lambda x:120.*3600.<x<360.*3600., az_list))
@@ -83,6 +83,7 @@ class azel_calc(object):
         else:
             print("warning : range is over 270 [deg] !!")
             pass
+        """
         #print("az :",az_list[0]/3600.,"el :", el_list[0]/3600.)
         return[az_list, el_list]
             
