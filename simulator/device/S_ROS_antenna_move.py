@@ -172,8 +172,8 @@ class antenna_move(object):
             self.parameters['el_list'].extend(req.y_list)
             self.parameters['start_time_list'].extend(req.time_list)
         else:
-            print("########################################", self.stop_flag)
-            print(self.start_time, req.time_list[0])
+            #print("########################################", self.stop_flag)
+            #print(self.start_time, req.time_list[0])
             self.parameters['az_list'] = []
             self.parameters['el_list'] = []
             self.parameters['start_time_list'] = []
@@ -233,7 +233,7 @@ class antenna_move(object):
         """
         loop = 0
         first_st = self.parameters['start_time_list']
-        for i in range(10):
+        for i in range(20):
             n = len(self.parameters['az_list'])
             st = self.parameters['start_time_list']
             if st == []:
@@ -252,13 +252,13 @@ class antenna_move(object):
             #time.sleep(st-ct)
             return
             """
-            if loop == 9:
+            if loop == 19:
                 pass
             elif ct - st[n-1] >=0 and first_st == st:
                 print("$$$$$$$$$$$$$")
                 print(ct, st[n-1])
                 loop += 1
-                time.sleep(1.)
+                time.sleep(0.1)
                 continue
             else:
                 break

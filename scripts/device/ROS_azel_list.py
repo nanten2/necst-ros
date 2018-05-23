@@ -13,6 +13,16 @@ sys.path.append("/home/amigos/ros/src/necst/lib/")
 sys.path.append("/home/necst/ros/src/necst/lib/")
 import calc_coord
 import matplotlib.pyplot as plt
+from logging import getLogger, StreamHandler,DEBUG,Formatter,ERROR, WARNING,INFO
+logger = getLogger("debug_print")
+handler = StreamHandler()
+handler.setLevel(DEBUG)
+logger.setLevel(INFO)
+logger.addHandler(handler)
+logger.propagate = False
+handler_format = Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(handler_format)
+
 
 node_name = "azel_list"
 
@@ -114,9 +124,9 @@ class azel_list(object):
                             check_count = 0
                         else:
                             break
-                    if loop == len(param.time_list)-2:
+                    loop += loop_count                        
+                    if loop == len(param.time_list)-1:
                         self.stop_flag = True                        
-                    loop += loop_count
                     check +=  check_count
                     """ debug
                     plt.plot(param.time_list, param.x_list,label="target",linestyle='None',marker='.')
@@ -152,9 +162,13 @@ class azel_list(object):
                                                 param.coord, param.off_az, param.off_el, 
                                                 param.hosei, param.lamda, self.weather.press,
                                                 self.weather.out_temp, self.weather.out_humi, param.limit)
+                logger.error(ret[0][0])
+                ret[0] = self.negative_change(ret[0])
+                logger.error(ret[0][0])
+                
                 """limit check"""
                 for i in range(len(time_list2)):
-                    if not -270*3600<ret[0][i]<270*3600 or not 0<ret[1][i]<90*3600.:
+                    if not -240*3600<ret[0][i]<240*3600 or not 10<ret[1][i]<80*3600.:
                         self.stop_flag = True
                         limit_flag = True
                         break
@@ -180,7 +194,21 @@ class azel_list(object):
 
     def stop(self,req):
         self.stop_flag = req.data
-    
+        return
+
+    def negative_change(self, az_list):
+        if all((-240*3600<i< 240*3600. for i in az_list)):
+            pass
+        elif all((i<-110*3600. for i in az_list)):
+            az_list = [i+360*3600. for i in az_list]
+        elif all((i>110*3600. for i in az_list)):
+            az_list = [i-360*3600. for i in az_list]
+        elif all((-270*3600<i< 270*3600. for i in az_list)):
+            pass
+        else:
+            logger.debug("Az limit error.")
+        return az_list
+        
 if __name__ == "__main__":
     rospy.init_node(node_name)
     azel = azel_list()

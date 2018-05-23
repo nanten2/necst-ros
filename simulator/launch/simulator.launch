@@ -20,5 +20,5 @@
   <node pkg='necst' name='alert_sun' type='ROS_alert_sun.py' output="screen"/>
   <node pkg='necst' name='alert_weather' type='ROS_alert_weather.py' output="screen"/>
   <node pkg='necst' name='alert_encoder' type='ROS_alert_encoder.py' output="screen"/>
-
+  <node pkg='necst' name='achilles' type='S_ROS_oneshot_achilles.py' output="screen"/>  
 </launch>
