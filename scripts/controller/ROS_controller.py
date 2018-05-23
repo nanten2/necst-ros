@@ -11,6 +11,7 @@
 import os
 import sys
 import time
+import atexit
 from datetime import datetime as dt
 import rospy
 from necst.msg import Move_mode_msg
@@ -39,12 +40,14 @@ class controller(object):
     def __init__(self):
         """start authority check"""
         self.node_name = auth.initialize()
-        rospy.init_node(self.node_name)
+        aa = self.node_name
+        rospy.init_node(aa)
         auth.start()
         
         """init"""
-        rospy.Subscriber("tracking_check", Bool_necst, self.antenna_tracking)
-        rospy.Subscriber("dome_tracking_check", Bool_necst, self.dome_tracking)
+        self.read_sub = rospy.Subscriber("read_status", Read_status_msg, self.write_status)        
+        self.antenna_sub = rospy.Subscriber("tracking_check", Bool_necst, self.antenna_tracking)
+        self.dome_sub = rospy.Subscriber("dome_tracking_check", Bool_necst, self.dome_tracking)
 
         self.pub_drive = rospy.Publisher("antenna_drive", String_necst, queue_size = 1)
         self.pub_contactor = rospy.Publisher("antenna_contactor", String_necst, queue_size = 1)
@@ -60,7 +63,14 @@ class controller(object):
         self.pub_m2 = rospy.Publisher("m2", Int64_necst, queue_size=1, latch=True)
         self.pub_achilles = rospy.Publisher("achilles", Achilles_msg, queue_size=1)
         time.sleep(0.5)
-        self.get_authority()
+        atexit.register(self.release)
+        return
+
+    def release(self):
+        self.antenna_sub.unregister()
+        self.dome_sub.unregister()
+        self.read_sub.unregister()
+        print("ROS_controller is finished.")
         return
     
     def get_authority(self):
@@ -81,6 +91,8 @@ class controller(object):
         while not self.antenna_tracking_flag:
             time.sleep(0.01)
             pass
+        return
+    
     @auth.deco_check
     def drive(self, switch = ""):
         """change drive
@@ -103,18 +115,21 @@ class controller(object):
             print("drive : ", switch, "!!")
         else:
             print("!!bad command!!")
+            pass
+        return
 
-    def onepoint_move(self, x, y, coord="horizontal", off_x=0, off_y=0, offcoord='horizontal', hosei='hosei_230.txt',  lamda=2600, dcos=0, func_x="", func_y="", movetime=10, limit=True,):
+    @auth.deco_check
+    def onepoint_move(self, x, y, coord="altaz", off_x=0, off_y=0, offcoord='altaz', hosei='hosei_230.txt',  lamda=2600, dcos=0, func_x="", func_y="", movetime=10, limit=True,):
         """ azel_move, radec_move, galactic_move
         
         Parameters
         ----------
         x        : target_x [deg]
         y        : target_y [deg]
-        coord    : "horizontal" or "j2000" or "b1950" or "galactic"  
+        coord    : "altaz" or "j2000" or "b1950" or "galactic"  
         off_x    : offset_x [arcsec]
         off_y    : offset_y [arcsec]
-        offcoord : "horizontal" or "j2000" or "b1950" or "galactic" 
+        offcoord : "altaz" or "j2000" or "b1950" or "galactic" 
         hosei    : hosei file name (default ; hosei_230.txt)
         lamda    : observation wavelength [um] (default ; 2600)
         dcos     : projection (no:0, yes:1)
@@ -127,8 +142,9 @@ class controller(object):
         #self.pub_stop.publish(False, self.node_name, time.time())
         self.pub_onepoint.publish(x, y, coord, "", off_x, off_y, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), limit, self.node_name, time.time())
         return
-
-    def planet_move(self, planet, off_x=0, off_y=0, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=0, limit=True):
+    
+    @auth.deco_check
+    def planet_move(self, planet, off_x=0, off_y=0, offcoord="altaz", hosei="hosei_230.txt", lamda=2600, dcos=0, limit=True):
         """ planet_move
         
         Parameters
@@ -137,7 +153,7 @@ class controller(object):
                    1.Mercury 2.Venus 3. 4.Mars 5.Jupiter 6.Saturn 7.Uranus 8.Neptune, 9.Pluto, 10.Moon, 11.Sun
         off_x    : offset_x [arcsec]
         off_y    : offset_y [arcsec]
-        offcoord : "horizontal" or "j2000" or "b1950" or "galactic" 
+        offcoord : "altaz" or "j2000" or "b1950" or "galactic" 
         hosei    : hosei file name (default ; hosei_230.txt)
         lamda    : observation wavelength [um] (default ; 2600)
         dcos     : projection (no:0, yes:1)
@@ -149,23 +165,22 @@ class controller(object):
         else:
             pass
         #self.pub_stop.publish(False, self.node_name, time.time())
-        print(planet)
+        print("planet name is ", planet)
         self.pub_planet.publish(0, 0, "planet", planet, off_x, off_y, offcoord, hosei, lamda, dcos, "0","0",limit, self.node_name, time.time())
         return
         
-        pass
-
-    def linear_move(self, x, y, coord="horizontal", dx=0, dy=0, offcoord='horizontal', hosei='hosei_230.txt',  lamda=2600, dcos=0, func_x="", func_y="", limit=True,):
+    @auth.deco_check
+    def linear_move(self, x, y, coord="altaz", dx=0, dy=0, offcoord='altaz', hosei='hosei_230.txt',  lamda=2600, dcos=0, func_x="", func_y="", limit=True,):
         """ azel_move, radec_move, galactic_move
         
         Parameters
         ----------
         x        : target_x [deg]
         y        : target_y [deg]
-        coord    : "horizontal" or "j2000" or "b1950" or "galactic"  
+        coord    : "altaz" or "j2000" or "b1950" or "galactic"  
         dx    : delta_x [arcsec/s]
         dy    : delta_y [arcsec/s]
-        offcoord : "horizontal" or "j2000" or "b1950" or "galactic" 
+        offcoord : "altaz" or "j2000" or "b1950" or "galactic" 
         hosei    : hosei file name (default ; hosei_230.txt)
         lamda    : observation wavelength [um] (default ; 2600)
         dcos     : projection (no:0, yes:1)
@@ -177,7 +192,7 @@ class controller(object):
         self.pub_linear.publish(x, y, coord, "", dx, dy, offcoord, hosei, lamda, dcos, str(func_x), str(func_y), limit, self.node_name, time.time())
         return
     
-
+    @auth.deco_check
     def otf_scan(self, x, y, coord, dx, dy, dt, num, rampt, delay, start_on,  off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., limit=True):
         """ otf scan
 
@@ -210,8 +225,9 @@ class controller(object):
                              dcos, hosei, lamda, limit, self.node_name,
                              current_time)
         
-        return 
-
+        return
+    
+    @auth.deco_check
     def planet_scan(self):
         """ planet otf scan
 
@@ -243,15 +259,16 @@ class controller(object):
                                       delay, start_on, off_x, off_y, offcoord,
                                       dcos, hosei, lamda, limit,
                                       self.node_name, time.time())
+        return
         
-
-    
+    @auth.deco_check
     def move_stop(self):
         print("move_stop")
         self.pub_stop.publish(True, self.node_name, time.time())
         time.sleep(0.2)
         return
-        
+
+    @auth.deco_check    
     def dome(self, value):
         """dome controll
 
@@ -274,7 +291,8 @@ class controller(object):
             print("parameter error")
             pass
         return
-    
+
+    @auth.deco_check    
     def dome_move(self,dist):
         """ dome move
         
@@ -292,7 +310,9 @@ class controller(object):
         dome.from_node = self.node_name
         dome.timestamp = time.time()
         self.pub_dome.publish(dome)
+        return
 
+    @auth.deco_check    
     def dome_open(self):
         """Dome open"""
         dome = Dome_msg()
@@ -301,7 +321,9 @@ class controller(object):
         dome.from_node = self.node_name
         dome.timestamp = time.time()        
         self.pub_dome.publish(dome)
+        return
     
+    @auth.deco_check    
     def dome_close(self):
         """Dome close"""
         dome = Dome_msg()
@@ -310,7 +332,9 @@ class controller(object):
         dome.from_node = self.node_name
         dome.timestamp = time.time()        
         self.pub_dome.publish(dome)
+        return
 
+    @auth.deco_check    
     def memb(self, value):
         """memb move
 
@@ -328,7 +352,7 @@ class controller(object):
             pass
         return
 
-        
+    @auth.deco_check        
     def memb_open(self):
         """membrane open"""
         dome = Dome_msg()
@@ -337,7 +361,9 @@ class controller(object):
         dome.from_node = self.node_name
         dome.timestamp = time.time()        
         self.pub_dome.publish(dome)
+        return
 
+    @auth.deco_check    
     def memb_close(self):
         """membrane close"""
         dome = Dome_msg()
@@ -346,7 +372,9 @@ class controller(object):
         dome.from_node = self.node_name
         dome.timestamp = time.time()        
         self.pub_dome.publish(dome)
-        
+        return
+
+    @auth.deco_check    
     def dome_stop(self):
         """Dome stop"""
         dome = Dome_msg()
@@ -355,7 +383,9 @@ class controller(object):
         dome.from_node = self.node_name
         dome.timestamp = time.time()
         self.pub_dome.publish(dome)
-        
+        return
+
+    @auth.deco_check    
     def dome_track(self):
         """Dome sync antenna_az"""
         dome = Dome_msg()
@@ -364,7 +394,9 @@ class controller(object):
         dome.from_node = self.node_name
         dome.timestamp = time.time()        
         self.pub_dome.publish(dome)
+        return
 
+    @auth.deco_check
     def dome_track_end(self):
         """Dome stop antenna_az sync"""
         dome = Dome_msg()
@@ -373,11 +405,13 @@ class controller(object):
         dome.from_node = self.node_name
         dome.timestamp = time.time()        
         self.pub_dome.publish(dome)
+        return
 
     def dome_tracking(self, req):
         self.dome_tracking_flag = req.data
         return
 
+    @auth.deco_check    
     def dome_tracking_check(self):
         """dome tracking check"""
         rospy.loginfo(" dome_tracking now... \n")
@@ -389,7 +423,7 @@ class controller(object):
 # ===================
 # mirror
 # ===================
-
+    @auth.deco_check
     def move_m4(self, position):
         """mirror4 move
         
@@ -405,7 +439,7 @@ class controller(object):
         self.pub_m4.publish(status)
         return
 
-    
+    @auth.deco_check    
     def move_hot(self, position):
         """hotload move
 
@@ -419,7 +453,8 @@ class controller(object):
         status.timestamp = time.time()        
         self.pub_hot.publish(status)
         return
-
+    
+    @auth.deco_check
     def m2_move(self, dist):
         """m2 move
 
@@ -439,6 +474,7 @@ class controller(object):
 # encoder
 # ===================
 
+    @auth.deco_check
     def observation(self, command, exposure):
         msg = Bool_necst()
         if command == "start":
@@ -457,7 +493,7 @@ class controller(object):
 # ===================
 # spectrometer
 # ===================
-
+    @auth.deco_check
     def oneshot_achilles(self, repeat=1, exposure=1.0, stime=0.0):
         """get spectrum by ac240
 
@@ -472,12 +508,12 @@ class controller(object):
         msg.repeat = repeat
         msg.exposure = exposure
         msg.stime = stime
-        msg.day = dt.utcnow().strftime("%y%m%d_%H%M%S")
+        msg.day = dt.utcnow().strftime("%y%m%d%H%M%S")
         msg.from_node = self.node_name
         msg.timestamp = time.time()        
         self.pub_achilles.publish(msg)
-        dir_name = "/home/amigos/data/experiment/achilles/" + str(day) + "/"
-        file_name = day + "_fin.txt"
+        dir_name = "/home/amigos/data/experiment/achilles/" + str(msg.day) + "/"
+        file_name = msg.day + "_fin.txt"
         while not rospy.is_shutdown():
             if not os.path.exists(dir_name + file_name):
                 print("get data now...")
@@ -485,13 +521,16 @@ class controller(object):
             else:
                 break
             time.sleep(1)
-        with open(dir_name+day + "_1.txt", "r") as f1:
-            dfs1 = f1.readline()
-        with open(dir_name+day + "_2.txt", "r") as f2:
-            dfs2 = f2.readline()
+        f1 = open(dir_name+str(msg.day) + "_1.txt", "r")
+        dfs1 = f1.readline()
+        f1.close()
+        f2 = open(dir_name+str(msg.day) + "_2.txt", "r")
+        dfs2 = f2.readline()
+        f2.close()
         data_dict = {'dfs1': eval(dfs1), 'dfs2': eval(dfs2)}
         return data_dict
 
+    @auth.deco_check    
     def spectrometer(self, exposure):
         msg = Float64()
         msg.data = exposure
@@ -501,7 +540,7 @@ class controller(object):
 # ===================
 # status
 # ===================
-
+    @auth.deco_check
     def read_status(self):
         """read status
 
@@ -514,7 +553,6 @@ class controller(object):
         $python ROS_status.py 1
 
         """
-        self.sub = rospy.Subscriber("read_status", Read_status_msg, self.write_status)
         while not rospy.is_shutdown():
             if self.status:
                 status = self.status
@@ -527,19 +565,12 @@ class controller(object):
                 time.sleep(1.)
 
         return status
-
+    
     def write_status(self, req):
         self.status = req
-        self.sub.unregister()
+        self.read_sub.unregister()
         return
 
-if __name__ == "__main__":
-    con = controller()
-    a = float(input("x : "))
-    b = float(input("y : "))
-    from datetime import datetime as dt
-    import time
-    utc = dt.utcnow()
-    utc_list = [utc.year,utc.month,utc.day,utc.hour,utc.minute,utc.second,utc.microsecond]
-    #con.otf_scan(a, b, "j2000", 30, 0, 0.6, 9, 0.6*4, delay=10., start_on=utc_list, off_x=-900, off_y=0, offcoord="j2000")
-    con.otf_scan(-30, 20, "j2000", 30, 0, 0.6, 9, 0.6*4, 3, start_on=0,  off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., limit=True)
+
+
+

@@ -3,6 +3,7 @@ import time
 import rospy
 import rosnode
 from necst.msg import String_necst
+import atexit
 
 class authority(object):
 
@@ -11,8 +12,15 @@ class authority(object):
     node_name = ""
 
     def __init__(self):
+        self.pub = rospy.Publisher("authority_regist", String_necst, queue_size=1)     
+        self.sub = rospy.Subscriber("authority_check", String_necst, self.pick_up, queue_size=1)
+        atexit.register(self.finish)
         return
-    
+
+    def finish(self):
+        self.sub.unregister()
+        print("authority end.")
+        return
     
     def initialize(self):
         for i in range(100):
@@ -26,8 +34,6 @@ class authority(object):
         return name
 
     def start(self):
-        self.pub = rospy.Publisher("authority_regist", String_necst, queue_size=1)     
-        self.sub = rospy.Subscriber("authority_check", String_necst, self.pick_up, queue_size=1)
         self.registration(self.node_name)
         print("node_name is ", self.node_name)        
         return
@@ -40,6 +46,7 @@ class authority(object):
         msg = String_necst()
         msg.data = name
         msg.from_node = self.node_name
+        msg.timestamp = time.time()
         self.pub.publish(msg)
         return
         
