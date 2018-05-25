@@ -14,14 +14,9 @@ class authority(object):
     def __init__(self):
         self.pub = rospy.Publisher("authority_regist", String_necst, queue_size=1)     
         self.sub = rospy.Subscriber("authority_check", String_necst, self.pick_up, queue_size=1)
-        atexit.register(self.finish)
+        #atexit.register(self.finish)
         return
 
-    def finish(self):
-        self.sub.unregister()
-        print("authority end.")
-        return
-    
     def initialize(self):
         for i in range(100):
             name = self.frame +str(i)

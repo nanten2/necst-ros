@@ -16,6 +16,7 @@ import numpy as np
 import struct
 #import pyinterface
 
+
 #ROS/import field
 #----------------
 from necst.msg import Status_antenna_msg
@@ -277,13 +278,11 @@ class antenna_move(object):
             return
         else:
             for i in range(len(self.parameters['az_list'])):
-                st2 = st[i]
-                num = i
+                st2 = st[i+1]
+                num = i+1
                 if st2 - ct >0:
-                    num = i-1
-                    st2=st[num]
                     break
-            if num + 1 == len((self.parameters['az_list'])):
+            if num == len((self.parameters['az_list'])):
                 return
             param = self.parameters
             """
@@ -292,10 +291,10 @@ class antenna_move(object):
             y1 = self.parameters['el_list'][num]
             y2 = self.parameters['el_list'][num+1]
             """
-            x1 = param['az_list'][num]
-            x2 = param['az_list'][num+1]
-            y1 = param['el_list'][num]
-            y2 = param['el_list'][num+1]
+            x1 = param['az_list'][num-1]
+            x2 = param['az_list'][num]
+            y1 = param['el_list'][num-1]
+            y2 = param['el_list'][num]
             #rospy.loginfo('send comp azel')
             #print(x1,x2,y1,y2,st2)
             return (x1,x2,y1,y2,st2)
