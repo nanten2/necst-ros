@@ -12,7 +12,7 @@ import sys
 sys.path.append("/home/amigos/ros/src/necst/lib/")
 sys.path.append("/home/necst/ros/src/necst/lib/")
 import calc_coord
-import matplotlib.pyplot as plt
+
 
 node_name = "azel_list"
 
@@ -26,38 +26,40 @@ class azel_list(object):
 
     def __init__(self):
         self.start_time = time.time()
-        self.sub = rospy.Subscriber("wc_list", List_coord_msg, self.receive_list, queue_size=1)
-        self.sub = rospy.Subscriber("status_weather", Status_weather_msg, self.receive_weather, queue_size=1)
+        rospy.Subscriber("wc_list", List_coord_msg, self._receive_list, queue_size=1)
+        rospy.Subscriber("status_weather", Status_weather_msg, self._receive_weather, queue_size=1)
+        rospy.Subscriber("move_stop", Bool_necst, self._stop, queue_size=1)a
+        
         self.pub = rospy.Publisher("list_azel", List_coord_msg, queue_size=1)
-        #self.stop = rospy.Publisher("move_stop", Bool_necst, queue_size=1)
-        self.stop = rospy.Subscriber("move_stop", Bool_necst, self.stop, queue_size=1)
-        self.move = rospy.Publisher("move_stop", Bool_necst, queue_size=1)
+        self.stop = rospy.Publisher("move_stop", Bool_necst, queue_size=1)
+        
         self.msg = Bool_necst()
         self.msg.from_node = node_name
         self.calc = calc_coord.azel_calc()
         pass
 
-    def receive_weather(self, req):
+    def _receive_weather(self, req):
         self.weather = req
+        return
     
-    def receive_list(self, req):
+    def _receive_list(self, req):
         ### x,y is [arcsec]
         if req.timestamp < self.start_time:
             print("receive_old_list...")
         else:
-            self.msg.data = False
-            self.msg.timestamp = time.time()
-            self.move.publish(self.msg)
+            self.stop_flag = False
             self.param = req
             pass
         return
 
+    '''
     def linear_fit(self,x, a, b):
         return a*x+b
 
     def curve2_fit(self, x, a, b):
         return a*x**2+b*x+self.p0
-    
+    '''    
+
     def create_azel_list(self):
         msg = List_coord_msg()
         print("wait comming list...")
@@ -71,17 +73,20 @@ class azel_list(object):
             if not self.param:
                 time.sleep(1.)
                 continue
-            if param != self.param:
+            elif param != self.param:
                 loop = 0
                 check = 0
                 param = self.param
             else:
                 pass
+            
             if self.stop_flag == False:
                 if len(param.x_list) > 2:
                     dt = 0.1                    
-                    #temp_time_list = [i-param.time_list[0] for i in param.time_list]
-                    """curve fitting
+
+                    '''
+                    # curve fitting
+                    temp_time_list = [i-param.time_list[0] for i in param.time_list]
                     self.p0 = param.x_list[0]
                     curve_x, cov_x = curve_fit(self.curve2_fit, temp_time_list, param.x_list)
                     x_list2 = [self.curve2_fit(dt*(i+loop*10), *curve_x) for i in range(10)]
@@ -89,7 +94,8 @@ class azel_list(object):
                     curve_y, cov_y = curve_fit(self.curve2_fit, temp_time_list, param.y_list)
                     y_list2 = [self.curve2_fit(dt*(i+loop*10), *curve_y) for i in range(10)]                                                   
                     time_list2 = [param.time_list[0]+dt*(i+loop*10) for i in range(10)]
-                    """
+                    '''
+                    
                     # linear fitting
                     len_x = param.x_list[loop+1] - param.x_list[loop]
                     len_y = param.y_list[loop+1] - param.y_list[loop]
@@ -114,9 +120,9 @@ class azel_list(object):
                             check_count = 0
                         else:
                             break
-                    if loop == len(param.time_list)-2:
+                    loop += loop_count                        
+                    if loop == len(param.time_list)-1:
                         self.stop_flag = True                        
-                    loop += loop_count
                     check +=  check_count
                     """ debug
                     plt.plot(param.time_list, param.x_list,label="target",linestyle='None',marker='.')
@@ -152,9 +158,11 @@ class azel_list(object):
                                                 param.coord, param.off_az, param.off_el, 
                                                 param.hosei, param.lamda, self.weather.press,
                                                 self.weather.out_temp, self.weather.out_humi, param.limit)
+                ret[0] = self.negative_change(ret[0])
+                    
                 """limit check"""
                 for i in range(len(time_list2)):
-                    if not -270*3600<ret[0][i]<270*3600 or not 0<ret[1][i]<90*3600.:
+                    if not -240*3600<ret[0][i]<240*3600 or not 10<ret[1][i]<80*3600.:
                         self.stop_flag = True
                         limit_flag = True
                         break
@@ -162,13 +170,16 @@ class azel_list(object):
                         pass
                     limit_flag = False
                 if not limit_flag:
+                    self.msg.timestamp = time.time()
+                    self.msg.data = False
+                    self.stop.publish(self.msg)
                     msg.x_list = ret[0]
                     msg.y_list = ret[1]
                     msg.time_list = time_list2
                     msg.from_node =node_name
                     msg.timestamp = time.time()
                     self.pub.publish(msg)
-                    print(msg)
+                    #print("msg", msg)
                 else:
                     limit_flag = False
             else:                
@@ -178,9 +189,26 @@ class azel_list(object):
             time.sleep(0.1)
         return
 
-    def stop(self,req):
-        self.stop_flag = req.data
-    
+    def _stop(self,req):
+        if req.data == True:
+            self.stop_flag = req.data
+        else:
+            pass
+        return
+
+    def negative_change(self, az_list):
+        if all((-240*3600<i< 240*3600. for i in az_list)):
+            pass
+        elif all((i<-110*3600. for i in az_list)):
+            az_list = [i+360*3600. for i in az_list]
+        elif all((i>110*3600. for i in az_list)):
+            az_list = [i-360*3600. for i in az_list]
+        elif all((-270*3600<i< 270*3600. for i in az_list)):
+            pass
+        else:
+            print("Az limit error.")
+        return az_list
+        
 if __name__ == "__main__":
     rospy.init_node(node_name)
     azel = azel_list()

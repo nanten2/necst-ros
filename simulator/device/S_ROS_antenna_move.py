@@ -16,6 +16,7 @@ import numpy as np
 import struct
 #import pyinterface
 
+
 #ROS/import field
 #----------------
 from necst.msg import Status_antenna_msg
@@ -172,8 +173,8 @@ class antenna_move(object):
             self.parameters['el_list'].extend(req.y_list)
             self.parameters['start_time_list'].extend(req.time_list)
         else:
-            print("########################################", self.stop_flag)
-            print(self.start_time, req.time_list[0])
+            #print("########################################", self.stop_flag)
+            #print(self.start_time, req.time_list[0])
             self.parameters['az_list'] = []
             self.parameters['el_list'] = []
             self.parameters['start_time_list'] = []
@@ -233,7 +234,7 @@ class antenna_move(object):
         """
         loop = 0
         first_st = self.parameters['start_time_list']
-        for i in range(10):
+        for i in range(20):
             n = len(self.parameters['az_list'])
             st = self.parameters['start_time_list']
             if st == []:
@@ -252,13 +253,13 @@ class antenna_move(object):
             #time.sleep(st-ct)
             return
             """
-            if loop == 9:
+            if loop == 19:
                 pass
             elif ct - st[n-1] >=0 and first_st == st:
                 print("$$$$$$$$$$$$$")
                 print(ct, st[n-1])
                 loop += 1
-                time.sleep(1.)
+                time.sleep(0.1)
                 continue
             else:
                 break
@@ -277,13 +278,11 @@ class antenna_move(object):
             return
         else:
             for i in range(len(self.parameters['az_list'])):
-                st2 = st[i]
-                num = i
+                st2 = st[i+1]
+                num = i+1
                 if st2 - ct >0:
-                    num = i-1
-                    st2=st[num]
                     break
-            if num + 1 == len((self.parameters['az_list'])):
+            if num == len((self.parameters['az_list'])):
                 return
             param = self.parameters
             """
@@ -292,10 +291,10 @@ class antenna_move(object):
             y1 = self.parameters['el_list'][num]
             y2 = self.parameters['el_list'][num+1]
             """
-            x1 = param['az_list'][num]
-            x2 = param['az_list'][num+1]
-            y1 = param['el_list'][num]
-            y2 = param['el_list'][num+1]
+            x1 = param['az_list'][num-1]
+            x2 = param['az_list'][num]
+            y1 = param['el_list'][num-1]
+            y2 = param['el_list'][num]
             #rospy.loginfo('send comp azel')
             #print(x1,x2,y1,y2,st2)
             return (x1,x2,y1,y2,st2)

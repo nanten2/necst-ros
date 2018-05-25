@@ -12,6 +12,7 @@ def check_alert_node():
     pub_antenna = rospy.Publisher("move_stop", Bool_necst, queue_size = 1)
     pub_dome = rospy.Publisher('dome_move', Dome_msg, queue_size = 1 )
     error_flag = False
+    time.sleep(2.)
     node_data = rosnode.get_node_names()
     start_node = [i for i in node_data if i.startswith("/alert")]
     print("start_alert : ", start_node)
