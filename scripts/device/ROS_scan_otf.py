@@ -24,7 +24,9 @@ class worldcoord(object):
         pass
 
     def note_command(self,req):
+        print(req)
         self.command = req
+        print(self.command)
         return
 
     def create_list(self):
@@ -44,7 +46,7 @@ class worldcoord(object):
                 total_t = command.rampt + command.dt * command.num
                 end_x = command.off_x + command.dx * (command.num - 0.5)
                 end_y = command.off_y + command.dy * (command.num - 0.5)
-                
+                print(start_x, end_x, command.x)
                 #off_dx_vel = (end_x - start_x) / total_t #(obs_end - obs_start)                                                                                    
                 #off_dy_vel = (end_y - start_y) / total_t #(obs_end - obs_start)                                                                                    
                 #x_list = [command.x+(start_x+off_dx_vel*i*0.1)/3600. for i in range(int(round(total_t/command.dt))*10)]
