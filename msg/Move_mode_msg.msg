@@ -8,8 +8,6 @@ string offcoord
 string hosei
 float64 lamda
 int64 dcos
-string func_x
-string func_y
 bool limit
 string from_node
 float64 timestamp

@@ -4,6 +4,7 @@ import rospy
 from necst.msg import Move_mode_msg
 from necst.msg import List_coord_msg
 import time
+from datetime import datetime as dt
 import threading
 import sys
 sys.path.append("/home/amigos/ros/src/necst/lib/")
@@ -38,11 +39,15 @@ class worldcoord(object):
             self.command = ""
             if command:
                 print("start_create_list")
-                ret = calc_offset.calc_offset(command.x, command.y, command.coord,
-                                              command.off_x, command.off_y, command.offcoord,
-                                              command.dcos)
+
+                ret = calc_offset.calc_offset([command.x], [command.y],
+                                              command.coord,
+                                              [command.off_x], [command.off_y],
+                                              command.offcoord,
+                                              command.dcos,
+                                              [dt.fromtimestamp(command.timestamp)])
                 current_time = time.time()
-                
+
                 msg.x_list = [ret[0], ret[0]]
                 msg.y_list = [ret[1], ret[1]]
                 msg.time_list = [command.timestamp, command.timestamp+3600.]

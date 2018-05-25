@@ -18,6 +18,9 @@ class authority(object):
         return
 
     def registration(self, req):
+        
+
+        
         if req.data == "":
             if req.from_node == self.authority:
                 self.authority = req.data

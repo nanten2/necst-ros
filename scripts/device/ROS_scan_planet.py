@@ -51,28 +51,32 @@ class worldcoord(object):
             else:
                 time.sleep(0.1)
                 continue
-
+            print(command.planet)
             time_list = [dt.fromtimestamp(command.timestamp+delta_t*i) for i in range(list_num)]
             #time_list = Time(time_list)
-            print("####################")
-            print(time_list)
+
             if not command.planet.lower() in self.planet_list:
                 logerr("planet name is false...")
+                continue
             else:
                 pass
             target_list = get_body(command.planet.lower(), Time(time_list))#gcrs
             print(target_list)
             target_list.location = nanten2
             altaz_list = target_list.altaz
+            ret = calc_offset.calc_offset(altaz_list.az.deg, altaz_list.alt.deg,
+                                          "altaz",
+                                          command.off_x, command.off_y, command.offcoord,
+                                          command.dcos, time_list)
             
             current_time = time.time()
 
-            msg.x_list = altaz_list.az.arcsec
-            msg.y_list = altaz_list.alt.arcsec
+            msg.x_list = ret[0]
+            msg.y_list = ret[1]
             msg.time_list = [command.timestamp+delta_t*i for i in range(list_num)]
             msg.coord = "altaz"
-            msg.off_az = command.off_x
-            msg.off_el = command.off_y
+            msg.off_az = ret[2]
+            msg.off_el = ret[3]
             msg.hosei = command.hosei
             msg.lamda = command.lamda
             msg.limit = command.limit
