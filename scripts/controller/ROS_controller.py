@@ -28,6 +28,7 @@ sys.path.append("/home/amigos/ros/src/necst/lib")
 #import node_authority
 #auth = node_authority.authority()
 
+
 class controller(object):
 
     task_flag = False
