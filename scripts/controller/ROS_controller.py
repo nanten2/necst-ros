@@ -23,6 +23,7 @@ from necst.msg import Achilles_msg
 from necst.msg import Bool_necst
 from necst.msg import String_necst
 from necst.msg import Int64_necst
+from NASCORX_XFFTS.msg import XFFTS_para_msg
 sys.path.append("/home/amigos/ros/src/necst/lib")
 #import node_authority
 #auth = node_authority.authority()
@@ -64,6 +65,7 @@ class controller(object):
         self.pub_hot = rospy.Publisher("hot", String_necst, queue_size = 1, latch = True)
         self.pub_m2 = rospy.Publisher("m2", Int64_necst, queue_size=1, latch=True)
         self.pub_achilles = rospy.Publisher("achilles", Achilles_msg, queue_size=1)
+        self.pub_XFFTS = rospy.Publisher("XFFTS_parameter", XFFTS_para_msg, queue_size=1)
         self.pub_regist = rospy.Publisher("authority_regist", String_necst, queue_size=1)
 
         time.sleep(0.5)
@@ -593,6 +595,25 @@ class controller(object):
         msg.data = exposure
         self.pub3.publish(msg)
         return
+    
+    def oneshot_XFFTS(self, integtime=1, repeat=1, synctime=0.1):
+        """XFFTS Publisher
+        Parameters
+        ----------
+        integtime : integration time of each observation.
+        repeat    : How many times to repeat observation.
+        """
+        
+        msg = XFFTS_para_msg()
+        msg.integtime = integtime
+        msg.repeat = repeat
+        msg.synctime = synctime
+        msg.from_node = self.node_name
+        msg.timestamp = time.time()
+
+        self.pub_XFFTS.publish(msg)
+        return
+        
 
 # ===================
 # status
@@ -627,7 +648,4 @@ class controller(object):
         self.status = req
         self.read_sub.unregister()
         return
-
-
-
 
