@@ -28,7 +28,7 @@ class azel_list(object):
         self.start_time = time.time()
         rospy.Subscriber("wc_list", List_coord_msg, self._receive_list, queue_size=1)
         rospy.Subscriber("status_weather", Status_weather_msg, self._receive_weather, queue_size=1)
-        rospy.Subscriber("move_stop", Bool_necst, self._stop, queue_size=1)a
+        rospy.Subscriber("move_stop", Bool_necst, self._stop, queue_size=1)
         
         self.pub = rospy.Publisher("list_azel", List_coord_msg, queue_size=1)
         self.stop = rospy.Publisher("move_stop", Bool_necst, queue_size=1)
