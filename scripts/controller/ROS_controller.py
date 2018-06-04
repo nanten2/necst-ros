@@ -102,6 +102,7 @@ class controller(object):
             if self.auth == self.node_name:
                 ret = func(self, *args,**kwargs)
             else:
+                ret = ""
                 print("This node don't have authority...")
                 print("current authority : ", self.auth)
                 pass
@@ -113,6 +114,11 @@ class controller(object):
         return
     
     def initialize(self):
+        if self.node_name:
+            print("You already have node_name : ", self.node_name)
+            return
+        else:
+            pass
         for i in range(100):
             name = self.frame +str(i)
             node_data = rosnode.get_node_names()
