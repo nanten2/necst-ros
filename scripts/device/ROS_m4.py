@@ -4,8 +4,8 @@ import sys
 import rospy
 import time
 import threading
-sys.path.append("/home/amigos/ros/src/necst/lib")
-sys.path.append("home/necst/ros/src/necst/lib")
+sys.path.append("/home/amigos/ros/src/necst/lib/device")
+sys.path.append("home/necst/ros/src/necst/lib/device")
 import m4_device as dev
 
 from necst.msg import String_necst

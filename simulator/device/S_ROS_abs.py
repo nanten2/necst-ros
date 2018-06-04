@@ -5,11 +5,15 @@ import time
 import threading
 
 from necst.msg import String_necst 
-#import sys
+import sys
 #sys.path.append("/home/amigos/ros/src/necst/lib")
 #import abs_device as dev
+sys.path.append("/home/amigos/ros/src/necst/lib")
+sys.path.append("/home/necst/ros/src/necst/lib")
+import topic_status
 
 node_name = 'abs_controller'
+deco = topic_status.deco(node_name)
 
 class abs_controller(object):
 
@@ -57,7 +61,8 @@ class abs_controller(object):
         status_thread.setDaemon(True)
         status_thread.start()
         return
-
+    
+    @deco
     def pub_status(self):
         msg = String_necst()
         msg.from_node = node_name

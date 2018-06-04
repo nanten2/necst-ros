@@ -51,19 +51,22 @@ class worldcoord(object):
             else:
                 time.sleep(0.1)
                 continue
-            print(command.planet)
+            #print(command.planet)
             time_list = [dt.fromtimestamp(command.timestamp+delta_t*i) for i in range(list_num)]
             #time_list = Time(time_list)
 
             if not command.planet.lower() in self.planet_list:
-                logerr("planet name is false...")
+                rospy.logerr("planet name is false...")
                 continue
             else:
                 pass
             target_list = get_body(command.planet.lower(), Time(time_list))#gcrs
-            print(target_list)
+            #print(target_list)
             target_list.location = nanten2
             altaz_list = target_list.altaz
+            if not all((0.<i<90. for i in altaz_list.alt.deg)):
+                rospy.logerr("This planet is not rizing...")
+                continue
             ret = calc_offset.calc_offset(altaz_list.az.deg, altaz_list.alt.deg,
                                           "altaz",
                                           command.off_x, command.off_y, command.offcoord,
@@ -82,7 +85,7 @@ class worldcoord(object):
             msg.limit = command.limit
             msg.timestamp = current_time
             self.pub.publish(msg)
-            print(msg)
+            #print(msg)
             print("publish status!!\n")
             print("end_create_list\n")
         return
