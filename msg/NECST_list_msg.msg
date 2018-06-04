@@ -1,0 +1,11 @@
+bool m2
+bool hot
+bool m4
+bool scan_linear
+bool scan_otf
+bool scan_planet
+bool scan_onepoint
+bool encoder
+bool azel_list
+string from_node
+float64 timestamp
