@@ -90,6 +90,8 @@ class worldcoord(object):
                     off_y_list,
                     command.offcoord, command.dcos,
                     time_list)
+                if not ret:
+                    continue
                 current_time = time.time()
 
                 print(ret[0],ret[1])

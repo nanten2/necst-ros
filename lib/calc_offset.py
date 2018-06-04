@@ -25,8 +25,7 @@ def calc_offset(input_x, input_y, coord, input_off_x, input_off_y, offcoord, dco
         off_frame = coord_list[offcoord.lower()]
     except:
         print("### !!error coord!! ###")
-        sys.exit()
-        pass
+        return ""
     
     on_coord = SkyCoord(x, y, frame=on_frame, location=nanten2,obstime=timestamp)
     xsign = 0
