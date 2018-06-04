@@ -34,14 +34,14 @@ def calc_offset(input_x, input_y, coord, input_off_x, input_off_y, offcoord, dco
     
     if off_frame == "altaz":
         xsign = [round((np.sign(i)-1)/2) for i in x]
-        ysign = [round((np.sign(i)-1)/2) for i in y]
+        ysign = 0#[round((np.sign(i)-1)/2) for i in y]
         on_coord = on_coord.transform_to(off_frame)
         real_az = on_coord.az+360*(xsign*u.deg) + off_x
         real_alt = on_coord.alt+360*(ysign*u.deg) + off_y
 
         print(real_az)
         xsign = [round((np.sign(i)-1)/2) for i in real_az]
-        ysign = [round((np.sign(i)-1)/2) for i in real_alt]
+        ysign = 0#[round((np.sign(i)-1)/2) for i in real_alt]
         ret_coord = SkyCoord(real_az, real_alt, frame=off_frame, unit="deg", location=nanten2, obstime=timestamp)
         on_coord = ret_coord.transform_to(on_frame)
         on_x = on_coord.data.lon + 360*(xsign*u.deg)

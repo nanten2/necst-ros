@@ -9,7 +9,7 @@ import pexpect
 import getpass
 import rospy
 from necst.msg import Status_weather_msg
-
+from numpy.random import randint, random
 node_name = "weather_status"
 
 class weather_controller(object):
@@ -28,20 +28,20 @@ class weather_controller(object):
         msg = Status_weather_msg()
         while not rospy.is_shutdown():
             ret = self.get_weather()
-            msg.in_temp = ret[6]
-            msg.out_temp = ret[7]
-            msg.in_humi = ret[8]
-            msg.out_humi = ret[9]
-            msg.wind_sp = ret[11]
-            msg.wind_dir = ret[10]
-            msg.press = ret[12]
-            msg.rain = ret[13]
-            msg.cabin_temp1 = ret[14]
-            msg.cabin_temp2 = ret[15]
-            msg.dome_temp1 = ret[16]
-            msg.dome_temp2 = ret[17]
-            msg.gen_temp1 = ret[18]
-            msg.gen_temp2 = ret[19]
+            msg.in_temp = ret[6]+random()
+            msg.out_temp = ret[7]+random()
+            msg.in_humi = ret[8]+random()
+            msg.out_humi = ret[9]+random()
+            msg.wind_sp = ret[11]+random()
+            msg.wind_dir = ret[10]+random()
+            msg.press = ret[12]+random()
+            msg.rain = ret[13]+random()
+            msg.cabin_temp1 = ret[14]+random()
+            msg.cabin_temp2 = ret[15]+random()
+            msg.dome_temp1 = ret[16]+random()
+            msg.dome_temp2 = ret[17]+random()
+            msg.gen_temp1 = ret[18]+random()
+            msg.gen_temp2 = ret[19]+random()
             msg.from_node = node_name
             msg.timestamp = time.time()
             pub.publish(msg)

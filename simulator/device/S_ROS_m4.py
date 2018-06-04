@@ -7,10 +7,12 @@ import threading
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("home/necst/ros/src/necst/lib")
 #import m4_device as dev
+import topic_status
 
 from necst.msg import String_necst
 
 node_name = 'm4_controller'
+deco = topic_status.deco(node_name)
 
 class m4_controller(object):
 
@@ -68,7 +70,8 @@ class m4_controller(object):
         status.setDaemon(True)
         status.start()
         return
-
+    
+    @deco
     def pub_status(self):
         msg = String_necst()
         msg.from_node = node_name
