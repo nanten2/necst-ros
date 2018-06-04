@@ -111,7 +111,12 @@ class azel_list(object):
                     loop_count = 0
                     check_count = 1
                     for i in range(10):
-                        if param.time_list[loop+1]< time_list2[-1]:
+                        if param.time_list[-1]< time_list2[-1]:
+                            del x_list2[-1]
+                            del y_list2[-1]
+                            del time_list2[-1]
+                            self.stop_flag = True
+                        elif param.time_list[loop+1] <= time_list2[-1]:
                             del x_list2[-1]
                             del y_list2[-1]
                             del time_list2[-1]
@@ -144,21 +149,24 @@ class azel_list(object):
                     time_list2 = [param.time_list[0]+dt*(i+loop*10) for i in range(10)]
                     loop += 1
                     
-                for i in range(10):
-                    if param.time_list[-1]< time_list2[-1]:
-                        del x_list2[-1]
-                        del y_list2[-1]
-                        del time_list2[-1]
-                        self.stop_flag = True
-                    else:
-                        break
-                time_list3 = [datetime.fromtimestamp(time_list2[i]) for i in range(len(time_list2))]
-                astro_time = Time(time_list3)
-                ret = self.calc.coordinate_calc(x_list2, y_list2, astro_time,
-                                                param.coord, param.off_az, param.off_el, 
-                                                param.hosei, param.lamda, self.weather.press,
-                                                self.weather.out_temp, self.weather.out_humi, param.limit)
-                ret[0] = self.negative_change(ret[0])
+                    for i in range(10):
+                        if param.time_list[-1]< time_list2[-1]:
+                            del x_list2[-1]
+                            del y_list2[-1]
+                            del time_list2[-1]
+                            self.stop_flag = True
+                        else:
+                            break
+                if time_list2 != []:
+                    time_list3 = [datetime.fromtimestamp(time_list2[i]) for i in range(len(time_list2))]
+                    astro_time = Time(time_list3)
+                    ret = self.calc.coordinate_calc(x_list2, y_list2, astro_time,
+                                                    param.coord, param.off_az, param.off_el, 
+                                                    param.hosei, param.lamda, self.weather.press,
+                                                    self.weather.out_temp, self.weather.out_humi, param.limit)
+                    ret[0] = self.negative_change(ret[0])
+                else:
+                    limit_flag = True
                     
                 """limit check"""
                 for i in range(len(time_list2)):

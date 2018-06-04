@@ -48,7 +48,6 @@ class controller(object):
         rospy.init_node(self.node_name)
         
         """init"""
-        self.read_sub = rospy.Subscriber("read_status", Read_status_msg, self._write_status)
         self.antenna_sub = rospy.Subscriber("tracking_check", Bool_necst, self._antenna_tracking)
         self.dome_sub = rospy.Subscriber("dome_tracking_check", Bool_necst, self._dome_tracking)
         self.regist_sub = rospy.Subscriber("authority_check", String_necst, self._pick_up, queue_size=1)
@@ -84,7 +83,7 @@ class controller(object):
     def _release(self):
         self.antenna_sub.unregister()
         self.dome_sub.unregister()
-        self.read_sub.unregister()
+        #self.read_sub.unregister()
         self.regist_sub.unregister()
         print("ROS_controller is finished.")
         return
@@ -101,11 +100,12 @@ class controller(object):
             self.get_authority()
             time.sleep(0.5)
             if self.auth == self.node_name:
-                func(self, *args,**kwargs)
+                ret = func(self, *args,**kwargs)
             else:
                 print("This node don't have authority...")
                 print("current authority : ", self.auth)
                 pass
+            return ret
         return wrapper
     
     def _pick_up(self,req):
@@ -597,7 +597,7 @@ class controller(object):
         self.pub3.publish(msg)
         return
     
-    def oneshot_XFFTS(self, integtime=1, repeat=1, synctime=0.1):
+    def oneshot_XFFTS(self, integtime, repeat, synctime):
         """XFFTS Publisher
         Parameters
         ----------
@@ -611,14 +611,14 @@ class controller(object):
         msg.synctime = synctime
         msg.from_node = self.node_name
         msg.timestamp = time.time()
-
+        
         self.pub_XFFTS.publish(msg)
         return
         
 
-# ===================
-# status
-# ===================
+    # ===================
+    # status
+    # ===================
     @deco_check
     def read_status(self):
         """read status
@@ -632,6 +632,8 @@ class controller(object):
         $python ROS_status.py 1
 
         """
+        self.read_sub = rospy.Subscriber("read_status", Read_status_msg, self._write_status)
+        
         while not rospy.is_shutdown():
             if self.status:
                 status = self.status
