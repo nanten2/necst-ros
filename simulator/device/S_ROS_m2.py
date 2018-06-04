@@ -13,12 +13,14 @@ import threading
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("home/necst/ros/src/necst/lib")
 #import m2_device as dev
+import topic_status
 
 from necst.msg import String_necst
 from necst.msg import Float64_necst
 from necst.msg import Int64_necst
 
 node_name = 'm2_controller'
+deco = topic_status.deco(node_name)
 
 class m2_controller(object):
     #reference  /src/obs/modules/hal/subref.cpp
@@ -72,7 +74,8 @@ class m2_controller(object):
         status.setDaemon(True)
         status.start()
         return
-    
+
+    @deco
     def pub_status(self):
         msg = Float64_necst()
         msg.from_node = node_name        

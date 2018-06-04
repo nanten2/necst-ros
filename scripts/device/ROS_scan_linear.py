@@ -10,11 +10,14 @@ from datetime import datetime as dt
 import astropy.units as u
 from astropy.coordinates import SkyCoord, EarthLocation
 import sys
-sys.path.append("/home/amigos/ros/src/necst/lib/")
-sys.path.append("/home/amigos/ros/src/necst/lib/")
+sys.path.append("/home/amigos/ros/src/necst/lib")
+sys.path.append("/home/amigos/ros/src/necst/lib")
 import calc_offset
+import topic_status
 
 node_name = "worldcoordinate_linear"
+deco = topic_status.deco(node_name)
+
 
 latitude = -22.96995611
 longitude = -67.70308139
@@ -41,7 +44,7 @@ class worldcoord(object):
         else:
             self.command = req
         return
-    
+    @deco
     def create_list(self):
         msg = List_coord_msg()
         msg.from_node = node_name
