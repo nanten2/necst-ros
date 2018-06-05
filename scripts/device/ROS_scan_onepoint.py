@@ -46,6 +46,8 @@ class worldcoord(object):
                                               command.offcoord,
                                               command.dcos,
                                               [dt.fromtimestamp(command.timestamp)])
+                if not ret:
+                    continue
                 current_time = time.time()
 
                 msg.x_list = [ret[0], ret[0]]
