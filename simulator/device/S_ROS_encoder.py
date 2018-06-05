@@ -12,6 +12,9 @@ from necst.msg import Status_antenna_msg
 from datetime import datetime as dt
 
 node_name = "encoder_status"
+sys.path.append("/home/amigos/ros/src/necst/lib")
+import topic_status
+deco = topic_status.deco(node_name)
 
 class enc_controller(object):
 
@@ -52,7 +55,8 @@ class enc_controller(object):
             rospy.loginfo("initialize : end")
         else:
             pass
-    """        
+    """
+    @deco
     def pub_status(self):
         pub = rospy.Publisher("status_encoder", Status_encoder_msg, queue_size = 1, latch = True)
         msg = Status_encoder_msg()

@@ -7,7 +7,7 @@
 # Info
 # ----
 
-name = 'position_switching2017'
+name = 'position_switching2018'
 description = 'Get P/S spectrum'
 
 
@@ -49,10 +49,10 @@ import doppler_nanten
 dp = doppler_nanten.doppler_nanten()
 import ROS_controller
 import obs_log
-list = []
-list.append("--obsfile")
-list.append(obsfile)
-obs_log.start_script(name, list)
+_list = []
+_list.append("--obsfile")
+_list.append(obsfile)
+obs_log.start_script(name, _list)
 
 con = ROS_controller.controller()
 con.dome_track()
@@ -116,20 +116,6 @@ if offset_dcos.lower() == 'y':
 else:
     off_dcos = 0
 
-if obs['coordsys'].lower() == 'j2000' or obs['coordsys'].lower() == 'b1950':
-    coord_sys = 'EQUATRIAL'
-    ra = obs['lambda_on']#on点x座標                                           
-    dec = obs['beta_on']#on点y座標     
-elif obs['coordsys'].lower() == 'galactic':
-    coord_sys = 'GALACTIC'
-    l = obs['lambda_on']#on点x座標                                           
-    b = obs['beta_on']#on点y座標     
-else:
-    print('Error:coordsys')
-    con.move_stop()
-    con.dome_stop()
-    sys.exit()
-
 if obs['lo1st_sb_1'] == 'U':#後半に似たのがあるけど気にしない()               
    sb1 = 1
 else:
@@ -184,13 +170,8 @@ latest_hottime = 0
 while num < n: 
     print('observation :'+str(num+1) + "\n")
         
-    if coord_sys == 'EQUATRIAL':
-        con.move(lambda_off, beta_off, coordsys, 0, off_x=lamdel_off, off_y=betdel_off, offcoord = cosydel)
+    con.onepoint_move(lambda_off, beta_off, coordsys, off_x=lamdel_off, off_y=betdel_off, offcoord = cosydel,dcos=dcos)
 
-    elif coord_sys == 'GALACTIC':
-        con.move(lambda_off, beta_off, "galactic", 0, off_x=lamdel_off, off_y=betdel_off, offcoord = cosydel)
-    else:
-        pass
     con.antenna_tracking_check()
     con.dome_tracking_check()
     print('tracking OK'+ "\n")
@@ -206,7 +187,6 @@ while num < n:
         dp1 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, lamdel_on, betdel_on, dcos, cosydel, 
                            integ_off*2, obs['restfreq_1']/1000., obs['restfreq_2']/1000., 
                            sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
-        #con.observation("start", integ_off)# getting one_shot_data 
         time.sleep(integ_off)
 
         status = con.read_status()
@@ -293,24 +273,14 @@ while num < n:
 
     print('move ON'+ "\n")
 
-    if coord_sys == 'EQUATRIAL':
-        con.move(lambda_on, beta_on, coordsys, 0, off_x=lamdel_on, off_y=betdel_on, offcoord = cosydel)
-
-    elif coord_sys == 'GALACTIC':
-        con.move(lambda_on, beta_on, "galactic", 0, off_x=lamdel_on, off_y=betdel_on, offcoord = cosydel)
-    else:
-        pass
+    con.onepoint_move(lambda_on, beta_on, coordsys, off_x=lamdel_on, off_y=betdel_on, offcoord = cosydel, dcos=dcos)
 
     con.antenna_tracking_check()
     con.dome_tracking_check()
     print('tracking OK'+"\n")
 
     print('get spectrum...')
-    #con.observation("start", integ_on)# getting one_shot_data
-    time.sleep(integ_on)
 
-
-    #print(dp1)
     status = con.read_status()
     temp = float(status.CabinTemp1) + 273.15
     d = con.oneshot_achilles(exposure=integ_on)
@@ -351,9 +321,6 @@ while num < n:
 
 print('R'+"\n")#最初と最後をhotではさむ
 con.move_hot('in')
-#con.observation("start", integ_off)
-time.sleep(integ_off)
-
 
 status = con.read_status()
 temp = float(status.CabinTemp1) + 273.15
