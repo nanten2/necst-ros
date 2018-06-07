@@ -64,10 +64,10 @@ def handler(num, flame):
     sys.exit()
 signal.signal(signal.SIGINT, handler)
 
-list = []
-list.append("--obsfile")
-list.append(obsfile)
-obs_log.start_script(name, list)
+_list = []
+_list.append("--obsfile")
+_list.append(obsfile)
+obs_log.start_script(name, _list)
 
 # read obsfile
 obsdir = '/home/amigos/necst-obsfiles/'
@@ -284,9 +284,9 @@ while rp_num < rp:
         print('tracking start')
         con.move_stop()
 
-        con.move(lambda_off, beta_off, coordsys,
-                 off_x=lamdel_off, off_y=betdel_off, 
-                 offcoord = cosydel)
+        con.onepoint_move(lambda_off, beta_off, coordsys,
+                          off_x=lamdel_off, off_y=betdel_off, 
+                          offcoord = cosydel,dcos=dcos)
 
         print("check_track")
         con.antenna_tracking_check()
@@ -418,10 +418,10 @@ while rp_num < rp:
         con.move_stop()
         ssx = (sx + num*gridx) - float(dx)/float(dt)*rampt-float(dx)/2.#rampの始まり
         ssy = (sy + num*gridy) - float(dy)/float(dt)*rampt-float(dy)/2.#rampの始まり
-        con.move(lambda_on, beta_on, coordsys,
-                 off_x = ssx, off_y = ssy,
-                 offcoord = cosydel,
-                 dcos = dcos)
+        con.onepoint_move(lambda_on, beta_on, coordsys,
+                          off_x = ssx, off_y = ssy,
+                          offcoord = cosydel,
+                          dcos = dcos)
 
         print('moving...')
         con.antenna_tracking_check()
@@ -432,21 +432,18 @@ while rp_num < rp:
         print(' OTF scan_start!! ')
         print('move ON')
         delay = 3.
-        st = datetime.utcnow() + timedelta(seconds=float(rampt + delay))
-        start_on = [st.year, st.month, st.day, st.hour, st.minute, st.second, st.microsecond]
+        ctime = time.time()
+        start_on = Time(datetime.fromtimestamp(delay+ctime)).mjd
         print("%%%%%%%%%%%%%%%%")
         print(start_on)
-        con.otf_scan(lambda_on, beta_on, coordsys, dx, dy, dt, scan_point, rampt, delay=delay, start_on=start_on, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, movetime=0.01, limit=True)
+        con.otf_scan(lambda_on, beta_on, coordsys, dx, dy, dt, scan_point, rampt, delay=delay, current_time=ctime, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, limit=True)
 
         print('getting_data...')
-        start_on = Time(st).mjd
         d = con.oneshot_achilles(repeat = scan_point ,exposure = integ_on ,stime = start_on)
         print("start_on:",start_on)
         while start_on + obs['otflen']/24./3600. > 40587 + time.time()/(24.*3600.):
             #while obs['otflen']/24./3600. > 40587 + time.time()/(24.*3600.):    
             time.sleep(0.001)
-        #con.observation("start", integ_on)# getting one_shot_data
-        time.sleep(integ_on)
 
         status = con.read_status()
         temp = float(status.CabinTemp1) + 273.15

@@ -7,6 +7,7 @@ import sys
 sys.path.append("/home/amigos/ros/src/necst/lib")
 import achilles
 import numpy as np
+import time
 
 def oneshot(req):
     print("start oneshot")
@@ -15,6 +16,7 @@ def oneshot(req):
     #data = dfs.oneshot(req.repeat, req.exposure, req.stime)
     data = [[10000.0+np.random.randint(1000)]*int(req.repeat),
             [20000.0+np.random.randint(1000)]*int(req.repeat)]
+    time.sleep(req.exposure*req.repeat)
     dir_name = "/home/amigos/data/experiment/achilles/" + req.day + "/"
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
