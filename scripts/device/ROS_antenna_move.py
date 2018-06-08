@@ -867,7 +867,6 @@ class antenna_move(object):
         pub.publish(error)
         
     def pub_status(self):
-        rate = rospy.Rate(100)
         pub = rospy.Publisher('status_antenna',Status_antenna_msg, queue_size=1, latch = True)
         pub2 = rospy.Publisher('task_check', Bool_necst, queue_size =1, latch = True)
         status = Status_antenna_msg()
@@ -896,7 +895,7 @@ class antenna_move(object):
             task.timestamp = time.time()
             pub.publish(status)
             pub2.publish(task)
-            rate.sleep()
+            time.sleep(0.001)
             continue
 
 if __name__ == '__main__':
