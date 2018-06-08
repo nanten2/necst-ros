@@ -399,12 +399,12 @@ class antenna_move(object):
                 time.sleep(0.01-interval)
                     
             else:
-                self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#az
-                self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#el
-                self.command_az_speed = 0
-                self.command_el_speed = 0
-                return 0
-                
+                #self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#az
+                #self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#el
+                #self.command_az_speed = 0
+                #self.command_el_speed = 0
+                #return 0
+                pass
             return 1
             
             
