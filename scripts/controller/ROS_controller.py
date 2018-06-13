@@ -42,10 +42,16 @@ class controller(object):
     frame = "controller"
     node_name = ""
     
-    def __init__(self):
+    def __init__(self, escape=False):
         """node registration"""
         self.node_name = self.initialize()
         rospy.init_node(self.node_name)
+        self.escape = escape
+        if self.escape:
+            print("Authority escape mode start.")
+        else:
+            pass
+
         
         """init"""
         self.antenna_sub = rospy.Subscriber("tracking_check", Bool_necst, self._antenna_tracking)
@@ -99,7 +105,9 @@ class controller(object):
         def wrapper(self, *args,**kwargs):
             self.get_authority()
             time.sleep(0.5)
-            if self.auth == self.node_name:
+            if self.escape:
+                ret = func(self, *args,**kwargs)
+            elif self.auth == self.node_name:
                 ret = func(self, *args,**kwargs)
             else:
                 ret = ""
@@ -242,7 +250,7 @@ class controller(object):
         return
     
     @deco_check
-    def otf_scan(self, x, y, coord, dx, dy, dt, num, rampt, delay, start_on,  off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., limit=True):
+    def otf_scan(self, x, y, coord, dx, dy, dt, num, rampt, delay, current_time,  off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., limit=True):
         """ otf scan
 
         Parameters
@@ -256,7 +264,6 @@ class controller(object):
         num      : scan point [ num / 1 line]
         rampt    : ramp time [s]
         delay    : (start observation time)-(now time) [s]
-        start_on : start on position scan [utctime]
         off_x    : (target_x)-(scan start_x) [arcsec]
         off_y    : (target_y)-(scan start_y) [arcsec]
         offcoord : equal coord (no implementation)
@@ -265,11 +272,10 @@ class controller(object):
         lamda    : observation wavelength [um] (default ; 2600)
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
         """
-        current_time = time.time()
         print("start OTF scan!!")
 
         self.pub_otf.publish(x, y, coord, dx, dy, dt, num, rampt,
-                             delay, start_on, off_x, off_y, offcoord,
+                             delay, off_x, off_y, offcoord,
                              dcos, hosei, lamda, limit, self.node_name,
                              current_time)
         
