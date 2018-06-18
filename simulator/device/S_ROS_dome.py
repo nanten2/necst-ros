@@ -31,9 +31,10 @@ class dome_controller(object):
 
     #paramter(pub)
     parameters = {
-        'target_az':0,
         'command':0
         }
+    paralist = ["start"]
+    parameter_az = 0
     #
     buffer = [0,0,0,0,0,0]
     
@@ -517,8 +518,13 @@ class dome_controller(object):
         name = req.name
         value = req.value
         self.parameters[name] = value
+        self.paralist.append(self.parameters[name])
         self.flag = 0
         print(name,value)
+        return
+    
+    def set_az_command(self, req):
+        self.parameter_az = req.value
         return
 
     ###function call to dome/memb action 
@@ -526,35 +532,43 @@ class dome_controller(object):
         while True:
             print('wait command...')
             if self.flag == 1:
+                if self.paralist == []:
+                    time.sleep(0.01)
+                    continue
+                else:
+                    self.flag = 0
+                    continue
+            if self.paralist[0] == 'start':
+                self.flag = 1
+            elif self.paralist[0] == 'pass':
                 time.sleep(0.01)
-                continue
-            if self.parameters['command'] == 'pass':
-                time.sleep(0.01)
-            elif self.parameters['command'] == 'dome_open':
+            elif self.paralist[0] == 'dome_open':
                 self.dome_open()
                 self.flag = 1
-            elif self.parameters['command'] == 'dome_close':
+            elif self.paralist[0] == 'dome_close':
                 self.dome_close()
                 self.flag = 1
-            elif self.parameters['command'] == 'memb_open':
+            elif self.paralist[0] == 'memb_open':
                 self.memb_open()
                 self.flag = 1
-            elif self.parameters['command'] == 'memb_close':
+            elif self.paralist[0] == 'memb_close':
                 self.memb_close()
                 self.flag = 1
-            elif self.parameters['command'] == 'dome_move':
-                sub3 = rospy.Subscriber('dome_move_az', Dome_msg, self.set_command)
-                self.move(self.parameters['target_az'])
+            elif self.paralist[0] == 'dome_move':
+                sub3 = rospy.Subscriber('dome_move_az', Dome_msg, self.set_az_command)
+                time.sleep(0.1)
+                self.move(self.parameter_az)
                 self.flag = 1
-            elif self.parameters['command'] == 'dome_stop':
+            elif self.paralist[0] == 'dome_stop':
                 self.dome_stop()
                 self.end_flag = True
                 self.flag = 1
-            elif self.parameters['command'] == 'dome_tracking':
+            elif self.paralist[0] == 'dome_tracking':
                 self.end_flag = False
                 self.move_track()
                 self.flag = 1
                 pass
+            del self.paralist[0]
             time.sleep(0.01)
             continue
 
