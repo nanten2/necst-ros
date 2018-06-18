@@ -543,6 +543,7 @@ class dome_controller(object):
                 self.memb_close()
                 self.flag = 1
             elif self.parameters['command'] == 'dome_move':
+                sub3 = rospy.Subscriber('dome_move_az', Dome_msg, self.set_command)
                 self.move(self.parameters['target_az'])
                 self.flag = 1
             elif self.parameters['command'] == 'dome_stop':
