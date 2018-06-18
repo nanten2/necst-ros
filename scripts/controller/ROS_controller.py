@@ -62,6 +62,7 @@ class controller(object):
         self.pub_otf = rospy.Publisher("antenna_otf", Otf_mode_msg, queue_size = 1, latch = True)
         self.pub_planet_scan = rospy.Publisher("planet_otf", Otf_mode_msg, queue_size = 1, latch = True)        
         self.pub_dome = rospy.Publisher("dome_move", Dome_msg, queue_size = 1, latch = True)
+        self.pub_dome_move = rospy.Publisher("dome_move_az", Dome_msg, queue_size = 1, latch = True)
         self.pub_m4 = rospy.Publisher('m4', String_necst, queue_size = 1, latch = True)
         self.pub_hot = rospy.Publisher("hot", String_necst, queue_size = 1, latch = True)
         self.pub_m2 = rospy.Publisher("m2", Int64_necst, queue_size=1, latch=True)
@@ -363,13 +364,15 @@ class controller(object):
         dome = Dome_msg()
         dome.name = 'command'
         dome.value = 'dome_move'
-        self.pub_dome.publish(dome)
-        dome = Dome_msg()
-        dome.name = 'target_az'
-        dome.value = str(dist)
         dome.from_node = self.node_name
         dome.timestamp = time.time()
         self.pub_dome.publish(dome)
+        dome_move = Dome_msg()
+        dome_move.name = 'target_az'
+        dome_move.value = str(dist)
+        dome_move.from_node = self.node_name
+        dome_move.timestamp = time.time()
+        self.pub_dome_move.publish(dome_move)
         return
 
     @deco_check    
