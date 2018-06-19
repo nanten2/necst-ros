@@ -33,7 +33,7 @@ class dome_controller(object):
     parameters = {
         'command':0
         }
-    paralist = ["start"]
+    paralist = ['start']
     parameter_az = 0
     #
     buffer = [0,0,0,0,0,0]
@@ -80,71 +80,73 @@ class dome_controller(object):
         return
     
     def move(self, dist, track=False):
-        pos_arcsec = float(self.dome_enc)#[arcsec]
-        pos = pos_arcsec/3600.
-        pos = pos % 360.0
-        dist = float(dist) % 360.0
-        diff = dist - pos
-        dir = diff % 360.0
-        if dir < 0:
-            dir = dir*(-1)
-        
-        if pos == dist: return
-        if dir < 0:
-            if abs(dir) >= 180:
-                turn = 'right'
-            else:
-                turn = 'left'
-        else:
-            if abs(dir) >= 180:
-                turn = 'left'
-            else:
-                turn = 'right'
-        if abs(dir) < 5.0 or abs(dir) > 355.0 :
-            speed = 'low'
-        elif abs(dir) > 15.0 and abs(dir) < 345.0:###or => and
-            speed = 'high'
-        else:
-            speed = 'mid'
-        if not abs(dir) < 0.5:
-            global buffer
-            self.buffer[1] = 1
-            self.calc(turn, speed)
-            print(track)
-            if track:
-                time.sleep(0.1)
-                return
-            while dir != 0:
-                pos_arcsec = float(self.dome_enc)
-                pos = pos_arcsec/3600.
-                pos = pos % 360.0
-                dist = dist % 360.0
-                diff = dist - pos
-                dir = diff % 360.0
-                if abs(dir) <= 0.5:
-                    dir = 0
+        while not self.end_flag:
+            pos_arcsec = float(self.dome_enc)#[arcsec]
+            pos = pos_arcsec/3600.
+            pos = pos % 360.0
+            dist = float(dist) % 360.0
+            diff = dist - pos
+            dir = diff % 360.0
+            if dir < 0:
+                dir = dir*(-1)
+            
+            if pos == dist: return
+            if dir < 0:
+                if abs(dir) >= 180:
+                    turn = 'right'
                 else:
-                    if dir < 0:
-                        if abs(dir) >= 180:
-                            turn = 'right'
-                        else:
-                            turn = 'left'
+                    turn = 'left'
+            else:
+                if abs(dir) >= 180:
+                    turn = 'left'
+                else:
+                    turn = 'right'
+            if abs(dir) < 5.0 or abs(dir) > 355.0 :
+                speed = 'low'
+            elif abs(dir) > 15.0 and abs(dir) < 345.0:###or => and
+                speed = 'high'
+            else:
+                speed = 'mid'
+            if not abs(dir) < 0.5:
+                global buffer
+                self.buffer[1] = 1
+                self.calc(turn, speed)
+                print(track)
+                if track:
+                    time.sleep(0.1)
+                    return
+                while dir != 0:
+                    pos_arcsec = float(self.dome_enc)
+                    pos = pos_arcsec/3600.
+                    pos = pos % 360.0
+                    dist = dist % 360.0
+                    diff = dist - pos
+                    dir = diff % 360.0
+                    if abs(dir) <= 0.5 or self.end_flag == True:
+                        dir = 0
                     else:
-                        if abs(dir) >= 180:
-                            turn = 'left'
+                        if dir < 0:
+                            if abs(dir) >= 180:
+                                turn = 'right'
+                            else:
+                                turn = 'left'
                         else:
-                            turn = 'right'
-                            
-                    if abs(dir) < 5.0 or abs(dir) > 355.0:
-                        speed = 'low'
-                    elif abs(dir) > 20.0 and abs(dir) < 340.0:###or => and
-                        speed = 'high'
-                    else:
-                        speed = 'mid'
-                    self.calc(turn, speed)
-                time.sleep(0.1)
-        
-        self.dome_stop()
+                            if abs(dir) >= 180:
+                                turn = 'left'
+                            else:
+                                turn = 'right'
+                                
+                        if abs(dir) < 5.0 or abs(dir) > 355.0:
+                            speed = 'low'
+                        elif abs(dir) > 20.0 and abs(dir) < 340.0:###or => and
+                            speed = 'high'
+                        else:
+                            speed = 'mid'
+                        self.calc(turn, speed)
+                    time.sleep(0.1)
+            
+            self.dome_stop()
+            break
         return
 
     def calc(self, turn, speed):
@@ -557,11 +559,8 @@ class dome_controller(object):
             elif self.paralist[0] == 'dome_move':
                 sub3 = rospy.Subscriber('dome_move_az', Dome_msg, self.set_az_command)
                 time.sleep(0.1)
+                self.end_flag = False
                 self.move(self.parameter_az)
-                self.flag = 1
-            elif self.paralist[0] == 'dome_stop':
-                self.dome_stop()
-                self.end_flag = True
                 self.flag = 1
             elif self.paralist[0] == 'dome_tracking':
                 self.end_flag = False
@@ -574,19 +573,19 @@ class dome_controller(object):
 
     def stop_dome(self):
         while True:
-            if self.flag == 1:
-                time.sleep(0.01)
-                continue
-            elif self.paralist[0] == 'dome_stop':
+            if ('dome_stop' in self.paralist) == True:
                 self.dome_stop()
                 self.end_flag = True
                 self.flag = 1
                 print('!!!dome_stop!!!')
-            elif self.paralist[0] == 'dome_track_end':
+                self.paralist = ['start']
+            elif ('dome_track_end' in self.paralist) == True:
                 self.end_flag = True
                 self.flag = 1
                 print('dome track end')
-            del self.paralist[0]
+                self.paralist = ['start']
+            else:
+                pass
             time.sleep(0.01)
             continue        
 
