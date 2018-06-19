@@ -577,15 +577,16 @@ class dome_controller(object):
             if self.flag == 1:
                 time.sleep(0.01)
                 continue
-            elif self.parameters['command'] == 'dome_stop':
+            elif self.paralist[0] == 'dome_stop':
                 self.dome_stop()
                 self.end_flag = True
                 self.flag = 1
                 print('!!!dome_stop!!!')
-            elif self.parameters['command'] == 'dome_track_end':
+            elif self.paralist[0] == 'dome_track_end':
                 self.end_flag = True
                 self.flag = 1
                 print('dome track end')
+            del self.paralist[0]
             time.sleep(0.01)
             continue        
 
