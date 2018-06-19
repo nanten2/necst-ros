@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
    roscpp
    rospy
    std_msgs
+   std_srvs
    message_generation
    #actionlib_msgs
    geometry_msgs
@@ -78,9 +79,10 @@ add_message_files(
 )
 
 ## Generate services in the 'srv' folder
-#add_service_files(
-  #FILES
-#)
+add_service_files(
+  FILES
+  String_srv.srv
+)
 
 ## Generate actions in the 'action' folder
 #add_action_files(
