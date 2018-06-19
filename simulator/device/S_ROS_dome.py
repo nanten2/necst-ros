@@ -590,6 +590,7 @@ class dome_controller(object):
             time.sleep(0.01)
             continue        
 
+
     ###publish status
     def pub_status(self):
         while True:
