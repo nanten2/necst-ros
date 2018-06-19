@@ -160,7 +160,7 @@ def device():
             time.sleep(0.5)
             continue
         try:
-            fb.put("", "/NECST/Monitor/Telescope/device",device_status)
+            fb.put("", "/NECST/Monitor/Telescope/Device",device_status)
             pass
         except Exception as e:
             rospy.logerr(e)

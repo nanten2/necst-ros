@@ -170,11 +170,11 @@ class controller(object):
         msg = String_necst()
         self.move_stop()
         if not switch:
-            switch = str(input("drive change (on/off) : "))
-        msg.data =  switch.lower()
+            switch = str(input("drive change (on/off) : ")).lower()
+        msg.data =  switch
         msg.from_node = self.node_name
         msg.timestamp = time.time()
-        if switch == "on" or switch == "off":
+        if switch in ["on", "off", "ON", "OFF"]:
             self.pub_drive.publish(msg)
             self.pub_contactor.publish(msg)
             print("drive : ", switch, "!!")
@@ -264,6 +264,7 @@ class controller(object):
         num      : scan point [ num / 1 line]
         rampt    : ramp time [s]
         delay    : (start observation time)-(now time) [s]
+        current_time    : time.time()
         off_x    : (target_x)-(scan start_x) [arcsec]
         off_y    : (target_y)-(scan start_y) [arcsec]
         offcoord : equal coord (no implementation)
@@ -329,7 +330,6 @@ class controller(object):
             pass
         return
         
-    @deco_check
     def move_stop(self):
         print("move_stop")
         self.pub_stop.publish(True, self.node_name, time.time())
@@ -351,14 +351,14 @@ class controller(object):
                 distance [deg] --> dome_move(value)
                 "stop"         --> dome_stop()
         """
-        if value == "open":
+        if isinstance(value,int) or isinstance(value, float):
+            self.dome_move(value)
+        elif value.lower() == "open":
             self.dome_open()
-        elif value == "close":
+        elif value.lower() == "close":
             self.dome_close()
-        elif value == "stop":
+        elif value.lower() == "stop":
             self.dome_stop()
-        elif isinstance(value,int) or isinstance(value, float):
-            self.dome_move(dist)
         else:
             print("parameter error")
             pass
@@ -415,9 +415,9 @@ class controller(object):
         value : "open"  --> memb_open()
                 "close" --> memb_close()
         """
-        if value == "open":
+        if value.lower() == "open":
             self.memb_open()
-        elif value == "close":
+        elif value.lower() == "close":
             self.memb_close()
         else:
             print("parameter error")
@@ -536,7 +536,7 @@ class controller(object):
         
         """
         status = Int64_necst()
-        status.data = dist
+        status.data = int(dist)
         status.from_node = self.node_name
         status.timestamp = time.time()        
         self.pub_m2.publish(status)
