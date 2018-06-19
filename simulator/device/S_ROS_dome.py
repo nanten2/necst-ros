@@ -4,13 +4,18 @@ import time
 import math
 import threading
 import sys
+sys.path.append("/home/amigos/ros/src/necst/lib")
+sys.path.append("/home/necst/ros/src/necst/lib")
 #ros
 import rospy
 from necst.msg import Status_encoder_msg
 from necst.msg import Status_dome_msg
 from necst.msg import Dome_msg
+from necst.msg import Bool_necst
 
 node_name = "dome"
+import topic_status
+deco = topic_status.deco(node_name)
 
 class dome_controller(object):
 
@@ -28,6 +33,7 @@ class dome_controller(object):
 
     ###flag
     flag = 0
+    end_flag = True    
 
     #paramter(pub)
     parameters = {
@@ -640,7 +646,9 @@ class dome_controller(object):
 
 
     ###publish status
+    @deco
     def pub_status(self):
+        track_pub = rospy.Publisher('dome_track_flag', Bool_necst, queue_size=1)##2018/06/15 kondo
         while not rospy.is_shutdown():
             pub = rospy.Publisher('status_dome', Status_dome_msg, queue_size=10, latch = True)
             s = Status_dome_msg()
@@ -657,6 +665,12 @@ class dome_controller(object):
             s.from_node = node_name
             s.timestamp = time.time()
             pub.publish(s)
+            if self.end_flag:
+                track_pub.publish(False, node_name, time.time())
+            elif not self.end_flag:
+                track_pub.publish(True, node_name, time.time())
+            else:
+                print("where track flag???")
             time.sleep(0.1)
         
         

@@ -14,8 +14,12 @@ import threading
 
 from necst.msg import String_necst
 from necst.msg import Status_limit_msg
+sys.path.append("/home/amigos/ros/src/necst/lib")
+sys.path.append("/home/necst/ros/src/necst/lib")
+import topic_status
 
 node_name = "drive"
+deco = topic_status.deco(node_name)
 
 class drive(object):
 
@@ -35,7 +39,8 @@ class drive(object):
     def _contactor(self, req):
         self.switch["contactor"] = req.data
         return
-    
+
+    @deco
     def move(self):
         while not rospy.is_shutdown():
             param = []

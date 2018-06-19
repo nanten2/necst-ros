@@ -52,6 +52,7 @@ class antenna_move(object):
     limit_el = True
     command_az = 0
     command_el = 0
+    command_time = 0
     current_az = 0
     current_el = 0
 
@@ -171,6 +172,9 @@ class antenna_move(object):
             self.parameters['az_list'].extend(req.x_list)
             self.parameters['el_list'].extend(req.y_list)
             self.parameters['start_time_list'].extend(req.time_list)
+            #print(self.parameters['az_list'],"\n")
+            #print(self.parameters['el_list'], "\n")
+            #print(self.parameters['start_time_list'],"\n")
         else:
             self.parameters['az_list'] = []
             self.parameters['el_list'] = []
@@ -231,6 +235,7 @@ class antenna_move(object):
             if loop == 19:
                 pass
             elif ct - st[n-1] >=0 and first_st == st:
+
                 loop += 1
                 time.sleep(0.1)
                 continue
@@ -264,6 +269,9 @@ class antenna_move(object):
             return (x1,x2,y1,y2,st2)
         
     def act_azel(self):
+        xx = []
+        yy = []
+        tt = []
         while True:
             if self.stop_flag:
                 time.sleep(1)
@@ -283,8 +291,14 @@ class antenna_move(object):
                 el = ret[3] - ret[2]
                 c = time.time()
                 st = ret[4]
-                tar_az = ret[0] + az*(c-st)*10
-                tar_el = ret[2] + el*(c-st)*10
+
+                tar_az = ret[0] + az*(c-(st-0.1))*10
+                tar_el = ret[2] + el*(c-(st-0.1))*10
+                #print("            ", ret[0], ret[1], ret[4])
+
+                #print(tar_az,c)
+                #2nd limit check (1st limit check is in ROS_antenna.py)
+
                 if tar_az > 240*3600. or tar_el < -240*3600.:
                     self.stop_flag = True#False?
                     print('!!!target az limit!!! : ', tar_az)
@@ -295,11 +309,13 @@ class antenna_move(object):
                     continue
                 self.command_az = tar_az
                 self.command_el = tar_el
+                self.command_time = time.time()
                 d_t = st - c
                 a_time3=time.time()
                 if self.emergency_flag:
                     time.sleep(0.1)
                     continue
+
                 self.azel_move(tar_az,tar_el,10000,12000)
                 time.sleep(0.01)           
 
@@ -867,10 +883,15 @@ class antenna_move(object):
         pub.publish(error)
         
     def pub_status(self):
+
         pub = rospy.Publisher('status_antenna',Status_antenna_msg, queue_size=1, latch = True)
         pub2 = rospy.Publisher('task_check', Bool_necst, queue_size =1, latch = True)
         status = Status_antenna_msg()
         task = Bool_necst()
+        xx = []
+        yy = []
+        tt = []
+        
         while not rospy.is_shutdown():
             #publisher1
             #---------
@@ -883,7 +904,7 @@ class antenna_move(object):
             status.command_elspeed = self.command_el_speed
             status.node_status = self.node_status
             status.from_node = node_name
-            status.timestamp = time.time()
+            status.timestamp = self.command_time#time.time()
             #publisher2
             #----------
             if self.task:

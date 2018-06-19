@@ -18,7 +18,8 @@ class save_azel(object):
     enc_el = 45*3600.
     command_az = 0
     command_el = 45*3600.
-
+    command_time = 0
+    
     def __init__(self):
         pass
 
@@ -30,6 +31,7 @@ class save_azel(object):
     def callback2(self, req):
         self.command_az = req.command_az
         self.command_el = req.command_el
+        self.command_time = req.timestamp
         return
         
     def write_file(self):
@@ -49,8 +51,11 @@ class save_azel(object):
             ctime = time.time()
             print('%13.2f %3.4f %3.4f %3.4f %3.4f'%(ctime, self.enc_az/3600., self.enc_el/3600., self.command_az/3600., self.command_el/3600.))
             f = open(saveto,'a')
-            f.write('%s %s %s %s %s \n'%(str(ctime), str(self.enc_az), str(self.enc_el), str(self.command_az), str(self.command_el)))
+            f.write('%s %s %s %s %s \n'%(str(self.command_time), str(self.enc_az), str(self.enc_el), str(self.command_az), str(self.command_el)))
             f.close()
+            print("###############")
+            print(self.command_time, ctime)
+            
             time.sleep(0.01)
             continue
         return
