@@ -56,6 +56,8 @@ class dome_controller(object):
                 self.move(enc_az, track=True)
             time.sleep(0.01)
             if self.end_flag == True:
+                while "dome_tracking" in self.paralist:
+                    self.paralist.remove("dome_tracking")
                 break
             print('dome_tracking')
     
@@ -145,8 +147,13 @@ class dome_controller(object):
                         self.calc(turn, speed)
                     time.sleep(0.1)
             
+            self.paralist.remove("dome_move")
             self.dome_stop()
             break
+        if self.end_flag:
+            while "dome_move" in self.paralist:
+                self.paralist.remove("dome_move")
+        
         return
 
     def calc(self, turn, speed):
@@ -386,7 +393,7 @@ class dome_controller(object):
         return
     
     def limit_check(self):
-        while True:
+        while not rospy.is_shutdown():
             limit1 = self._limit_check()
             time.sleep(0.002)
             limit2 = self._limit_check()
@@ -466,7 +473,7 @@ class dome_controller(object):
     
     def status_check(self):
         #while not self.stop_status_flag.is_set():
-        while True:
+        while not rospy.is_shutdown():
             #ret1 = self.get_action()
             #ret2 = self.get_door_status()
             #ret3 = self.get_memb_status()
@@ -536,27 +543,23 @@ class dome_controller(object):
 
     ###function call to dome/memb action 
     def dome_OC(self):
-        while True:
+        while not rospy.is_shutdown():
             if self.paralist == []:
                 time.sleep(0.01)
                 continue
-            elif "dome_open" in self.paralist or "dome_close" in self.paralist:
-                try:
-                    if self.paralist.index("dome_open") < self.paralist.index("dome_close"):
-                        self.dome_open()
-                        self.paralist.remove("dome_open")
-                    else:
-                        self.dome_close()
-                        self.paralist.remove("dome_close")
-                except ValueError:
-                    try:
-                        checker = self.paralist.index("dome_open")
-                        self.dome_open()
-                        self.paralist.remove("dome_open")
-                    except ValueError:
-                        checker = self.paralist.index("dome_close")
-                        self.dome_close()
-                        self.paralist.remove("dome_close")
+            elif "dome_open" in self.paralist and "dome_close" in self.paralist:
+                if self.paralist.index("dome_open") < self.paralist.index("dome_close"):
+                    self.dome_open()
+                    self.paralist.remove("dome_open")
+                else:
+                    self.dome_close()
+                    self.paralist.remove("dome_close")
+            elif "dome_open" in self.paralist:
+                self.dome_open()
+                self.paralist.remove("dome_open")
+            elif "dome_close" in self.paralist:
+                self.dome_close()
+                self.paralist.remove("dome_close")
             else:
                 time.sleep(0.01)
                 continue
@@ -564,27 +567,23 @@ class dome_controller(object):
             continue
 
     def memb_OC(self):
-        while True:
+        while not rospy.is_shutdown():
             if self.paralist == []:
                 time.sleep(0.01)
                 continue
-            elif "memb_open" in self.paralist or "memb_close" in self.paralist:
-                try:
-                    if self.paralist.index("memb_open") < self.paralist.index("memb_close"):
-                        self.memb_open()
-                        self.paralist.remove("memb_open")
-                    else:
-                        self.memb_close()
-                        self.paralist.remove("memb_close")
-                except ValueError:
-                    try:
-                        checker = self.paralist.index("memb_open")
-                        self.memb_open()
-                        self.paralist.remove("memb_open")
-                    except ValueError:
-                        checker = self.paralist.index("memb_close")
-                        self.memb_close()
-                        self.paralist.remove("memb_close")
+            elif "memb_open" in self.paralist and "memb_close" in self.paralist:
+                if self.paralist.index("memb_open") < self.paralist.index("memb_close"):
+                    self.memb_open()
+                    self.paralist.remove("memb_open")
+                else:
+                    self.memb_close()
+                    self.paralist.remove("memb_close")
+            elif "memb_open" in self.paralist:
+                self.memb_open()
+                self.paralist.remove("memb_open")
+            elif "memb_close" in self.paralist:
+                self.memb_close()
+                self.paralist.remove("memb_close")
             else:
                 time.sleep(0.01)
                 continue
@@ -592,36 +591,28 @@ class dome_controller(object):
             continue
 
     def act_dome(self):
-        while True:
+        while not rospy.is_shutdown():
             print('wait command...')
             if self.paralist == []:
                 time.sleep(0.01)
                 continue
-            elif "dome_move" in self.paralist or "dome_tracking" in self.paralist:
-                try:
-                    if self.paralist.index("dome_move") < self.paralist.index("dome_tracking"):
-                        sub3 = rospy.Subscriber('dome_move_az', Dome_msg, self.set_az_command)
-                        time.sleep(0.1)
-                        self.end_flag = False
-                        self.move(self.parameter_az)
-                        self.paralist.remove("dome_move")
-                    else:
-                        self.end_flag = False
-                        self.move_track()
-                        self.paralist.remove("dome_tracking")
-                except ValueError:
-                    try:
-                        checker = self.paralist.index("dome_move")
-                        sub3 = rospy.Subscriber('dome_move_az', Dome_msg, self.set_az_command)
-                        time.sleep(0.1)
-                        self.end_flag = False
-                        self.move(self.parameter_az)
-                        self.paralist.remove("dome_move")
-                    except ValueError:
-                        checker = self.paralist.index("dome_tracking")
-                        self.end_flag = False
-                        self.move_track()
-                        self.paralist.remove("dome_tracking")
+            elif "dome_move" in self.paralist and "dome_tracking" in self.paralist:
+                if self.paralist.index("dome_move") < self.paralist.index("dome_tracking"):
+                    sub3 = rospy.Subscriber('dome_move_az', Dome_msg, self.set_az_command)
+                    time.sleep(0.1)
+                    self.end_flag = False
+                    self.move(self.parameter_az)
+                else:
+                    self.end_flag = False
+                    self.move_track()
+            elif "dome_move" in self.paralist:
+                sub3 = rospy.Subscriber('dome_move_az', Dome_msg, self.set_az_command)
+                time.sleep(0.1)
+                self.end_flag = False
+                self.move(self.parameter_az)
+            elif "dome_tracking" in self.paralist:
+                self.end_flag = False
+                self.move_track()
             else:
                 time.sleep(0.01)
                 continue
@@ -629,13 +620,13 @@ class dome_controller(object):
             continue
 
     def stop_dome(self):
-        while True:
-            if ('dome_stop' in self.paralist):
+        while not rospy.is_shutdown():
+            if 'dome_stop' in self.paralist:
                 self.dome_stop()
                 self.end_flag = True
                 print('!!!dome_stop!!!')
                 self.paralist.remove("dome_stop")
-            elif ('dome_track_end' in self.paralist):
+            elif 'dome_track_end' in self.paralist:
                 self.end_flag = True
                 print('dome track end')
                 self.paralist.remove("dome_track_end")
@@ -650,7 +641,7 @@ class dome_controller(object):
 
     ###publish status
     def pub_status(self):
-        while True:
+        while not rospy.is_shutdown():
             pub = rospy.Publisher('status_dome', Status_dome_msg, queue_size=10, latch = True)
             s = Status_dome_msg()
             s.move_status = self.status_box[0]
