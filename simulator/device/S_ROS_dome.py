@@ -33,7 +33,7 @@ class dome_controller(object):
     parameters = {
         'command':0
         }
-    paralist = ['start']
+    paralist = []
     parameter_az = 0
     #
     buffer = [0,0,0,0,0,0]
@@ -503,12 +503,18 @@ class dome_controller(object):
         th = threading.Thread(target = self.pub_status)
         th.setDaemon(True)
         th.start()
-        th2 = threading.Thread(target = self.act_dome)
+        th1 = threading.Thread(target = self.dome_OC)
+        th1.setDaemon(True)
+        th1.start()
+        th2 = threading.Thread(target = self.memb_OC)
         th2.setDaemon(True)
         th2.start()
-        th3 = threading.Thread(target = self.stop_dome)
+        th3 = threading.Thread(target = self.act_dome)
         th3.setDaemon(True)
         th3.start()
+        th4 = threading.Thread(target = self.stop_dome)
+        th4.setDaemon(True)
+        th4.start()
 
     ###set encoder az for dome tracking
     def set_enc_parameter(self, req):
@@ -521,7 +527,6 @@ class dome_controller(object):
         value = req.value
         self.parameters[name] = value
         self.paralist.append(self.parameters[name])
-        self.flag = 0
         print(name,value)
         return
     
@@ -530,60 +535,113 @@ class dome_controller(object):
         return
 
     ###function call to dome/memb action 
+    def dome_OC(self):
+        while True:
+            if self.paralist == []:
+                time.sleep(0.01)
+                continue
+            elif "dome_open" in self.paralist or "dome_close" in self.paralist:
+                try:
+                    if self.paralist.index("dome_open") < self.paralist.index("dome_close"):
+                        self.dome_open()
+                        self.paralist.remove("dome_open")
+                    else:
+                        self.dome_close()
+                        self.paralist.remove("dome_close")
+                except ValueError:
+                    try:
+                        checker = self.paralist.index("dome_open")
+                        self.dome_open()
+                        self.paralist.remove("dome_open")
+                    except ValueError:
+                        checker = self.paralist.index("dome_close")
+                        self.dome_close()
+                        self.paralist.remove("dome_close")
+            else:
+                time.sleep(0.01)
+                continue
+            time.sleep(0.01)
+            continue
+
+    def memb_OC(self):
+        while True:
+            if self.paralist == []:
+                time.sleep(0.01)
+                continue
+            elif "memb_open" in self.paralist or "memb_close" in self.paralist:
+                try:
+                    if self.paralist.index("memb_open") < self.paralist.index("memb_close"):
+                        self.memb_open()
+                        self.paralist.remove("memb_open")
+                    else:
+                        self.memb_close()
+                        self.paralist.remove("memb_close")
+                except ValueError:
+                    try:
+                        checker = self.paralist.index("memb_open")
+                        self.memb_open()
+                        self.paralist.remove("memb_open")
+                    except ValueError:
+                        checker = self.paralist.index("memb_close")
+                        self.memb_close()
+                        self.paralist.remove("memb_close")
+            else:
+                time.sleep(0.01)
+                continue
+            time.sleep(0.01)
+            continue
+
     def act_dome(self):
         while True:
             print('wait command...')
-            if self.flag == 1:
-                if self.paralist == []:
-                    time.sleep(0.01)
-                    continue
-                else:
-                    self.flag = 0
-                    continue
-            if self.paralist[0] == 'start':
-                self.flag = 1
-            elif self.paralist[0] == 'pass':
+            if self.paralist == []:
                 time.sleep(0.01)
-            elif self.paralist[0] == 'dome_open':
-                self.dome_open()
-                self.flag = 1
-            elif self.paralist[0] == 'dome_close':
-                self.dome_close()
-                self.flag = 1
-            elif self.paralist[0] == 'memb_open':
-                self.memb_open()
-                self.flag = 1
-            elif self.paralist[0] == 'memb_close':
-                self.memb_close()
-                self.flag = 1
-            elif self.paralist[0] == 'dome_move':
-                sub3 = rospy.Subscriber('dome_move_az', Dome_msg, self.set_az_command)
-                time.sleep(0.1)
-                self.end_flag = False
-                self.move(self.parameter_az)
-                self.flag = 1
-            elif self.paralist[0] == 'dome_tracking':
-                self.end_flag = False
-                self.move_track()
-                self.flag = 1
-                pass
-            del self.paralist[0]
+                continue
+            elif "dome_move" in self.paralist or "dome_tracking" in self.paralist:
+                try:
+                    if self.paralist.index("dome_move") < self.paralist.index("dome_tracking"):
+                        sub3 = rospy.Subscriber('dome_move_az', Dome_msg, self.set_az_command)
+                        time.sleep(0.1)
+                        self.end_flag = False
+                        self.move(self.parameter_az)
+                        self.paralist.remove("dome_move")
+                    else:
+                        self.end_flag = False
+                        self.move_track()
+                        self.paralist.remove("dome_tracking")
+                except ValueError:
+                    try:
+                        checker = self.paralist.index("dome_move")
+                        sub3 = rospy.Subscriber('dome_move_az', Dome_msg, self.set_az_command)
+                        time.sleep(0.1)
+                        self.end_flag = False
+                        self.move(self.parameter_az)
+                        self.paralist.remove("dome_move")
+                    except ValueError:
+                        checker = self.paralist.index("dome_tracking")
+                        self.end_flag = False
+                        self.move_track()
+                        self.paralist.remove("dome_tracking")
+            else:
+                time.sleep(0.01)
+                continue
             time.sleep(0.01)
             continue
 
     def stop_dome(self):
         while True:
-            if ('dome_stop' in self.paralist) == True:
+            if ('dome_stop' in self.paralist):
                 self.dome_stop()
                 self.end_flag = True
-                self.flag = 1
                 print('!!!dome_stop!!!')
-                self.paralist = ['start']
-            elif ('dome_track_end' in self.paralist) == True:
+                self.paralist.remove("dome_stop")
+            elif ('dome_track_end' in self.paralist):
                 self.end_flag = True
-                self.flag = 1
                 print('dome track end')
-                self.paralist = ['start']
+                self.paralist.remove("dome_track_end")
+            elif ('pass' in self.paralist):
+                time.sleep(0.01)
+                self.paralist.remove("pass")
             else:
                 pass
             time.sleep(0.01)
