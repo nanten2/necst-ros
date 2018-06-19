@@ -31,9 +31,10 @@ class dome_controller(object):
 
     #paramter(pub)
     parameters = {
-        'target_az':0,
         'command':0
         }
+    paralist = []
+    parameter_az = 0
     #
     buffer = [0,0,0,0,0,0]
     
@@ -55,6 +56,8 @@ class dome_controller(object):
                 self.move(enc_az, track=True)
             time.sleep(0.01)
             if self.end_flag == True:
+                while "dome_tracking" in self.paralist:
+                    self.paralist.remove("dome_tracking")
                 break
             print('dome_tracking')
     
@@ -79,71 +82,78 @@ class dome_controller(object):
         return
     
     def move(self, dist, track=False):
-        pos_arcsec = float(self.dome_enc)#[arcsec]
-        pos = pos_arcsec/3600.
-        pos = pos % 360.0
-        dist = float(dist) % 360.0
-        diff = dist - pos
-        dir = diff % 360.0
-        if dir < 0:
-            dir = dir*(-1)
-        
-        if pos == dist: return
-        if dir < 0:
-            if abs(dir) >= 180:
-                turn = 'right'
-            else:
-                turn = 'left'
-        else:
-            if abs(dir) >= 180:
-                turn = 'left'
-            else:
-                turn = 'right'
-        if abs(dir) < 5.0 or abs(dir) > 355.0 :
-            speed = 'low'
-        elif abs(dir) > 15.0 and abs(dir) < 345.0:###or => and
-            speed = 'high'
-        else:
-            speed = 'mid'
-        if not abs(dir) < 0.5:
-            global buffer
-            self.buffer[1] = 1
-            self.calc(turn, speed)
-            print(track)
-            if track:
-                time.sleep(0.1)
-                return
-            while dir != 0:
-                pos_arcsec = float(self.dome_enc)
-                pos = pos_arcsec/3600.
-                pos = pos % 360.0
-                dist = dist % 360.0
-                diff = dist - pos
-                dir = diff % 360.0
-                if abs(dir) <= 0.5:
-                    dir = 0
+        while not self.end_flag:
+            pos_arcsec = float(self.dome_enc)#[arcsec]
+            pos = pos_arcsec/3600.
+            pos = pos % 360.0
+            dist = float(dist) % 360.0
+            diff = dist - pos
+            dir = diff % 360.0
+            if dir < 0:
+                dir = dir*(-1)
+            
+            if pos == dist: return
+            if dir < 0:
+                if abs(dir) >= 180:
+                    turn = 'right'
                 else:
-                    if dir < 0:
-                        if abs(dir) >= 180:
-                            turn = 'right'
-                        else:
-                            turn = 'left'
+                    turn = 'left'
+            else:
+                if abs(dir) >= 180:
+                    turn = 'left'
+                else:
+                    turn = 'right'
+            if abs(dir) < 5.0 or abs(dir) > 355.0 :
+                speed = 'low'
+            elif abs(dir) > 15.0 and abs(dir) < 345.0:###or => and
+                speed = 'high'
+            else:
+                speed = 'mid'
+            if not abs(dir) < 0.5:
+                global buffer
+                self.buffer[1] = 1
+                self.calc(turn, speed)
+                print(track)
+                if track:
+                    time.sleep(0.1)
+                    return
+                while dir != 0:
+                    pos_arcsec = float(self.dome_enc)
+                    pos = pos_arcsec/3600.
+                    pos = pos % 360.0
+                    dist = dist % 360.0
+                    diff = dist - pos
+                    dir = diff % 360.0
+                    if abs(dir) <= 0.5 or self.end_flag == True:
+                        dir = 0
                     else:
-                        if abs(dir) >= 180:
-                            turn = 'left'
+                        if dir < 0:
+                            if abs(dir) >= 180:
+                                turn = 'right'
+                            else:
+                                turn = 'left'
                         else:
-                            turn = 'right'
-                            
-                    if abs(dir) < 5.0 or abs(dir) > 355.0:
-                        speed = 'low'
-                    elif abs(dir) > 20.0 and abs(dir) < 340.0:###or => and
-                        speed = 'high'
-                    else:
-                        speed = 'mid'
-                    self.calc(turn, speed)
-                time.sleep(0.1)
+                            if abs(dir) >= 180:
+                                turn = 'left'
+                            else:
+                                turn = 'right'
+                                
+                        if abs(dir) < 5.0 or abs(dir) > 355.0:
+                            speed = 'low'
+                        elif abs(dir) > 20.0 and abs(dir) < 340.0:###or => and
+                            speed = 'high'
+                        else:
+                            speed = 'mid'
+                        self.calc(turn, speed)
+                    time.sleep(0.1)
+            
+            self.paralist.remove("dome_move")
+            self.dome_stop()
+            break
+        if self.end_flag:
+            while "dome_move" in self.paralist:
+                self.paralist.remove("dome_move")
         
-        self.dome_stop()
         return
 
     def calc(self, turn, speed):
@@ -383,7 +393,7 @@ class dome_controller(object):
         return
     
     def limit_check(self):
-        while True:
+        while not rospy.is_shutdown():
             limit1 = self._limit_check()
             time.sleep(0.002)
             limit2 = self._limit_check()
@@ -463,7 +473,7 @@ class dome_controller(object):
     
     def status_check(self):
         #while not self.stop_status_flag.is_set():
-        while True:
+        while not rospy.is_shutdown():
             #ret1 = self.get_action()
             #ret2 = self.get_door_status()
             #ret3 = self.get_memb_status()
@@ -500,12 +510,18 @@ class dome_controller(object):
         th = threading.Thread(target = self.pub_status)
         th.setDaemon(True)
         th.start()
-        th2 = threading.Thread(target = self.act_dome)
+        th1 = threading.Thread(target = self.dome_OC)
+        th1.setDaemon(True)
+        th1.start()
+        th2 = threading.Thread(target = self.memb_OC)
         th2.setDaemon(True)
         th2.start()
-        th3 = threading.Thread(target = self.stop_dome)
+        th3 = threading.Thread(target = self.act_dome)
         th3.setDaemon(True)
         th3.start()
+        th4 = threading.Thread(target = self.stop_dome)
+        th4.setDaemon(True)
+        th4.start()
 
     ###set encoder az for dome tracking
     def set_enc_parameter(self, req):
@@ -517,66 +533,115 @@ class dome_controller(object):
         name = req.name
         value = req.value
         self.parameters[name] = value
-        self.flag = 0
+        self.paralist.append(self.parameters[name])
         print(name,value)
+        return
+    
+    def set_az_command(self, req):
+        self.parameter_az = req.value
         return
 
     ###function call to dome/memb action 
-    def act_dome(self):
-        while True:
-            print('wait command...')
-            if self.flag == 1:
+    def dome_OC(self):
+        while not rospy.is_shutdown():
+            if self.paralist == []:
                 time.sleep(0.01)
                 continue
-            if self.parameters['command'] == 'pass':
-                time.sleep(0.01)
-            elif self.parameters['command'] == 'dome_open':
+            elif "dome_open" in self.paralist and "dome_close" in self.paralist:
+                if self.paralist.index("dome_open") < self.paralist.index("dome_close"):
+                    self.dome_open()
+                    self.paralist.remove("dome_open")
+                else:
+                    self.dome_close()
+                    self.paralist.remove("dome_close")
+            elif "dome_open" in self.paralist:
                 self.dome_open()
-                self.flag = 1
-            elif self.parameters['command'] == 'dome_close':
+                self.paralist.remove("dome_open")
+            elif "dome_close" in self.paralist:
                 self.dome_close()
-                self.flag = 1
-            elif self.parameters['command'] == 'memb_open':
+                self.paralist.remove("dome_close")
+            else:
+                time.sleep(0.01)
+                continue
+            time.sleep(0.01)
+            continue
+
+    def memb_OC(self):
+        while not rospy.is_shutdown():
+            if self.paralist == []:
+                time.sleep(0.01)
+                continue
+            elif "memb_open" in self.paralist and "memb_close" in self.paralist:
+                if self.paralist.index("memb_open") < self.paralist.index("memb_close"):
+                    self.memb_open()
+                    self.paralist.remove("memb_open")
+                else:
+                    self.memb_close()
+                    self.paralist.remove("memb_close")
+            elif "memb_open" in self.paralist:
                 self.memb_open()
-                self.flag = 1
-            elif self.parameters['command'] == 'memb_close':
+                self.paralist.remove("memb_open")
+            elif "memb_close" in self.paralist:
                 self.memb_close()
-                self.flag = 1
-            elif self.parameters['command'] == 'dome_move':
-                self.move(self.parameters['target_az'])
-                self.flag = 1
-            elif self.parameters['command'] == 'dome_stop':
-                self.dome_stop()
-                self.end_flag = True
-                self.flag = 1
-            elif self.parameters['command'] == 'dome_tracking':
+                self.paralist.remove("memb_close")
+            else:
+                time.sleep(0.01)
+                continue
+            time.sleep(0.01)
+            continue
+
+    def act_dome(self):
+        while not rospy.is_shutdown():
+            print('wait command...')
+            if self.paralist == []:
+                time.sleep(0.01)
+                continue
+            elif "dome_move" in self.paralist and "dome_tracking" in self.paralist:
+                if self.paralist.index("dome_move") < self.paralist.index("dome_tracking"):
+                    sub3 = rospy.Subscriber('dome_move_az', Dome_msg, self.set_az_command)
+                    time.sleep(0.1)
+                    self.end_flag = False
+                    self.move(self.parameter_az)
+                else:
+                    self.end_flag = False
+                    self.move_track()
+            elif "dome_move" in self.paralist:
+                sub3 = rospy.Subscriber('dome_move_az', Dome_msg, self.set_az_command)
+                time.sleep(0.1)
+                self.end_flag = False
+                self.move(self.parameter_az)
+            elif "dome_tracking" in self.paralist:
                 self.end_flag = False
                 self.move_track()
-                self.flag = 1
-                pass
+            else:
+                time.sleep(0.01)
+                continue
             time.sleep(0.01)
             continue
 
     def stop_dome(self):
-        while True:
-            if self.flag == 1:
-                time.sleep(0.01)
-                continue
-            elif self.parameters['command'] == 'dome_stop':
+        while not rospy.is_shutdown():
+            if 'dome_stop' in self.paralist:
                 self.dome_stop()
                 self.end_flag = True
-                self.flag = 1
                 print('!!!dome_stop!!!')
-            elif self.parameters['command'] == 'dome_track_end':
+                self.paralist.remove("dome_stop")
+            elif 'dome_track_end' in self.paralist:
                 self.end_flag = True
-                self.flag = 1
                 print('dome track end')
+                self.paralist.remove("dome_track_end")
+            elif ('pass' in self.paralist):
+                time.sleep(0.01)
+                self.paralist.remove("pass")
+            else:
+                pass
             time.sleep(0.01)
             continue        
 
+
     ###publish status
     def pub_status(self):
-        while True:
+        while not rospy.is_shutdown():
             pub = rospy.Publisher('status_dome', Status_dome_msg, queue_size=10, latch = True)
             s = Status_dome_msg()
             s.move_status = self.status_box[0]
