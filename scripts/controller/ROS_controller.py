@@ -75,13 +75,14 @@ class controller(object):
         self.pub_XFFTS = rospy.Publisher("XFFTS_parameter", XFFTS_para_msg, queue_size=1)
         self.pub_regist = rospy.Publisher("authority_regist", String_necst, queue_size=1)
 
-        time.sleep(0.5)
-
         """get authority"""
         self.get_authority()
         
         """finish action"""
         atexit.register(self._release)
+
+        time.sleep(1.)# authority regist time        
+        
         return
     
 # ===================
