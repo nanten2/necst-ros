@@ -124,15 +124,17 @@ def _weather(req):
     weather_status["DomeTemp2"] = req.DomeTemp2
     weather_status["GenTemp1"] = req.GenTemp1
     weather_status["GenTemp2"] = req.GenTemp2
+    weather_status["Secofday"] = req.Secofday    
     device_status["Authority"] = req.Authority
-    device_status["CurrentM2"] = req.Current_M2
-    device_status["CurrentM4"] = req.Current_M4
-    device_status["CurrentHot"] = req.Current_Hot
-    device_status["DriveReadyAz"] = req.Drive_ready_Az
-    device_status["DriveReadyEl"] = req.Drive_ready_El
-    device_status["CurrentDome"] = req.Current_Dome
-    device_status["DoorDome"] = req.Door_Dome
-    device_status["DoorMembrane"] = req.Door_Membrane
+    device_status["Current_M2"] = req.Current_M2
+    device_status["Current_M4"] = req.Current_M4
+    device_status["Current_Hot"] = req.Current_Hot
+    device_status["Drive_Ready_Az"] = req.Drive_ready_Az
+    device_status["Drive_Ready_El"] = req.Drive_ready_El
+    device_status["Current_Dome"] = req.Current_Dome
+    device_status["Door_Dome"] = req.Door_Dome
+    device_status["Door_Membrane"] = req.Door_Membrane
+    
 
     
     
@@ -189,7 +191,7 @@ def encoder():
 
 if __name__ =="__main__":
     rospy.init_node("node_status")
-    sub1 = rospy.Subscriber("status_topic", Status_node_msg, _topic, queue_size=1)
+    sub1 = rospy.Subscriber("web_topic", Status_node_msg, _topic, queue_size=1)
     sub2 = rospy.Subscriber("read_status", Read_status_msg, _weather, queue_size=1)
     sub3 = rospy.Subscriber("status_encoder", Status_encoder_msg, _encoder, queue_size=1)      
     nth = threading.Thread(target=node_check)
