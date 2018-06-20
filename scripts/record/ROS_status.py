@@ -256,14 +256,14 @@ class read_status(status_main):
         sub4 = rospy.Subscriber('status_dome', Status_dome_msg, self.callback4)
         sub5 = rospy.Subscriber('status_hot', String_necst, self.callback5)
         sub6 = rospy.Subscriber('status_drive', Status_drive_msg, self.callback6)
-        sub7 = rospy.Subscriber('status_m4', Status_m4_msg, self.callback7)
+        sub7 = rospy.Subscriber('status_m4', String_necst, self.callback7)
         sub8 = rospy.Subscriber('limit_check', Status_limit_msg, self.callback8)
         sub9 = rospy.Subscriber('status_m2', Float64_necst, self.callback9)
         sub10 = rospy.Subscriber('alert', String_necst, self.callback10)
         rospy.spin()
     
     def read_status(self):
-        return self.param1, status_main.param2, self.param3, self.param4, self.param5, self.param6, self.param7, self.param8, self.param9, self.param10
+        return self.param1, self.param2, self.param3, self.param4, self.param5, self.param6, self.param7, self.param8, self.param9, self.param10
             
 if __name__ == '__main__':
     st = status_main()
