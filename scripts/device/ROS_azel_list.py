@@ -134,7 +134,7 @@ class azel_list(object):
                     plt.plot(time_list2, x_list2,label="v2",linestyle='None',marker='.')
                     plt.show()
                     """
-                    
+
                 else:
                     len_x = param.x_list[1] - param.x_list[0]
                     len_y = param.y_list[1] - param.y_list[0]
@@ -171,6 +171,9 @@ class azel_list(object):
                 """limit check"""
                 for i in range(len(time_list2)):
                     if not -240*3600<ret[0][i]<240*3600 or not 10<ret[1][i]<80*3600.:
+                        print("reaching soft limit : ", )
+                        print("az : ", ret[0][i]/3600., "[deg]")
+                        print("el : ", ret[1][i]/3600., "[deg]")
                         self.stop_flag = True
                         limit_flag = True
                         break
@@ -188,6 +191,7 @@ class azel_list(object):
                     msg.timestamp = time.time()
                     self.pub.publish(msg)
                     #print("msg", msg)
+                    print("publish ok")
                 else:
                     limit_flag = False
             else:                

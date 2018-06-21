@@ -12,6 +12,8 @@ sys.path.append("/home/amigos/git")
 from necst.msg import Status_node_msg
 from necst.msg import Read_status_msg
 from necst.msg import Status_encoder_msg
+from necst.msg import String_necst
+from necst.msg import Bool_necst
 import signal
 def handler(signal, frame):
     print("systen down...")
@@ -66,7 +68,7 @@ def node_check():
             no_alive = ""
             old_alive = ""
         elif no_alive != old_alive:
-            rospy.logfatal(no_alive)
+            #rospy.logfatal(no_alive)
             ky = list(td.keys())
             for i in ky:
                 if i in no_alive:
@@ -81,6 +83,14 @@ def node_check():
 
 def _topic(req):
     td[req.from_node] = req.active
+    return
+
+def _auth(req):
+    device_status["Authority2"] = req.data
+    return
+
+def _dometrack(req):
+    device_status["Dome_Track"] = req.data
     return
 
 def topic():
@@ -129,14 +139,15 @@ def _weather(req):
     device_status["Current_M2"] = req.Current_M2
     device_status["Current_M4"] = req.Current_M4
     device_status["Current_Hot"] = req.Current_Hot
-    device_status["Drive_Ready_Az"] = req.Drive_ready_Az
-    device_status["Drive_Ready_El"] = req.Drive_ready_El
+    device_status["Drive_ready_Az"] = req.Drive_ready_Az
+    device_status["Drive_ready_El"] = req.Drive_ready_El
     device_status["Current_Dome"] = req.Current_Dome
     device_status["Door_Dome"] = req.Door_Dome
     device_status["Door_Membrane"] = req.Door_Membrane
-    
-
-    
+    device_status["Command_Az"] = req.Command_Az
+    device_status["Command_El"] = req.Command_El   
+    device_status["Deviation_Az"] = req.Deviation_Az
+    device_status["Deviation_El"] = req.Deviation_El 
     
     return
 
@@ -170,8 +181,8 @@ def device():
     return
 
 def _encoder(req):
-    enc_status["Az"] = req.enc_az
-    enc_status["El"] = req.enc_el
+    enc_status["Current_Az"] = req.enc_az
+    enc_status["Current_El"] = req.enc_el
     return
 
 def encoder():
@@ -190,10 +201,13 @@ def encoder():
     return
 
 if __name__ =="__main__":
-    rospy.init_node("node_status")
+    rospy.init_node("firebase_writer")
     sub1 = rospy.Subscriber("web_topic", Status_node_msg, _topic, queue_size=1)
     sub2 = rospy.Subscriber("read_status", Read_status_msg, _weather, queue_size=1)
-    sub3 = rospy.Subscriber("status_encoder", Status_encoder_msg, _encoder, queue_size=1)      
+    sub3 = rospy.Subscriber("status_encoder", Status_encoder_msg, _encoder, queue_size=1)
+    sub4 = rospy.Subscriber("authority_check", String_necst, _auth, queue_size=1)
+    sub5 = rospy.Subscriber("dome_track_flag", Bool_necst, _dometrack, queue_size=1)    
+    
     nth = threading.Thread(target=node_check)
     nth.start()
     launch_check()

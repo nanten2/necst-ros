@@ -45,8 +45,8 @@ def pub_node():
     msg = Status_node_msg()
     while not rospy.is_shutdown():
         cnode = node
-        print("cnode",cnode)
-        for i in cnode.keys():
+        #print("cnode",cnode)
+        for i in list(cnode):
             if i in no_alive:
                 time.sleep(1.)
                 if i in no_alive:
@@ -62,7 +62,7 @@ def pub_node():
             print("\n")
         time.sleep(1.)
     
-rospy.init_node("topic_server")
+rospy.init_node("server_topic")
 sub1 = rospy.Subscriber("status_topic", Status_node_msg, _topic, queue_size=1)
 pub = rospy.Publisher("web_topic", Status_node_msg, queue_size=1)
 node_thread = threading.Thread(target=node_check)
