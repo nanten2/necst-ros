@@ -5,8 +5,12 @@ import time
 import rospy
 import rosnode
 from necst.msg import String_necst
+sys.path.append("/home/amigos/ros/src/necst/lib")
+sys.path.append("/home/necst/ros/src/necst/lib")
+import topic_status
 
 node_name = "authority_check"
+deco = topic_status.deco(node_name)
 
 class authority(object):
 
@@ -18,8 +22,6 @@ class authority(object):
         return
 
     def registration(self, req):
-        
-
         
         if req.data == "":
             if req.from_node == self.authority:
@@ -36,13 +38,15 @@ class authority(object):
             print("change authority : ", self.authority,"\n")
             pass
         return
-    
+
+    @deco
     def authority_check(self):
         msg = String_necst()
         while not rospy.is_shutdown():
             self.node_alive()
             msg.data = self.authority
             self.pub.publish(msg)
+            print(msg)
             time.sleep(1.)
         return
 

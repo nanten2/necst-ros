@@ -74,6 +74,7 @@ class controller(object):
         self.pub_achilles = rospy.Publisher("achilles", Achilles_msg, queue_size=1)
         self.pub_XFFTS = rospy.Publisher("XFFTS_parameter", XFFTS_para_msg, queue_size=1)
         self.pub_regist = rospy.Publisher("authority_regist", String_necst, queue_size=1)
+        time.sleep(0.5)# authority regist time                
 
         """get authority"""
         self.get_authority()

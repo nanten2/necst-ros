@@ -1,4 +1,5 @@
 <launch>
+  <node pkg="necst" name="firebase_writer" type="ROS_firebase_writer.py"/>
   <node pkg="necst" name="antenna_move" type="S_ROS_antenna_move.py" output="screen"/>
   <node pkg='necst' name='authority_check' type='ROS_authority_check.py'/>
   <node pkg="necst" name="encoder_status" type="S_ROS_encoder.py"/>

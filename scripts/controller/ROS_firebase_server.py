@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import sys
 import time
@@ -37,6 +39,7 @@ def initialize():
     return
     
 def start_thread():
+    print("start program!!")
     initialize()
     th1 = threading.Thread(target=onepoint)
     th1.start()
@@ -52,8 +55,8 @@ def start_thread():
     th6.start()
     th7 = threading.Thread(target=m4)
     th7.start()
-    #th8 = threading.Thread(target=m2)
-    #th8.start()
+    th8 = threading.Thread(target=m2)
+    th8.start()
     th9 = threading.Thread(target=hot)
     th9.start()
     th10 = threading.Thread(target=authority)
@@ -68,6 +71,7 @@ def onepoint():
     while flag:
         _one = fb.get("/NECST/Controll/Telescope/Onepoint",None)
         if _one != "":
+            print("onepoint_move")
             con.onepoint_move(_one["x"], _one["y"], _one["coord"], _one["off_x"], _one["off_y"], _one["offcoord"], _one["hosei"], _one["lamda"], _one["dcos"], _one["limit"])
             fb.put("", "/NECST/Controll/Telescope/Onepoint", "")
         else:
@@ -82,6 +86,7 @@ def planet():
     while flag:
         _planet = fb.get("/NECST/Controll/Telescope/Planet",None)
         if _planet != "":
+            print("planet_move : ", _planet)
             con.planet_move(_planet["planet"], _planet["off_x"], _planet["off_y"], _planet["offcoord"], _planet["hosei"], _planet["lamda"], _planet["dcos"], _planet["limit"])
             fb.put("", "/NECST/Controll/Telescope/Planet", "")
         else:
@@ -97,6 +102,7 @@ def observation():
 def drive():
     while flag:
         if device["drive"] != "":
+            print("drive : ", device["drive"])
             con.drive(device["drive"])
             device["drive"] = ""
             fb.put("", "/NECST/Controll/Telescope/Device/drive", "")
@@ -134,7 +140,13 @@ def otf():
 def dome():
     while flag:    
         if device["dome"] != "":
-            con.dome(device["dome"])
+            print("dome : ", device["dome"])
+            if device["dome"] == "tracking":
+                con.dome_track()
+            elif device["dome"] == "trackend":
+                con.dome_track_end()
+            else:
+                con.dome(device["dome"])
             fb.put("", "/NECST/Controll/Telescope/Device/dome", "")
         else:
             pass
@@ -144,6 +156,7 @@ def dome():
 def memb():
     while flag:    
         if device["memb"] != "":
+            print("memb : ", device["memb"])            
             con.memb(device["memb"])
             fb.put("", "/NECST/Controll/Telescope/Device/memb", "")
         else:
@@ -154,6 +167,7 @@ def memb():
 def m4():
     while flag:    
         if device["m4"] != "":
+            print("m4 : ", device["m4"])            
             con.move_m4(device["m4"])
             fb.put("", "/NECST/Controll/Telescope/Device/m4", "")
         else:
@@ -164,6 +178,7 @@ def m4():
 def hot():
     while flag:    
         if device["hot"] != "":
+            print("hot : ", device["hot"])            
             con.move_hot(device["hot"])
             fb.put("", "/NECST/Controll/Telescope/Device/hot", "")
         else:
@@ -171,17 +186,18 @@ def hot():
         time.sleep(0.5)
     return 
 
-"""
+
 def m2():
     while flag:    
         if device["m2"] != "":
+            print("m2 : ", device["m2"])            
             con.move_m2(device["m2"])
             fb.put("", "/NECST/Controll/Telescope/Device/m2", "")
         else:
             pass    
         time.sleep(0.5)
     return
-"""
+
 """
 def ac240():
     dr = device["drive"]
@@ -208,6 +224,7 @@ def xffts():
 def authority():
     while flag:    
         if device["authority"] != "":
+            print("authority : ", device["authority"])            
             if device["authority"] == "get":
                 con.get_authority()
             elif device["authority"] == "release":
