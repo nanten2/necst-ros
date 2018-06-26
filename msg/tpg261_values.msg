@@ -1,0 +1,1 @@
+float32 ch1_value
