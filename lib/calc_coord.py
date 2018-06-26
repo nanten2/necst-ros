@@ -53,10 +53,10 @@ class azel_calc(object):
             # convert_azel
             nanten2 = EarthLocation(lat = self.latitude*u.deg, lon = self.longitude*u.deg, height = self.height*u.m)
             on_coord.location=nanten2
-            #on_coord.pressure=press*u.Pa#param
-            #on_coord.temperature=temp*u.deg_C#param
-            #on_coord.relative_humidity=humi#param
-            #on_coord.obswl = lamda*u.um#param
+            on_coord.pressure=press*u.hPa#param
+            on_coord.temperature=temp*u.deg_C#param
+            on_coord.relative_humidity=humi#param
+            on_coord.obswl = lamda*u.um#param
         
             altaz_list = on_coord.transform_to(AltAz(obstime=time_list))
             az_list=[]
