@@ -76,6 +76,8 @@ add_message_files(
   Int64_necst.msg
   Float64_necst.msg
   NECST_list_msg.msg
+  l218_values.msg
+  tpg261_values.msg  
 )
 
 ## Generate services in the 'srv' folder
