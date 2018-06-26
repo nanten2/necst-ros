@@ -44,6 +44,8 @@ class azel_list(object):
     
     def _receive_list(self, req):
         ### x,y is [arcsec]
+        print("list")
+        print(req)
         if req.timestamp < self.start_time:
             print("receive_old_list...")
         else:
@@ -157,6 +159,7 @@ class azel_list(object):
                             self.stop_flag = True
                         else:
                             break
+
                 if time_list2 != []:
                     time_list3 = [datetime.fromtimestamp(time_list2[i]) for i in range(len(time_list2))]
                     astro_time = Time(time_list3)
@@ -164,6 +167,7 @@ class azel_list(object):
                                                     param.coord, param.off_az, param.off_el, 
                                                     param.hosei, param.lamda, self.weather.press,
                                                     self.weather.out_temp, self.weather.out_humi, param.limit)
+
                     ret[0] = self.negative_change(ret[0])
                 else:
                     limit_flag = True
