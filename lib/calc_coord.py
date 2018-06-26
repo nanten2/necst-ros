@@ -53,7 +53,7 @@ class azel_calc(object):
             # convert_azel
             nanten2 = EarthLocation(lat = self.latitude*u.deg, lon = self.longitude*u.deg, height = self.height*u.m)
             on_coord.location=nanten2
-            on_coord.pressure=press*u.Pa#param
+            on_coord.pressure=press*u.hPa#param
             on_coord.temperature=temp*u.deg_C#param
             on_coord.relative_humidity=humi#param
             on_coord.obswl = lamda*u.um#param
@@ -65,7 +65,10 @@ class azel_calc(object):
                 azel_list = self.kisa_calc(altaz_list[i], hosei)
                 az_list.append(azel_list[0]+off_az)
                 el_list.append(azel_list[1]+off_el)
+                #az_list.append(altaz_list[i].az.arcsec+off_az) #no_kisa
+                #el_list.append(altaz_list[i].alt.arcsec+off_el) #no_kisa
             pass
+        
 
         #print("az :",az_list[0]/3600.,"el :", el_list[0]/3600.)
         return[az_list, el_list]

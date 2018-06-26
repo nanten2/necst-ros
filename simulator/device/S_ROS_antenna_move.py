@@ -175,6 +175,7 @@ class antenna_move(object):
             #print(self.parameters['az_list'],"\n")
             #print(self.parameters['el_list'], "\n")
             #print(self.parameters['start_time_list'],"\n")
+            
         else:
             self.parameters['az_list'] = []
             self.parameters['el_list'] = []
