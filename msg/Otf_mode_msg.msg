@@ -4,7 +4,7 @@ string coord_sys
 float64 dx
 float64 dy
 float64 dt
-int64 num
+float64 num
 float64 rampt
 float64 delay
 float64 off_x
