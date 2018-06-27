@@ -707,15 +707,15 @@ class telescope(object):
                 
             self.log.info('moving...')
             time.sleep(0.001)#分光計の指令値更新を待つ(一応)
-            while not st.read_status()[10]:#通り過ぎた場合もTrueになるため
+            while not st.read_status()[10]['tracking']:#通り過ぎた場合もTrueになるため
                 time.sleep(0.001)
                 continue
             time.sleep(0.1)
-            while not st.read_status()[10]:#2回目
+            while not st.read_status()[10]['tracking']:#2回目
                 time.sleep(0.001)
                 continue
             time.sleep(0.1)
-            while not st.read_status()[10]:#一応3回目
+            while not st.read_status()[10]['tracking']:#一応3回目
                 time.sleep(0.001)
                 continue
             
@@ -978,15 +978,15 @@ class telescope(object):
             #print(lam_on_off, bet_on_off, coord_on,'off_x =', lam_del, 'off_y = ',bet_del, 'offcoord = ',coord_map_offsets, 'lamda = ',obs_wavelength)
         self.log.info('moving...')
         time.sleep(0.001)#分光計の指令値更新を待つ(一応)
-        while not st.read_status()[10]:#通り過ぎた場合もTrueになるため
+        while not st.read_status()[10]['tracking']:#通り過ぎた場合もTrueになるため
             time.sleep(0.001)
             continue
         time.sleep(0.1)
-        while not st.read_status()[10]:#2回目
+        while not st.read_status()[10]['tracking']:#2回目
             time.sleep(0.001)
             continue
         time.sleep(0.1)
-        while not st.read_status()[10]:#一応3回目
+        while not st.read_status()[10]['tracking']:#一応3回目
             time.sleep(0.001)
             continue
         print(st.read_status()[10])
