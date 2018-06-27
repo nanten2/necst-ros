@@ -1079,18 +1079,17 @@ class telescope(object):
             self.Write_set_file_tel(data1)
             continue
 
-
-####main part####
-#SetupLogging(log_level="info",logging_dir="/home/amigos/NECST/script/obslist/kosma/KOSMA_file_io/logs/",log_name="n2kosma.log")
-SetupLogging(log_level="info",logging_dir="/home/amigos/ros/src/necst/log",log_name="n2kosma.log")#for simulator
-initialize()
-thread_mirror_hot = threading.Thread(target = mirror)
-thread_mirror_hot.setDaemon(True)
-thread_mirror_hot.start()
-thread_chopper = threading.Thread(target = chopper)
-thread_chopper.setDaemon(True)
-thread_chopper.start()
-telescope()
-#while True:time.sleep(2)
+if __name__ == '__main__':
+    ####main part####
+    #SetupLogging(log_level="info",logging_dir="/home/amigos/NECST/script/obslist/kosma/KOSMA_file_io/logs/",log_name="n2kosma.log")
+    SetupLogging(log_level="info",logging_dir="/home/amigos/ros/src/necst/log",log_name="n2kosma.log")#for simulator
+    initialize()
+    thread_mirror_hot = threading.Thread(target = mirror)
+    thread_mirror_hot.setDaemon(True)
+    thread_mirror_hot.start()
+    thread_chopper = threading.Thread(target = chopper)
+    thread_chopper.setDaemon(True)
+    thread_chopper.start()
+    telescope()
 
 
