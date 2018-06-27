@@ -157,6 +157,8 @@ def handler(num, flame):
     con.move_stop()
     time.sleep(1)
     con.move_stop()
+    con.release_authority()
+    time.sleep(2)#to release controller authority
     os.kill(os.getpid(), signal.SIGKILL)
     #sys.exit()
 signal.signal(signal.SIGINT, handler)
@@ -967,7 +969,7 @@ class telescope(object):
             self.log.info(" ".join([str(ele) for ele in to_print]))
         elif coord_on.lower() == 'galactic':
             con.onepoint_move(lam_on_off, bet_on_off,coord = coord_on, off_x = lam_del, off_y = bet_del, offcoord = coord_map_offsets, lamda = obs_wavelength)
-            to_print = [am_on_off, bet_on_off, 'off_x = ',lam_del, 'off_y = ',bet_del, 'offcoord =', coord_map_offsets,' lamda =', obs_wavelength]
+            to_print = [lam_on_off, bet_on_off, 'off_x = ',lam_del, 'off_y = ',bet_del, 'offcoord =', coord_map_offsets,' lamda =', obs_wavelength]
             self.log.info(" ".join([str(ele) for ele in to_print]))
         elif coord_on.lower() == 'j2000' or coord_on.lower() == 'b1950':
             con.onepoint_move(lam_on_off, bet_on_off, coord = coord_on,off_x = lam_del, off_y = bet_del, offcoord = coord_map_offsets, lamda = obs_wavelength)
