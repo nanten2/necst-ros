@@ -69,6 +69,7 @@ class status_main(object):
               "error_msg":""}
     param9 = {"m2_pos": 0}
     param10 = {"alert_msg":""}
+    param11 = {"tracking":False}
 
     def __init__(self):
         if __name__ == '__main__':
@@ -176,7 +177,7 @@ class status_main(object):
         pass
 
     def callback11(self, req):
-        self.param11 = req.data
+        self.param11['tracking'] = req.data
         pass
     
     def tel_status(self):
