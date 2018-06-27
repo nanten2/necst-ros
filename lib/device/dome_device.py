@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import time
+import sys
+sys.path.append("/home/amigos/ros/src/necst/lib")
 import pyinterface
 import math
 
@@ -43,9 +45,9 @@ class dome_device(object):
         dir = diff % 360.0
         if dir < 0:
             dir = dir*(-1)
-$
+
         if dir == 0:
-            return dir = 0
+            return dir
         if dir < 0:
             if abs(dir) >= 180:
                 turn = 'right'
@@ -68,7 +70,7 @@ $
             self.do_output(turn, speed)
             print(track)
             if track:
-                #time.sleep(0.1)
+                time.sleep(0.1)
                 return dir
         return dir
 
@@ -128,7 +130,7 @@ $
     """
     def emergency_stop(self):
         global stop
-        dome_controller.stop = [1]
+        self.stop = [1]
         #self.pos.dio.do_output(self.stop, 11, 1)
         self.print_msg('!!EMERGENCY STOP!!')
         return
@@ -155,7 +157,7 @@ $
             self.buffer[2:4] = [1, 0]
         else:
             self.buffer[2:4] = [0, 1]
-        if dome_controller.stop[0] == 1:
+        if self.stop[0] == 1:
             self.buffer[1] = 0
         else: self.buffer[1] = 1
         dio.output_point(self.buffer, 1)
