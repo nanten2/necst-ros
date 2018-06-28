@@ -16,6 +16,7 @@ from necst.msg import Status_dome_msg
 from necst.msg import Status_drive_msg
 from necst.msg import Status_limit_msg
 from necst.msg import Read_status_msg
+from necst.msg import Bool_necst
 
 node_name = 'Status'
 
@@ -68,6 +69,7 @@ class status_main(object):
               "error_msg":""}
     param9 = {"m2_pos": 0}
     param10 = {"alert_msg":""}
+    param11 = {"tracking":False}
 
     def __init__(self):
         if __name__ == '__main__':
@@ -174,6 +176,10 @@ class status_main(object):
         self.param10["alert_msg"] = req.data
         pass
 
+    def callback11(self, req):
+        self.param11['tracking'] = req.data
+        pass
+    
     def tel_status(self):
         print('*********************************')
         print('    NANTEN2 telescope status     ')
@@ -244,7 +250,7 @@ class read_status(status_main):
 
     def __init__(self):
         #status_main.__init__(self)
-        rospy.init_node('Status_read', anonymous=True)
+        #rospy.init_node('Status_read', anonymous=True)
         th = threading.Thread(target = self.initialize)
         th.setDaemon(True)
         th.start()
@@ -260,10 +266,11 @@ class read_status(status_main):
         sub8 = rospy.Subscriber('limit_check', Status_limit_msg, self.callback8)
         sub9 = rospy.Subscriber('status_m2', Float64_necst, self.callback9)
         sub10 = rospy.Subscriber('alert', String_necst, self.callback10)
+        sub11 = rospy.Subscriber("tracking_check", Bool_necst, self.callback11)
         rospy.spin()
     
     def read_status(self):
-        return self.param1, self.param2, self.param3, self.param4, self.param5, self.param6, self.param7, self.param8, self.param9, self.param10
+        return self.param1, self.param2, self.param3, self.param4, self.param5, self.param6, self.param7, self.param8, self.param9, self.param10, self.param11
             
 if __name__ == '__main__':
     st = status_main()
