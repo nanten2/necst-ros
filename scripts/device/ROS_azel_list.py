@@ -24,6 +24,8 @@ class azel_list(object):
     stop_flag = False
     old_list = ""
 
+    testparam = ""
+
     def __init__(self):
         self.start_time = time.time()
         rospy.Subscriber("wc_list", List_coord_msg, self._receive_list, queue_size=1)
@@ -141,7 +143,7 @@ class azel_list(object):
                     len_x = param.x_list[1] - param.x_list[0]
                     len_y = param.y_list[1] - param.y_list[0]
                     len_t = param.time_list[1] - param.time_list[0]
-                
+
                     dx = len_x/(len_t*10)#[arcsec/100ms]
                     dy = len_y/(len_t*10)#[arcsec/100ms]
                     dt = 0.1
@@ -163,12 +165,38 @@ class azel_list(object):
                 if time_list2 != []:
                     time_list3 = [datetime.fromtimestamp(time_list2[i]) for i in range(len(time_list2))]
                     astro_time = Time(time_list3)
+
+                    #f=open("20180627_azel071.txt","a")
+                    #f.write(str(x_list2)+"\n")
+                    #f.close()
+                    #f=open("20180627_azel072.txt","a")
+                    #f.write(str(y_list2)+"\n")
+                    #f.close()
+                    #f=open("20180627_azel073.txt","a")
+                    #f.write(str(astro_time)+"\n")
+                    #f.close()                    
+                    
                     ret = self.calc.coordinate_calc(x_list2, y_list2, astro_time,
                                                     param.coord, param.off_az, param.off_el, 
                                                     param.hosei, param.lamda, self.weather.press,
                                                     self.weather.out_temp, self.weather.out_humi, param.limit)
 
+                    #f=open("20180627_azel031.txt","a")
+                    #f.write(str(ret[0])+"\n")
+                    #f.close()
+                    #f=open("20180627_azel032.txt","a")
+                    #f.write(str(ret[1])+"\n")
+                    #f.close()                    
+                    
                     ret[0] = self.negative_change(ret[0])
+
+                    #f=open("20180627_azel041.txt","a")
+                    #f.write(str(ret[0])+"\n")
+                    #f.close()
+                    #f=open("20180627_azel042.txt","a")
+                    #f.write(str(ret[1])+"\n")
+                    #f.close()                                        
+                    
                 else:
                     limit_flag = True
                     
@@ -195,7 +223,17 @@ class azel_list(object):
                     msg.timestamp = time.time()
                     self.pub.publish(msg)
                     #print("msg", msg)
-                    print("publish ok")
+
+                    aa = int(time.time())
+                    f = open("20180627_100.txt","a")
+                    for i in range(len(time_list2)):
+                        f.write('%s %s %s %s %s \n'%(str(time_list2[i]), str(ret[0][i]), str(ret[1][i]), str(ret[0][i]), str(ret[1][i])))
+                    f.write('%s %s %s %s %s \n'%(str(time_list2[i]+0.05), str(ret[0][i]+3600.), str(ret[1][i]+3600.), str(ret[0][i]+3600.), str(ret[1][i]+3600.)))                        
+                    f.close()
+                    if self.testparam == "":
+                        self.testparam = [ret[0][0], ret[1][0]]
+                    #print(self.testparam[0]-ret[0][0], " ", self.testparam[1]-ret[1][0])
+                    #print("publish ok")
                 else:
                     limit_flag = False
             else:                

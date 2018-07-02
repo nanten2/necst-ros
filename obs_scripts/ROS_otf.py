@@ -441,7 +441,7 @@ while rp_num < rp:
         print('getting_data...')
         d = con.oneshot_achilles(repeat = scan_point ,exposure = integ_on ,stime = start_on)
         print("start_on:",start_on)
-        while start_on + obs['otflen']/24./3600. > 40587 + time.time()/(24.*3600.):
+        while start_on + (obs['otflen']+rampt)/24./3600. > 40587 + time.time()/(24.*3600.):
             #while obs['otflen']/24./3600. > 40587 + time.time()/(24.*3600.):    
             time.sleep(0.001)
 

@@ -12,8 +12,10 @@ sys.path.append("/home/amigos/git")
 from necst.msg import Status_node_msg
 from necst.msg import Read_status_msg
 from necst.msg import Status_encoder_msg
+from necst.msg import Status_timer_msg
 from necst.msg import String_necst
 from necst.msg import Bool_necst
+
 import signal
 def handler(signal, frame):
     print("systen down...")
@@ -30,11 +32,14 @@ signal.signal(signal.SIGINT, handler)
 
 from firebase import firebase
 fb = firebase.FirebaseApplication("https://test-d187a.firebaseio.com",None)
+auth = firebase.FirebaseAuthentication("DgHtyfC5d1qcezGOBOsvrIOMRwdG9dG9fQ8xNVBz", "nascofirebase@gmail.com", extra={"id":123})
+fb.authentication = auth
 
 td={}
 weather_status ={}
 device_status = {}
 enc_status = {}
+time_status = {}
 
 no_alive = ""
 launch = ""
@@ -134,7 +139,7 @@ def _weather(req):
     weather_status["DomeTemp2"] = req.DomeTemp2
     weather_status["GenTemp1"] = req.GenTemp1
     weather_status["GenTemp2"] = req.GenTemp2
-    weather_status["Secofday"] = req.Secofday    
+    weather_status["Secofday"] = req.Secofday
     device_status["Authority"] = req.Authority
     device_status["Current_M2"] = req.Current_M2
     device_status["Current_M4"] = req.Current_M4
@@ -147,7 +152,22 @@ def _weather(req):
     device_status["Command_Az"] = req.Command_Az
     device_status["Command_El"] = req.Command_El   
     device_status["Deviation_Az"] = req.Deviation_Az
-    device_status["Deviation_El"] = req.Deviation_El 
+    device_status["Deviation_El"] = req.Deviation_El
+    return
+
+def _timer(req):
+    time_status["secofday"] = req.secofday
+    time_status["lst_h"] = req.lst_h
+    time_status["lst_m"] = req.lst_m
+    time_status["lst_s"] = req.lst_s
+    time_status["utc_Y"] = req.utc_Y
+    time_status["utc_M"] = req.utc_M
+    time_status["utc_D"] = req.utc_D
+    time_status["utc_h"] = req.utc_h
+    time_status["utc_m"] = req.utc_m
+    time_status["utc_s"] = req.utc_s
+    time_status["mjd"] = req.mjd
+    time_status["unix"] = req.timestamp  
     
     return
 
@@ -180,6 +200,19 @@ def device():
         time.sleep(0.5)
     return
 
+def timer():
+    while not rospy.is_shutdown():
+        if not time_status:
+            time.sleep(0.5)
+            continue
+        try:
+            fb.put("", "/NECST/Monitor/Telescope/Timer",time_status)
+            pass
+        except Exception as e:
+            rospy.logerr(e)
+        time.sleep(0.5)
+    return
+
 def _encoder(req):
     enc_status["Current_Az"] = req.enc_az
     enc_status["Current_El"] = req.enc_el
@@ -206,7 +239,8 @@ if __name__ =="__main__":
     sub2 = rospy.Subscriber("read_status", Read_status_msg, _weather, queue_size=1)
     sub3 = rospy.Subscriber("status_encoder", Status_encoder_msg, _encoder, queue_size=1)
     sub4 = rospy.Subscriber("authority_check", String_necst, _auth, queue_size=1)
-    sub5 = rospy.Subscriber("dome_track_flag", Bool_necst, _dometrack, queue_size=1)    
+    sub5 = rospy.Subscriber("dome_track_flag", Bool_necst, _dometrack, queue_size=1)
+    sub6 = rospy.Subscriber("timer", Status_timer_msg, _timer, queue_size=1)    
     
     nth = threading.Thread(target=node_check)
     nth.start()
@@ -219,4 +253,6 @@ if __name__ =="__main__":
     dth.start()    
     eth = threading.Thread(target=encoder)
     eth.start()
+    timeth = threading.Thread(target=timer)
+    timeth.start()    
     rospy.spin()
