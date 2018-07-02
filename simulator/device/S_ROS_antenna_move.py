@@ -173,9 +173,6 @@ class antenna_move(object):
             self.parameters['el_list'].extend(req.y_list)
             self.parameters['start_time_list'].extend(req.time_list)
             #print(self.parameters['az_list'],"\n")
-            #f=open("20180627_move01.txt","a")
-            #f.write(str(self.parameters['el_list'])+"\n")
-            #f.close()
             #print(self.parameters['el_list'], "\n")
             #print(self.parameters['start_time_list'],"\n")
             
