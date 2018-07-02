@@ -157,6 +157,9 @@ class controller(object):
         self.registration("")
         return
 
+    def check_my_node(self):
+        return self.node_name
+
 # ===================
 # antenna
 # ===================

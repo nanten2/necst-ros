@@ -7,11 +7,14 @@ import threading
 from datetime import datetime as dt
 from firebase import firebase
 fb = firebase.FirebaseApplication("https://test-d187a.firebaseio.com",None)
+auth = firebase.FirebaseAuthentication("DgHtyfC5d1qcezGOBOsvrIOMRwdG9dG9fQ8xNVBz", "nascofirebase@gmail.com", extra={"id":123})
+fb.authentication = auth
 
 import signal
 def handler(signal, frame):
     global flag
     flag = False
+    fb.put("","/NECST/Controll/Telescope/Device/user","")    
     time.sleep(1.)
     print("*****Program is stop*****")
     return
@@ -31,10 +34,10 @@ def server():
     return
 
 def initialize():
-    #init_param = fb.get("/NECST/Monitor/Telescope/Device",None)
-    #print("start initialize...\n")
-    #time.sleep(3)
-    fb.put("", "/NECST/Controll/Telescope",{"Device":{"authority":"", "dome":"", "memb":"", "drive":"", "emergency":"", "hot":"", "m4":"", "m2":"" },"Onepoint":"","Planet":""})
+    fb.put("", "/NECST/Controll/Telescope",{"Device":{"user":"", "authority":"", "dome":"", "memb":"", "drive":"", "emergency":"", "hot":"", "m4":"", "m2":"" },"Onepoint":"","Planet":""})
+    name = con.check_my_node()
+    fb.put("","/NECST/Controll/Telescope/Device/user",name)
+
     
     return
     
