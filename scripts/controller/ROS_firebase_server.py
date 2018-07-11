@@ -7,11 +7,21 @@ import threading
 from datetime import datetime as dt
 from firebase import firebase
 fb = firebase.FirebaseApplication("https://test-d187a.firebaseio.com",None)
+auth = firebase.FirebaseAuthentication("DgHtyfC5d1qcezGOBOsvrIOMRwdG9dG9fQ8xNVBz", "nascofirebase@gmail.com", extra={"id":123})
+fb.authentication = auth
+
+"""test"""
+import rospy
+from necst.msg import Bool_necst
+pub = rospy.Publisher("queue_obs", Bool_necst, queue_size=1)
+
+""""""
 
 import signal
 def handler(signal, frame):
     global flag
     flag = False
+    fb.put("","/NECST/Controll/Telescope/Device/user","")    
     time.sleep(1.)
     print("*****Program is stop*****")
     return
@@ -31,10 +41,10 @@ def server():
     return
 
 def initialize():
-    #init_param = fb.get("/NECST/Monitor/Telescope/Device",None)
-    #print("start initialize...\n")
-    #time.sleep(3)
-    fb.put("", "/NECST/Controll/Telescope",{"Device":{"authority":"", "dome":"", "memb":"", "drive":"", "emergency":"", "hot":"", "m4":"", "m2":"" },"Onepoint":"","Planet":""})
+    fb.put("", "/NECST/Controll/Telescope",{"Device":{"user":"", "authority":"", "dome":"", "memb":"", "drive":"", "emergency":"", "hot":"", "m4":"", "m2":"" },"Onepoint":"","Planet":"", "Queue":""})
+    name = con.check_my_node()
+    fb.put("","/NECST/Controll/Telescope/Device/user",name)
+
     
     return
     
@@ -61,7 +71,8 @@ def start_thread():
     th9.start()
     th10 = threading.Thread(target=authority)
     th10.start()
-
+    th11 = threading.Thread(target=observation)
+    th11.start()
     return
 
     
@@ -95,8 +106,16 @@ def planet():
     return
 
 def observation():
-    #os.system("python /home/amigos/ros/src/necst/obs_scripts/ROS_ps.py --obsfile ps_test.obs")
-    #os.system("")
+    while flag:
+        _queue = fb.get("/NECST/Controll/Telescope/Queue",None)
+        if _queue != "":
+            print("queue observation : ", _queue["observation"])
+            con.release_authority()
+            con.queue_observation(_queue["observation"])
+            fb.put("", "/NECST/Controll/Telescope/Queue", "")
+        else:
+            pass
+        time.sleep(0.5)    
     return
 
 def drive():

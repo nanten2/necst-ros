@@ -141,7 +141,7 @@ class azel_list(object):
                     len_x = param.x_list[1] - param.x_list[0]
                     len_y = param.y_list[1] - param.y_list[0]
                     len_t = param.time_list[1] - param.time_list[0]
-                
+
                     dx = len_x/(len_t*10)#[arcsec/100ms]
                     dy = len_y/(len_t*10)#[arcsec/100ms]
                     dt = 0.1
@@ -163,12 +163,16 @@ class azel_list(object):
                 if time_list2 != []:
                     time_list3 = [datetime.fromtimestamp(time_list2[i]) for i in range(len(time_list2))]
                     astro_time = Time(time_list3)
+
+                    
                     ret = self.calc.coordinate_calc(x_list2, y_list2, astro_time,
                                                     param.coord, param.off_az, param.off_el, 
                                                     param.hosei, param.lamda, self.weather.press,
                                                     self.weather.out_temp, self.weather.out_humi, param.limit)
 
+                    
                     ret[0] = self.negative_change(ret[0])
+
                 else:
                     limit_flag = True
                     
@@ -195,7 +199,8 @@ class azel_list(object):
                     msg.timestamp = time.time()
                     self.pub.publish(msg)
                     #print("msg", msg)
-                    print("publish ok")
+
+                    #print("publish ok")
                 else:
                     limit_flag = False
             else:                
