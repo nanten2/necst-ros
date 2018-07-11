@@ -181,6 +181,7 @@ class dome_controller(object):
         elif self.dome_enc <=-360.*3600.:
             self.dome_enc += 360.*3600.
         pass
+
     def dome_stop(self):
         buff = [0]
         self.flag = 0
@@ -219,7 +220,6 @@ class dome_controller(object):
                 ret = self.get_door_status()
             """
         buff = [0, 0]
-        #self.dio.do_output(buff, 5, 2)
         #self.dio.output_point(buff, 5)
         return
     
@@ -227,7 +227,6 @@ class dome_controller(object):
         ret = self.get_memb_status()
         if ret[1] != 'OPEN':
             buff = [1, 1]
-            #self.dio.do_output(buff, 7, 2)
             #self.dio.output_point(buff, 7)
             self.memb_pos = 'MOVE'
             time.sleep(3)
@@ -238,7 +237,6 @@ class dome_controller(object):
                 #ret = self.get_memb_status()
             """
         buff = [0, 0]
-        #self.dio.do_output(buff, 7, 2)
         #self.dio.output_point(buff, 7)
         return
     
@@ -246,7 +244,6 @@ class dome_controller(object):
         ret = self.get_memb_status()
         if ret[1] != 'CLOSE':
             buff = [0, 1]
-            #self.dio.do_output(buff, 7, 2)
             #self.dio.output_point(buff, 7)
             self.memb_pos = 'MOVE'
             time.sleep(3)
@@ -257,7 +254,6 @@ class dome_controller(object):
                 ret = self.get_memb_status()
             """
         buff = [0, 0]
-        #self.dio.do_output(buff, 7, 2)
         #self.dio.output_point(buff, 7)
         return
     
@@ -265,7 +261,6 @@ class dome_controller(object):
     def emergency_stop(self):
         global stop
         dome_controller.stop = [1]
-        #self.pos.dio.do_output(self.stop, 11, 1)
         self.print_msg('!!EMERGENCY STOP!!')
         return
     """
@@ -273,11 +268,9 @@ class dome_controller(object):
     def dome_fan(self, fan):
         if fan == 'on':
             fan_bit = [1, 1]
-            #self.dio.do_output(fan_bit, 9, 2)
             #self.dio.output_point(fan_bit, 9)
         else:
             fan_bit = [0, 0]
-            #self.dio.do_output(fan_bit, 9, 2)
             #self.dio.output_point(fanbit, 9)
         return
     
@@ -285,31 +278,7 @@ class dome_controller(object):
         self.count = self.dome_pos.dome_encoder_acq()
         return self.count
     
-    def do_output(self, turn, speed):
-        global buffer
-        global stop
-        if turn == 'right': self.buffer[0] = 0
-        else: self.buffer[0] = 1
-        if speed == 'low':
-            self.buffer[2:4] = [0, 0]
-        elif speed == 'mid':
-            self.buffer[2:4] = [1, 0]
-        else:
-            self.buffer[2:4] = [0, 1]
-        if dome_controller.stop[0] == 1:
-            self.buffer[1] = 0
-        else: self.buffer[1] = 1
-        #print(self.buffer)
-        #self.dio.do_output(self.buffer, 1, 6)
-        #self.dio.output_point(self.buffer, 1)
-        print('do_output')
-        #self.dome_limit()
-        #pos_arcsec = self.dome_pos.dome_encoder_acq()
-        #pos_arcsec = self.dome_pos.read_dome_enc()
-        return
-    
     def get_action(self):
-        #ret = self.dio.di_check(1, 1)
         #ret = self.dio.input_point(1, 1)
         #print('l269', ret)
         if ret == 0:
@@ -516,18 +485,18 @@ class dome_controller(object):
         th = threading.Thread(target = self.pub_status)
         th.setDaemon(True)
         th.start()
-        th1 = threading.Thread(target = self.dome_OC)
-        th1.setDaemon(True)
-        th1.start()
-        th2 = threading.Thread(target = self.memb_OC)
+        th2 = threading.Thread(target = self.dome_OC)
         th2.setDaemon(True)
         th2.start()
-        th3 = threading.Thread(target = self.act_dome)
+        th3 = threading.Thread(target = self.memb_OC)
         th3.setDaemon(True)
         th3.start()
-        th4 = threading.Thread(target = self.stop_dome)
+        th4 = threading.Thread(target = self.act_dome)
         th4.setDaemon(True)
         th4.start()
+        th5 = threading.Thread(target = self.stop_dome)
+        th5.setDaemon(True)
+        th5.start()
 
     ###set encoder az for dome tracking
     def set_enc_parameter(self, req):
@@ -636,7 +605,7 @@ class dome_controller(object):
                 self.end_flag = True
                 print('dome track end')
                 self.paralist.remove("dome_track_end")
-            elif ('pass' in self.paralist):
+            elif 'pass' in self.paralist:
                 time.sleep(0.01)
                 self.paralist.remove("pass")
             else:
@@ -674,23 +643,6 @@ class dome_controller(object):
             time.sleep(0.1)
         
         
-
-
-def dome_client(host, port):
-    client = pyinterface.server_client_wrapper.control_client_wrapper(dome_controller, host, port)
-    return client
-
-def dome_monitor_client(host, port):
-    client = pyinterface.server_client_wrapper.monitor_client_wrapper(dome_controller, host, port)
-    return client
-
-def start_dome_server(port1 = 8007, port2 = 8008):
-    dome = dome_controller()
-    server = pyinterface.server_client_wrapper.server_wrapper(dome,'', port1, port2)
-    server.start()
-    return server
-
-
 if __name__ == '__main__':
     rospy.init_node(node_name)
     d = dome_controller()
