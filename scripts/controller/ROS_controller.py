@@ -23,10 +23,9 @@ from necst.msg import Achilles_msg
 from necst.msg import Bool_necst
 from necst.msg import String_necst
 from necst.msg import Int64_necst
+from necst.msg import Status_otf_msg
 from NASCORX_XFFTS.msg import XFFTS_para_msg
 sys.path.append("/home/amigos/ros/src/necst/lib")
-#import node_authority
-#auth = node_authority.authority()
 
 
 class controller(object):
@@ -41,6 +40,20 @@ class controller(object):
     auth = ""
     frame = "controller"
     node_name = ""
+
+    """otf parameter"""
+    active = False
+    target = ""
+    xline = 0
+    yline = 0
+    xgrid = 0
+    ygrid = 0
+    exposure_hot = 0
+    exposure_off = 0
+    exposure_on = 0
+    scan_direction = ""
+    current_line = 0
+    current_position = ""
     
     def __init__(self, escape=False):
         """node registration"""
@@ -74,6 +87,8 @@ class controller(object):
         self.pub_achilles = rospy.Publisher("achilles", Achilles_msg, queue_size=1)
         self.pub_XFFTS = rospy.Publisher("XFFTS_parameter", XFFTS_para_msg, queue_size=1)
         self.pub_regist = rospy.Publisher("authority_regist", String_necst, queue_size=1)
+        self.pub_otfstatus = rospy.Publisher("otf_status", Status_otf_msg, queue_size=1)
+        self.pub_queue = rospy.Publisher("queue_obs", Bool_necst, queue_size=1)        
         time.sleep(0.5)# authority regist time                
 
         """get authority"""
@@ -141,11 +156,16 @@ class controller(object):
         print("node_name is ", self.node_name)
         return name
 
-    def registration(self,name=""):
+    def registration(self, name, *key, user=""):
         msg = String_necst()
-        msg.data = name
-        msg.from_node = self.node_name
-        msg.timestamp = time.time()
+        if user == "master":
+            msg.data = name
+            msg.from_node = "master"
+            msg.timestamp = time.time()
+        else:
+            msg.data = name
+            msg.from_node = self.node_name
+            msg.timestamp = time.time()
         self.pub_regist.publish(msg)
         return
     
@@ -322,7 +342,23 @@ class controller(object):
                                       self.node_name, time.time())
         return
     '''
-    
+
+    def queue_observation(self, flag):
+        """ queue observation
+        Parameters
+        ----------        
+        flag : start or stop
+        """
+        if flag == "start":
+            self.pub_queue.publish(True, self.node_name, time.time())
+        elif flag == "stop":
+            self.pub_queue.publish(False, self.node_name, time.time())            
+        else:
+            print("Bad command...")
+            print("Please 'start' or 'stop'.")
+        return
+        
+
     def _antenna_tracking(self, req):
         self.antenna_tracking_flag = req.data
         return
@@ -639,6 +675,64 @@ class controller(object):
     # ===================
     # status
     # ===================
+
+    def obs_status(self, active=False, target="", xline=0, yline=0, xgrid=0, ygrid=0, exposure_hot=0, exposure_off=0, exposure_on=0, scan_direction="", current_line=0, current_position=""):
+        """observation status
+        this function is used by ROS_otf.py
+        =======================================================
+        using parameter at observation_start is  1 ~ 10
+        using parameter at getting_data_time is 1 and 11, 12        
+        using parameter at observation_end is 1
+        ========================================================
+
+        Parameter
+        ---------
+        1.active : (start --> True) or (end --> False)
+        2.target : object name
+        3.xline : number of x_line
+        4.yline : number of y_line
+        5.xgrid : length xgrid [arcsec]
+        6.ygrid : length xgrid [arcsec]
+        7.exposure_hot : exposure time[s] at hot
+        8.exposure_off : exposure time[s] at off
+        9.exposure_on : exposure time[s] at on
+        10.scan_direction : scan direction(x or y)
+
+        11.current_line : current line_position (1 ~ len(yline) or len(xline))
+        12.current_position : position (hot or off or on)
+
+        """
+        if target != "":
+            self.active = active
+            self.target = target
+            self.xline = xline
+            self.yline = yline
+            self.xgrid = xgrid
+            self.ygrid = ygrid
+            self.exposure_hot = exposure_hot
+            self.exposure_off = exposure_off
+            self.exposure_on = exposure_on
+            self.scan_direction = scan_direction
+            
+        msg = Status_otf_msg()
+        msg.active = active
+        msg.target = self.target
+        msg.xline = self.xline
+        msg.yline = self.yline
+        msg.xgrid = self.xgrid
+        msg.ygrid = self.ygrid
+        msg.exposure_hot = self.exposure_hot
+        msg.exposure_off = self.exposure_off
+        msg.exposure_on = self.exposure_on
+        msg.scan_direction = self.scan_direction
+        msg.current_line = current_line
+        msg.current_position = current_position
+        msg.from_node = self.node_name
+        msg.timestamp = time.time()
+        
+        self.pub_otfstatus.publish(msg)
+        return
+    
     @deco_check
     def read_status(self):
         """read status
