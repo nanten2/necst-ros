@@ -15,6 +15,7 @@ from necst.msg import Status_encoder_msg
 from necst.msg import Status_timer_msg
 from necst.msg import String_necst
 from necst.msg import Bool_necst
+from necst.msg import Status_otf_msg
 
 import signal
 def handler(signal, frame):
@@ -37,9 +38,11 @@ fb.authentication = auth
 
 td={}
 weather_status ={}
+weather_status24 ={"humi24":[0]*24, "wind24":[0]*24}
 device_status = {}
 enc_status = {}
 time_status = {}
+otf_status = {}
 
 no_alive = ""
 launch = ""
@@ -140,6 +143,7 @@ def _weather(req):
     weather_status["GenTemp1"] = req.GenTemp1
     weather_status["GenTemp2"] = req.GenTemp2
     weather_status["Secofday"] = req.Secofday
+
     device_status["Authority"] = req.Authority
     device_status["Current_M2"] = req.Current_M2
     device_status["Current_M4"] = req.Current_M4
@@ -153,6 +157,7 @@ def _weather(req):
     device_status["Command_El"] = req.Command_El   
     device_status["Deviation_Az"] = req.Deviation_Az
     device_status["Deviation_El"] = req.Deviation_El
+    time.sleep(1.)
     return
 
 def _timer(req):
@@ -172,18 +177,31 @@ def _timer(req):
     return
 
 def weather():
+    current = ""
     while not rospy.is_shutdown():
         if not weather_status:
             time.sleep(0.5)
             continue
-        #date = dt.utcnow()
-        #timestamp = date.strftime("%Y-%m-%d %H:%M:%S")
-        #wdata = [[timestamp, str(weather_status)]]
+        date = dt.utcnow()
+        hh = date.hour
+        if hh != current:
+            weather_status24["humi24"][hh] = weather_status["InHumi"]
+            weather_status24["wind24"][hh] = weather_status["WindSp"]
+            current = hh
+        else:
+            pass
+        
         try:
             fb.put("", "/NECST/Monitor/Instrument/Weather",weather_status)
             pass
         except Exception as e:
             rospy.logerr(e)
+        try:
+            fb.put("", "/NECST/Monitor/Instrument/Weather24",weather_status24)
+            pass
+        except Exception as e:
+            rospy.logerr(e)
+            
         time.sleep(1.0)
     return
 
@@ -233,6 +251,35 @@ def encoder():
         time.sleep(0.5)
     return
 
+def _otf(req):
+    otf_status["active"] = req.active
+    otf_status["target"] = req.target
+    otf_status["xline"] = req.xline
+    otf_status["yline"] = req.yline
+    otf_status["xgrid"] = req.xgrid
+    otf_status["ygrid"] = req.ygrid 
+    otf_status["exposure_hot"] = req.exposure_hot
+    otf_status["exposure_off"] = req.exposure_off
+    otf_status["exposure_on"] = req.exposure_on
+    otf_status["scan_direction"] = req.scan_direction
+    otf_status["current_line"] = req.current_line
+    otf_status["current_position"] = req.current_position
+    otf_status["timestamp"] = req.timestamp
+    return
+
+def otf():
+    while not rospy.is_shutdown():
+        if not otf_status:
+            time.sleep(0.5)
+            continue
+        try:
+            fb.put("", "/NECST/Monitor/Telescope/Otf_status",otf_status)
+            pass
+        except Exception as e:
+            rospy.logerr(e)
+        time.sleep(0.5)
+    return
+    
 if __name__ =="__main__":
     rospy.init_node("firebase_writer")
     sub1 = rospy.Subscriber("web_topic", Status_node_msg, _topic, queue_size=1)
@@ -240,7 +287,9 @@ if __name__ =="__main__":
     sub3 = rospy.Subscriber("status_encoder", Status_encoder_msg, _encoder, queue_size=1)
     sub4 = rospy.Subscriber("authority_check", String_necst, _auth, queue_size=1)
     sub5 = rospy.Subscriber("dome_track_flag", Bool_necst, _dometrack, queue_size=1)
-    sub6 = rospy.Subscriber("timer", Status_timer_msg, _timer, queue_size=1)    
+    sub6 = rospy.Subscriber("timer", Status_timer_msg, _timer, queue_size=1)
+    sub7 = rospy.Subscriber("otf_status", Status_otf_msg, _otf, queue_size=1)    
+    
     
     nth = threading.Thread(target=node_check)
     nth.start()
@@ -254,5 +303,7 @@ if __name__ =="__main__":
     eth = threading.Thread(target=encoder)
     eth.start()
     timeth = threading.Thread(target=timer)
-    timeth.start()    
+    timeth.start()
+    otfth = threading.Thread(target=otf)
+    otfth.start()    
     rospy.spin()

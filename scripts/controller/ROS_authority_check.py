@@ -27,6 +27,9 @@ class authority(object):
             if req.from_node == self.authority:
                 self.authority = req.data
                 print("release authority !!","\n")
+            elif req.from_node == "master":
+                self.authority = req.data
+                print("obs_node is killed...")
             else:
                 print("Can't release...")
                 print("current authority :", self.authority,"\n")
@@ -46,7 +49,7 @@ class authority(object):
             self.node_alive()
             msg.data = self.authority
             self.pub.publish(msg)
-            print(msg)
+            #print(msg)
             time.sleep(1.)
         return
 
