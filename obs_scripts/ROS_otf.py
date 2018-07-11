@@ -7,7 +7,7 @@
 # Info
 # ----
 
-name = '_otf_2017'
+name = '_otf_2018'
 description = 'Get OTF spectrum'
 
 # Config Parameters
@@ -61,6 +61,8 @@ def handler(num, flame):
     print("STOP MOVING")
     con.move_stop()
     con.dome_stop()
+    con.obs_status(active=False)
+    time.sleep(1.)
     sys.exit()
 signal.signal(signal.SIGINT, handler)
 
@@ -274,8 +276,12 @@ rp_num = 0
 n = int(total_count)
 latest_hottime = 0
 
-# define thread
+# start observation
 # ---------------
+if obs["scan_direction"] == 0:
+    con.obs_status(True, obs["object"], scan_point, total_count, dx, gridy, integ_off, integ_off, integ_on, "x")
+else:
+    con.obs_status(True, obs["object"], total_count, scan_point, gridx, dy, integ_off, integ_off, integ_on, "y")
 while rp_num < rp:
     print('repeat : ',rp_num)
     num = 0
@@ -297,6 +303,7 @@ while rp_num < rp:
         if _now > latest_hottime+60*obs['load_interval']:
             print('R')
             con.move_hot('in')
+            con.obs_status(active=True, current_line=num+1, current_position="HOT")
         
             print('get spectrum...')
             ###con.doppler_calc()
@@ -368,6 +375,7 @@ while rp_num < rp:
         
         print('OFF')
         con.move_hot('out')
+        con.obs_status(active=True, current_line=num+1, current_position="OFF")    
         print('get spectrum...')
         #con.observation("start", integ_off)# getting one_shot_data
         time.sleep(integ_off)
@@ -412,8 +420,6 @@ while rp_num < rp:
         lambda_list.append(obs['lambda_off'])
         beta_list.append(obs['beta_off'])
 
-
-
         print('move ON')
         con.move_stop()
         ssx = (sx + num*gridx) - float(dx)/float(dt)*rampt-float(dx)/2.#rampの始まり
@@ -436,12 +442,13 @@ while rp_num < rp:
         start_on = Time(datetime.fromtimestamp(delay+ctime)).mjd
         print("%%%%%%%%%%%%%%%%")
         print(start_on)
+        con.obs_status(active=True, current_line=num+1, current_position="ON")        
         con.otf_scan(lambda_on, beta_on, coordsys, dx, dy, dt, scan_point, rampt, delay=delay, current_time=ctime, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, limit=True)
 
         print('getting_data...')
         d = con.oneshot_achilles(repeat = scan_point ,exposure = integ_on ,stime = start_on)
         print("start_on:",start_on)
-        while start_on + obs['otflen']/24./3600. > 40587 + time.time()/(24.*3600.):
+        while start_on + (obs['otflen']+rampt)/24./3600. > 40587 + time.time()/(24.*3600.):
             #while obs['otflen']/24./3600. > 40587 + time.time()/(24.*3600.):    
             time.sleep(0.001)
 
@@ -511,6 +518,8 @@ while rp_num < rp:
 
 print('R')#最初と最後をhotではさむ
 con.move_hot('in')
+con.obs_status(active=True, current_line=num+1, current_position="HOT")
+
 #con.observation("start", integ_off)
 time.sleep(integ_off)
 
@@ -785,4 +794,4 @@ n2fits_write.write(read2,f2)
 timestamp = time.strftime('%Y%m%d_%H%M%S')
 dirname = timestamp
 obs_log.end_script(name, dirname)
-
+con.obs_status(active=False)

@@ -1,0 +1,13 @@
+float64 secofday
+int32 lst_h
+int32 lst_m
+int32 lst_s
+int32 utc_Y
+int32 utc_M
+int32 utc_D
+int32 utc_h
+int32 utc_m
+int32 utc_s
+float64 mjd
+string from_node
+float64 timestamp
