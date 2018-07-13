@@ -79,7 +79,9 @@ add_message_files(
   l218_values.msg
   tpg261_values.msg
   Status_timer_msg.msg
-  Status_otf_msg.msg
+  Status_obs_msg.msg
+  Status_onepoint_msg.msg
+  String_list_msg.msg
 )
 
 ## Generate services in the 'srv' folder
