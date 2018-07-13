@@ -52,7 +52,7 @@ def queue_check():
         print("finish loading")
     except:
         #if no file
-        return
+        return "", ""
     if current_day != date:
         current_num = 0
         current_day = date
@@ -87,7 +87,7 @@ def queue_check():
         else:
             continue
 
-    return 
+    return "", ""
         
 
 rospy.init_node(node_name)
