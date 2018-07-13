@@ -279,9 +279,9 @@ latest_hottime = 0
 # start observation
 # ---------------
 if obs["scan_direction"] == 0:
-    con.obs_status(True, obs["object"], scan_point, total_count, dx, gridy, integ_off, integ_off, integ_on, "x")
+    con.obs_status(True, obs["obsmode"], obs["object"], scan_point, total_count, dx, gridy, integ_off, integ_off, integ_on, "x")
 else:
-    con.obs_status(True, obs["object"], total_count, scan_point, gridx, dy, integ_off, integ_off, integ_on, "y")
+    con.obs_status(True, obs["obsmode"], obs["object"], scan_point, total_count, gridx, dy, integ_off, integ_off, integ_on, "y")
 while rp_num < rp:
     print('repeat : ',rp_num)
     num = 0
@@ -303,7 +303,7 @@ while rp_num < rp:
         if _now > latest_hottime+60*obs['load_interval']:
             print('R')
             con.move_hot('in')
-            con.obs_status(active=True, current_line=num+1, current_position="HOT")
+            con.obs_status(active=True, current_num=scan_point*num+1, current_position="HOT")
         
             print('get spectrum...')
             ###con.doppler_calc()
@@ -375,7 +375,7 @@ while rp_num < rp:
         
         print('OFF')
         con.move_hot('out')
-        con.obs_status(active=True, current_line=num+1, current_position="OFF")    
+        con.obs_status(active=True, current_num=scan_point*num+1, current_position="OFF")    
         print('get spectrum...')
         #con.observation("start", integ_off)# getting one_shot_data
         time.sleep(integ_off)
@@ -442,7 +442,7 @@ while rp_num < rp:
         start_on = Time(datetime.fromtimestamp(delay+ctime)).mjd
         print("%%%%%%%%%%%%%%%%")
         print(start_on)
-        con.obs_status(active=True, current_line=num+1, current_position="ON")        
+        con.obs_status(active=True, current_num=scan_point*num+1, current_position="ON")        
         con.otf_scan(lambda_on, beta_on, coordsys, dx, dy, dt, scan_point, rampt, delay=delay, current_time=ctime, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, limit=True)
 
         print('getting_data...')
@@ -518,7 +518,7 @@ while rp_num < rp:
 
 print('R')#最初と最後をhotではさむ
 con.move_hot('in')
-con.obs_status(active=True, current_line=num+1, current_position="HOT")
+con.obs_status(active=True, current_num=scan_point*num+1, current_position="HOT")
 
 #con.observation("start", integ_off)
 time.sleep(integ_off)

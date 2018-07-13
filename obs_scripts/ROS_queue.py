@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from subprocess import Popen
 import time
 import threading
@@ -5,6 +7,7 @@ from datetime import datetime as dt
 import sys
 import rospy
 from necst.msg import Bool_necst
+from necst.msg import String_necst
 sys.path.append("/home/amigos/git")
 from n2db import n2database
 db = n2database.N2db()
@@ -12,6 +15,8 @@ db.authorize()
 
 current_num = 0
 current_day = ""
+
+node_name = "queue_obs"
 
 import signal
 def handler(signal, frame):
@@ -42,7 +47,9 @@ def queue_check():
     ct = dt.utcnow()
     date = ct.strftime("%Y-%m-%d")
     try:
+        print("loading file...")        
         data = db.SELECT(table="queue_list", start=date, end=date)
+        print("finish loading")
     except:
         #if no file
         return
@@ -62,7 +69,7 @@ def queue_check():
         ss = ct.second
         ctime = hh*3600+mm*60+ss
         if dtime>ctime:
-            current_num = i+1
+            current_num = i
             while dtime>ctime and obs_flag==True:
                 ct = dt.utcnow()
                 hh = ct.hour
@@ -71,34 +78,37 @@ def queue_check():
                 ctime = hh*3600+mm*60+ss                
                 print("current time : ", ct.strftime("%H:%M:%S"))
                 print("next observation is : ", str(data[i][0].split()[1]))
+                pub.publish(str(data[i][0].split()[1]), node_name, time.time())
                 print("\n")
                 time.sleep(1.)
             if obs_flag == False:
                 break
-            return data[i][1]
+            return data[i][1], data[i][2]
         else:
             continue
 
     return 
         
 
-rospy.init_node("queue_obs")
+rospy.init_node(node_name)
 sub = rospy.Subscriber("queue_obs",Bool_necst, _observation, queue_size=1)
+pub = rospy.Publisher("next_obs", String_necst, queue_size=1)
 
 while True:
     print("start")
     if not obs_flag:
         print("no queue_list...\n")
+        pub.publish("no reservation...", node_name, time.time())        
     while not obs_flag:
         time.sleep(1.)
-    filename = queue_check()
+    script, filename = queue_check()
     
     if not filename:
         obs_flag = False
         print("no queue_list")
     else:
         print("start observation : ", filename)
-        cmd = "python ROS_otf.py --obsfile " + str(filename)
+        cmd = "python "+str(script)+" --obsfile " + str(filename)
         cmd = cmd.split()
         proc = Popen(cmd)
         proc.wait()

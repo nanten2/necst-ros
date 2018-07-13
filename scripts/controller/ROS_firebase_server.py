@@ -81,13 +81,14 @@ def start_thread():
 def onepoint():
     while flag:
         _one = fb.get("/NECST/Controll/Telescope/Onepoint",None)
+        time.sleep(1.)
         if _one != "":
             print("onepoint_move")
             con.onepoint_move(_one["x"], _one["y"], _one["coord"], _one["off_x"], _one["off_y"], _one["offcoord"], _one["hosei"], _one["lamda"], _one["dcos"], _one["limit"])
             fb.put("", "/NECST/Controll/Telescope/Onepoint", "")
         else:
             pass
-        time.sleep(0.5)
+        time.sleep(1.)
     return
 
 def linear():
@@ -96,18 +97,20 @@ def linear():
 def planet():
     while flag:
         _planet = fb.get("/NECST/Controll/Telescope/Planet",None)
+        time.sleep(1.)
         if _planet != "":
             print("planet_move : ", _planet)
             con.planet_move(_planet["planet"], _planet["off_x"], _planet["off_y"], _planet["offcoord"], _planet["hosei"], _planet["lamda"], _planet["dcos"], _planet["limit"])
             fb.put("", "/NECST/Controll/Telescope/Planet", "")
         else:
             pass
-        time.sleep(0.5)
+        time.sleep(1.)
     return
 
 def observation():
     while flag:
         _queue = fb.get("/NECST/Controll/Telescope/Queue",None)
+        time.sleep(1.)
         if _queue != "":
             print("queue observation : ", _queue["observation"])
             con.release_authority()
@@ -115,7 +118,8 @@ def observation():
             fb.put("", "/NECST/Controll/Telescope/Queue", "")
         else:
             pass
-        time.sleep(0.5)    
+        time.sleep(1.)
+        print(str(dt.utcnow()))
     return
 
 def drive():
@@ -127,7 +131,7 @@ def drive():
             fb.put("", "/NECST/Controll/Telescope/Device/drive", "")
         else:
             pass
-        time.sleep(0.5)
+        time.sleep(1.)
     return
 
 """
@@ -169,7 +173,7 @@ def dome():
             fb.put("", "/NECST/Controll/Telescope/Device/dome", "")
         else:
             pass
-        time.sleep(0.5)
+        time.sleep(1.)
     return
 
 def memb():
@@ -180,7 +184,7 @@ def memb():
             fb.put("", "/NECST/Controll/Telescope/Device/memb", "")
         else:
             pass    
-        time.sleep(0.5)
+        time.sleep(1.)
     return
 
 def m4():
@@ -191,7 +195,7 @@ def m4():
             fb.put("", "/NECST/Controll/Telescope/Device/m4", "")
         else:
             pass
-        time.sleep(0.5)
+        time.sleep(1.)
     return
 
 def hot():
@@ -202,7 +206,7 @@ def hot():
             fb.put("", "/NECST/Controll/Telescope/Device/hot", "")
         else:
             pass
-        time.sleep(0.5)
+        time.sleep(1.)
     return 
 
 
@@ -214,7 +218,7 @@ def m2():
             fb.put("", "/NECST/Controll/Telescope/Device/m2", "")
         else:
             pass    
-        time.sleep(0.5)
+        time.sleep(1.)
     return
 
 """

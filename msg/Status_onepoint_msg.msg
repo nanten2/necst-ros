@@ -1,0 +1,11 @@
+bool active
+string target
+int32 num_on
+int32 num_seq
+float64 exposure_hot
+float64 exposure_off
+float64 exposure_on
+int32 current_num
+string current_position
+string from_node
+float64 timestamp
