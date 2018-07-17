@@ -63,6 +63,7 @@ def handler(num, flame):
     print("STOP MOVING")
     con.move_stop()
     con.dome_stop()
+    con.obs_status(active=False)
     sys.exit()
 signal.signal(signal.SIGINT, handler)
 
@@ -167,6 +168,8 @@ savetime = con.read_status().Time
 num = 0
 n = int(obs['nSeq'])
 latest_hottime = 0
+
+con.obs_status(active=True, obsmode=obs["obsmode"], target=obs["object"], num_on=obs["nON"], num_seq=obs["nSeq"], exposure_hot=obs["exposure_off"], exposure_off=obs["exposure_off"], exposure_on=obs["exposure"])
 while num < n: 
     print('observation :'+str(num+1) + "\n")
         
@@ -181,6 +184,7 @@ while num < n:
         print('R'+ "\n")
         
         con.move_hot('in')
+        con.obs_status(active=True, current_num=num, current_position="HOT")               
 
         print('get spectrum...')
         ###con.doppler_calc()
@@ -222,6 +226,7 @@ while num < n:
         _2NDLO_list2.append(dp1[3]['sg22']*1000)
         #print("sg21 : ", dp1[3]['sg21']*1000)
         #print("sg22 : ", dp1[3]['sg22']*1000, "\n")
+
         pass
 
 
@@ -232,6 +237,7 @@ while num < n:
         pass
     print('OFF'+ "\n")
     con.move_hot('out')
+    con.obs_status(active=True, current_num=num, current_position="OFF")
     print('get spectrum...')
     #con.observation("start", integ_off)# getting one_shot_data
     time.sleep(integ_off)
@@ -270,11 +276,11 @@ while num < n:
     #print("sg21 : ", dp1[3]['sg21']*1000)
     #print("sg22 : ", dp1[3]['sg22']*1000, "\n")
 
-
     print('move ON'+ "\n")
 
     con.onepoint_move(lambda_on, beta_on, coordsys, off_x=lamdel_on, off_y=betdel_on, offcoord = cosydel, dcos=dcos)
 
+    con.obs_status(active=True, current_num=num, current_position="ON")    
     con.antenna_tracking_check()
     con.dome_tracking_check()
     print('tracking OK'+"\n")
@@ -312,8 +318,6 @@ while num < n:
     _2NDLO_list2.append(dp1[3]['sg22']*1000)
     #print("sg21 : ", dp1[3]['sg21']*1000)
     #print("sg22 : ", dp1[3]['sg22']*1000,"\n")
-
-
     print('stop'+"\n")
         
     num += 1
@@ -321,6 +325,7 @@ while num < n:
 
 print('R'+"\n")#最初と最後をhotではさむ
 con.move_hot('in')
+con.obs_status(active=True, current_num=num, current_position="HOT")
 
 status = con.read_status()
 temp = float(status.CabinTemp1) + 273.15
@@ -584,4 +589,4 @@ n2fits_write.write(read2,f2)
 timestamp = time.strftime('%Y%m%d_%H%M%S')
 dirname = timestamp
 #obs_log.end_script(name, dirname)
-
+con.obs_status(active=False)
