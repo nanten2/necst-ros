@@ -1,7 +1,8 @@
 bool active
 string target
-int32 xline
-int32 yline
+string obsmode
+int32 num_on
+int32 num_seq
 float64 xgrid
 float64 ygrid
 float64 exposure_hot
@@ -9,7 +10,7 @@ float64 exposure_off
 float64 exposure_on
 string scan_direction
 
-int32 current_line
+int32 current_num
 string current_position
 
 string from_node
