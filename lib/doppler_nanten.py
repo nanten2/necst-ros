@@ -2,7 +2,7 @@
 #-*- coding: utf-8 -*-
 
 #import csv
-#from pyslalib import slalib
+from pyslalib import slalib
 from astropy.coordinates import SkyCoord
 from astropy.coordinates import FK5
 import astropy.units as u
@@ -312,7 +312,6 @@ class doppler_nanten (object):
 
         tu= (jd - 2451545.) / 36525.
         
-        """
         ranow=ra_2000
         delnow=dec_2000
         ret =slalib.sla_preces("FK5", 2000.,2000.+tu*100.,ranow,delnow)
@@ -325,12 +324,12 @@ class doppler_nanten (object):
         ranow = trans.ra.radian
         delnow = trans.dec.radian
 
+        """
         a = math.cos(delnow)
         x[0]=a*math.cos(ranow)
         x[1]=a*math.sin(ranow)
         x[2]=math.sin(delnow)
         
-        """
         ret = slalib.sla_nutc(jd-2400000.5)#radian
         nut_long = ret[0]
         nut_obliq = ret[1]
@@ -341,6 +340,7 @@ class doppler_nanten (object):
         nut_long = ret[0]
         nut_obliq = ret[1]
 
+        """
         #x1[0]=x[0]-(x[1]*math.cos(eps0)+x[2]*math.sin(eps0))*nut_long
         #x1[1]=x[1]+x[0]*math.cos(eps0)*nut_long - x[2]*nut_obliq
         #x1[2]=x[2]+x[0]*math.sin(eps0)*nut_long + x[1]*nut_obliq
@@ -419,7 +419,6 @@ class doppler_nanten (object):
         rasol=18.*15. *DEG2RAD
         delsol=30.*DEG2RAD
 
-        """
         #ret = slalib.sla_preces( "FK4", 1900.,2000.+tu*100., rasol, delsol)
 
         ret = slalib.sla_preces( "FK4", 1950.,2000.+tu*100., rasol, delsol)
@@ -433,6 +432,7 @@ class doppler_nanten (object):
         rasol = trans_sol.ra.radian
         delsol = trans_sol.dec.radian
 
+        """
         a = math.cos(delsol)
         solx[0] = a*math.cos(rasol)
         solx[1] = a*math.sin(rasol)
@@ -466,7 +466,7 @@ class doppler_nanten (object):
         return lst
         """
         
-	#print('vobs',vobs,type(vobs))
+	#print('vobs',vobs,type(vobs)) km/s
         return vobs
     
 
