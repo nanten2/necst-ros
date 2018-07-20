@@ -2,7 +2,11 @@
 #-*- coding: utf-8 -*-
 
 #import csv
-from pyslalib import slalib
+#from pyslalib import slalib
+from astropy.coordinates import SkyCoord
+from astropy.coordinates import FK5
+import astropy.units as u
+import astropy._erfa as erfa
 import math
 import time
 import sys
@@ -209,6 +213,7 @@ class doppler_nanten (object):
         return {"freq":freq, "power":power}
     """
     def get_vobs(self, mjdtmp, xtmp, ytmp, mode, offx, offy, dcos, offmode):
+        #modeを見て、j2000へ座標変換してる
         mode = mode.lower()
         offmode = offmode.lower()
         mode = self.coord_dict[mode]
@@ -232,19 +237,17 @@ class doppler_nanten (object):
             xxtmp = xtmp
             yytmp = ytmp
         elif mode == self.coord_dict["b1950"] :
-            ret = slalib.sla_fk45z(xtmp, ytmp, 1950)
+            #ret = slalib.sla_fk45z(xtmp, ytmp, 1950)
+            sc_fk4 = SkyCoord( ra = xtmp*u.radian, dec = ytmp*u.radian, frame = "fk4")
+            sc_fk5 = sc_fk4.fk5
+            ret = [sc_fk5.ra.radian, sc_fk5.dec.radian]
             xxtmp = ret[0]
             yytmp = ret[1]
-        elif mode == self.coord_dict["lb"] :
-            ret = slalib.sla_galeq(xtmp, ytmp)
-            xxtmp = ret[0]
-            yytmp = ret[1]
-        elif mode == self.coord_dict["galactic"] :
-            ret = slalib.sla_galeq(xtmp, ytmp)
-            xxtmp = ret[0]
-            yytmp = ret[1]
-        elif mode == self.coord_dict["gal"] :
-            ret = slalib.sla_galeq(xtmp, ytmp)
+        elif mode == self.coord_dict["lb"] or mode == self.coord_dict["galactic"] or mode == self.coord_dict["gal"]:
+            #ret = slalib.sla_galeq(xtmp, ytmp)
+            sc_gal = SkyCoord( ra = xtmp*u.radian, dec = ytmp*u.radian, frame = "galactic")
+            sc_fk5 = sc_gal.fk5
+            ret = [sc_fk5.ra.radian, sc_fk5.dec.radian]
             xxtmp = ret[0]
             yytmp = ret[1]
         else :
@@ -308,23 +311,35 @@ class doppler_nanten (object):
         x_2000[2] = math.sin(dec_2000)
 
         tu= (jd - 2451545.) / 36525.
-
+        
+        """
         ranow=ra_2000
         delnow=dec_2000
         ret =slalib.sla_preces("FK5", 2000.,2000.+tu*100.,ranow,delnow)
         ranow = ret[0]
         delnow = ret[1]
+        """
+
+        sc_fk5 = SkyCoord(ra = ra_2000*u.radian, dec = dec_2000*u.radian, frame = "fk5")
+        trans = sc_fk5.transform_to(FK5(equinox = "J{}".format(2000.+tu*100.)))
+        ranow = trans.ra.radian
+        delnow = trans.dec.radian
 
         a = math.cos(delnow)
         x[0]=a*math.cos(ranow)
         x[1]=a*math.sin(ranow)
         x[2]=math.sin(delnow)
-
+        
+        """
         ret = slalib.sla_nutc(jd-2400000.5)#radian
         nut_long = ret[0]
         nut_obliq = ret[1]
         eps0 = ret[2]
+        """
 
+        ret = erfa.nut00a(jd, 0.0)
+        nut_long = ret[0]
+        nut_obliq = ret[1]
 
         #x1[0]=x[0]-(x[1]*math.cos(eps0)+x[2]*math.sin(eps0))*nut_long
         #x1[1]=x[1]+x[0]*math.cos(eps0)*nut_long - x[2]*nut_obliq
@@ -404,12 +419,19 @@ class doppler_nanten (object):
         rasol=18.*15. *DEG2RAD
         delsol=30.*DEG2RAD
 
+        """
         #ret = slalib.sla_preces( "FK4", 1900.,2000.+tu*100., rasol, delsol)
 
         ret = slalib.sla_preces( "FK4", 1950.,2000.+tu*100., rasol, delsol)
 
         rasol = ret[0]
         delsol = ret[1]
+        """
+
+        sc_fk4_sol = SkyCoord(ra = rasol*u.radian, dec = delsol*u.radian, frame = "fk4")
+        trans_sol = sc_fk4_sol.transform_to(FK5(equinox = "J{}".format(2000.+tu*100.)))
+        rasol = trans_sol.ra.radian
+        delsol = trans_sol.dec.radian
 
         a = math.cos(delsol)
         solx[0] = a*math.cos(rasol)
