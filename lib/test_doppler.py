@@ -11,7 +11,7 @@ sys.path.append("/home/amigos/necst/lib/")
 import doppler_nanten
 import doppler_nanten_ast
 
-dir1 = '/~/lab/check/'
+dir1 = '/home/amigos/ros/src/data/'
 
 
 dp = doppler_nanten.doppler_nanten()
