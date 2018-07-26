@@ -7,13 +7,10 @@ ROS_antenna_move.py & S_ROS_antenna_move.py
 import sys
 sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 import rospy
-import numpy
 import time
 import threading
-import math
 sys.path.append("/home/necst/ros/src/necst/lib")
 import antenna_device
-import numpy as np
 import struct
 import pyinterface
 
@@ -69,32 +66,11 @@ class antenna_move(object):
     dt = MOTOR_SAMPLING/1000.
     
     #error_box = [0]*32###0921
-    #azv_before = elv_before = 0
-    ihensa_az = ihensa_el = 0.0
-    pre_az_arcsec = pre_el_arcsec = 0
     
     indaz = 0
     indel = 0
     
-    az_encmoni = 0
-    el_encmoni = 0
-    az_targetmoni = 0
-    el_targetmoni = 0
-    az_targetspeedmoni = 0
-    el_targetspeedmoni = 0
-    az_hensamoni = 0
-    el_hensamoni = 0
-    az_ihensamoni = 0
-    el_ihensamoni = 0
     
-    #fordrive.py
-    az_pidihensamoni = 0
-    el_pidihensamoni = 0
-    
-    
-    
-    th_az = 0
-    th_el = 0
     server_flag = []
     time_list = [0,0,0,0,0]
     save_time = 0
@@ -353,10 +329,10 @@ class antenna_move(object):
             for i in range(5):
                 #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
                 #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
-                self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+                self.dev.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
                 #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
                 #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
-                self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+                self.dev.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
                 time.sleep(0.05)
                 self.command_az_speed = 0
                 self.command_el_speed = 0

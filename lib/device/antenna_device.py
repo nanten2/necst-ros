@@ -2,7 +2,7 @@
 
 import pyinterface
 import struct
-import numpy as np
+import numpy
 import math
 
 class antenna_device(object):
@@ -506,8 +506,8 @@ class antenna_device(object):
             self.az_array.pop(3)
             self.el_array.pop(3)
         
-        ave_az = np.average(self.az_array)
-        ave_el = np.average(self.el_array)
+        ave_az = numpy.average(self.az_array)
+        ave_el = numpy.average(self.el_array)
         return [ave_az, ave_el]
 
     def medi_calc(self, target_az, target_el):
@@ -522,8 +522,8 @@ class antenna_device(object):
             self.target_az_array.pop(13)
             self.target_el_array.pop(13)
         
-        median_az = np.median(self.target_az_array)
-        median_el = np.median(self.target_el_array)
+        median_az = numpy.median(self.target_az_array)
+        median_el = numpy.median(self.target_el_array)
         return [median_az, median_el]
 
     
