@@ -48,7 +48,6 @@ import sys
 sys.path.append("/home/amigos/necst-obsfiles")
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
-import obs_log
 import doppler_nanten
 dp = doppler_nanten.doppler_nanten()
 import ROS_controller
@@ -66,10 +65,6 @@ def handler(num, flame):
     sys.exit()
 signal.signal(signal.SIGINT, handler)
 
-_list = []
-_list.append("--obsfile")
-_list.append(obsfile)
-obs_log.start_script(name, _list)
 
 # read obsfile
 obsdir = '/home/amigos/necst-obsfiles/'
@@ -278,10 +273,11 @@ latest_hottime = 0
 
 # start observation
 # ---------------
+obsscript = __file__
 if obs["scan_direction"] == 0:
-    con.obs_status(True, obs["obsmode"], obs["object"], scan_point, total_count, dx, gridy, integ_off, integ_off, integ_on, "x")
+    con.obs_status(True, obs["obsmode"], obsscript, obsfile, obs["object"], scan_point, total_count, dx, gridy, integ_off, integ_off, integ_on, "x")
 else:
-    con.obs_status(True, obs["obsmode"], obs["object"], scan_point, total_count, gridx, dy, integ_off, integ_off, integ_on, "y")
+    con.obs_status(True, obs["obsmode"], obsscript, obsfile, obs["object"], scan_point, total_count, gridx, dy, integ_off, integ_off, integ_on, "y")
 while rp_num < rp:
     print('repeat : ',rp_num)
     num = 0
@@ -303,7 +299,7 @@ while rp_num < rp:
         if _now > latest_hottime+60*obs['load_interval']:
             print('R')
             con.move_hot('in')
-            con.obs_status(active=True, current_num=scan_point*num+1, current_position="HOT")
+            con.obs_status(active=True, current_num=scan_point*num, current_position="HOT")
         
             print('get spectrum...')
             ###con.doppler_calc()
@@ -375,7 +371,7 @@ while rp_num < rp:
         
         print('OFF')
         con.move_hot('out')
-        con.obs_status(active=True, current_num=scan_point*num+1, current_position="OFF")    
+        con.obs_status(active=True, current_num=scan_point*num, current_position="OFF")    
         print('get spectrum...')
         #con.observation("start", integ_off)# getting one_shot_data
         time.sleep(integ_off)
@@ -442,7 +438,7 @@ while rp_num < rp:
         start_on = Time(datetime.fromtimestamp(delay+ctime)).mjd
         print("%%%%%%%%%%%%%%%%")
         print(start_on)
-        con.obs_status(active=True, current_num=scan_point*num+1, current_position="ON")        
+        con.obs_status(active=True, current_num=scan_point*num, current_position="ON")        
         con.otf_scan(lambda_on, beta_on, coordsys, dx, dy, dt, scan_point, rampt, delay=delay, current_time=ctime, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, limit=True)
 
         print('getting_data...')
@@ -789,9 +785,7 @@ n2fits_write.write(read1,f1)
 n2fits_write.write(read2,f2)
 
 
-
 #shutil.copy("/home/amigos/NECST/soft/server/hosei_230.txt", savedir+"/hosei_copy")
 timestamp = time.strftime('%Y%m%d_%H%M%S')
 dirname = timestamp
-obs_log.end_script(name, dirname)
 con.obs_status(active=False)

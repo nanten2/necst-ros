@@ -5,12 +5,8 @@ import time
 import threading
 
 import rospy
-from necst.msg import String_necst
-from necst.msg import Bool_necst
-from necst.msg import Dome_msg
 from necst.msg import Status_antenna_msg
 from necst.msg import Status_encoder_msg
-
 
 node_name = "alert_encoder"
 
@@ -24,17 +20,9 @@ class alert(object):
     emergency = ""
     warning = ""
 
-    antenna_stop = False
-    dome_stop = False
-    dome_close = False
-    memb_close = False
-
     error_flag = False
     
     def __init__(self):
-        self.pub_alert = rospy.Publisher("alert", String_necst, queue_size=10, latch=True)        
-        self.pub_antenna = rospy.Publisher("move_stop", Bool_necst, queue_size = 1, latch = True)
-        self.pub_dome = rospy.Publisher('dome_move', Dome_msg, queue_size = 10, latch = True)        
         self.sub = rospy.Subscriber("status_antenna", Status_antenna_msg, self.callback_command)
         self.sub = rospy.Subscriber("status_encoder", Status_encoder_msg, self.callback_encoder)        
         return
@@ -63,44 +51,32 @@ class alert(object):
 
     def pub_status(self):
         """ publish : alert """
-        antenna = Bool_necst()
-        antenna.data = True
-        antenna.from_node = node_name
-        dome = Dome_msg()
-        dome.name = "command"
-        dome.from_node = node_name
-        msg = String_necst()
-        msg.from_node = node_name
         error_flag = False
         while not rospy.is_shutdown():
             timestamp = time.time()
             if self.emergency:
                 rospy.logfatal(self.emergency)
-                antenna.timestamp = timestamp
-                self.pub_antenna.publish(antenna)
-                dome.value = "dome_stop"
-                self.pub_dome.publish(dome)
-                dome.value = "memb_close"
-                self.pub_dome.publish(dome)
-                dome.value = "dome_close"
-                self.pub_dome.publish(dome)
-                msg.data = self.emergency
-                self.pub_alert.publish(msg)
+                con.move_stop()
+                con.dome_stop()
+                con.memb_close()
+                con.dome_close()
+                msg = self.emergency
+                con.alert(msg)
                 error_flag = True                
             elif self.warning:
                 rospy.logwarn(self.warning)
-                msg.data = self.warning
-                self.pub_alert.publish(msg)
+                msg = self.warning
+                con.alert(msg)
                 error_flag = True
             else:
                 if error_flag:
-                    msg.data = "encoder error release !!\n\n\n"
-                    rospy.loginfo(msg.data)
-                    self.pub_alert.publish(msg)                    
+                    msg = "encoder error release !!\n\n\n"
+                    rospy.loginfo(msg)
+                    con.alert(msg)                    
                     time.sleep(0.5)
-                    msg.data = ""
-                    rospy.loginfo(msg.data)
-                    self.pub_alert.publish(msg)                    
+                    msg = ""
+                    rospy.loginfo(msg)
+                    con.alert(msg)                    
                     error_flag = False
                 else:
                     pass
@@ -156,7 +132,8 @@ class alert(object):
         return
     
 if __name__ == "__main__":
-    rospy.init_node(node_name)
+    import ROS_controller
+    con = ROS_controller.controller(escape=node_name)
     al = alert()
     al.thread_start()
     rospy.spin()

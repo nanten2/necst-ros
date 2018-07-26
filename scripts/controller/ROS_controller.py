@@ -27,7 +27,7 @@ from necst.msg import Status_obs_msg
 from necst.msg import Status_onepoint_msg
 from NASCORX_XFFTS.msg import XFFTS_para_msg
 sys.path.append("/home/amigos/ros/src/necst/lib")
-
+import achilles
 
 class controller(object):
 
@@ -45,6 +45,8 @@ class controller(object):
     """otf parameter"""
     active = False
     obsmode = ""
+    obs_script = ""
+    obs_file = ""
     target = ""
     num_on = 0
     num_seq = 0
@@ -62,21 +64,29 @@ class controller(object):
     num_seq = 0
     
     def __init__(self, escape=False):
-        """node registration"""
-        self.node_name = self.initialize()
-        rospy.init_node(self.node_name)
-        self.escape = escape
-        if self.escape:
-            print("Authority escape mode start.")
-        else:
-            pass
+        """node registration
+        *** warning!!! ***
+        if you escape from authority_check, 
+            escape -> node_name
+        you can start flee node_name
+        ******************
+        """
 
+        self.escape = escape            
+        if self.escape:
+            print("Authority escape mode start.")            
+            self.node_name = self.escape
+        else:
+            self.node_name = self.initialize()
+            pass
+        rospy.init_node(self.node_name)
         
         """init"""
         self.antenna_sub = rospy.Subscriber("tracking_check", Bool_necst, self._antenna_tracking)
         self.dome_sub = rospy.Subscriber("dome_tracking_check", Bool_necst, self._dome_tracking)
         self.regist_sub = rospy.Subscriber("authority_check", String_necst, self._pick_up, queue_size=1)
-        
+        self.obs_stop_sub = rospy.Subscriber("obs_stop", String_necst, self._obs_stop, queue_size=1)
+        self.pub_obs_stop = rospy.Publisher("obs_stop", String_necst, queue_size=1)        
         self.pub_drive = rospy.Publisher("antenna_drive", String_necst, queue_size = 1)
         self.pub_contactor = rospy.Publisher("antenna_contactor", String_necst, queue_size = 1)
         self.pub_onepoint = rospy.Publisher("onepoint_command", Move_mode_msg, queue_size=1, latch=True)
@@ -95,11 +105,13 @@ class controller(object):
         self.pub_regist = rospy.Publisher("authority_regist", String_necst, queue_size=1)
         self.pub_obsstatus = rospy.Publisher("obs_status", Status_obs_msg, queue_size=1)
         self.pub_onestatus = rospy.Publisher("one_status", Status_onepoint_msg, queue_size=1)        
-        self.pub_queue = rospy.Publisher("queue_obs", Bool_necst, queue_size=1)        
+        self.pub_queue = rospy.Publisher("queue_obs", Bool_necst, queue_size=1)
+        self.pub_alert = rospy.Publisher("alert", String_necst, queue_size=1)
         time.sleep(0.5)# authority regist time                
 
         """get authority"""
-        self.get_authority()
+        if not self.escape:
+            self.get_authority()
         
         """finish action"""
         atexit.register(self._release)
@@ -128,7 +140,7 @@ class controller(object):
         import functools
         @functools.wraps(func)
         def wrapper(self, *args,**kwargs):
-            self.get_authority()
+            #self.get_authority()
             time.sleep(0.5)
             if self.escape:
                 ret = func(self, *args,**kwargs)
@@ -163,7 +175,7 @@ class controller(object):
         print("node_name is ", self.node_name)
         return name
 
-    def registration(self, name, *key, user=""):
+    def registration(self, name, user=""):
         msg = String_necst()
         if user == "master":
             msg.data = name
@@ -357,6 +369,7 @@ class controller(object):
         flag : start or stop
         """
         if flag == "start":
+            self.registration("", "master")
             self.pub_queue.publish(True, self.node_name, time.time())
         elif flag == "stop":
             self.pub_queue.publish(False, self.node_name, time.time())            
@@ -378,7 +391,13 @@ class controller(object):
             time.sleep(0.01)
             pass
         return
-        
+
+    def _obs_stop(self, req):
+        self.registration("", "master")
+        self.move_stop()
+        print(req.data)
+        return
+    
     def move_stop(self):
         print("move_stop")
         self.pub_stop.publish(True, self.node_name, time.time())
@@ -446,7 +465,6 @@ class controller(object):
         self.pub_dome.publish(dome)
         return
     
-    @deco_check    
     def dome_close(self):
         """Dome close"""
         dome = Dome_msg()
@@ -486,7 +504,6 @@ class controller(object):
         self.pub_dome.publish(dome)
         return
 
-    @deco_check    
     def memb_close(self):
         """membrane close"""
         dome = Dome_msg()
@@ -497,7 +514,6 @@ class controller(object):
         self.pub_dome.publish(dome)
         return
 
-    @deco_check    
     def dome_stop(self):
         """Dome stop"""
         dome = Dome_msg()
@@ -519,7 +535,6 @@ class controller(object):
         self.pub_dome.publish(dome)
         return
 
-    @deco_check
     def dome_track_end(self):
         """Dome stop antenna_az sync"""
         dome = Dome_msg()
@@ -653,6 +668,13 @@ class controller(object):
         data_dict = {'dfs1': eval(dfs1), 'dfs2': eval(dfs2)}
         return data_dict
 
+    @deco_check
+    def old_oneshot(self, repeat=1, exposure=1.0, stime=0.0):
+        dfs = achilles.dfs()
+        data = dfs.oneshot(req.repeat, req.exposure, req.stime)
+        data_dict = {'dfs1': data[0], 'dfs2': data[1]}
+        return data_dict
+    
     @deco_check    
     def spectrometer(self, exposure):
         msg = Float64()
@@ -731,36 +753,41 @@ class controller(object):
         self.pub_onestatus.publish(msg)
         return
 
-    def obs_status(self, active=False, obsmode="", target="", num_on=0, num_seq=0, xgrid=0, ygrid=0, exposure_hot=0, exposure_off=0, exposure_on=0, scan_direction="", current_num=0, current_position=""):
+    def obs_status(self, active=False, obsmode="", obs_script="", obs_file="", target="", num_on=0, num_seq=0, xgrid=0, ygrid=0, exposure_hot=0, exposure_off=0, exposure_on=0, scan_direction="", current_num=0, current_position=""):
         """observation status
         this function is used by obs_script
         =======================================================
-        using parameter at observation_start is  1 ~ 11
-        using parameter at getting_data_time is 1 and 12, 13        
+        using parameter at observation_start is  1 ~ 13
+        using parameter at getting_data_time is 1 and 14, 15        
         using parameter at observation_end is 1
         ========================================================
+        ver. 2018/07/26
 
         Parameter
         ---------
-        1.active : (start --> True) or (end --> False)
-        2.obsmode : otf or ps or radio or tec...
-        3.target : object name
-        4.num_on : number of on_position between off_position
-        5.num_seq : number of scan
-        6.xgrid : length xgrid [arcsec]
-        7.ygrid : length xgrid [arcsec]
-        8.exposure_hot : exposure time[s] at hot
-        9.exposure_off : exposure time[s] at off
-        10.exposure_on : exposure time[s] at on
-        11.scan_direction : scan direction(x or y)
+        1.active         : (start --> True) or (end --> False)
+        2.obsmode        : otf or ps or radio or etc...
+        3.obs_script     : obsscript name
+        4.obs_file       : obsfile name
+        5.target         : object name
+        6.num_on         : number of on_position between off_position
+        7.num_seq        : number of scan
+        8.xgrid          : length xgrid [arcsec]
+        9.ygrid          : length xgrid [arcsec]
+        10.exposure_hot   : exposure time[s] at hot
+        11.exposure_off   : exposure time[s] at off
+        12.exposure_on   : exposure time[s] at on
+        13.scan_direction: scan direction(x or y)
 
-        12.current_num : number of current point (otf : 0 ~ num_on*num_seq)
-        13.current_position : position (hot or off or on)
+        14.current_num      : number of current point (otf : 0 ~ num_on*num_seq)
+        15.current_position : position (hot or off or on)
 
         """
         if target != "":
             self.active = active
             self.obsmode = obsmode
+            self.obs_script = obs_script
+            self.obs_file = obs_file
             self.target = target
             self.num_on = num_on
             self.num_seq = num_seq
@@ -773,8 +800,10 @@ class controller(object):
             
         msg = Status_obs_msg()
         msg.active = active
-        msg.target = self.target
         msg.obsmode = self.obsmode
+        msg.obs_script = self.obs_script
+        msg.obs_file = self.obs_file
+        msg.target = self.target        
         msg.num_on = self.num_on
         msg.num_seq = self.num_seq
         msg.xgrid = self.xgrid
@@ -825,3 +854,22 @@ class controller(object):
         self.read_sub.unregister()
         return
 
+    # ===================
+    # others
+    # ===================
+
+    
+    def alert(self, message, emergency=False):
+        msg = String_necst()
+        msg.data = message
+        msg.from_node = self.node_name
+        msg.timestamp = time.time()
+        self.pub_alert.publish(msg)
+        if emergency:
+            self.pub_obs_stop.publish(message, self.node_name, time.time())
+        else:
+            pass
+        return
+
+
+    

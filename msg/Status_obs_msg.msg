@@ -1,6 +1,8 @@
 bool active
 string target
 string obsmode
+string obs_script
+string obs_file
 int32 num_on
 int32 num_seq
 float64 xgrid
