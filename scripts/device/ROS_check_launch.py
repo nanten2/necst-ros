@@ -28,7 +28,7 @@ def node_check():
             flag = False
             pass
         elif no_alive:
-            rospy.logfatal(no_alive)
+            #rospy.logfatal(no_alive)
             pub.publish(no_alive, node_name, time.time())
             flag = True
         else:

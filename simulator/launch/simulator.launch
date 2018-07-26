@@ -20,11 +20,11 @@
   <node pkg="necst" name="worldcoordinate_planet" type="ROS_scan_planet.py"/>
   <node pkg="necst" name="worldcoordinate_linear" type="ROS_scan_linear.py"/>  
   <node pkg="necst" name="azel_list" type="ROS_azel_list.py"/>
-  <node pkg="necst" name="queue_obs" type="ROS_queue.py"/>  
   <node pkg='necst' name='check_alert' type='ROS_check_alert.py' output='screen'/>
-  <node pkg='necst' name='alert_sun' type='ROS_alert_sun.py' output='screen'/>
-  <node pkg='necst' name='alert_weather' type='ROS_alert_weather.py' output='screen'/>
-  <node pkg='necst' name='alert_encoder' type='ROS_alert_encoder.py' output='screen'/>
-  <node pkg='necst' name='alert_ping' type='ROS_alert_ping.py' output='screen'/>  
-  <node pkg='necst' name='achilles' type='S_ROS_oneshot_achilles.py' output='screen'/>  
+  <node pkg='necst' name='alert_sun' type='ROS_alert_sun.py'/>
+  <node pkg='necst' name='alert_weather' type='ROS_alert_weather.py'/>
+  <node pkg='necst' name='alert_encoder' type='ROS_alert_encoder.py'/>
+  <node pkg='necst' name='alert_ping' type='ROS_alert_ping.py'/>  
+  <node pkg='necst' name='achilles' type='S_ROS_oneshot_achilles.py'/>
+  <node pkg="necst" name="hosei_parameter" type="ROS_hosei_parameter.py"/>  
 </launch>

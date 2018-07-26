@@ -4,6 +4,7 @@ import rospy
 from necst.msg import List_coord_msg
 from necst.msg import Status_weather_msg
 from necst.msg import Bool_necst
+from necst.msg import String_necst
 from datetime import datetime
 from astropy.time import Time
 import time
@@ -32,6 +33,7 @@ class azel_list(object):
         
         self.pub = rospy.Publisher("list_azel", List_coord_msg, queue_size=1)
         self.stop = rospy.Publisher("move_stop", Bool_necst, queue_size=1)
+        self.obs_stop = rospy.Publisher("obs_stop", String_necst, queue_size=1)        
         
         self.msg = Bool_necst()
         self.msg.from_node = node_name
@@ -184,6 +186,8 @@ class azel_list(object):
                         print("el : ", ret[1][i]/3600., "[deg]")
                         self.stop_flag = True
                         limit_flag = True
+                        data = "reaching soft limit : (az, el)=("+str(ret[0][i]/3600.)+", "+str(ret[1][i]/3600.)+") [deg]"
+                        self.obs_stop.publish(data = data, from_node=node_name, timestamp=time.time())                        
                         break
                     else:
                         pass
