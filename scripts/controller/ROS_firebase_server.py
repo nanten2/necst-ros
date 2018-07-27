@@ -6,7 +6,7 @@ import time
 import threading
 from datetime import datetime as dt
 from firebase import firebase
-fb = firebase.FirebaseApplication("https://test-d187a.firebaseio.com",None)
+fb = firebase.FirebaseApplication("https://test-d187a.firebaseio.com",None )
 auth = firebase.FirebaseAuthentication("DgHtyfC5d1qcezGOBOsvrIOMRwdG9dG9fQ8xNVBz", "nascofirebase@gmail.com", extra={"id":123})
 fb.authentication = auth
 
@@ -39,7 +39,8 @@ def server():
     start_thread()    
     while flag:
         try:
-            controll = fb.get("/NECST/Controll/Telescope",None)
+            #controll = fb.get("/NECST/Controll/Telescope",None)
+            controll["Queue"] = fb.get("/NECST/Controll/Telescope/Queue",None)
         except Exception as e:
             print(e)
         time.sleep(1.)
@@ -113,7 +114,6 @@ def observation():
         time.sleep(1.)
         if _queue != "":
             print("queue observation : ", _queue["observation"])
-            con.release_authority()
             con.queue_observation(_queue["observation"])
             fb.put("", "/NECST/Controll/Telescope/Queue", "")
         else:
