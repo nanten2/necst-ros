@@ -3,23 +3,18 @@
 import sys
 import time
 import threading
-
+import astropy.units as u
+from astropy.coordinates import SkyCoord, EarthLocation, AltAz, get_body
+from astropy.time import Time    
 from datetime import datetime as dt
 from datetime import timedelta
 import rospy
 
-from necst.msg import String_necst
-from necst.msg import Bool_necst
-from necst.msg import Dome_msg
 from necst.msg import List_coord_msg
 
 node_name = "alert_sun"
 
 class alert(object):
-
-    memb = ''
-    dome_r = ''
-    dome_l = ''
 
     az_list = ""
     el_list = ""
@@ -30,15 +25,7 @@ class alert(object):
     emergency = ""
     warning = ""
 
-    antenna_stop = False
-    dome_stop = False
-    dome_close = False
-    memb_close = False
-    
     def __init__(self):
-        self.pub_alert = rospy.Publisher("alert", String_necst, queue_size=10, latch=True)        
-        self.pub_antenna = rospy.Publisher("move_stop", Bool_necst, queue_size = 1, latch = True)
-        self.pub_dome = rospy.Publisher('dome_move', Dome_msg, queue_size = 10, latch = True)                
         self.sub = rospy.Subscriber("list_azel", List_coord_msg, self.callback_azel)
         self.nanten2 = EarthLocation(lat = -22.96995611*u.deg, lon = -67.70308139*u.deg, height = 4863.85*u.m)
         return
@@ -61,45 +48,30 @@ class alert(object):
 
     def pub_status(self):
         """ publish : alert """
-        #antenna = Bool_necst()
-        #antenna.data = True
-        #antenna.from_node = node_name
-        dome = Dome_msg()
-        dome.name = "command"
-        dome.from_node = node_name
-        msg = String_necst()
-        msg.from_node = node_name
         error_flag = False
-        self.pub_alert.publish(msg)                
         while not rospy.is_shutdown():
-            timestamp = time.time()
             if self.emergency:
                 rospy.logfatal(self.emergency)
-                #antenna.timestamp = timestamp
-                #self.pub_antenna.publish(antenna)
-                dome.value = "dome_stop"
-                self.pub_dome.publish(dome)
-                dome.value = "memb_close"
-                self.pub_dome.publish(dome)
-                dome.value = "dome_close"
-                self.pub_dome.publish(dome)
-                msg.data = self.emergency
-                self.pub_alert.publish(msg)
+                con.dome_stop()
+                con.dome_close()
+                con.memb_close()
+                msg = self.emergency
+                con.alert(msg,emergency=True)
                 error_flag = True                
             elif self.warning:
                 rospy.logwarn(self.warning)
-                msg.data = self.warning
-                self.pub_alert.publish(msg)
+                msg = self.warning
+                con.alert(msg)
                 error_flag = True
             else:
                 if error_flag:
-                    msg.data = "sun_position error release !!\n\n\n"
-                    rospy.loginfo(msg.data)
-                    self.pub_alert.publish(msg)
+                    msg = "sun_position error release !!\n\n\n"
+                    rospy.loginfo(msg)
+                    con.alert(msg)
                     time.sleep(0.5)
-                    msg.data = ""
-                    rospy.loginfo(msg.data)
-                    self.pub_alert.publish(msg)                    
+                    msg = ""
+                    rospy.loginfo(msg)
+                    con.alert(msg)                    
                     error_flag = False
                 else:
                     pass            
@@ -145,10 +117,8 @@ class alert(object):
         return
     
 if __name__ == "__main__":
-    rospy.init_node(node_name)
-    import astropy.units as u
-    from astropy.coordinates import SkyCoord, EarthLocation, AltAz, get_body
-    from astropy.time import Time    
+    import ROS_controller
+    con = ROS_controller.controller(escape=node_name)
     al = alert()
     al.thread_start()
     rospy.spin()

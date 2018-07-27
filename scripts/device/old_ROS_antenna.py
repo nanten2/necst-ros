@@ -12,10 +12,14 @@ from necst.msg import Otf_mode_msg
 from necst.msg import Status_encoder_msg
 from necst.msg import Status_weather_msg
 from necst.msg import list_azelmsg
+from necst.msg import String_necst
+
 from datetime import datetime,timedelta
 sys.path.append("/home/necst/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/lib")
 import azel_calc
+
+node_name = "antenna_server"
 
 class antenna(object):
     
@@ -52,13 +56,15 @@ class antenna(object):
         self.stime = time.time()
         self.pub = rospy.Publisher("list_azel", list_azelmsg, queue_size = 1,)
         self.msg = list_azelmsg()
+        self.pub_obs_stop = rospy.Publisher("obs_stop", String_necst, queue_size=1)
         rospy.Subscriber('status_weather', Status_weather_msg, self.note_weather,queue_size=1)
         rospy.Subscriber("move_stop", String, self.move_stop,queue_size=1)
         time.sleep(3.)
         rospy.Subscriber("status_encoder", Status_encoder_msg, self.note_encoder,queue_size=1)
         rospy.Subscriber('assist_antenna', Move_mode_msg, self.antenna_move,queue_size=1)
         rospy.Subscriber('assist_otf', Otf_mode_msg, self.otf_start,queue_size=1)
-
+        return
+    
     def note_encoder(self, req):
         self.enc_az = req.enc_az
         self.enc_el = req.enc_el
@@ -192,10 +198,11 @@ class antenna(object):
             limit = limit_az + "" + limit_el
         if limit:
             rospy.logwarn(limit)
+            self.pub_obs_stop.publish(data = str(limit), from_node=node_name, timestamp=time.time())
         return limit
 
 if __name__ == "__main__":
-    rospy.init_node("antenna_server")
+    rospy.init_node(node_name)
     at = antenna()
     at.server_start()
     rospy.spin()

@@ -39,10 +39,12 @@ class dome_tracking_check(object):
     def check_dome_track(self):
         dome_az = float(self.dome_az)
         enc_az = float(self.enc_param['enc_az'])
+        """
         if dome_az < 0:
             dome_az += 360*3600
         if enc_az <0:
             enc_az += 360*3600
+        """
         d_az = abs(dome_az - enc_az)
         #rospy.logwarn(d_az)
 

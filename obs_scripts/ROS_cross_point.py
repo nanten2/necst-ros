@@ -43,15 +43,9 @@ sys.path.append("/home/amigos/ros/src/necst/lib")
 import time
 import signal
 import numpy
-import obs_log
+
 import doppler_nanten
 dp = doppler_nanten.doppler_nanten()
-
-list = []
-list.append("--obsfile")
-list.append(obsfile)
-obs_log.start_script(name, list)
-
 
 
 obs_items = open("/home/amigos/necst-obsfiles/" + obsfile, 'r').read().split('\n')
@@ -177,7 +171,7 @@ print("n:"+str(n))
 print("point_n:"+str(point_n))
 
 
-con.obs_status(active=True, obsmode=obs["obsmode"], target=obs["object"], num_on=obs["N"], num_seq=obs["nTest"], xgrid=obs["xgrid"], ygrid=obs["ygrid"], exposure_hot=obs["exposure"], exposure_off=obs["exposure"], exposure_on=obs["exposure"])
+con.obs_status(active=True, obsmode=obs["obsmode"],obs_script=__file__, obs_file=obsfile, target=obs["object"], num_on=obs["N"], num_seq=obs["nTest"], xgrid=obs["xgrid"], ygrid=obs["ygrid"], exposure_hot=obs["exposure"], exposure_off=obs["exposure"], exposure_on=obs["exposure"])
 while num < n:
     p_n = 0
     while p_n < point_n:
@@ -638,5 +632,4 @@ n2fits_write.write(read2,f2)
 
 
 shutil.copy("/home/amigos/ros/src/necst/lib/hosei_230.txt", savedir+"/hosei_copy")
-obs_log.end_script(name, dirname)
 con.obs_status(active=False)
