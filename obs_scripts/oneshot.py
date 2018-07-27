@@ -7,7 +7,8 @@ import argparse
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 import ROS_controller
-import ccd
+#import ccd
+import ccd_okawa as ccd
 import signal
 ccd = ccd.ccd_controller()
 
@@ -92,7 +93,8 @@ ctrl.move_stop()
 if planet:
     ctrl.planet_move(planet, hosei = "hosei_opt.txt", lamda = 0.5)
 else:
-    ctrl.radec_move(target[0], target[1], 'J2000', 0, 0, offcoord="HORIZONTAL", hosei='hosei_opt.txt', lamda = 0.5)
+    #ctrl.radec_move(target[0], target[1], 'J2000', 0, 0, offcoord="HORIZONTAL", hosei='hosei_opt.txt', lamda = 0.5)
+    ctrl.onepoint_move(target[0], target[1], "J2000",lamda = 500)
 
 b_az = 0
 ctrl.dome_tracking_check()#test
@@ -107,6 +109,8 @@ ccd.oneshot(dirname, filename)
 print(dirname, filename)
 
 ctrl.dome_track_end()
+ctrl.move_stop()
+time.sleep(1)
 ctrl.move_stop()
 print("Finish observation")
 
