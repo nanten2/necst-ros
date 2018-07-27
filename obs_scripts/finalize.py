@@ -7,8 +7,15 @@ import argparse
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 import ROS_controller
 sys.path.append("/home/amigos/ros/src/necst/lib")
-import obs_log
-
+import signal
+def handler(signal, frame):
+    ctrl.move_stop()
+    print("*** system stop!! ***")
+    ctrl.move_stop()
+    ctrl.obs_status(active=False)
+    sys.exit()
+    return
+signal.signal(signal.SIGINT, handler)
 
 
 # Info
@@ -29,25 +36,27 @@ p = argparse.ArgumentParser(description=description)
 p.add_argument('--snow', type=str,
                help='For snow position. Need 1.')
 args = p.parse_args()
-if args.snow is not None: snow = args.snow
+if args.snow is not None:
+    snow = args.snow
+    target = "finalize (snow)"
+else:
+    target = "finalize (normal)"
 
 # Main
 # ====
 
-list = []
-if snow:
-    list.append("--snow")
-    list.append(snow)
-obs_log.start_script(name, list)
-
 ctrl = ROS_controller.controller()
+ctrl.obs_status(active=True, obsmode="FINALIZE", obs_script=__file__, obs_file="no file", target=target)
+
 time.sleep(0.5)
 try:
     ctrl.move_stop()
+    ctrl.obs_status(active=True, current_position="ok : move stop")
 except:
     print("Already tracking_end.")
 try:
     ctrl.dome_stop()
+    ctrl.obs_status(active=True, current_position="ok : dome stop")    
 except:
     print("Already dome_track_end.")
 
@@ -56,23 +65,26 @@ except:
 #print("antenna_move")
 time.sleep(0.3)
 if snow:
-    ctrl.move(-90, 0.0, limit=False)
+    ctrl.onepoint_move(-90, 0.0001, limit=False)
 else:
-    ctrl.move(0, 45)
+    ctrl.onepoint_move(0, 45)
 ctrl.antenna_tracking_check()
+ctrl.obs_status(active=True, current_position="ok : home position")
 print("memb_close")
 ctrl.memb_close()
+ctrl.obs_status(active=True, current_position="ok : membrane close")
 
 time.sleep(1.5)
 print("dome_close")
 ctrl.dome_close()
+ctrl.obs_status(active=True, current_position="ok : dome close")
 time.sleep(1.5)
 
 print("dome_move")
 ctrl.dome_move(90)
-ctrl.dome_tracking_check()
+ctrl.obs_status(active=True, current_position="ok : dome move")
 ctrl.drive("off")
-print("End observation")
-obs_log.end_script(name)
-    
+ctrl.obs_status(active=True, current_position="ok : drive off")
 
+print("End observation")
+ctrl.obs_status(active=False)
