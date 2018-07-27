@@ -11,8 +11,6 @@ import time
 import threading
 sys.path.append("/home/necst/ros/src/necst/lib")
 import antenna_device
-import struct
-import pyinterface
 
 #ROS/import field
 #----------------
