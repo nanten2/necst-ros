@@ -326,16 +326,14 @@ class controller(object):
                              current_time)
         
         return
-    '''
+    
     @deco_check
-    def planet_scan(self):
+    def planet_scan(self, planet, dx, dy, dt, num, rampt, delay, current_time,  off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., limit=True):
         """ planet otf scan
 
         Parameters
         ----------
-        x        : target_x [deg]
-        y        : target_y [deg]
-        coord    : "j2000" or "b1950" or "galactic"
+        planet   : planet name
         dx       : x_grid length [arcsec]
         dy       : y_grid length [arcsec]
         dt       : exposure time [s]
@@ -354,13 +352,12 @@ class controller(object):
         """
         
         print("start OTF scan!!")
-        #self.pub_stop.publish(False,self.node_name, time.time())
-        self.pub_planet_scan.publish(x, y, coord, dx, dy, dt, num,rampt,
-                                      delay, start_on, off_x, off_y, offcoord,
-                                      dcos, hosei, lamda, limit,
-                                      self.node_name, time.time())
+        self.pub_planet_scan.publish(0, 0, planet, dx, dy, dt, num, rampt,
+                             delay, off_x, off_y, offcoord,
+                             dcos, hosei, lamda, limit, self.node_name,
+                             current_time)        
         return
-    '''
+    
 
     def queue_observation(self, flag):
         """ queue observation

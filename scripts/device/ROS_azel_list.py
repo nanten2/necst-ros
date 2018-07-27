@@ -180,7 +180,7 @@ class azel_list(object):
                     
                 """limit check"""
                 for i in range(len(time_list2)):
-                    if not -240*3600<ret[0][i]<240*3600 or not 10<ret[1][i]<80*3600.:
+                    if not -240*3600<ret[0][i]<240*3600 or not 0.<=ret[1][i]<80*3600.:
                         print("reaching soft limit : ", )
                         print("az : ", ret[0][i]/3600., "[deg]")
                         print("el : ", ret[1][i]/3600., "[deg]")
