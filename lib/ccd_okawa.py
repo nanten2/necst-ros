@@ -50,18 +50,26 @@ class ccd_controller(object):
         #f = open("/home/nfs/necopt-old/ccd-shot/ccd-shot-command.txt", "w")#tmp
         #f.write(str(dirname) + "/" + str(filename) + ".bmp")#tmp
         #f.close()#tmp
-
+        
+        if os.path.exists(str(dirname)):
+            pass
+        else:
+            os.mkdir(str(dirname))
         #simulator part ----------------------------
         array = np.zeros((480,640), dtype=np.uint)
         for x in range(10):
             array[235+x][315:325] = 255
-        Image.fromarray(np.uint8(array)).save((str(dirname) + "/" + str(filename) + ".bmp"))
+        Image.fromarray(np.uint8(array)).save((str(dirname) + str(filename) + ".bmp"))
         #simulator end -----------------------------
         return
     
     def save_status(self, x, y, number, magnitude, az_star, el_star, mjd, data_name, secofday, status):
         print('save_status')
         #f = open("/home/amigos/data/experiment/opt/"+str(data_name)+"/process.log", "a")#tmp
+        if os.path.exists('/home/amigos/s_opt/p_log/'):
+            pass
+        else:
+            os.mkdir('/home/amigos/s_opt/p_log/')
         f = open('/home/amigos/s_opt/p_log/process.log', 'a')#simulator
         
         #geo_status = [x1,x2,y1,y2] #for test
