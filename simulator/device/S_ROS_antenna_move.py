@@ -7,6 +7,7 @@ ROS_antenna_move.py & S_ROS_antenna_move.py
 import sys
 sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 import rospy
+import numpy
 import time
 import threading
 sys.path.append("/home/necst/ros/src/necst/lib")
@@ -30,7 +31,6 @@ class antenna_move(object):
         'az_list':[],#[0]*300,
         'el_list':[],#[0]*300,
         'start_time_list':[],#0,
-        'flag':0
         }
 
     enc_parameter = {
@@ -43,14 +43,11 @@ class antenna_move(object):
     task = 0
     error = False #False = ok
     emergency_flag = False
-    limit_flag = 0###(0/1=okay/NG)
     limit_az = True###(True/False = okay/limit)
     limit_el = True
     command_az = 0
     command_el = 0
 
-    command_az_speed = 0
-    command_el_speed = 0
     """
     ###for module
     az_rate_d = 0
@@ -64,16 +61,6 @@ class antenna_move(object):
     dt = MOTOR_SAMPLING/1000.
     
     #error_box = [0]*32###0921
-    
-    indaz = 0
-    indel = 0
-    
-    
-    server_flag = []
-    time_list = [0,0,0,0,0]
-    save_time = 0
-    end_flag = 0
-
     
     def __init__(self):
         self.dev = S_antenna_device.antenna_device()
@@ -134,71 +121,55 @@ class antenna_move(object):
         self.enc_parameter['el_enc'] = req.enc_el 
         return
 
-    def limit_check(self):
+    def limit_check(self, az, el):
         """
         DESCRIPTION
         ===========
-        This function checks limit azel_list 
+        This function checks limit azel
         """
-        for i in range(len(self.parameters['az_list'])):
-            #print(self.parameters['az_list'][i],self.parameters['el_list'][i])
-            if self.parameters['az_list'][i] >= 280*3600 or  self.parameters['az_list'][i] <=-280*3600:#kari
-                rospy.logwarn('!!!limit az!!!')
-                rospy.logwarn(self.parameters['az_list'][i])
-                self.limit_flag = False
-                self.error = True
-                return False
-            
-            if self.parameters['el_list'][i] >= 89*3600 or  self.parameters['el_list'][i] <= 0*3600:#kari
-                rospy.logwarn('!!!limit el!!!')
-                rospy.logwarn(self.parameters['el_list'][i])
-                self.limit_flag = False
-                self.error = True
-                return False
-            else:
-                return True
+        if az > 240*3600. or az < -240*3600.:
+            self.stop_flag = True
+            print('!!!target az limit!!! : ', az)
+            rospy.logwarn('!!!limit az!!!')
+            self.error = True
+            return False
+        if el > 89*3600. or el < 0:
+            self.stop_flag = True
+            print('!!!target el limit!!! : ', el)
+            rospy.logwarn('!!!limit el!!!')
+            self.error = True
+            return False
+        
+        else:
+            return True
 
+    def time_check(self):
+        n = len(self.parameters['start_time_list'])
+        st = self.parameters['start_time_list']
+        if st == []:
+            return
+        ct = time.time()
+
+        if ct - st[n-1] >= 0:
+            rospy.loginfo('!!!azel_list is end!!!')
+            self.stop_flag = True
+            self.dev.command_az_speed = 0
+            self.dev.command_el_speed = 0
+            time.sleep(0.25)
+        return st, ct
+    
     def comp(self):
         """
         DESCRIPTION
         ===========
         This function determine target Az and El from azel_list
         """
-        loop = 0
-        first_st = self.parameters['start_time_list']
-        for i in range(20):
-            n = len(self.parameters['az_list'])
-            st = self.parameters['start_time_list']
-            if st == []:
-                return
-            ct = time.time()
-
-            if loop == 19:
-                pass
-            elif ct - st[n-1] >=0 and first_st == st:
-                loop += 1
-                time.sleep(0.1)
-                continue
-            else:
-                break
-            rospy.loginfo('!!!azel_list is end!!!')
-            self.stop_flag = 1
-            for i in range(5):
-                #self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#az
-                #self.dio.output_word('OUT17_32',[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#el
-                self.command_az_speed = 0
-                self.command_el_speed = 0
-                time.sleep(0.25)
-            return
-
+        st, ct = self.time_check()
         if self.parameters['az_list'] == []:
             return
         else:
-            for i in range(len(self.parameters['az_list'])):
-                st2 = st[i+1]
-                num = i+1
-                if st2 - ct >0:
-                    break
+            num = numpy.where(numpy.array(st) > ct)[0][0]
+            st2 = st[num]
             if num == len((self.parameters['az_list'])):
                 return
             param = self.parameters
@@ -212,96 +183,41 @@ class antenna_move(object):
         while True:
             if self.stop_flag:
                 time.sleep(1)
-                self.command_az_speed = 0
-                self.command_el_speed = 0
+                self.dev.command_az_speed = 0
+                self.dev.command_el_speed = 0
                 continue
 
-            b_time2 = time.time()
             ret = self.comp()
-            a_time2=time.time()
             if ret == None:
                 time.sleep(0.1)
                 continue
             else:
-                b_time3 = time.time()
                 az = ret[1] - ret[0]
                 el = ret[3] - ret[2]
                 c = time.time()
                 st = ret[4]
                 tar_az = ret[0] + az*(c-st)*10
                 tar_el = ret[2] + el*(c-st)*10
-                if tar_az > 240*3600. or tar_el < -240*3600.:
-                    self.stop_flag = True#False?
-                    print('!!!target az limit!!! : ', tar_az)
+                
+                if not self.limit_check(tar_az, tar_el):
                     continue
-                if tar_el > 89*3600. or tar_el < 0:
-                    self.stop_flag = True#False?
-                    print('!!!target el limit!!! : ', tar_el)
-                    continue
+                
                 self.command_az = tar_az
                 self.command_el = tar_el
-                d_t = st - c
-                a_time3=time.time()
                 if self.emergency_flag:
                     time.sleep(0.1)
                     continue
-                self.azel_move(tar_az,tar_el,10000,12000)
+                if True:
+                    b_time = time.time()
+
+                    ret = self.dev.move_azel(tar_az, tar_el, self.enc_parameter['az_enc'], self.enc_parameter['el_enc'], 10000, 12000)
+                    rospy.loginfo(ret)
+
+                    interval = time.time() -b_time
+                    if interval <= 0.01:
+                        time.sleep(0.01 - interval)
+                        pass
                 time.sleep(0.01)           
-
-
-    """
-    def count_time(self):#not in use
-        flag_list = self.server_flag[:]
-        time.sleep(1)
-        if self.server_flag == flag_list:
-            self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
-            self.sdio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
-            self.end_flag = 1
-            for i in range(1000):
-                print(flag_list)
-                return
-        
-        
-        if self.save_time == 0:
-            self.save_time = time.time()
-        tv = time.time()
-        if tv - self.save_time >= 60.:
-            name = "enc_hist"+str(int(tv))+".txt"
-            f = open(name, "w")
-            for i in range(5):
-                f.write(str(self.time_list[i])+"\n")
-            f.close()
-            self.save_time = time.time()
-            self.time_list = [0, 0, 0, 0, 0]
-        
-        return    
-    """
-    #ROS_version
-    #cur_az cur_el means encoder_azel
-    def azel_move(self, az_arcsec, el_arcsec, az_max_rate, el_max_rate):
-        test_flag = 1
-
-        self.indaz = az_arcsec
-        self.indel = el_arcsec
-        
-        self.enc_az = self.enc_parameter['az_enc']
-        self.enc_el = self.enc_parameter['el_enc']
-        if True:#shiotani changed   
-        #if abs(az_arcsec - self.enc_az) >= 1 or abs(el_arcsec - self.enc_el) > 1:###self.enc_az is provisonal
-            b_time = time.time()
-            
-            ret = self.dev.move_azel(az_arcsec, el_arcsec, az_max_rate, el_max_rate, self.enc_az, self.enc_el)
-            rospy.loginfo(ret)
-            if stop_flag:
-                rospy.logwarn('')
-                sys.exit()
-            
-            interval = time.time()-b_time
-            if interval <= 0.01:
-                time.sleep(0.01-interval)
-                pass
-                    
-            return 1
     
     def stop_move(self, req):
         if time.time() - self.start_time < 1:
@@ -325,20 +241,14 @@ class antenna_move(object):
             rospy.logwarn('!!!emergency!!!')
             rospy.logwarn('!!!stop azel velocity =>0!!!')
             for i in range(5):
-                #self.dio.ctrl.out_word("FBIDIO_OUT1_16", 0)
-                #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT1_16')
                 #self.dev.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
-                #self.dio.ctrl.out_word("FBIDIO_OUT17_32", 0)
-                #self.dio.output_word([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], 'OUT17_32')#for aztest
                 #self.dev.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
                 time.sleep(0.05)
-                self.command_az_speed = 0
-                self.command_el_speed = 0
+                self.dev.command_az_speed = 0
+                self.dev.command_el_speed = 0
             rospy.logwarn('!!!exit ROS_antenna.py!!!')
             rospy.signal_shutdown('emergency')
-            #rospy.on_shutdown(self.emergency_end)
-            #rospy.is_shutdown(True)
-            sys.exit
+            sys.exit()
             
     def pub_error(self):
         pub = rospy.Publisher('error', Bool_necst, queue_size = 1, latch = True)
@@ -361,8 +271,8 @@ class antenna_move(object):
             status.command_az = self.command_az
             status.command_el = self.command_el
             status.emergency = self.emergency_flag
-            status.command_azspeed = self.command_az_speed
-            status.command_elspeed = self.command_el_speed
+            status.command_azspeed = self.dev.command_az_speed
+            status.command_elspeed = self.dev.command_el_speed
             status.node_status = self.node_status
             status.from_node = node_name
             status.timestamp = time.time()
