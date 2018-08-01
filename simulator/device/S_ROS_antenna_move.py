@@ -40,7 +40,6 @@ class antenna_move(object):
     B_time = 1
 
     stop_flag = True #False
-    task = 0
     error = False #False = ok
     emergency_flag = False
     limit_az = True###(True/False = okay/limit)
@@ -260,11 +259,9 @@ class antenna_move(object):
         
     def pub_status(self):
         pub = rospy.Publisher('status_antenna',Status_antenna_msg, queue_size=1, latch = True)
-        pub2 = rospy.Publisher('task_check', Bool_necst, queue_size =1, latch = True)
         status = Status_antenna_msg()
-        task = Bool_necst()
         while not rospy.is_shutdown():
-            #publisher1
+            #publisher
             #---------
             status.limit_az = self.limit_az
             status.limit_el = self.limit_el
@@ -276,17 +273,7 @@ class antenna_move(object):
             status.node_status = self.node_status
             status.from_node = node_name
             status.timestamp = time.time()
-            #publisher2
-            #----------
-            if self.task:
-                task.data = True
-            else :
-                task.data = False
-                pass
-            task.from_node = node_name
-            task.timestamp = time.time()
             pub.publish(status)
-            pub2.publish(task)
             time.sleep(0.001)
             continue
 
