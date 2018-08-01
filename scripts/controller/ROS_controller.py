@@ -25,7 +25,7 @@ from necst.msg import String_necst
 from necst.msg import Int64_necst
 from necst.msg import Status_obs_msg
 from necst.msg import Status_onepoint_msg
-from NASCORX_XFFTS.msg import XFFTS_para_msg
+from nascorx_xffts.msg import XFFTS_para_msg
 sys.path.append("/home/amigos/ros/src/necst/lib")
 import achilles
 
