@@ -4,6 +4,7 @@ import pyinterface
 import struct
 import numpy
 import math
+import time
 
 class antenna_device(object):
 

@@ -5,6 +5,7 @@
 import struct
 import numpy
 import math
+import time
 
 class antenna_device(object):
 
@@ -144,8 +145,8 @@ class antenna_device(object):
         az_err = az_arcsec-az_enc
         el_err = el_arcsec-el_enc
         
-        hensa_az = target_az - az_enc
-        hensa_el = target_el - el_enc
+        hensa_az = az_arcsec - az_enc
+        hensa_el = el_arcsec - el_enc
         
         dhensa_az = hensa_az - self.pre_hensa_az
         dhensa_el = hensa_el - self.pre_hensa_el
