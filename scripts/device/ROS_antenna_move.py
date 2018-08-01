@@ -10,7 +10,7 @@ import rospy
 import numpy
 import time
 import threading
-sys.path.append("/home/necst/ros/src/necst/lib")
+sys.path.append("/home/amigos/ros/src/necst/lib/device")
 import antenna_device
 
 #ROS/import field
@@ -142,11 +142,8 @@ class antenna_move(object):
         else:
             return True
     
-    def time_check(self):
+    def time_check(self, st):
         n = len(self.parameters['start_time_list'])
-        st = self.parameters['start_time_list']
-        if st == []:
-            return
         ct = time.time()
 
         if ct - st[n-1] >= 0:
@@ -155,7 +152,7 @@ class antenna_move(object):
             self.dev.command_az_speed = 0
             self.dev.command_el_speed = 0
             time.sleep(0.25)
-        return st, ct
+        return ct
 
     def comp(self):
         """
@@ -163,7 +160,11 @@ class antenna_move(object):
         ===========
         This function determine target Az and El from azel_list
         """
-        st, ct = self.time_check()
+        st = self.parameters['start_time_list']
+        if st == []:
+            return
+
+        ct = self.time_check(st)
         if self.parameters['az_list'] == []:
             return
         else:
