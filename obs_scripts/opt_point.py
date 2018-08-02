@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import math
 import time
 import datetime
@@ -38,6 +40,7 @@ class opt_point_controller(object):
         self.ctrl = ROS_controller.controller()
         #self.calc = azel_calc.azel_calc()
         self.calc = calc_coord.azel_calc()
+        self.ctrl.obs_status(active=True, obsmode="All_sky_shot", obs_script=__file__, obs_file="", target="1st star")
         return
     
     def handler(self, num, flame):
@@ -45,6 +48,7 @@ class opt_point_controller(object):
         print("STOP MOVING")
         self.ctrl.move_stop()
         self.ctrl.dome_stop()
+        self.ctrl.obs_status(active=False)
         sys.exit()
 
 
@@ -200,6 +204,7 @@ class opt_point_controller(object):
 
         self.ctrl.move_stop()
         print("OBSERVATION END")
+        self.ctrl.obs_status(active=False)
         return
     
     

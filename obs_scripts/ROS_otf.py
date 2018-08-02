@@ -420,12 +420,12 @@ while rp_num < rp:
         con.move_stop()
         ssx = (sx + num*gridx) - float(dx)/float(dt)*rampt-float(dx)/2.#rampの始まり
         ssy = (sy + num*gridy) - float(dy)/float(dt)*rampt-float(dy)/2.#rampの始まり
+
+        print("ramp_start tracking")
         con.onepoint_move(lambda_on, beta_on, coordsys,
                           off_x = ssx, off_y = ssy,
                           offcoord = cosydel,
                           dcos = dcos)
-
-        print('moving...')
         con.antenna_tracking_check()
         con.dome_tracking_check()
         
@@ -436,8 +436,7 @@ while rp_num < rp:
         delay = 3.
         ctime = time.time()
         start_on = 40587 + (ctime+rampt+delay)/24./3600. # mjd
-        print("%%%%%%%%%%%%%%%%")
-        print(start_on)
+        #print(start_on)
         con.obs_status(active=True, current_num=scan_point*num, current_position="ON")        
         con.otf_scan(lambda_on, beta_on, coordsys, dx, dy, dt, scan_point, rampt, delay=delay, current_time=ctime, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, limit=True)
 
