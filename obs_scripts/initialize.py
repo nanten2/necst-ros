@@ -62,8 +62,9 @@ if opt:
 print("Init end")
 ctrl.dome_track()
 ctrl.dome_tracking_check()
+time.sleep(5.)
 ctrl.dome_track_end()
 ctrl.obs_status(active=True, current_position="ok : dome track")
-
+time.sleep(2.)
 ctrl.obs_status(active=False)    
-
+time.sleep(2.)

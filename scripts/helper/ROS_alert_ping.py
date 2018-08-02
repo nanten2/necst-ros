@@ -63,7 +63,7 @@ class alert(object):
                     rospy.loginfo(msg)
                     con.alert(msg)                    
                     time.sleep(0.5)
-                    msg.data = ""
+                    msg = ""
                     rospy.loginfo(msg)
                     con.alert(msg)                    
                     error_flag = False

@@ -43,6 +43,7 @@ def _observation(req):
             proc.send_signal(signal.SIGINT)
         except:
             pass
+        pub.publish("stop queue", node_name, time.time())        
         current_num = 0
     time.sleep(1.)
     return
@@ -70,12 +71,13 @@ def queue_check():
         pass
     try:
         print("loading file...")
+        
         data = fb.get("/"+date+"/",None)
         print("finish loading")
     except:
         #if no file
         return "", ""
-    if len(data) == 0:
+    if not data:
         print("no data")
         return "", ""
     length = len(list(data.keys())[0].split(":"))
@@ -128,13 +130,21 @@ while True:
         time.sleep(1.)
     script, filename = queue_check()
     
-    if not filename:
+    if not script:
         #obs_flag = False
         print("no queue_list")
         time.sleep(10.)
     else:
-        print("start observation : ", filename)
-        cmd = "python "+str(script)+".py"+" --obsfile " + str(filename)
+        if not str(filename):
+            print("start observation : ", str(script))            
+            if len(script.split("-")) == 3:
+                _list = str(script).split(" ")
+                cmd = "python "+_list[0]+".py"+" "+_list[1]+" "+_list[2]
+            else:
+                cmd = "python "+str(script)+".py"
+        else:
+            print("start observation : ", filename)
+            cmd = "python "+str(script)+".py"+" --obsfile " + str(filename)
         cmd = cmd.split()
         proc = Popen(cmd)
         proc.wait()
