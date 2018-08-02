@@ -285,7 +285,7 @@ class antenna_move(object):
                 st = ret[4]
                 tar_az = ret[0] + az*(c-st)*10
                 tar_el = ret[2] + el*(c-st)*10
-                if tar_az > 240*3600. or tar_el < -240*3600.:
+                if tar_az > 240*3600. or tar_el < -240*3600.: #az?
                     self.stop_flag = True#False?
                     print('!!!target az limit!!! : ', tar_az)
                     continue
