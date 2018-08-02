@@ -30,13 +30,14 @@ class enc_controller(object):
         #board_name = 6204
         #rsw_id = 0
         sub = rospy.Subscriber("pyinterface", Status_encoder_msg, self.sub_enc)
-        sub2 = rospy.Subscriber('status_antenna', Status_antenna_msg, self.sub_antenna)
+        sub2 = rospy.Subscriber('status_antenna', Status_antenna_msg, self.sub_antenna, queue_size=1)
         #self.dio = pyinterface.open(board_name, rsw_id)
         #self.board_initialize()
         pass
 
     def sub_antenna(self, req):
         print('get status antenns')
+        print("speed", req.command_azspeed)
         self.vel_az = req.command_azspeed
         self.vel_el = req.command_elspeed
         self.enc_Az += self.vel_az*0.01

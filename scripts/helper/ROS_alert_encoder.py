@@ -73,7 +73,7 @@ class alert(object):
                     msg = "encoder error release !!\n\n\n"
                     rospy.loginfo(msg)
                     con.alert(msg)                    
-                    time.sleep(0.5)
+                    time.sleep(2.)
                     msg = ""
                     rospy.loginfo(msg)
                     con.alert(msg)                    
