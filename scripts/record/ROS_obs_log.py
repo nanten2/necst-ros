@@ -3,6 +3,8 @@
 import time
 from datetime import datetime as dt
 import sys
+import os
+import threading
 
 import rospy
 from necst.msg import Status_weather_msg
@@ -54,13 +56,36 @@ def _alert(req):
     alert = req.data
     return
 
+def obs_format():
+    while not rospy.is_shutdown():
+        ctime = dt.utcnow()            
+        filename = ctime.strftime("%Y%m%d")
+        if os.path.isfile("/home/amigos/data/log/"+filename+".txt"):
+            pass
+        else:
+            time.sleep(10.)
+            continue
+        f = open("/home/amigos/data/log/"+filename+".txt", "r")
+        ff = f.readlines()
+        f.close()
+        ft = open("/home/amigos/data/obs_log/"+filename+"_log.txt", "a")
+        for i in ff:
+            if not "@" in i:
+                ft.write(i)
+            else:
+                pass
+        ft.close()
+        time.sleep(60.)
+    return
+    
+    
 def start():
     global stop
     stop = ""
     print("start")
     ctime = dt.utcnow()    
     filename = ctime.strftime("%Y%m%d")
-    f = open("/home/amigos/data/obs_log/"+filename+".txt", "a")
+    f = open("/home/amigos/data/log/"+filename+".txt", "a")
     f.write("### Observation : " + obs.target + "\n")
     f.write("- UTC " + str(ctime.fromtimestamp(obs.timestamp)))
     f.write(": start observation\n")    
@@ -78,7 +103,7 @@ def moving():
     global hosei
     ctime = dt.utcnow()    
     filename = ctime.strftime("%Y%m%d")
-    f = open("/home/amigos/data/obs_log/"+filename+".txt", "a")
+    f = open("/home/amigos/data/log/"+filename+".txt", "a")
     f.write("@time" + str(ctime.fromtimestamp(obs.timestamp))+"\n")
     f.write("@current_number : " + str(obs.current_num)+"\n")
     f.write("@current_position : " + str(obs.current_position)+"\n")
@@ -94,7 +119,7 @@ def end():
     print("end")
     ctime = dt.utcnow()    
     filename = ctime.strftime("%Y%m%d")
-    f = open("/home/amigos/data/obs_log/"+filename+".txt", "a")
+    f = open("/home/amigos/data/log/"+filename+".txt", "a")
     f.write("- UTC " + str(ctime.fromtimestamp(obs.timestamp)))
     f.write(" : end observation"+"\n")
     if stop:
@@ -113,6 +138,7 @@ def end():
         f.write("    @"+str(hosei.data[i])+"\n")    
     f.write("\n")
     f.close()
+    
     return
 
 def obs_record():
@@ -145,4 +171,15 @@ if __name__ == "__main__":
     rospy.Subscriber("hosei_parameter", String_list_msg, _hosei)
     rospy.Subscriber("obs_stop", String_necst, _obs_stop)
     rospy.Subscriber("alert", String_necst, _alert, queue_size=1)
+    thread = threading.Thread(target=obs_format)
+    thread.start()
+    if os.path.exists("/home/amigos/data/log"):
+        pass
+    else:
+        os.mkdir("home/amigos/data/log")
+    if os.path.exists("/home/amigos/data/obs_log"):
+        pass
+    else:
+        os.mkdir("home/amigos/data/obs_log")            
     obs_record()
+    
