@@ -125,33 +125,33 @@ class antenna_move(object):
         ===========
         This function checks limit azel
         """
-        if az > 240*3600. or az < -240*3600.:
+        if az > 240*3600. or az < -240*3600.: #240?
             self.stop_flag = True
             print('!!!target az limit!!! : ', az)
             rospy.logwarn('!!!limit az!!!')
             self.error = True
-            return False
+            return True
 
         if el > 89*3600. or el < 0:
             self.stop_flag = True
             print('!!!target el limit!!! : ', el)
             rospy.logwarn('!!!limit el!!!')
             self.error = True
-            return False
+            return True
         
         else:
-            return True
+            return False
     
     def time_check(self, st):
-        n = len(self.parameters['start_time_list'])
         ct = time.time()
 
-        if ct - st[n-1] >= 0:
+        if ct - st[-1] >= 0:
             rospy.loginfo('!!!azel_list is end!!!')
             self.stop_flag = True
             self.dev.command_az_speed = 0
             self.dev.command_el_speed = 0
             time.sleep(0.25)
+            return 
         return ct
 
     def comp(self):
@@ -165,7 +165,7 @@ class antenna_move(object):
             return
 
         ct = self.time_check(st)
-        if self.parameters['az_list'] == []:
+        if ct == None or self.parameters['az_list'] == []:
             return
         else:
             num = numpy.where(numpy.array(st) > ct)[0][0]
@@ -173,11 +173,11 @@ class antenna_move(object):
             if num == len((self.parameters['az_list'])):
                 return
             param = self.parameters
-            x1 = param['az_list'][num-1]
-            x2 = param['az_list'][num]
-            y1 = param['el_list'][num-1]
-            y2 = param['el_list'][num]
-            return (x1,x2,y1,y2,st2)
+            az_1 = param['az_list'][num-1]
+            az_2 = param['az_list'][num]
+            el_1 = param['el_list'][num-1]
+            el_2 = param['el_list'][num]
+            return (az_1,az_2,el_1,el_2,st2)
         
     def act_azel(self):
         while True:
@@ -186,39 +186,40 @@ class antenna_move(object):
                 self.dev.command_az_speed = 0
                 self.dev.command_el_speed = 0
                 continue
+            if self.emergency_flag:
+                time.sleep(0.1)
+                continue
 
             ret = self.comp()
             if ret == None:
                 time.sleep(0.1)
                 continue
             else:
-                az = ret[1] - ret[0]
-                el = ret[3] - ret[2]
-                c = time.time()
-                st = ret[4]
-                tar_az = ret[0] + az*(c-st)*10
-                tar_el = ret[2] + el*(c-st)*10
+                hensa_az = ret[1] - ret[0]
+                hensa_el = ret[3] - ret[2]
+                current_time = time.time()
+                strat_time = ret[4]
+                tar_az = ret[0] + hensa_az*(current_time-start_time)*10
+                tar_el = ret[2] + hensa_el*(current_time-start_time)*10
                 
-                if not self.limit_check(tar_az, tar_el):
+                if self.limit_check(tar_az, tar_el):
+                    time.sleep(0.1)
                     continue
 
                 self.command_az = tar_az
                 self.command_el = tar_el
-                if self.emergency_flag:
-                    time.sleep(0.1)
-                    continue
-                if True:
-                    b_time = time.time()
 
-                    ret = self.dev.move_azel(tar_az, tar_el, self.enc_parameter['az_enc'], self.enc_parameter['el_enc'], 10000, 12000)
-                    rospy.loginfo(ret)
-                    
-                    interval = time.time() - b_time
-                    if interval <= 0.01:
-                        time.sleep(0.01 - interval)
-                        pass
-                time.sleep(0.01)
-    
+                b_time = time.time()
+
+                ret = self.dev.move_azel(tar_az, tar_el, self.enc_parameter['az_enc'], self.enc_parameter['el_enc'])
+                rospy.loginfo(ret)
+                
+                interval = time.time() - b_time
+                if interval <= 0.01:
+                    time.sleep(0.01 - interval)
+                    pass
+        return
+
     def stop_move(self, req):
         if time.time() - self.start_time < 1:
             return
@@ -240,12 +241,7 @@ class antenna_move(object):
             self.emergency_flag = True
             rospy.logwarn('!!!emergency!!!')
             rospy.logwarn('!!!stop azel velocity =>0!!!')
-            for i in range(5):
-                self.dev.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
-                self.dev.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
-                time.sleep(0.05)
-                self.dev.command_az_speed = 0
-                self.dev.command_el_speed = 0
+            self.dev.emergency_stop()
             rospy.logwarn('!!!exit ROS_antenna.py!!!')
             rospy.signal_shutdown('emergency')
             sys.exit()

@@ -11,34 +11,29 @@ class antenna_device(object):
     command_az_speed = 0
     command_el_speed = 0
     
-    count = 0
-    az_array = []
-    el_array = []
-    target_az_array = []
-    target_el_array = []
+    count = [0, 0]
+    target_array = [[0], [0]]
 
-    az_rate = el_rate = 0
+    rate = [0, 0]
     az_rate_d = el_rate_d = 0
-    pre_hensa_az = pre_hensa_el = 0
-    ihensa_az = ihensa_el = 0.0
+    pre_hensa = [0, 0]
+    ihensa = [0.0, 0.0]
     
-    az_enc_before = el_enc_before = 0
-    az_err_before = el_err_before = 0
-    current_speed_az = current_speed_el = 0.0
-    pre_az_arcsec = pre_el_arcsec = 0
+    enc_before = [0, 0]
+    err_before = [0, 0]
+    current_speed = [0.0, 0.0]
+    pre_arcsec = [0, 0]
 
-    t1 = t2 =0.0
-    t_az = t_el = 0.0
+    t_now = t_past = 0.0
+    t = [0.0, 0.0]
 
     #PID parameter
     p_az_coeff = 3.7
     i_az_coeff = 3.0
     d_az_coeff = 0
-    s_az_coeff = 0
     p_el_coeff = 3.7
     i_el_coeff = 3.0
     d_el_coeff = 0
-    s_el_coeff = 0
 
 
     def __init__(self):
@@ -55,32 +50,55 @@ class antenna_device(object):
         self.command_el_speed = 0
         return
 
-    def move_azel(self, az_arcsec, el_arcsec, enc_az, enc_el, az_max_rate = 10000, el_max_rate = 12000, m_bStop = 'FALSE'):
+"""
+    def set_pid_param(self, param):
+        self.p_az_coeff = param["az"][0]
+        self.i_az_coeff = param["az"][1]
+        self.d_az_coeff = param["az"][2]
+        self.p_el_coeff = param["el"][0]
+        self.i_el_coeff = param["el"][1]
+        self.d_el_coeff = param["el"][2]
+        return
+"""
+
+    def move_azel(self, az_arcsec, el_arcsec, enc_az, enc_el, pid_param=None, m_bStop = 'FALSE'):
         MOTOR_MAXSTEP = 1000
         MOTOR_AZ_MAXRATE = 10000
         MOTOR_EL_MAXRATE = 12000
         
-        ret = self.calc_pid(az_arcsec, el_arcsec, enc_az, enc_el, az_max_rate, el_max_rate)
-        az_rate_ref = ret[0]
-        el_rate_ref = ret[1]
-        
-        # command value to target value
-        daz_rate = az_rate_ref - self.az_rate_d
-        del_rate = el_rate_ref - self.el_rate_d
+        #self.set_pid_param(pid_param)
+
+        #for az >= 180*3600 and az <= -180*3600
+        if az_enc > 40*3600 and az_arcsec+360*3600 < 220*3600:
+            az_arcsec += 360*3600
+        elif az_enc < -40*3600 and az_arcsec-360*3600 > -220*3600:
+            az_arcsec -= 360*3600
+
+        if self.t_past == 0.0:
+            self.t_past = time.time()
+        else:
+            pass
+        self.t_now = time.time()
+
+        ret_az = self.calc_pid(az_arcsec, enc_az, mode="az")
+        az_rate_ref = ret_az
+        ret_el = self.calc_pid(el_arcsec, enc_el, mode="el")
+        el_rate_ref = ret_el
+        self.t_past = self.t_now
         
         #limit of acc
-        if abs(daz_rate) < MOTOR_MAXSTEP:
+        if abs(az_rate_ref - self.az_rate_d) < MOTOR_MAXSTEP:
             self.az_rate_d = az_rate_ref
         else:
-            if daz_rate < 0:
+            if (az_rate_ref - self.az_rate_d) < 0:
                 a = -1
             else:
                 a = 1
             self.az_rate_d += a*MOTOR_MAXSTEP
-        if abs(del_rate) < MOTOR_MAXSTEP:
+        if abs(el_rate_ref - self.el_rate_d) < MOTOR_MAXSTEP:
             self.el_rate_d = el_rate_ref
         else:
-            if del_rate < 0:
+            if (el_rate_ref - self.el_rate_d) < 0:
                 a = -1
             else:
                 a = 1
@@ -101,9 +119,10 @@ class antenna_device(object):
             dummy = 0
         else:
             dummy = int(self.az_rate_d)
-        
+
         self.command_az_speed = dummy
-        dummy_byte = list(map(int,  ''.join([format(b, '08b')[::-1] for b in struct.pack('<h', dummy)])))
+        scaling_dummy = int(self.az_rate_d * 7/12 * 10000/3600)
+        dummy_byte = list(map(int,  ''.join([format(b, '08b')[::-1] for b in struct.pack('<h', scaling_dummy)])))
         self.dio.output_word('OUT1_16', dummy_byte)
         self.az_rate_d = dummy
         
@@ -113,113 +132,83 @@ class antenna_device(object):
             dummy = int(self.el_rate_d)
         
         self.command_el_speed = dummy
-        dummy_byte = list(map(int,  ''.join([format(b, '08b')[::-1] for b in struct.pack('<h', dummy)])))
+        scaling_dummy = int(self.el_rate_d * 7/12 * 10000/3600)
+        dummy_byte = list(map(int,  ''.join([format(b, '08b')[::-1] for b in struct.pack('<h', scaling_dummy)])))
         self.dio.output_word('OUT17_32', dummy_byte)
         self.el_rate_d = dummy
         
-        return ret
+        return [ret_az, ret_el]
 
-    def calc_pid(self, az_arcsec, el_arcsec, az_enc, el_enc, az_max_rate, el_max_rate):
+    def calc_pid(self, target_arcsec, encoder_arcsec, mode):
         """
         DESCRIPTION
         ===========
         This function determine az&el speed for antenna 
         """
         DEG2ARCSEC = 3600.
-        if self.t2 == 0.0:
-         self.t2 = time.time()
+        if mode = "az":
+            i = 0
+        elif mode = "el":
+            i = 1
         else:
-            pass
+            return
 
-        #ROS_version
-        #-----------
-        #for az >= 180*3600 and az <= -180*3600
-        if az_enc > 40*3600 and az_arcsec+360*3600 < 220*3600:
-            az_arcsec += 360*3600
-        elif az_enc < -40*3600 and az_arcsec-360*3600 > -220*3600:
-            az_arcsec -= 360*3600
         
         #calculate ichi_hensa
-        az_err = az_arcsec-az_enc
-        el_err = el_arcsec-el_enc
+        err = target_arcsec - encoder_arcsec
 
-        hensa_az = az_arcsec - az_enc
-        hensa_el = el_arcsec - el_enc
+        hensa = target_arcsec - encoder_arcsec 
         
-        dhensa_az = hensa_az - self.pre_hensa_az
-        if math.fabs(dhensa_az) > 1:
-            dhensa_az = 0
-        dhensa_el = hensa_el - self.pre_hensa_el
-        if math.fabs(dhensa_el) > 1:
-            dhensa_el = 0
+        dhensa = hensa - self.pre_hensa[i]
+        if math.fabs(dhensa) > 1:
+            dhensa = 0
         
-        self.t1 = time.time()
-        if self.t_az == 0.0 and self.t_el == 0.0:
-            self.t_az = self.t_el = self.t1
+        if self.t[i] == 0.0:
+            self.t[i] = self.t_now
         else:
-            if (az_enc - self.az_enc_before) != 0.0:
-                self.current_speed_az = (az_enc - self.az_enc_before) / (self.t1-self.t_az)
-                self.t_az = self.t1
-            if (el_enc - self.el_enc_before) != 0.0:
-                self.current_speed_el = (el_enc - self.el_enc_before) / (self.t1-self.t_el)
-                self.t_el = self.t1
+            if (encoder_arcsec - self.enc_before[i]) != 0.0:
+                self.current_speed[i] = (encoder_arcsec - self.enc_before[i]) / (self.t_now-self.t[i])
         
-        if self.pre_az_arcsec == 0: # for first move
-            target_speed_az = 0
+        if self.pre_arcsec[i] == 0: # for first move
+            target_speed = 0
         else:
-            target_speed_az = (az_arcsec-self.pre_az_arcsec)/(self.t1-self.t2)
-        if self.pre_el_arcsec == 0: # for first move
-            target_speed_el = 0
-        else:
-            target_speed_el = (el_arcsec-self.pre_el_arcsec)/(self.t1-self.t2)
+            target_speed = (target_arcsec - self.pre_arcsec[i])/(self.t_now - self.t_past)
         
-        ret = self.medi_calc(target_speed_az, target_speed_el)
-        target_speed_az = ret[0]
-        target_speed_el = ret[1]
+        ret = self.medi_calc(target_speed, i)
+        target_speed = ret
         
-        self.ihensa_az += (hensa_az + self.pre_hensa_az)/2
-        self.ihensa_el += (hensa_el + self.pre_hensa_el)/2
-        if math.fabs(hensa_az) > 50:
-            self.ihensa_az = 0
-        if math.fabs(hensa_el) > 50:
-            self.ihensa_el = 0
+        self.ihensa[i] += (hensa + self.pre_hensa[i])/2
+        if math.fabs(hensa) > 50:
+            self.ihensa[i] = 0.0
         
-        
-        self.az_rate = target_speed_az + (self.current_speed_az - self.az_rate) * self.s_az_coeff + self.p_az_coeff*hensa_az + self.i_az_coeff*self.ihensa_az*(self.t1-self.t2) + self.d_az_coeff*dhensa_az/(self.t1-self.t2)
-        self.el_rate = target_speed_el + (self.current_speed_el - self.el_rate) * self.s_el_coeff + self.p_el_coeff*hensa_el + self.i_el_coeff*self.ihensa_el*(self.t1-self.t2) + self.d_el_coeff*dhensa_el/(self.t1-self.t2)
-        
+        #PID
+        self.rate[i] = target_speed + self.p_coeff[i]*hensa + self.i_coeff[i]*self.ihensa[i]*(self.t_now-self.t_past) + self.d_coeff[i]*dhensa/(self.t_now-self.t_past)
         
         #update
-        self.az_enc_before = az_enc
-        self.el_enc_before = el_enc
-        self.az_err_before = az_err
-        self.el_err_before = el_err
+        self.enc_before[i] = encoder_arcsec
+        self.err_before[i] = err
+        self.pre_hensa[i] = hensa
+        self.pre_arcsec[i] = target_arcsec
+        self.t[i] = self.t_now
         
-        self.pre_hensa_az = hensa_az
-        self.pre_hensa_el = hensa_el
-        
-        self.pre_az_arcsec = az_arcsec
-        self.pre_el_arcsec = el_arcsec
-        
-        self.t2 = self.t1
-        
-        az_rate_ref = int(self.az_rate) #??
-        el_rate_ref = int(self.el_rate) #??
-        return [az_rate_ref, el_rate_ref]
+        return self.rate[i]
 
-    def medi_calc(self, target_az, target_el):
+    def medi_calc(self, target_speed, i):
         target_num = 13 # number of median array
-        if self.count < target_num:
-            self.target_az_array.insert(0, target_az)
-            self.target_el_array.insert(0, target_el)
-            self.count += 1
+        self.target_array[i].insert(0, target_speed)
+        if self.count[i] < target_num:
+            self.count[i] += 1
         else:
-            self.target_az_array.insert(0, target_az)
-            self.target_el_array.insert(0, target_el)
-            self.target_az_array.pop(13)
-            self.target_el_array.pop(13)
+            self.target_array[i].pop(13)
         
-        median_az = numpy.median(self.target_az_array)
-        median_el = numpy.median(self.target_el_array)
-        return [median_az, median_el]
+        median = numpy.median(self.target_array[i])
+        return median
 
+    def emergency_stop(self):
+        for i in range(5):
+            self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+            self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+            time.sleep(0.05)
+            self.command_az_speed = 0
+            self.command_el_speed = 0
+        return
