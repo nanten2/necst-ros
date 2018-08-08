@@ -47,7 +47,7 @@ class antenna_device(object):
         self.command_el_speed = 0
         return
 
-"""
+    """
     def set_pid_param(self, param):
         self.p_coeff[0] = param["az"][0]
         self.i_coeff[0] = param["az"][1]
@@ -56,7 +56,7 @@ class antenna_device(object):
         self.i_coeff[1] = param["el"][1]
         self.d_coeff[1] = param["el"][2]
         return
-"""
+    """
 
     def move_azel(self, az_arcsec, el_arcsec, enc_az, enc_el, pid_param=None, m_bStop = 'FALSE'):
         MOTOR_MAXSTEP = 1000
