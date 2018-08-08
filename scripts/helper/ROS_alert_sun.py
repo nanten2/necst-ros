@@ -3,9 +3,6 @@
 import sys
 import time
 import threading
-import astropy.units as u
-from astropy.coordinates import SkyCoord, EarthLocation, AltAz, get_body
-from astropy.time import Time    
 from datetime import datetime as dt
 from datetime import timedelta
 import rospy
@@ -119,6 +116,9 @@ class alert(object):
 if __name__ == "__main__":
     import ROS_controller
     con = ROS_controller.controller(escape=node_name)
+    import astropy.units as u
+    from astropy.coordinates import SkyCoord, EarthLocation, AltAz, get_body
+    from astropy.time import Time    
     al = alert()
     al.thread_start()
     rospy.spin()
