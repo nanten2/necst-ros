@@ -198,7 +198,7 @@ class antenna_move(object):
                 hensa_az = ret[1] - ret[0]
                 hensa_el = ret[3] - ret[2]
                 current_time = time.time()
-                strat_time = ret[4]
+                start_time = ret[4]
                 tar_az = ret[0] + hensa_az*(current_time-start_time)*10
                 tar_el = ret[2] + hensa_el*(current_time-start_time)*10
                 
