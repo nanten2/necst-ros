@@ -28,12 +28,9 @@ class antenna_device(object):
     t = [0.0, 0.0]
 
     #PID parameter
-    p_az_coeff = 3.7
-    i_az_coeff = 3.0
-    d_az_coeff = 0
-    p_el_coeff = 3.7
-    i_el_coeff = 3.0
-    d_el_coeff = 0
+    p_coeff = [3.7, 3.7]
+    i_coeff = [3.0, 3.0]
+    d_coeff = [0, 0]
 
 
     def __init__(self):
@@ -52,12 +49,12 @@ class antenna_device(object):
 
 """
     def set_pid_param(self, param):
-        self.p_az_coeff = param["az"][0]
-        self.i_az_coeff = param["az"][1]
-        self.d_az_coeff = param["az"][2]
-        self.p_el_coeff = param["el"][0]
-        self.i_el_coeff = param["el"][1]
-        self.d_el_coeff = param["el"][2]
+        self.p_coeff[0] = param["az"][0]
+        self.i_coeff[0] = param["az"][1]
+        self.d_coeff[0] = param["az"][2]
+        self.p_coeff[1] = param["el"][0]
+        self.i_coeff[1] = param["el"][1]
+        self.d_coeff[1] = param["el"][2]
         return
 """
 
@@ -69,9 +66,9 @@ class antenna_device(object):
         #self.set_pid_param(pid_param)
 
         #for az >= 180*3600 and az <= -180*3600
-        if az_enc > 40*3600 and az_arcsec+360*3600 < 220*3600:
+        if enc_az > 40*3600 and az_arcsec+360*3600 < 220*3600:
             az_arcsec += 360*3600
-        elif az_enc < -40*3600 and az_arcsec-360*3600 > -220*3600:
+        elif enc_az < -40*3600 and az_arcsec-360*3600 > -220*3600:
             az_arcsec -= 360*3600
 
         if self.t_past == 0.0:
@@ -146,9 +143,9 @@ class antenna_device(object):
         This function determine az&el speed for antenna 
         """
         DEG2ARCSEC = 3600.
-        if mode = "az":
+        if mode == "az":
             i = 0
-        elif mode = "el":
+        elif mode == "el":
             i = 1
         else:
             return
