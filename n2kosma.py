@@ -20,7 +20,7 @@ import logging
 
 #kosma_setfile directry
 #======================
-setfile_dir = '/home/amigos/komsa_setfile/'
+setfile_dir = '/home/amigos/kosma_setfile/'
 #=====================
 
 def emit_colored_ansi(fn):
