@@ -3,6 +3,7 @@
 import rospy
 from necst.msg import Move_mode_msg
 from necst.msg import List_coord_msg
+from necst.msg import String_necst
 import time
 import threading
 import sys
@@ -25,6 +26,7 @@ class worldcoord(object):
     def __init__(self):
         self.sub = rospy.Subscriber("planet_command", Move_mode_msg, self.note_command, queue_size=1)
         self.pub = rospy.Publisher("wc_list", List_coord_msg, queue_size=1)
+        self.pub_obs_stop = rospy.Publisher("obs_stop", String_necst, queue_size=1)
         self.thread_start = threading.Thread(target=self.create_list)
         self.start_time = time.time()
         pass
@@ -56,6 +58,7 @@ class worldcoord(object):
             #time_list = Time(time_list)
 
             if not command.planet.lower() in self.planet_list:
+                self.pub_obs_stop.publish("planet name is false...", node_name, time.time())
                 rospy.logerr("planet name is false...")
                 continue
             else:
@@ -65,6 +68,7 @@ class worldcoord(object):
             target_list.location = nanten2
             altaz_list = target_list.altaz
             if not all((0.<i<90. for i in altaz_list.alt.deg)):
+                self.pub_obs_stop.publish("This planet is not rizing...", node_name, time.time())                
                 rospy.logerr("This planet is not rizing...")
                 continue
             ret = calc_offset.calc_offset(altaz_list.az.deg, altaz_list.alt.deg,

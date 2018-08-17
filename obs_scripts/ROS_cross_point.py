@@ -43,15 +43,9 @@ sys.path.append("/home/amigos/ros/src/necst/lib")
 import time
 import signal
 import numpy
-import obs_log
+
 import doppler_nanten
 dp = doppler_nanten.doppler_nanten()
-
-list = []
-list.append("--obsfile")
-list.append(obsfile)
-obs_log.start_script(name, list)
-
 
 
 obs_items = open("/home/amigos/necst-obsfiles/" + obsfile, 'r').read().split('\n')
@@ -111,8 +105,10 @@ con.dome_track()
 
 def handler(num, flame):
     con.move_stop()
+    con.dome_stop()
     print("!!ctrl + c!!")
     print("Stop antenna")
+    con.obs_status(active=False)
     sys.exit()
 
 signal.signal(signal.SIGINT, handler)
@@ -175,7 +171,7 @@ print("n:"+str(n))
 print("point_n:"+str(point_n))
 
 
-
+con.obs_status(active=True, obsmode=obs["obsmode"],obs_script=__file__, obs_file=obsfile, target=obs["object"], num_on=obs["N"], num_seq=obs["nTest"], xgrid=obs["xgrid"], ygrid=obs["ygrid"], exposure_hot=obs["exposure"], exposure_off=obs["exposure"], exposure_on=obs["exposure"])
 while num < n:
     p_n = 0
     while p_n < point_n:
@@ -208,7 +204,7 @@ while num < n:
         print('observation :'+str(num))
         print('tracking start')
         con.move_stop()
-        con.radec_move(ra, dec, obs['coordsys'], off_x=off_x, off_y=off_y, offcoord = cosydel)
+        con.onepoint_move(ra, dec, obs['coordsys'], off_x=off_x, off_y=off_y, offcoord = cosydel)
         print('moving...')
 
         con.antenna_tracking_check()
@@ -221,6 +217,7 @@ while num < n:
         if _now > latest_hottime+60*obs['load_interval']:
             print('R')
             con.move_hot('in')
+            con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="HOT")        
 
             status =  con.read_status()
             temp = float(status.CabinTemp1) + 273.15
@@ -265,7 +262,9 @@ while num < n:
         
         print('OFF')
         con.move_hot('out')
-        con.radec_move(offx, offy, obs['coordsys'])
+        con.onepoint_move(offx, offy, obs['coordsys'])
+        con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="OFF")
+        
 
         con.antenna_tracking_check()
         con.dome_tracking_check()
@@ -314,7 +313,9 @@ while num < n:
         print('move ON')
         con.move_stop()
         
-        con.radec_move(ra, dec, obs['coordsys'], off_x = off_x, off_y = off_y, offcoord = cosydel)
+        con.onepoint_move(ra, dec, obs['coordsys'], off_x = off_x, off_y = off_y, offcoord = cosydel)
+        con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="ON")
+        
 
         con.antenna_tracking_check()
         con.dome_tracking_check()
@@ -368,6 +369,55 @@ while num < n:
     num += 1
 
 
+# hot->off->on->off->...->on->hot
+print('R')
+con.move_hot('in')
+con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="HOT") 
+
+status =  con.read_status()
+temp = float(status.CabinTemp1) + 273.15
+
+print('Temp: %.2f'%(temp))
+
+print('get spectrum...')
+dp1 = dp.set_track(obs['lambda_on'], obs['beta_on'], obs['vlsr'], obs['coordsys'], 0, 0, offset_dcos, obs['coordsys'], integ*2+integ, obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)#obs['cosydel']非対応
+#d = con.oneshot_achilles(exposure=integ)
+d = {"dfs1":[[100]*16384, 0], "dfs2":[[200]*16384, 1]}
+d1 = d['dfs1'][0]
+d2 = d['dfs2'][0]
+d1_list.append(d1)
+d2_list.append(d2)
+lamdel_list.append(0)
+betdel_list.append(0)
+tdim6_list.append([16384,1,1])
+date_list.append(status.Time)
+thot_list.append(temp)
+vframe_list.append(dp1[0])
+vframe2_list.append(dp1[0])
+lst_list.append(status.LST)
+az_list.append(status.Current_Az)
+el_list.append(status.Current_El)
+tau_list.append(tau)
+hum_list.append(status.OutHumi)
+tamb_list.append(status.OutTemp)
+press_list.append(status.Press)
+windspee_list.append(status.WindSp)
+winddire_list.append(status.WindDir)
+sobsmode_list.append('HOT')
+mjd_list.append(status.MJD)
+secofday_list.append(status.Secofday)
+subref_list.append(status.Current_M2)
+latest_hottime = time.time()
+P_hot = numpy.sum(d1)
+tsys_list.append(0)
+_2NDLO_list1.append(dp1[3]['sg21']*1000)
+_2NDLO_list2.append(dp1[3]['sg22']*1000)
+pass
+
+
+# ==================================
+# save data
+# ==================================
 if obs['lo1st_sb_1'] == 'U':
     ul = 1
 else:
@@ -582,5 +632,4 @@ n2fits_write.write(read2,f2)
 
 
 shutil.copy("/home/amigos/ros/src/necst/lib/hosei_230.txt", savedir+"/hosei_copy")
-obs_log.end_script(name, dirname)
-
+con.obs_status(active=False)
