@@ -3,6 +3,7 @@
 
 #import csv
 #from pyslalib import slalib
+from datetime import datetime as dt
 from astropy.coordinates import SkyCoord
 from astropy.coordinates import FK5
 from astropy.coordinates import EarthLocation
@@ -84,16 +85,17 @@ class doppler_nanten (object):
             "LIGHT_SPEED":299792.458 }
     """
 
-
-    coord_dict = {"equatorial" : 1,
-                  "j2000"     : 1,
-                  "b1950"     : 2,
-                  "lb"        : 3,
-                  "galactic"  : 3,
-                  "gal"  : 3,
+    coord_dict = {"equatorial" :"altaz",
+                  "j2000"     : "fk5",
+                  "b1950"     : "fk4",
+                  "lb"        : "galactic",
+                  "galactic"  : "galactic",
+                  "gal"       : "galactic",
                   #"APPARENT"  : 10,
-                  #"HORIZONTAL": 100,
+                  "HORIZONTAL": "altaz",
                   "same"      : 0}
+
+    nanten2 = EarthLocation(lat = -22.96995611*u.deg, lon = -67.70308139*u.deg, height = 4863.85*u.m)
     
     #time
     t = Time.now()
@@ -121,7 +123,9 @@ class doppler_nanten (object):
         """
         t_now = Time.now().unix
         self.t = Time(t_now + stime, format = "unix")
-        vobs = self.get_vobs(math.radians(x), math.radians(y), coord,
+        mjd = 40587.0 + time.time()/(24.*3600.)
+        vobs_mjd = mjd + stime/24./3600.        
+        vobs = self.get_vobs(vobs_mjd, x, y, coord,
                              offset_x, offset_y, offset_dcos, offset_coord)
         c = self.dic1["LIGHT_SPEED"]
         for band in range(1, self.dic1["bandnum"]+1):
@@ -216,50 +220,24 @@ class doppler_nanten (object):
         power = {"sg":pow_sg,}
         return {"freq":freq, "power":power}
     """
-    def get_vobs(self, xtmp, ytmp, mode, offx, offy, dcos, offmode):
-        #mode convert to j2000
+    def get_vobs(self, mjdtmp, xtmp, ytmp, mode, offx, offy, dcos, offmode):
+        utc = Time(dt.utcnow())
         mode = mode.lower()
         offmode = offmode.lower()
         mode = self.coord_dict[mode]
         offmode = self.coord_dict[offmode]
-        if offmode == self.coord_dict["same"]:
-            ytmp += offy
-            if dcos == 0 :
-                xtmp += offx
-            else :
-                xtmp += offx/math.cos(ytmp)
-        elif offmode == mode :
-            ytmp += offy
-            if dcos == 0 :
-                xtmp += offx
-            else :
-                xtmp += offx/math.cos(ytmp)
-        else :
-            print("error coord != off_coord")
+        on_coord = SkyCoord(xtmp, ytmp, unit="deg", frame=mode, obstime=utc, location=self.nanten2)
+        if mode == offmode:
+            yytmp = on_coord.fk5.dec.arcsec + offy
+            xxtmp = on_coord.fk5.ra.arcsec + offx
+        else:
             pass
-        if mode == self.coord_dict["j2000"] :
-            xxtmp = xtmp
-            yytmp = ytmp
-        elif mode == self.coord_dict["b1950"] :
-            sc_fk4 = SkyCoord( ra = xtmp*u.radian, dec = ytmp*u.radian, frame = "fk4")
-            sc_fk5 = sc_fk4.fk5
-            ret = [sc_fk5.ra.radian, sc_fk5.dec.radian]
-            xxtmp = ret[0]
-            yytmp = ret[1]
-        elif mode == self.coord_dict["lb"] or mode == self.coord_dict["galactic"] or mode == self.coord_dict["gal"]:
-            sc_gal = SkyCoord( ra = xtmp*u.radian, dec = ytmp*u.radian, frame = "galactic")
-            sc_fk5 = sc_gal.fk5
-            ret = [sc_fk5.ra.radian, sc_fk5.dec.radian]
-            xxtmp = ret[0]
-            yytmp = ret[1]
-        else :
-            xxtmp = xtmp
-            yytmp = ytmp
+        xxtmp = math.radians(xxtmp)
+        yytmp = math.radians(yytmp)
         print(xxtmp, yytmp)
-        print(xxtmp/3600.)
-        print(xxtmp*360./2*3.14)
         vobs = self.calc_vobs(xxtmp, yytmp)
         print('vobs',vobs,type(vobs))
+
         return vobs
 
     def calc_vobs(self, ra_2000, dec_2000):
