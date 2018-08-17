@@ -243,10 +243,10 @@ class doppler_nanten (object):
             pass
         xxtmp = offset_coord.data.lon + tmp.data.lon
         yytmp = offset_coord.data.lat + tmp.data.lat
-        print("####1",xxtmp, yytmp)        
+
         xxtmp = math.radians(xxtmp.deg)
         yytmp = math.radians(yytmp.deg)
-        print("####2",xxtmp, yytmp)
+
         vobs = self.calc_vobs(xxtmp, yytmp)
         print('vobs',vobs,type(vobs))
 
