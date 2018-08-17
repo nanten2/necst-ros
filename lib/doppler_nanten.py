@@ -258,7 +258,7 @@ class doppler_nanten (object):
         print(xxtmp, yytmp)
         print(xxtmp/3600.)
         print(xxtmp*360./2*3.14)
-        vobs = self.calc_vobs(xxtmp, yytmp)
+        vobs = self.calc_vobs(xxtmp/3600, yytmp/3600)
         print('vobs',vobs,type(vobs))
         return vobs
 
