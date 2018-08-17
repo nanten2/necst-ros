@@ -5,6 +5,8 @@ from necst.msg import List_coord_msg
 from necst.msg import Status_weather_msg
 from necst.msg import Bool_necst
 from necst.msg import String_necst
+from necst.msg import Float64_necst
+
 from datetime import datetime
 from astropy.time import Time
 import time
@@ -24,7 +26,8 @@ class azel_list(object):
     param = ""
     stop_flag = False
     old_list = ""
-
+    accele = 1
+    
     def __init__(self):
         self.start_time = time.time()
         rospy.Subscriber("wc_list", List_coord_msg, self._receive_list, queue_size=1)
@@ -33,13 +36,20 @@ class azel_list(object):
         
         self.pub = rospy.Publisher("list_azel", List_coord_msg, queue_size=1)
         self.stop = rospy.Publisher("move_stop", Bool_necst, queue_size=1)
-        self.obs_stop = rospy.Publisher("obs_stop", String_necst, queue_size=1)        
-        
+        self.obs_stop = rospy.Publisher("obs_stop", String_necst, queue_size=1)
+        self.pub_accele = rospy.Publisher("accele", Float64_necst, queue_size=1)
+        rospy.Subscriber("accele_speed", Float64_necst, self._receive_accele, queue_size=1)        
         self.msg = Bool_necst()
         self.msg.from_node = node_name
         self.calc = calc_coord.azel_calc()
         pass
 
+    def _receive_accele(self, req):
+        print("accele speed : ", req.data)
+        self.accele = req.data
+        return
+    
+    
     def _receive_weather(self, req):
         self.weather = req
         return
@@ -88,18 +98,6 @@ class azel_list(object):
                 if len(param.x_list) > 2:
                     dt = 0.1                    
 
-                    '''
-                    # curve fitting
-                    temp_time_list = [i-param.time_list[0] for i in param.time_list]
-                    self.p0 = param.x_list[0]
-                    curve_x, cov_x = curve_fit(self.curve2_fit, temp_time_list, param.x_list)
-                    x_list2 = [self.curve2_fit(dt*(i+loop*10), *curve_x) for i in range(10)]
-                    self.p0 = param.y_list[0]
-                    curve_y, cov_y = curve_fit(self.curve2_fit, temp_time_list, param.y_list)
-                    y_list2 = [self.curve2_fit(dt*(i+loop*10), *curve_y) for i in range(10)]                                                   
-                    time_list2 = [param.time_list[0]+dt*(i+loop*10) for i in range(10)]
-                    '''
-                    
                     # linear fitting
                     len_x = param.x_list[loop+1] - param.x_list[loop]
                     len_y = param.y_list[loop+1] - param.y_list[loop]
@@ -109,12 +107,12 @@ class azel_list(object):
                     dy = len_y/(len_t*10)#[arcsec/100ms]
                     dt = 0.1
 
-                    x_list2 = [param.x_list[loop] + dx*(i+check*10) for i in range(10)]
-                    y_list2 = [param.y_list[loop] + dy*(i+check*10) for i in range(10)]
-                    time_list2 = [param.time_list[loop]+dt*(i+check*10) for i in range(10)]
+                    x_list2 = [param.x_list[loop] + dx*(i+check*100) for i in range(100)]
+                    y_list2 = [param.y_list[loop] + dy*(i+check*100) for i in range(100)]
+                    time_list2 = [param.time_list[loop]+dt*(i+check*100) for i in range(100)]
                     loop_count = 0
                     check_count = 1
-                    for i in range(10):
+                    for i in range(100):
                         if param.time_list[-1]< time_list2[-1]:
                             del x_list2[-1]
                             del y_list2[-1]
@@ -148,12 +146,12 @@ class azel_list(object):
                     dy = len_y/(len_t*10)#[arcsec/100ms]
                     dt = 0.1
                 
-                    x_list2 = [param.x_list[0] + dx*(i+loop*10) for i in range(10)]
-                    y_list2 = [param.y_list[0] + dy*(i+loop*10) for i in range(10)]
-                    time_list2 = [param.time_list[0]+dt*(i+loop*10) for i in range(10)]
+                    x_list2 = [param.x_list[0] + dx*(i+loop*100) for i in range(100)]
+                    y_list2 = [param.y_list[0] + dy*(i+loop*100) for i in range(100)]
+                    time_list2 = [param.time_list[0]+dt*(i+loop*100) for i in range(100)]
                     loop += 1
                     
-                    for i in range(10):
+                    for i in range(100):
                         if param.time_list[-1]< time_list2[-1]:
                             del x_list2[-1]
                             del y_list2[-1]
@@ -203,14 +201,25 @@ class azel_list(object):
                     msg.timestamp = time.time()
                     self.pub.publish(msg)
                     #print("msg", msg)
-
+                    if param.from_node != "worldcoordinate_otf":
+                        print("#### accele!! ####")
+                        self.pub_accele.publish(self.accele,node_name,time.time())
+                    else:
+                        pass
                     #print("publish ok")
                 else:
                     limit_flag = False
-            else:                
+            else:
+                print("###########################")
+                if param.from_node == "worldcoordinate_otf":
+                    print("#### accele!! ####")
+                    self.pub_accele.publish(self.accele,node_name,time.time())
+                else:
+                    pass
                 loop = 0
                 self.param = ""
                 pass
+            
             time.sleep(0.1)
         return
 
@@ -222,7 +231,6 @@ class azel_list(object):
         return
 
     def negative_change(self, az_list):
-        print(az_list)
         if all((-240*3600<i< 240*3600. for i in az_list)):
             pass
         elif all((i<-110*3600. for i in az_list)):

@@ -7,9 +7,14 @@ import argparse
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 import ROS_controller
 sys.path.append("/home/amigos/ros/src/necst/lib")
-import obs_log
-
-
+import signal
+def handler(signal, frame):
+    print("*** system stop!! ***")
+    ctrl.move_stop()
+    ctrl.obs_status(active=False)
+    sys.exit()
+    return
+signal.signal(signal.SIGINT, handler)
 
 # Info
 # ----
@@ -31,28 +36,35 @@ p.add_argument('--opt', type=str,
 
 args = p.parse_args()
 
-if args.opt is not None: opt = args.opt
-
+if args.opt is not None:
+    opt = args.opt
+    target = "initialize (opt)"
+else:
+    target = "initialize (nomal)"
 # Main
 # ====
 
-obs_log.start_script(name)
-obs_log.weather_log()
-
 ctrl = ROS_controller.controller()
+ctrl.obs_status(active=True, obsmode="INITIALIZE", obs_script=__file__, obs_file="no file", target = target)
 ctrl.drive("on")
+ctrl.obs_status(active=True, current_position="ok : drive on")
 print("dome_open")
 ctrl.dome_open()
+ctrl.obs_status(active=True, current_position="ok : dome open")
 
 time.sleep(2.)
 if opt:
     print("memb_open")
     ctrl.memb_open()
+    ctrl.obs_status(active=True, current_position="ok : membrane open")    
     time.sleep(2.)
 
 print("Init end")
 ctrl.dome_track()
 ctrl.dome_tracking_check()
+time.sleep(5.)
 ctrl.dome_track_end()
-
-obs_log.end_script(name)
+ctrl.obs_status(active=True, current_position="ok : dome track")
+time.sleep(2.)
+ctrl.obs_status(active=False)    
+time.sleep(2.)

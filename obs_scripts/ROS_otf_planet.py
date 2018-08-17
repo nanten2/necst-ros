@@ -7,8 +7,8 @@
 # Info
 # ----
 
-name = '_otf_2018'
-description = 'Get OTF spectrum'
+name = 'otf_planet2018'
+description = 'Get OTF planet spectrum'
 
 # Config Parameters
 # =================
@@ -18,6 +18,7 @@ description = 'Get OTF spectrum'
 obsfile = ''
 tau = 0.0
 c = 299792458
+planet = ""
 
 # Argument handler
 # ================
@@ -29,11 +30,14 @@ p.add_argument('--obsfile', type=str,
                help='absolute path for obsfile')
 p.add_argument('--tau', type=float,
                help='tau. default=%.1f'%(tau))
+p.add_argument('--planet', type=str,
+               help='planet name.')
 
 args = p.parse_args()
 
 if args.obsfile is not None: obsfile = args.obsfile
 if args.tau is not None: tau = args.tau
+if args.planet is not None: planet = args.planet
 
 # Main
 # ====
@@ -42,6 +46,9 @@ import shutil
 import time
 import numpy
 from datetime import datetime, timedelta
+import astropy.units as u
+from astropy.time import Time
+from astropy.coordinates import get_body, EarthLocation
 
 #from astropy.time import Time # no mojule in python2
 import sys
@@ -142,10 +149,18 @@ for _item in obs_items:
     continue
 # param
 # ----------------------
-lambda_on = obs['lambda_on']#on
-beta_on = obs['beta_on']#on
-lambda_off = obs['lambda_off']# off
-beta_off = obs['beta_off']# off
+try:
+    nanten2 = EarthLocation(lat = -22.96995611*u.deg, lon = -67.70308139*u.deg, height = 4863.85*u.m)
+    position = get_body(planet,Time(datetime.utcnow()))
+    position.location = nanten2
+    altaz = position.altaz
+except Exception as e:
+    print(e)
+    print("error planet")
+    con.move_stop()
+    sys.exit()
+lambda_off = altaz.az.deg + 1.
+beta_off = altaz.alt.deg + 1.
 coordsys = obs['coordsys'].lower()# coord
 dcos = obs['otadel']# dcos
 integ_on = obs['exposure']# on iinteg
@@ -286,9 +301,9 @@ while rp_num < rp:
         print('tracking start')
         con.move_stop()
 
-        con.onepoint_move(lambda_off, beta_off, coordsys,
-                          off_x=lamdel_off, off_y=betdel_off, 
-                          offcoord = cosydel,dcos=dcos)
+        con.planet_move(planet,
+                        off_x=lamdel_off, off_y=betdel_off, 
+                        offcoord = cosydel,dcos=dcos)
 
         print("check_track")
         con.antenna_tracking_check()
@@ -304,6 +319,7 @@ while rp_num < rp:
             print('get spectrum...')
             ###con.doppler_calc()
             print(cosydel)
+            """
             dp2 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, 
                                sx + num*gridx + total_count*dx, sy + num*gridy + total_count*dy, 
                                dcos, cosydel, integ_off*2+rampt+(dt*scan_point), 
@@ -313,7 +329,7 @@ while rp_num < rp:
                                sx + num*gridx, sy + num*gridy, dcos, cosydel, 
                                integ_off*2+rampt, obs['restfreq_1']/1000., obs['restfreq_2']/1000., 
                                sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
-            
+            """
             #con.observation("start", integ_off)
             time.sleep(integ_off)
 
@@ -327,8 +343,8 @@ while rp_num < rp:
             tdim6_list.append([16384,1,1])
             date_list.append(status.Time)
             thot_list.append(temp)
-            vframe_list.append(dp1[0])
-            vframe2_list.append(dp2[0]) 
+            vframe_list.append(0)#dp1[0])
+            vframe2_list.append(0)#dp2[0]) 
             lst_list.append(status.LST)
             az_list.append(status.Current_Az)
             el_list.append(status.Current_El)
@@ -347,17 +363,18 @@ while rp_num < rp:
             P_hot2 = numpy.sum(d2)
             tsys_list1.append(0)
             tsys_list2.append(0)
-            _2NDLO_list1.append(dp1[3]['sg21']*1000)
-            _2NDLO_list2.append(dp1[3]['sg22']*1000) 
+            _2NDLO_list1.append(0)#dp1[3]['sg21']*1000)
+            _2NDLO_list2.append(0)#dp1[3]['sg22']*1000) 
             lamdel_list.append(0)
             betdel_list.append(0)
             subscan_list.append(int(num)+1)
-            lambda_list.append(obs['lambda_off'])
-            beta_list.append(obs['beta_off'])
+            lambda_list.append(lambda_off)
+            beta_list.append(beta_off)
             pass
 
 
         else:
+            """
             dp2 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, 
                                sx + num*gridx + total_count*dx, sy + num*gridy + total_count*dy, 
                                dcos, cosydel, integ_off+rampt+(dt*scan_point), 
@@ -367,6 +384,7 @@ while rp_num < rp:
                                sx + num*gridx , sy + num*gridy, offset_dcos, cosydel, 
                                integ_off+rampt, obs['restfreq_1']/1000., obs['restfreq_2']/1000., 
                                sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
+            """
             pass
         
         print('OFF')
@@ -387,8 +405,8 @@ while rp_num < rp:
         tdim6_list.append([16384,1,1])
         date_list.append(status.Time)
         thot_list.append(temp)
-        vframe_list.append(dp1[0]) 
-        vframe2_list.append(dp2[0]) 
+        vframe_list.append(0)#dp1[0]) 
+        vframe2_list.append(0)#dp2[0]) 
         lst_list.append(status.LST)
         az_list.append(status.Current_Az)
         el_list.append(status.Current_El)
@@ -408,24 +426,24 @@ while rp_num < rp:
         tsys2 = temp/(P_hot2/P_sky2-1)
         tsys_list1.append(tsys1)
         tsys_list2.append(tsys2)
-        _2NDLO_list1.append(dp1[3]['sg21']*1000)
-        _2NDLO_list2.append(dp1[3]['sg22']*1000) 
+        _2NDLO_list1.append(0)#dp1[3]['sg21']*1000)
+        _2NDLO_list2.append(0)#dp1[3]['sg22']*1000) 
         lamdel_list.append(0)#
         betdel_list.append(0)#
         subscan_list.append(int(num)+1)
-        lambda_list.append(obs['lambda_off'])
-        beta_list.append(obs['beta_off'])
+        lambda_list.append(lambda_off)
+        beta_list.append(beta_off)
 
         print('move ON')
         con.move_stop()
         ssx = (sx + num*gridx) - float(dx)/float(dt)*rampt-float(dx)/2.#rampの始まり
         ssy = (sy + num*gridy) - float(dy)/float(dt)*rampt-float(dy)/2.#rampの始まり
+        con.planet_move(planet,
+                        off_x = ssx, off_y = ssy,
+                        offcoord = cosydel,
+                        dcos = dcos)
 
-        print("ramp_start tracking")
-        con.onepoint_move(lambda_on, beta_on, coordsys,
-                          off_x = ssx, off_y = ssy,
-                          offcoord = cosydel,
-                          dcos = dcos)
+        print('moving...')
         con.antenna_tracking_check()
         con.dome_tracking_check()
         
@@ -436,9 +454,10 @@ while rp_num < rp:
         delay = 3.
         ctime = time.time()
         start_on = 40587 + (ctime+rampt+delay)/24./3600. # mjd
-        #print(start_on)
+        print("%%%%%%%%%%%%%%%%")
+        print(start_on)
         con.obs_status(active=True, current_num=scan_point*num, current_position="ON")        
-        con.otf_scan(lambda_on, beta_on, coordsys, dx, dy, dt, scan_point, rampt, delay=delay, current_time=ctime, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, limit=True)
+        con.planet_scan(planet, dx, dy, dt, scan_point, rampt, delay=delay, current_time=ctime, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, limit=True)
 
         print('getting_data...')
         d = con.oneshot_achilles(repeat = scan_point ,exposure = integ_on ,stime = start_on)
@@ -474,8 +493,8 @@ while rp_num < rp:
             tdim6_list.append([16384,1,1])
             date_list.append(date)
             thot_list.append(temp)
-            vframe_list.append(dp1[0]) 
-            vframe2_list.append(dp2[0]) 
+            vframe_list.append(0)#dp1[0]) 
+            vframe2_list.append(0)#dp2[0]) 
             lst_list.append(lst)
             az_list.append(az)
             el_list.append(el)
@@ -491,13 +510,13 @@ while rp_num < rp:
             subref_list.append(subref)
             tsys_list1.append(tsys1)
             tsys_list2.append(tsys2)
-            _2NDLO_list1.append(dp1[3]['sg21']*1000)
-            _2NDLO_list2.append(dp1[3]['sg22']*1000)
+            _2NDLO_list1.append(0)#dp1[3]['sg21']*1000)
+            _2NDLO_list2.append(0)#dp1[3]['sg22']*1000)
             lamdel_list.append(lamdel_on)
             betdel_list.append(betdel_on)
             subscan_list.append(int(num)+1)
-            lambda_list.append(obs['lambda_on'])
-            beta_list.append(obs['beta_on'])
+            lambda_list.append(0)#obs['lambda_on'])
+            beta_list.append(0)#obs['beta_on'])
 
             _on += 1
 
@@ -531,8 +550,8 @@ d2_list.append(d2)
 tdim6_list.append([16384,1,1])
 date_list.append(status.Time)
 thot_list.append(temp)
-vframe_list.append(dp1[0])
-vframe2_list.append(dp2[0])
+vframe_list.append(0)#dp1[0])
+vframe2_list.append(0)#dp2[0])
 lst_list.append(status.LST)
 az_list.append(status.Current_Az)
 el_list.append(status.Current_El)
@@ -548,13 +567,13 @@ secofday_list.append(status.Secofday)
 subref_list.append(status.Current_M2)
 tsys_list1.append(0)
 tsys_list2.append(0)
-_2NDLO_list1.append(dp1[3]['sg21']*1000)
-_2NDLO_list2.append(dp1[3]['sg22']*1000)
+_2NDLO_list1.append(0)#dp1[3]['sg21']*1000)
+_2NDLO_list2.append(0)#dp1[3]['sg22']*1000)
 lamdel_list.append(0)
 betdel_list.append(0)
 subscan_list.append(int(num)+1)
-lambda_list.append(obs['lambda_off'])
-beta_list.append(obs['beta_off'])
+lambda_list.append(lambda_off)
+beta_list.append(beta_off)
 
 
 con.move_hot('out')
@@ -774,9 +793,6 @@ f1 = os.path.join(savedir,'n%s_%s_%s_otf_%s.fits'%(timestamp ,obs['molecule_1'],
 f2 = os.path.join(savedir,'n%s_%s_%s_otf_%s.fits'%(timestamp ,obs['molecule_2'],obs['transiti_2'].split('=')[1],obs['object']))
 #numpy.save(f1+".npy",read1)
 #numpy.save(f2+".npy",read2)
-
-print('VFRAME1 : ',dp1[0])
-print('dp2 : ',dp2)
 
 sys.path.append("/home/amigos/ros/src/necst/lib/")
 import n2fits_write

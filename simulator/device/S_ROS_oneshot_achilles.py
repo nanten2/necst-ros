@@ -16,6 +16,14 @@ def oneshot(req):
     #data = dfs.oneshot(req.repeat, req.exposure, req.stime)
     data = [[10000.0+np.random.randint(1000)]*int(req.repeat),
             [20000.0+np.random.randint(1000)]*int(req.repeat)]
+    tv = time.time()
+    mjd = tv/24./3600. + 40587.0 # 40587.0 = MJD0
+    while mjd < req.stime:
+        tv = time.time()
+        mjd = tv/24./3600. + 40587.0 # 40587.0 = MJD0            
+        print("mjd,stime", mjd, req.stime)
+        print("wait start")
+        time.sleep(0.01)
     time.sleep(req.exposure*req.repeat)
     dir_name = "/home/amigos/data/experiment/achilles/" + req.day + "/"
     if not os.path.exists(dir_name):
