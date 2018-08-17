@@ -195,7 +195,6 @@ class antenna_move(object):
                 time.sleep(0.1)
                 continue
             else:
-<<<<<<< antenna_device
                 hensa_az = ret[1] - ret[0]
                 hensa_el = ret[3] - ret[2]
                 current_time = time.time()
@@ -204,28 +203,6 @@ class antenna_move(object):
                 tar_el = ret[2] + hensa_el*(current_time-start_time)*10
                 
                 if self.limit_check(tar_az, tar_el):
-=======
-                b_time3 = time.time()
-                az = ret[1] - ret[0]
-                el = ret[3] - ret[2]
-                c = time.time()
-                st = ret[4]
-                tar_az = ret[0] + az*(c-st)*10
-                tar_el = ret[2] + el*(c-st)*10
-                if tar_az > 240*3600. or tar_el < -240*3600.: #az?
-                    self.stop_flag = True#False?
-                    print('!!!target az limit!!! : ', tar_az)
-                    continue
-                if tar_el > 89*3600. or tar_el < 0:
-                    self.stop_flag = True#False?
-                    print('!!!target el limit!!! : ', tar_el)
-                    continue
-                self.command_az = tar_az
-                self.command_el = tar_el
-                d_t = st - c
-                a_time3=time.time()
-                if self.emergency_flag:
->>>>>>> master
                     time.sleep(0.1)
                     continue
 
