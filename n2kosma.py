@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-#ROS version
 import sys
 sys.path.append('/home/amigos/ros/src/necst/scripts/controller')
 sys.path.append('/home/amigos/ros/src/necst/scripts/record')
@@ -14,12 +13,15 @@ import signal
 import time
 import os
 import argparse
-#import obs_log
 import re
 from astropy.coordinates import SkyCoord
 import socket
 import logging
 
+#kosma_setfile directry
+#======================
+setfile_dir = '/home/amigos/kosma_setfile/'
+#=====================
 
 def emit_colored_ansi(fn):
     def new(*args):
@@ -45,7 +47,7 @@ def SetupLogging(log_level="info",logging_dir="/home/amigos/NECST/script/obslist
    # configure ouput directories
    #
    if not os.path.isdir(logging_dir):
-      log.info("{0} doesn't exists, setting dir to '/tmp/'".format(logging_dir))
+      logging.info("{0} doesn't exists, setting dir to '/tmp/'".format(logging_dir))
       logging_dir='/tmp/'
    #
    log_level_dict = {}
@@ -92,7 +94,6 @@ def initialize():
     # Info
     # ----
     log.info('________________________')
-    logging.warning('iikagennishitekure')
     name = 'initialize'
     description = 'Initialize antenna'
 
@@ -213,8 +214,6 @@ def ReadKosmaFile(filename):
 
 
 class chopper(object):
-    set_dir = '/home/amigos/NECST/script/obslist/kosma/KOSMA_file_io/ReadWrite/'
-    set_dir = '/home/amigos/ros/src/necst/kosma_setfile/'#for ROS simulator
     def __init__(self):
         self.log = getLogger()
         self.hostname = socket.gethostname()
@@ -227,15 +226,12 @@ class chopper(object):
         self.chopper_server_start()
     
     def read_obs2chopsignal(self, filename='KOSMA_obs2chpsignal.set'):
-        self.obs2chopsignal = ReadKosmaFile(self.set_dir+filename)
-                
-    def read_obs2chop(self, filename='KOSMA_obs2chop.set'):
-        #:
-        self.obs2chop = ReadKosmaFile(self.set_dir+filename)
+        self.obs2chopsignal = ReadKosmaFile(setfile_dir+filename)
         
-    def write_chop2obs(self, filename='KOSMA_chop2obs.set'):
-        #self.chop2obs = ReadKosmaFile(self.set_dir+filename)        
-        #   
+    def read_obs2chop(self, filename='KOSMA_obs2chop.set'):
+        self.obs2chop = ReadKosmaFile(setfile_dir+filename)
+        
+    def write_chop2obs(self, filename='KOSMA_chop2obs.set'):   
         fmt = '%d-%b-%Y  %H:%I:%S'
         current = time.localtime()
        
@@ -253,12 +249,12 @@ NONE   chop_error_string   ! Error message not associated with chopper command (
 N   chop_failed   ! chopper failed sometime since last commanded [Y/N]
         '''
         # write file
-        tmp_file = self.set_dir+filename+"tmp"
+        tmp_file = setfile_dir+filename+"tmp"
         f = open(tmp_file,'w')
         f.write(chop2obs_template.format(chop2obs_reply,self))
         f.close()
         time.sleep(self.obs2chop["obs_chop_info_update_time"])
-        os.rename(tmp_file, self.set_dir+filename)
+        os.rename(tmp_file, setfile_dir+filename)
         #string += date + '  ' + str(c_time) + '   '+ 'File update time stamp'+'   ' +'! load_server (smartXFFTS:2996)' '\n'
         #    
         return
@@ -266,8 +262,7 @@ N   chop_failed   ! chopper failed sometime since last commanded [Y/N]
     def chopper_server_start(self):    
         while True:
             #self.read_obs2chop()
-            #
-            if self.obs2chopsignal['mod_time'] != os.path.getmtime(self.set_dir+"KOSMA_obs2chpsignal.set"):
+            if self.obs2chopsignal['mod_time'] != os.path.getmtime(setfile_dir+"KOSMA_obs2chpsignal.set"):
                  #
                  self.log.info("KOSMA_obs2chpsignal.set changed, sending return cookie")
                  self.read_obs2chopsignal()
@@ -278,9 +273,6 @@ N   chop_failed   ! chopper failed sometime since last commanded [Y/N]
         
 class mirror(object):
     Pre_timestamp = 0
-    set_dir = '/home/amigos/NECST/script/obslist/kosma/KOSMA_file_io/ReadWrite/'
-    set_dir = '/home/amigos/ros/src/necst/kosma_setfile/'
-    
     def __init__(self):
         self.log = getLogger()
         self.hostname = socket.gethostname()
@@ -290,7 +282,7 @@ class mirror(object):
     
     def Read_set_file_mir(self,file_name = 'KOSMA_obs2load.set'):
         try:
-            with open(self.set_dir + file_name, 'r') as data_items_1:
+            with open(setfile_dir + file_name, 'r') as data_items_1:
                 data_items_1 = data_items_1.read().split('\n')
         except Exception as comment_1:
             self.log.info(comment_1)
@@ -339,13 +331,13 @@ class mirror(object):
             else:
                 string += '   '+value+s+name+s+comment +'\n'
 
-        # move file instead of direct writing.. minimize down time
-        tmp_file = self.set_dir + file_name
+        # move file instead of direct writing.. minimize down 
+        tmp_file = setfile_dir + file_name
         kosma_file = open(tmp_file,'w')
         kosma_file.write(string)
         kosma_file.close()
         self.log.debug("writing {0}".format(file_name))        
-        os.rename(tmp_file, self.set_dir+file_name)
+        os.rename(tmp_file, setfile_dir+file_name)
 
         
     def M4_hot_move(self):
@@ -528,8 +520,6 @@ class telescope(object):
     tel_pos_in_range = 'Y'
     tel_return_cookie = 0
     tel_supports_ephemeris = 'Y'
-    set_dir = '/home/amigos/NECST/script/obslist/kosma/KOSMA_file_io/ReadWrite/'
-    set_dir = '/home/amigos/ros/src/necst/kosma_setfile/'
     
     def __init__(self):
         ###start telescope part
@@ -544,7 +534,7 @@ class telescope(object):
 
     def Read_set_file_tel(self, file_name = 'KOSMA_obs2tel.set'):
         try:
-            with open(self.set_dir + file_name, 'r') as data_items_1:
+            with open(setfile_dir + file_name, 'r') as data_items_1:
                 data_items_1 = data_items_1.read().split('\n')
         except Exception as comment:
             self.log.info(comment)
@@ -601,15 +591,14 @@ class telescope(object):
             else:
                 string += s+value+s+name+s+comment +'\n'
         # write file and then move
-        tmp_file = self.set_dir + file_name + "tmp"
+        tmp_file = setfile_dir + file_name + "tmp"
         kosma_file = open(tmp_file,'w')
         kosma_file.write(string)
         kosma_file.close()
         # move file instead of direct writing.. minimize down time
         self.log.debug("writing {0}".format(file_name))
-        os.rename(tmp_file, self.set_dir+file_name)
+        os.rename(tmp_file, setfile_dir+file_name)
         
-
 
     def move_otf_mode(self):
         self.tel_on_track = 'N'
@@ -1080,8 +1069,6 @@ class telescope(object):
             continue
 
 if __name__ == '__main__':
-    ####main part####
-    #SetupLogging(log_level="info",logging_dir="/home/amigos/NECST/script/obslist/kosma/KOSMA_file_io/logs/",log_name="n2kosma.log")
     SetupLogging(log_level="info",logging_dir="/home/amigos/ros/src/necst/log",log_name="n2kosma.log")#for simulator
     initialize()
     thread_mirror_hot = threading.Thread(target = mirror)
