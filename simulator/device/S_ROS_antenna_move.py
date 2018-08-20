@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""
-history
-2018/06/08 edited by Shiotani
-ROS_antenna_move.py & S_ROS_antenna_move.py
-"""
+
 import sys
 sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 import rospy
@@ -28,9 +24,9 @@ class antenna_move(object):
     #initial parameter
     #-----------------
     parameters = {
-        'az_list':[],#[0]*300,
-        'el_list':[],#[0]*300,
-        'start_time_list':[],#0,
+        'az_list':[],
+        'el_list':[],
+        'start_time_list':[],
         }
 
     enc_parameter = {
@@ -86,7 +82,7 @@ class antenna_move(object):
         else:
             pass
         if not self.stop_flag and self.start_time<req.time_list[0]:
-            print("st,ct", self.stop_flag, self.start_time, req.time_list[0])
+            #print("st,ct", self.stop_flag, self.start_time, req.time_list[0])
             if self.parameters['start_time_list'] != []:
                 time_len = len(self.parameters['start_time_list'])
                 for i in range(time_len):
@@ -170,13 +166,14 @@ class antenna_move(object):
         else:
             num = numpy.where(numpy.array(st) > ct)[0][0]
             st2 = st[num]
-            if num == len((self.parameters['az_list'])):
-                return
             param = self.parameters
-            az_1 = param['az_list'][num-1]
-            az_2 = param['az_list'][num]
-            el_1 = param['el_list'][num-1]
-            el_2 = param['el_list'][num]
+            if len(param['az_list']) > num:
+                az_1 = param['az_list'][num-1]
+                az_2 = param['az_list'][num]
+                el_1 = param['el_list'][num-1]
+                el_2 = param['el_list'][num]
+            else:
+                return
             return (az_1,az_2,el_1,el_2,st2)
         
     def act_azel(self):
@@ -212,7 +209,7 @@ class antenna_move(object):
                 b_time = time.time()
 
                 ret = self.dev.move_azel(tar_az, tar_el, self.enc_parameter['az_enc'], self.enc_parameter['el_enc'])
-                rospy.loginfo(ret)
+                print(ret)
                 
                 interval = time.time() - b_time
                 if interval <= 0.01:
