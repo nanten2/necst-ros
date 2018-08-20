@@ -223,6 +223,8 @@ class azel_list(object):
 
     def negative_change(self, az_list):
         print(az_list)
+        
+        
         if all((-240*3600<i< 240*3600. for i in az_list)):
             pass
         elif all((i<-110*3600. for i in az_list)):
@@ -231,6 +233,8 @@ class azel_list(object):
             az_list = [i-360*3600. for i in az_list]
         elif all((-270*3600<i< 270*3600. for i in az_list)):
             pass
+        elif any((i>=340*3600. for i in az_list)) and any((i<=20*3600. for i in az_list)):
+            az_list = [i-360*3600. if i>=340*3600 else i for i in az_list]
         else:
             print("Az limit error.")
         return az_list
