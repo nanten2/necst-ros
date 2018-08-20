@@ -5,7 +5,7 @@
 #from pyslalib import slalib
 from datetime import datetime as dt
 from astropy.coordinates import SkyCoord
-from astropy.coordinates import FK5
+from astropy.coordinates import FK5, FK4, AltAz, Galactic, CIRS
 from astropy.coordinates import EarthLocation
 from astropy.time import Time
 import astropy.units as u
@@ -227,14 +227,26 @@ class doppler_nanten (object):
         mode = self.coord_dict[mode]
         offmode = self.coord_dict[offmode]
         on_coord = SkyCoord(xtmp, ytmp, unit="deg", frame=mode, obstime=utc, location=self.nanten2)
-        if mode == offmode:
-            yytmp = on_coord.fk5.dec.arcsec + offy
-            xxtmp = on_coord.fk5.ra.arcsec + offx
+        offset_coord = SkyCoord(offx, offy, unit="arcsec", frame=offmode, obstime=utc, location=self.nanten2)
+        if offmode == "galactic":
+            tmp = on_coord.transform_to(Galactic)            
+        elif offmode == "altaz":
+            tmp = on_coord.transform_to(AltAz)            
+        elif offmode == "fk5":
+            tmp = on_coord.transform_to(FK5)
+        elif offmode == "fk4":
+            tmp = on_coord.transform_to(FK4)
+        elif offmode == "cirs":
+            tmp = on_coord.transform_to(CIRS)            
         else:
+            print("no coordinate")
             pass
-        xxtmp = math.radians(xxtmp)
-        yytmp = math.radians(yytmp)
-        print(xxtmp, yytmp)
+        xxtmp = offset_coord.data.lon + tmp.data.lon
+        yytmp = offset_coord.data.lat + tmp.data.lat
+
+        xxtmp = math.radians(xxtmp.deg)
+        yytmp = math.radians(yytmp.deg)
+
         vobs = self.calc_vobs(xxtmp, yytmp)
         print('vobs',vobs,type(vobs))
 

@@ -40,8 +40,8 @@ class enc_controller(object):
         print("speed", req.command_azspeed)
         self.vel_az = req.command_azspeed
         self.vel_el = req.command_elspeed
-        self.enc_Az += self.vel_az*0.01
-        self.enc_El += self.vel_el*0.01
+        self.enc_Az += self.vel_az*0.01*0.617#0.617 = 1/1.6 real_vel/command_vel=1.6
+        self.enc_El += self.vel_el*0.01*0.617#
         return
 
     """
