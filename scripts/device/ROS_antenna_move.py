@@ -7,7 +7,6 @@ import numpy
 import time
 import threading
 sys.path.append("/home/amigos/ros/src/necst/lib/device")
-import antenna_device
 
 #ROS/import field
 #----------------
@@ -17,6 +16,13 @@ from necst.msg import Status_encoder_msg
 from necst.msg import Bool_necst
 
 node_name = 'antenna_move'
+mode = sys.argv[1]#'Actual/Simulator'
+if mode == 'Actual':
+    import antenna_device
+elif mode == 'Simulator':
+    import S_antenna_device as antenna_device
+else:
+    rospy.logwarn('Launch this node with launch file')
 
 class antenna_move(object):
     
