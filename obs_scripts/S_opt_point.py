@@ -9,7 +9,7 @@ sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 import ROS_controller
 import signal
 import sys
-import ccd_okawa as ccd
+import S_ccd as ccd
 from astropy.coordinates import SkyCoord
 from astropy.time import Time
 from datetime import datetime as dt
