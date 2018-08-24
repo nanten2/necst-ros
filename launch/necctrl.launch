@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="necst" name="antenna_move" type="ROS_antenna_move.py" output="screen"/>
+  <node pkg="necst" name="antenna_move" type="ROS_antenna_move.py" output="screen" args="Actual"/>
   <node pkg="necst" name="encoder_status" type="ROS_encoder.py"/>
   <node pkg='necst' name='dome' type='ROS_dome.py'/>
   <node pkg='necst' name='drive' type='ROS_drive.py'/>
