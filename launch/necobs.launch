@@ -2,9 +2,8 @@
   <node pkg="necst" name="check_node" type="ROS_check_node.py"/>
   <node pkg="necst" name="check_launch" type="ROS_check_launch.py"/>  
   <node pkg="necst" name="timer" type="ROS_timer.py"/>
-  <node pkg="necst" name="antenna_move" type="ROS_antenna_move.py" output="screen" args="Actual"/>
   <node pkg='necst' name='authority_check' type='ROS_authority_check.py'/>
-  <node pkg='necst' name='weather_status' type='S_ROS_weather.py'/>
+  <node pkg='necst' name='weather_status' type='ROS_weather.py'/>
   <node pkg='necst' name='pc_status' type='ROS_pc_status.py' args='necst'/>
   <node pkg='necst' name='tracking' type='ROS_tracking.py'/>
   <node pkg='necst' name='dome_tracking' type='ROS_dome_track_check.py'/>
