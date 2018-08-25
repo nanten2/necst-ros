@@ -2,16 +2,8 @@
   <node pkg="necst" name="check_node" type="ROS_check_node.py"/>
   <node pkg="necst" name="check_launch" type="ROS_check_launch.py"/>  
   <node pkg="necst" name="timer" type="ROS_timer.py"/>
-  <node pkg="necst" name="antenna_move" type="ROS_antenna_move.py" output="screen" args="Simulator"/>
   <node pkg='necst' name='authority_check' type='ROS_authority_check.py'/>
-  <node pkg="necst" name="ping_check" type="ROS_ping.py"/>      
-  <node pkg="necst" name="encoder_status" type="S_ROS_encoder.py"/>
-  <node pkg='necst' name='dome' type='S_ROS_dome.py'/>
-  <node pkg='necst' name='abs_controller' type='S_ROS_abs.py'/>
-  <node pkg='necst' name='m4_controller' type='S_ROS_m4.py'/>
-  <node pkg='necst' name='m2_controller' type='S_ROS_m2.py'/>
-  <node pkg='necst' name='drive' type='S_ROS_drive.py'/>
-  <node pkg='necst' name='weather_status' type='S_ROS_weather.py'/>
+  <node pkg='necst' name='weather_status' type='ROS_weather.py'/>
   <node pkg='necst' name='pc_status' type='ROS_pc_status.py' args='necst'/>
   <node pkg='necst' name='tracking' type='ROS_tracking.py'/>
   <node pkg='necst' name='dome_tracking' type='ROS_dome_track_check.py'/>
@@ -24,7 +16,5 @@
   <node pkg='necst' name='alert_sun' type='ROS_alert_sun.py'/>
   <node pkg='necst' name='alert_weather' type='ROS_alert_weather.py'/>
   <node pkg='necst' name='alert_encoder' type='ROS_alert_encoder.py'/>
-  <node pkg='necst' name='alert_ping' type='ROS_alert_ping.py'/>  
-  <node pkg='necst' name='achilles' type='S_ROS_oneshot_achilles.py'/>
   <node pkg="necst" name="hosei_parameter" type="ROS_hosei_parameter.py"/>  
 </launch>
