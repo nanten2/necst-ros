@@ -20,11 +20,11 @@ from necst.msg import Status_onepoint_msg
 from necst.msg import String_list_msg
 
 from firebase import firebase
-fb = firebase.FirebaseApplication("https://test-d187a.firebaseio.com",None)
-auth = firebase.FirebaseAuthentication("DgHtyfC5d1qcezGOBOsvrIOMRwdG9dG9fQ8xNVBz", "nascofirebase@gmail.com", extra={"id":123})
+#fb = firebase.FirebaseApplication("https://test-d187a.firebaseio.com",None)
+#auth = firebase.FirebaseAuthentication("DgHtyfC5d1qcezGOBOsvrIOMRwdG9dG9fQ8xNVBz", "nascofirebase@gmail.com", extra={"id":123})
 """tmp"""
-#fb = firebase.FirebaseApplication("https://nasco-obs-monitor.firebaseio.com",None)
-#auth = firebase.FirebaseAuthentication("C8XaDyuGBjvjUBO5mnncYFrLWja9hEFYhdPsx5ow", "nascofirebase@gmail.com", extra={"id":123})
+fb = firebase.FirebaseApplication("https://nasco-obs-monitor.firebaseio.com",None)
+auth = firebase.FirebaseAuthentication("C8XaDyuGBjvjUBO5mnncYFrLWja9hEFYhdPsx5ow", "nascofirebase@gmail.com", extra={"id":123})
 fb.authentication = auth
 
 import signal
@@ -371,5 +371,5 @@ if __name__ =="__main__":
     con = ROS_controller.controller(node_name)
     ww = writer()
     ss = server()
-    ss.start_observation()
+    #ss.start_observation()
     rospy.spin()
