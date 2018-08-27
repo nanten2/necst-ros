@@ -28,6 +28,9 @@ from necst.msg import Status_onepoint_msg
 from nascorx_xffts.msg import XFFTS_para_msg
 sys.path.append("/home/amigos/ros/src/necst/lib")
 import achilles
+from necst.srv import ac240_srv
+from necst.srv import ac240_srvResponse
+
 
 class controller(object):
 
@@ -107,6 +110,7 @@ class controller(object):
         self.pub_onestatus = rospy.Publisher("one_status", Status_onepoint_msg, queue_size=1)        
         self.pub_queue = rospy.Publisher("queue_obs", Bool_necst, queue_size=1)
         self.pub_alert = rospy.Publisher("alert", String_necst, queue_size=1)
+        self.service = rospy.ServiceProxy("ac240", ac240_srv)        
         time.sleep(0.5)# authority regist time                
 
         """get authority"""
@@ -639,30 +643,11 @@ class controller(object):
         stime : start mjd time [day]
         
         """
-        msg = Achilles_msg()
-        msg.repeat = repeat
-        msg.exposure = exposure
-        msg.stime = stime
-        msg.day = dt.utcnow().strftime("%y%m%d%H%M%S")
-        msg.from_node = self.node_name
-        msg.timestamp = time.time()        
-        self.pub_achilles.publish(msg)
-        dir_name = "/home/amigos/data/experiment/achilles/" + str(msg.day) + "/"
-        file_name = msg.day + "_fin.txt"
-        while not rospy.is_shutdown():
-            if not os.path.exists(dir_name + file_name):
-                print("get data now...")
-                pass
-            else:
-                break
-            time.sleep(1)
-        f1 = open(dir_name+str(msg.day) + "_1.txt", "r")
-        dfs1 = f1.readline()
-        f1.close()
-        f2 = open(dir_name+str(msg.day) + "_2.txt", "r")
-        dfs2 = f2.readline()
-        f2.close()
-        data_dict = {'dfs1': eval(dfs1), 'dfs2': eval(dfs2)}
+        rospy.wait_for_service("ac240")
+        response = self.service(repeat, exposure, stime)
+        print(response)
+        data_dict = {"dfs1":response.dfs1, "dfs2":response.dfs2}
+
         return data_dict
 
     @deco_check

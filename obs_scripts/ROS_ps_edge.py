@@ -159,7 +159,7 @@ else:
 # Initial configurations
 # ----------------------
 
-datahome = 'data'
+datahome = '/home/amigos/data'
 timestamp = time.strftime('%Y%m%d%H%M%S')
 planet_number = {1:'mercury', 2:'venus', 4:'mars', 5:'jupiter', 6:'saturn', 7:'uranus', 8:'neptune', 9:'pluto', 10:'moon', 11:'sun'}
 dirname = 'n%s_%s_%s_crossedge_%s_pointing'%(timestamp ,obs['molecule_1'] ,obs['transiti_1'].split('=')[1],planet_number[planet])
