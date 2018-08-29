@@ -10,6 +10,7 @@ import getpass
 import rospy
 from necst.msg import Status_weather_msg
 from ondo.msg import tr7nw_values
+from davis.msg import davis_weather
 
 node_name = "weather_status"
 
@@ -20,13 +21,25 @@ class weather_controller(object):
     copy_dir = "/home/amigos/data/monitor/"
     data = [0]*20
     passwd = ""
-
+    
+    # from ondotori
     OutTemp = 0
     OutHumi = 0
     
+    # from davis_VantagePro
+    Press = 0
+    InTemp = 0
+    InHumi = 0
+    OutTemp_davis = 0
+    OutHumi_davis = 0
+    WindSp = 0
+    WindDir = 0
+    RainRate = 0
+
     def __init__(self):
         self.passwd = getpass.getpass()
         self.sub = rospy.Subscriber("outer_ondotori", tr7nw_values, self.get_ondotori)
+        self.sub_davis = rospy.Subscriber("davis_weather", davis_weather, self.get_davis)
         pass
 
     def pub_func(self):
@@ -34,14 +47,16 @@ class weather_controller(object):
         msg = Status_weather_msg()
         while not rospy.is_shutdown():
             ret = self.get_weather()
-            msg.in_temp = ret[6]
+            msg.in_temp = self.InTemp#ret[6]
             msg.out_temp = self.OutTemp#ret[7]
-            msg.in_humi = ret[8]
+            #msg.out_temp = self.OutTemp_davis
+            msg.in_humi = self.InHumi#ret[8]
             msg.out_humi = self.OutHumi#ret[9]
-            msg.wind_sp = ret[11]
-            msg.wind_dir = ret[10]
-            msg.press = ret[12]
-            msg.rain = ret[13]
+            #msg.out_humi = self.OutHumi_davis
+            msg.wind_sp = self.WindSp#ret[11]
+            msg.wind_dir = self.WindDir#ret[10]
+            msg.press = self.Press#ret[12]
+            msg.rain = self.RainRate#ret[13]
             msg.cabin_temp1 = ret[14]
             msg.cabin_temp2 = ret[15]
             msg.dome_temp1 = ret[16]
@@ -73,7 +88,21 @@ class weather_controller(object):
         self.OutHumi = req.ch2_value
         return
 
-    
+    def get_davis(self, req):
+        if req.error_check == "Normal":
+            self.Press = req.press
+            self.InTemp = req.in_temp
+            self.InHumi = req.in_humi
+            self.OutTemp_davis = req.out_temp
+            self.OutHumi_davis = req.out_humi
+            self.WindSp = req.wind_sp
+            self.WindDir = req.wind_dir
+            self.RainRate = req.rain_rate
+        else:# if req.error_check == "Error"
+            print("Can not access weather station")
+            pass
+        return
+
     def get_weather(self):
         now = time.time()#-17*3600.#-17h(nanmeteo time)
         d = datetime.datetime.utcfromtimestamp(now)
