@@ -8,7 +8,7 @@ from necst.msg import String_necst
 from datetime import datetime
 from astropy.time import Time
 import time
-from scipy.optimize import curve_fit
+#from scipy.optimize import curve_fit
 import sys
 sys.path.append("/home/amigos/ros/src/necst/lib/")
 sys.path.append("/home/necst/ros/src/necst/lib/")
@@ -48,6 +48,7 @@ class azel_list(object):
         ### x,y is [arcsec]
         print("list")
         print(req)
+        print("start_time", self.start_time)
         if req.timestamp < self.start_time:
             print("receive_old_list...")
         else:
@@ -199,6 +200,7 @@ class azel_list(object):
                     msg.x_list = ret[0]
                     msg.y_list = ret[1]
                     msg.time_list = time_list2
+                    msg.coord = param.coord
                     msg.from_node =node_name
                     msg.timestamp = time.time()
                     self.pub.publish(msg)
