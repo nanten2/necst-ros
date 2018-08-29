@@ -1,0 +1,8 @@
+float64 repeat
+float64 exposure
+float64 stime
+
+----------------
+
+float64[] dfs1
+float64[] dfs2
