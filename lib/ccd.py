@@ -85,7 +85,7 @@ class ccd_controller(object):
         name = str(date.year)+month+day+hour+minute+second
         
         #oneshot
-        self.oneshot(dataname,name)
+        self.oneshot(data_name,name)
         mjd = Time(date).mjd
         secofday = date.hour*60*60 + date.minute*60 + date.second + date.microsecond*0.000001
         
@@ -94,6 +94,7 @@ class ccd_controller(object):
         #com = "mv "+str(path)+"/"+str(name)+".bmp /home/amigos/NECST/soft/data/"+str(data_name)+"/"+str(name)+".bmp"
         #ret = commands.getoutput(com)
         #print(ret)
+        time.sleep(3.)# wait saving bmp
         in_image = Image.open("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/"+name+".bmp")
         image = np.array(in_image.convert('L'))
         ori_image = image
