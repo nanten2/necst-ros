@@ -8,7 +8,7 @@ from necst.msg import String_necst
 from datetime import datetime
 from astropy.time import Time
 import time
-#from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit
 import sys
 sys.path.append("/home/amigos/ros/src/necst/lib/")
 sys.path.append("/home/necst/ros/src/necst/lib/")
@@ -20,7 +20,9 @@ node_name = "azel_list"
 
 class azel_list(object):
 
-    weather = ""
+    press = 0
+    out_temp = 0
+    out_humi = 0
     param = ""
     stop_flag = False
     old_list = ""
@@ -41,14 +43,15 @@ class azel_list(object):
         pass
 
     def _receive_weather(self, req):
-        self.weather = req
+        self.press = req.press
+        self.out_temp = req.out_temp
+        self.out_humi = req.out_humi
         return
     
     def _receive_list(self, req):
         ### x,y is [arcsec]
         print("list")
         print(req)
-        print("start_time", self.start_time)
         if req.timestamp < self.start_time:
             print("receive_old_list...")
         else:
@@ -170,8 +173,8 @@ class azel_list(object):
                     
                     ret = self.calc.coordinate_calc(x_list2, y_list2, astro_time,
                                                     param.coord, param.off_az, param.off_el, 
-                                                    param.hosei, param.lamda, self.weather.press,
-                                                    self.weather.out_temp, self.weather.out_humi, param.limit)
+                                                    param.hosei, param.lamda, self.press,
+                                                    self.out_temp, self.out_humi, param.limit)
 
                     
                     ret[0] = self.negative_change(ret[0])
@@ -200,7 +203,6 @@ class azel_list(object):
                     msg.x_list = ret[0]
                     msg.y_list = ret[1]
                     msg.time_list = time_list2
-                    msg.coord = param.coord
                     msg.from_node =node_name
                     msg.timestamp = time.time()
                     self.pub.publish(msg)
