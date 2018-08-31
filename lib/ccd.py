@@ -5,6 +5,7 @@ import time
 import pyinterface
 import numpy as np
 from PIL import Image
+from PIL import ImageOps
 import os
 #from pyslalib import slalib
 
@@ -94,43 +95,73 @@ class ccd_controller(object):
         #com = "mv "+str(path)+"/"+str(name)+".bmp /home/amigos/NECST/soft/data/"+str(data_name)+"/"+str(name)+".bmp"
         #ret = commands.getoutput(com)
         #print(ret)
+
         time.sleep(3.)# wait saving bmp
+
         in_image = Image.open("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/"+name+".bmp")
-        image = np.array(in_image.convert('L'))
-        ori_image = image
+        image = np.array(ImageOps.grayscale(in_image))
+        ori_image = np.array(image)
         
         #threshold
-        image[image < thr] = 0
+        width = len(image[0])
+        height = len(image)
+        for i in range(height):
+            for j in range(width):
+                if image[i][j] < thr:
+                    image[i][j] = 0
         
-        #mode
-        bins = np.bincount(image.flatten())
-        num = np.argmax(bins[1:]) +1
-        nmax = np.max(bins[1:])        
+        #calc dimention
+        p_array = np.zeros(256)
+        for i in range(height):
+            for j in range(width):
+                p_array[image[i][j]] += 1
         
-        if nmax == 0:
+        #find color
+        num = 1
+        nmax = 1
+        for i in range(255):
+            if nmax < p_array[i+1]:
+                nmax = p_array[i+1]
+                num = i+1
+        
+        #find star
+        x = 0
+        y = 0
+        n = 0
+        for i in range(height):
+            for j in range(width):
+                if image[i][j] == num:
+                    x += j
+                    y += i
+                    n += 1
+        if n == 0:
             print("CAN'T FIND STAR") #black photograph
             return 1
-            
-        else:
-            #find center
-            y, x = (np.sum(np.where(image == num), axis=1) / nmax).astype(np.int)
-            f = np.sum(image[y-10:y+10,x-10:x+10])
-            if f == 0.: #two or more stars
-                print("MANY STARS ARE PHOTOGRAPHED")
-                return 2
-            else:
-                for i, _l in enumerate(image[y-10:y+10,x-10:x+10]):
-                    for j, _a in enumerate(_l):
-                        x_mom1 += (x+j-10) * _a
-                        y_mom1 += (y+i-10) * _a
-                xx = x_mom1 / f
-                yy = y_mom1 / f
-                print(xx)
-                print(yy)
+        x = x/n
+        y = y/n
         
-                self.save_status(xx, yy, number, magnitude, az_star, el_star, mjd, data_name, secofday, status)
-                return [xx, yy]
-            
+        #find center
+        xx = 0.
+        yy = 0.
+        f = 0.
+        for i in range(21):
+            for j in range(21):
+                xx += (x+j-10.)*image[y+i-10.][x+j-10.]
+                yy += (y+i-10.)*image[y+i-10.][x+j-10.]
+                f += image[y+i-10.][x+j-10.]
+        
+        if f == 0.: #two or more stars
+            print("MANY STARS ARE PHOTOGRAPHED")
+            return 2
+        
+        xx = xx/f
+        yy = yy/f
+        print(xx)
+        print(yy)
+        
+        self.save_status(xx, yy, number, magnitude, az_star, el_star, mjd, data_name, secofday, status)
+        return [xx, yy]
+    
     
     
     
@@ -196,42 +227,73 @@ class ccd_controller(object):
         #load array
         print(ret)
         in_image = Image.open("/home/amigos/NECST/soft/data/"+str(data_name)+"/"+name+".bmp")
-        image = np.array(in_image.convert('L'))
-        ori_image = image
+        image = np.array(ImageOps.grayscale(in_image))
+        ori_image = np.array(image)
         
         #threshold
-        image[image < thr] = 0
+        width = len(image[0])
+        height = len(image)
+        for i in range(height):
+            for j in range(width):
+                if image[i][j] < thr:
+                    image[i][j] = 0
         
-        #mode
-        bins = np.bincount(image.flatten())
-        num = np.argmax(bins[1:]) +1
-        nmax = np.max(bins[1:])        
+        #calc dimention
+        p_array = np.zeros(256)
+        for i in range(height):
+            for j in range(width):
+                p_array[image[i][j]] += 1
         
-        if nmax == 0:
+        #find color
+        num = 1
+        nmax = 1
+        for i in range(255):
+            if nmax < p_array[i+1]:
+                nmax = p_array[i+1]
+                num = i+1
+        
+        #find star
+        x = 0
+        y = 0
+        n = 0
+        for i in range(height):
+            for j in range(width):
+                if image[i][j] == num:
+                    x += j
+                    y += i
+                    n += 1
+        if n == 0:
             print("CAN'T FIND STAR") #black photograph
             return 1
-            
-        else:
-            #find center
-            y, x = (np.sum(np.where(image == num), axis=1) / nmax).astype(np.int)
-            f = np.sum(image[y-10:y+10,x-10:x+10])
-            if f == 0.: #two or more stars
-                print("MANY STARS ARE PHOTOGRAPHED")
-                return 2
-            else:
-                for i, _l in enumerate(image[y-10:y+10,x-10:x+10]):
-                    for j, _a in enumerate(_l):
-                        x_mom1 += (x+j-10) * _a
-                        y_mom1 += (y+i-10) * _a
-                xx = x_mom1 / f
-                yy = y_mom1 / f
-                        
-                print("==============================================")
-                print("==============================================")
-                print("==============================================")
-                print(xx)
-                print(yy)
-                
-                self.save_track_status(xx, yy, ra, dec, az_star, el_star, mjd, data_name, secofday, status)
-                return
+        x = x/n
+        y = y/n
         
+        #find center
+        xx = 0.
+        yy = 0.
+        f = 0.
+        for i in range(21):
+            for j in range(21):
+                xx += (x+j-10.)*image[y+i-10.][x+j-10.]
+                yy += (y+i-10.)*image[y+i-10.][x+j-10.]
+                f += image[y+i-10.][x+j-10.]
+        
+        if f == 0.: #two or more stars
+            print("MANY STARS ARE PHOTOGRAPHED")
+            return 1
+        
+        xx = xx/f
+        yy = yy/f
+        print("==============================================")
+        print("==============================================")
+        print("==============================================")
+        print(xx)
+        print(yy)
+        
+        self.save_track_status(xx, yy, ra, dec, az_star, el_star, mjd, data_name, secofday, status)
+        return
+        
+
+
+
+
