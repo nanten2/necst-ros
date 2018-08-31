@@ -32,9 +32,13 @@ class dome_device(object):
         enc_az = float(enc_az)
         enc_az = enc_az/3600.
         if math.fabs(enc_az - dome_az) >= 2.0:
-            dir = self.move(enc_az, dome_az, track=True)
+            dir = self.move(enc_az, dome_az*3600, track=True)
+            print('tracking', enc_az, dome_az)
+        else:
+            dir = 1.5
         time.sleep(0.01)
-        print('dome_tracking')
+        #print('dome_tracking')
+        return dir
 
     def move(self, dist, pos, track=False):
         pos_arcsec = float(pos)#[arcsec]
@@ -43,6 +47,7 @@ class dome_device(object):
         dist = float(dist) % 360.0
         diff = dist - pos
         dir = diff % 360.0
+        print('dir', dir)
         if dir < 0:
             dir = dir*(-1)
 
@@ -58,13 +63,14 @@ class dome_device(object):
                 turn = 'left'
             else:
                 turn = 'right'
-        if abs(dir) < 5.0 or abs(dir) > 355.0 :
+        print(abs(dir))
+        if abs(dir) < 5.0 or abs(dir) > 355.0:
             speed = 'low'
         elif abs(dir) > 15.0 and abs(dir) < 345.0:###or => and
             speed = 'high'
         else:
             speed = 'mid'
-        if not abs(dir) < 0.5:
+        if not abs(dir) < 1.5:#0.5=>1.5
             global buffer
             self.buffer[1] = 1
             self.do_output(turn, speed)
@@ -124,8 +130,6 @@ class dome_device(object):
                 time.sleep(5)
                 ret = self.get_memb_status()
         buff = [0, 0]
-        self.dio.output_point(buff, 7)
-        return
 
     """
     def emergency_stop(self):
@@ -160,7 +164,7 @@ class dome_device(object):
         if self.stop[0] == 1:
             self.buffer[1] = 0
         else: self.buffer[1] = 1
-        dio.output_point(self.buffer, 1)
+        self.dio.output_point(self.buffer, 1)
         print('do_output')
         return
 
@@ -255,6 +259,8 @@ class dome_device(object):
             ret = 11
         elif limit[0:4] == [0,0,1,1]:
             ret = 12
+        return ret
+
         return ret
 
     def error_check(self):

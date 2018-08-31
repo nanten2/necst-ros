@@ -5,6 +5,7 @@ import struct
 import numpy
 import math
 import time
+import os
 
 
 class antenna_device(object):
@@ -35,6 +36,10 @@ class antenna_device(object):
         rsw_id = 0 #rotary switch id
         self.dio = pyinterface.open(board_name, rsw_id)
         self.dio.initialize()
+        ut = time.gmtime()
+        self.dir_name = time.strftime("/home/necst/data/experiment/save_azel/%Y_%m_%d_%H_%M_%S", ut)
+        os.mkdir(self.dir_name)
+                        
 
 
     def init_speed(self):
@@ -55,8 +60,8 @@ class antenna_device(object):
     def move_azel(self, az_arcsec, el_arcsec, enc_az, enc_el, pid_param=None, m_bStop = 'FALSE'):
         MOTOR_MAXSTEP = 1000
         MOTOR_AZ_MAXRATE = 10000
-        MOTOR_EL_MAXRATE = 10000
-        rate_to_arcsec = (12/7)*(3600/10000)
+        MOTOR_EL_MAXRATE = 12000
+
         #self.set_pid_param(pid_param)
 
         #for az >= 180*3600 and az <= -180*3600
@@ -89,32 +94,32 @@ class antenna_device(object):
         self.t_past = self.t_now
 
         #limit of acc         
-        if abs(az_rate_ref - self.az_rate_d) < MOTOR_MAXSTEP*rate_to_arcsec:
+        if abs(az_rate_ref - self.az_rate_d) < MOTOR_MAXSTEP:
             self.az_rate_d = az_rate_ref
         else:
             if (az_rate_ref - self.az_rate_d) < 0:
                 a = -1
             else:
                 a = 1
-            self.az_rate_d += a*MOTOR_MAXSTEP*rate_to_arcsec
-        if abs(el_rate_ref - self.el_rate_d) < MOTOR_MAXSTEP*rate_to_arcsec:
+            self.az_rate_d += a*MOTOR_MAXSTEP
+        if abs(el_rate_ref - self.el_rate_d) < MOTOR_MAXSTEP:
             self.el_rate_d = el_rate_ref
         else:
             if (el_rate_ref - self.el_rate_d) < 0:
                 a = -1
             else:
                 a = 1
-            self.el_rate_d += a*MOTOR_MAXSTEP*rate_to_arcsec
+            self.el_rate_d += a*MOTOR_MAXSTEP
             
         #limit of max v
-        if self.az_rate_d > MOTOR_AZ_MAXRATE*rate_to_arcsec:
-            self.az_rate_d = MOTOR_AZ_MAXRATE*rate_to_arcsec
-        if self.az_rate_d < -MOTOR_AZ_MAXRATE*rate_to_arcsec:
-            self.az_rate_d = -MOTOR_AZ_MAXRATE*rate_to_arcsec
-        if self.el_rate_d > MOTOR_EL_MAXRATE*rate_to_arcsec:
-            self.el_rate_d = MOTOR_EL_MAXRATE*rate_to_arcsec
-        if self.el_rate_d < -MOTOR_EL_MAXRATE*rate_to_arcsec:
-            self.el_rate_d = -MOTOR_EL_MAXRATE*rate_to_arcsec
+        if self.az_rate_d > MOTOR_AZ_MAXRATE:
+            self.az_rate_d = MOTOR_AZ_MAXRATE
+        if self.az_rate_d < -MOTOR_AZ_MAXRATE:
+            self.az_rate_d = -MOTOR_AZ_MAXRATE
+        if self.el_rate_d > MOTOR_EL_MAXRATE:
+            self.el_rate_d = MOTOR_EL_MAXRATE
+        if self.el_rate_d < -MOTOR_EL_MAXRATE:
+            self.el_rate_d = -MOTOR_EL_MAXRATE
 
         # output to port
         if m_bStop == 'TRUE':
@@ -123,7 +128,7 @@ class antenna_device(object):
             dummy = int(self.az_rate_d)
 
         self.command_az_speed = dummy
-        scaling_dummy = int(self.az_rate_d / rate_to_arcsec)
+        scaling_dummy = int(self.az_rate_d * 7/12 * 10000/3600)
         dummy_byte = list(map(int,  ''.join([format(b, '08b')[::-1] for b in struct.pack('<h', scaling_dummy)])))
         self.dio.output_word('OUT1_16', dummy_byte)
         self.az_rate_d = dummy
@@ -134,7 +139,7 @@ class antenna_device(object):
             dummy = int(self.el_rate_d)
             
         self.command_el_speed = dummy
-        scaling_dummy = int(self.el_rate_d / rate_to_arcsec) 
+        scaling_dummy = int(self.el_rate_d * 7/12 * 10000/3600)
         dummy_byte = list(map(int,  ''.join([format(b, '08b')[::-1] for b in struct.pack('<h', scaling_dummy)])))
         self.dio.output_word('OUT17_32', dummy_byte)
         self.el_rate_d = dummy
