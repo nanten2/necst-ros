@@ -3,8 +3,8 @@
 import time
 import threading
 import sys
-sys.path.append('/home/amigos/ros/src/necst/lib')
-sys.path.append('/home/necst/ros/src/necst/lib')
+sys.path.append("/home/necst/ros/src/necst/lib/")
+sys.path.append("/home/necst/ros/src/necst/lib/device/")
 import dome_pos
 import dome_device
 #ROS
@@ -93,7 +93,11 @@ class dome_controller(object):
         print("dome_tracking start", self.end_flag)
         while not self.end_flag:
             dome_az = self.dome_enc
-            self.dev.move_track(self.enc_az, dome_az)
+            print('dome_az',dome_az)
+            print('enc_az',self.enc_az)
+            dir = self.dev.move_track(self.enc_az, dome_az)
+            if dir <= 1.5:
+                self.dev.dome_stop()
         if self.end_flag == True:
             while "dome_tracking" in self.paralist:
                 self.paralist.remove("dome_tracking")
@@ -103,7 +107,8 @@ class dome_controller(object):
         while not self.end_flag:
             pos = self.dome_enc
             dir = self.dev.move(dist, pos)
-            if dir <= 0.5:
+            print(dir,'<1.5 => stop')
+            if dir <= 1.5:#0.5=>1.5
                 self.paralist.remove("dome_move")
                 self.dev.dome_stop()
                 break
@@ -262,7 +267,7 @@ class dome_controller(object):
                     self.end_flag = False
                     self.con_move_track()
             elif "dome_move" in self.paralist:
-                sub3 = rospy.Subscirber('dome_move_az', Dome_msg, self.set_az_command)
+                sub3 = rospy.Subscriber('dome_move_az', Dome_msg, self.set_az_command)
                 time.sleep(0.1)
                 self.end_flag = False
                 self.con_move(self.parameter_az)

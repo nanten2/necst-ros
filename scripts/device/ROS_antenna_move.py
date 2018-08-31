@@ -6,7 +6,7 @@ import rospy
 import numpy
 import time
 import threading
-sys.path.append("/home/amigos/ros/src/necst/lib/device")
+sys.path.append("/home/necst/ros/src/necst/lib/device")
 
 #ROS/import field
 #----------------
@@ -185,11 +185,14 @@ class antenna_move(object):
     def act_azel(self):
         while True:
             if self.stop_flag:
-                time.sleep(1)
+                print("stop_flag")
+                self.dev.emergency_stop()
                 self.dev.command_az_speed = 0
                 self.dev.command_el_speed = 0
+                time.sleep(1)
                 continue
             if self.emergency_flag:
+                self.dev.emergency_stop()
                 time.sleep(0.1)
                 continue
 
@@ -237,7 +240,6 @@ class antenna_move(object):
         
         self.stop_flag = req.data
         return  
-
 
     def emergency(self,req):
         if req.data:
