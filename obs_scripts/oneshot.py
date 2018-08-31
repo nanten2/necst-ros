@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 import time
 import os
@@ -90,10 +90,12 @@ ctrl.dome_track()
 ctrl.move_stop()
 
 if planet:
-    ctrl.planet_move(planet, hosei = "hosei_opt.txt", lamda = 0.5)
+    ctrl.planet_move(planet, off_x=-5800, off_y=-6300, hosei = "hosei_opt.txt", lamda = 0.5)
+    pass
 else:
-    #ctrl.radec_move(target[0], target[1], 'J2000', 0, 0, offcoord="HORIZONTAL", hosei='hosei_opt.txt', lamda = 0.5)
-    ctrl.onepoint_move(target[0], target[1], "J2000",lamda = 500)
+    ctrl.onepoint_move(target[0], target[1], 'fk5', -5800, -6300, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)
+    #ctrl.onepoint_move(target[0], target[1], "J2000",lamda = 500)
+    pass
 
 b_az = 0
 ctrl.dome_tracking_check()#test
@@ -107,6 +109,18 @@ if not os.path.exists(dirname):
 ccd.oneshot(dirname, filename)
 print(dirname, filename)
 
+""" scan test
+for j in range(3):
+    for i in range(15):
+        #ctrl.planet_move(planet, off_x = -6000, off_y=-6500-1000+j*500, hosei = "hosei_opt.txt", lamda = 0.5)
+        ctrl.onepoint_move(target[0], target[1], 'fk5', -5800-3500+500*i, -6300-500+500*j, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)
+        #ctrl.onepoint_move(5, 63, 'altaz', -5800-1000+500*i, -6300-1000+500*j, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)        
+        ctrl.antenna_tracking_check()
+        filename2 = filename + "_x"+str(i) +"_y"+str(j)
+        ccd.oneshot(dirname, filename2)
+"""
+
+print("###end###")
 ctrl.dome_track_end()
 ctrl.move_stop()
 time.sleep(1)
