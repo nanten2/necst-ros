@@ -4,7 +4,7 @@ import sys
 sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 import tkinter
 import rospy
-from std_msgs.msg import String
+from necst.msg import Bool_necst
 
 import time
 import os
@@ -17,10 +17,10 @@ root.title(u"STOP BUTTON")
 root.geometry("400x50")
 
 def stop_call(event):
-    pub.publish()
+    pub.publish(True,'stop_button',time.time())
 
 #label
-label = tkinter.Label(root, text=u'you can stop moving antenna by pressing this button')
+label = tkinter.Label(root, text=u'STOP ANTENNA')
 label.pack()
 
 
@@ -30,5 +30,5 @@ Button.bind("<Button-1>",stop_call)
 Button.pack()
 
 rospy.init_node('stop_telescope',anonymous = True)
-pub = rospy.Publisher('move_stop', String, queue_size = 10,latch = True)
+pub = rospy.Publisher('move_stop', Bool_necst, queue_size = 1)
 root.mainloop()

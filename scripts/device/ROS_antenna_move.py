@@ -48,6 +48,10 @@ class antenna_move(object):
     command_az = 0
     command_el = 0
 
+
+    tracking_status = False
+    list_coord = ''
+    
     """
     ###for module
     az_rate_d = 0
@@ -75,6 +79,9 @@ class antenna_move(object):
         th2 = threading.Thread(target = self.pub_status)
         th2.setDaemon(True)
         th2.start()
+
+    def set_tracking(self, req):
+        self.tracking_status = req.data
         
     def set_parameter(self, req):
 
@@ -87,6 +94,7 @@ class antenna_move(object):
             return
         else:
             pass
+        self.list_coord = req.coord
         if not self.stop_flag and self.start_time<req.time_list[0]:
             print("st,ct", self.stop_flag, self.start_time, req.time_list[0])
             if self.parameters['start_time_list'] != []:
@@ -183,6 +191,10 @@ class antenna_move(object):
             return (az_1,az_2,el_1,el_2,st2)
         
     def act_azel(self):
+        ###for azel_move check
+        command_az_before = ''
+        command_el_before = ''
+        ###
         while True:
             if self.stop_flag:
                 print("stop_flag")
@@ -191,10 +203,29 @@ class antenna_move(object):
                 self.dev.command_el_speed = 0
                 time.sleep(1)
                 continue
+            
             if self.emergency_flag:
                 self.dev.emergency_stop()
                 time.sleep(0.1)
                 continue
+            
+            if self.parameters['az_list'][-1] == command_az_before and self.parameters['el_list'][-1] == command_el_before and self.list_coord == 'altaz':###for azel_move check
+                self.stop_flag = True
+                print('list_check')
+                continue
+
+            print(self.list_coord)
+            if self.list_coord == 'altaz':#azel_move
+                print('altaz_check')
+                if self.tracking_status == False:
+                    pass
+                else:
+                    command_az_before = self.command_az
+                    command_el_before = self.command_el
+                    self.stop_flag = True
+                    print('altaz_check#stop_flag True')
+            else:
+                pass
 
             ret = self.comp()
             if ret == None:
@@ -288,4 +319,5 @@ if __name__ == '__main__':
     rospy.Subscriber('move_stop', Bool_necst, ant.stop_move)
     rospy.Subscriber('emergency_stop', Bool_necst, ant.emergency)
     rospy.Subscriber('status_encoder', Status_encoder_msg, ant.set_enc_parameter, queue_size=1)
+    rospy.Subscriber('tracking_check', Bool_necst, ant.set_tracking, queue_size=1)
     rospy.spin()    
