@@ -202,6 +202,7 @@ class azel_list(object):
                     self.stop.publish(self.msg)
                     msg.x_list = ret[0]
                     msg.y_list = ret[1]
+                    msg.coord = param.coord
                     msg.time_list = time_list2
                     msg.from_node =node_name
                     msg.timestamp = time.time()
