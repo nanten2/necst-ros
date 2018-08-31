@@ -12,6 +12,7 @@ import os
 import sys
 import time
 import atexit
+import functools
 from datetime import datetime as dt
 import rospy
 import rosnode
@@ -135,13 +136,25 @@ class controller(object):
         print("ROS_controller is finished.")
         return
 
+# ==================
+# Logger
+# ==================
+
+    def logger(func):
+        @functools.wraps(func)
+        def ros_logger(self, *args, **kwargs):
+            rospy.loginfo((str(locals()['func']).split()[1].split('.')[1])+'#'+str(locals()['args']))
+            func(self, *args, **kwargs)
+            return
+        return ros_logger
+        
+
 # ===================
 # authority
 # ===================
 
     
     def deco_check(func):
-        import functools
         @functools.wraps(func)
         def wrapper(self, *args,**kwargs):
             #self.get_authority()
@@ -152,7 +165,7 @@ class controller(object):
                 ret = func(self, *args,**kwargs)
             else:
                 ret = ""
-                print("This node don't have authority...")
+                rospy.logwarn("This node don't have authority...")
                 print("current authority : ", self.auth)
                 pass
             return ret
@@ -161,7 +174,7 @@ class controller(object):
     def _pick_up(self,req):
         self.auth = req.data
         return
-    
+
     def initialize(self):
         if self.node_name:
             print("You already have node_name : ", self.node_name)
@@ -191,22 +204,24 @@ class controller(object):
             msg.timestamp = time.time()
         self.pub_regist.publish(msg)
         return
-    
+
+    @logger
     def get_authority(self):
         self.registration(self.node_name)
         return
-
+    @logger
     def release_authority(self):
         self.registration("")
         return
-
+    @logger
     def check_my_node(self):
         return self.node_name
 
 # ===================
 # antenna
 # ===================
-    
+
+    @logger
     @deco_check
     def drive(self, switch = ""):
         """change drive
@@ -228,10 +243,11 @@ class controller(object):
             self.pub_contactor.publish(msg)
             print("drive : ", switch, "!!")
         else:
-            print("!!bad command!!")
+            rospy.logwarn("!!bad command!!")
             pass
         return
-
+    
+    @logger
     @deco_check
     def onepoint_move(self, x, y, coord="altaz", off_x=0, off_y=0, offcoord='altaz', hosei='hosei_230.txt',  lamda=2600, dcos=0, limit=True,):
         """ azel_move, radec_move, galactic_move
@@ -252,6 +268,7 @@ class controller(object):
         self.pub_onepoint.publish(x, y, coord, "", off_x, off_y, offcoord, hosei, lamda, dcos, limit, self.node_name, time.time())
         return
     
+    @logger
     @deco_check
     def planet_move(self, planet, off_x=0, off_y=0, offcoord="altaz", hosei="hosei_230.txt", lamda=2600, dcos=0, limit=True):
         """ planet_move
@@ -276,7 +293,8 @@ class controller(object):
         print("planet name is ", planet)
         self.pub_planet.publish(0, 0, "planet", planet, off_x, off_y, offcoord, hosei, lamda, dcos,limit, self.node_name, time.time())
         return
-        
+    
+    @logger    
     @deco_check
     def linear_move(self, x, y, coord="altaz", dx=0, dy=0, offcoord='altaz', hosei='hosei_230.txt',  lamda=2600, dcos=0, limit=True,):
         """ azel_move, radec_move, galactic_move
@@ -294,10 +312,10 @@ class controller(object):
         dcos     : projection (no:0, yes:1)
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
         """
-
         self.pub_linear.publish(x, y, coord, "", dx, dy, offcoord, hosei, lamda, dcos, limit, self.node_name, time.time())
         return
     
+    @logger
     @deco_check
     def otf_scan(self, x, y, coord, dx, dy, dt, num, rampt, delay, current_time,  off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., limit=True):
         """ otf scan
@@ -322,7 +340,7 @@ class controller(object):
         lamda    : observation wavelength [um] (default ; 2600)
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
         """
-        print("start OTF scan!!")
+        rospy.loginfo("start OTF scan!!")
 
         self.pub_otf.publish(x, y, coord, dx, dy, dt, num, rampt,
                              delay, off_x, off_y, offcoord,
@@ -331,6 +349,7 @@ class controller(object):
         
         return
     
+    @logger
     @deco_check
     def planet_scan(self, planet, dx, dy, dt, num, rampt, delay, current_time,  off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., limit=True):
         """ planet otf scan
@@ -354,15 +373,14 @@ class controller(object):
         movetime : azel_list length [s] (otf_mode = 0.01)
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
         """
-        
-        print("start OTF scan!!")
+        rospy.loginfo("start OTF scan!!")
         self.pub_planet_scan.publish(0, 0, planet, dx, dy, dt, num, rampt,
                              delay, off_x, off_y, offcoord,
                              dcos, hosei, lamda, limit, self.node_name,
                              current_time)        
         return
     
-
+    @logger
     def queue_observation(self, flag):
         """ queue observation
         Parameters
@@ -384,6 +402,7 @@ class controller(object):
         self.antenna_tracking_flag = req.data
         return
 
+    @logger
     def antenna_tracking_check(self):
         """antenna_tracking_check"""
         rospy.loginfo(" tracking now... \n")
@@ -399,6 +418,7 @@ class controller(object):
         print(req.data)
         return
     
+    @logger
     def move_stop(self):
         print("move_stop")
         self.pub_stop.publish(True, self.node_name, time.time())
@@ -408,7 +428,8 @@ class controller(object):
 # ===================
 # dome
 # ===================
-    
+
+    @logger
     @deco_check    
     def dome(self, value):
         """dome controll
@@ -432,7 +453,8 @@ class controller(object):
             print("parameter error")
             pass
         return
-
+    
+    @logger
     @deco_check    
     def dome_move(self,dist):
         """ dome move
@@ -454,7 +476,8 @@ class controller(object):
         dome_move.timestamp = time.time()
         self.pub_dome_move.publish(dome_move)
         return
-
+    
+    @logger
     @deco_check    
     def dome_open(self):
         """Dome open"""
@@ -465,7 +488,8 @@ class controller(object):
         dome.timestamp = time.time()        
         self.pub_dome.publish(dome)
         return
-    
+
+    @logger
     def dome_close(self):
         """Dome close"""
         dome = Dome_msg()
@@ -475,7 +499,8 @@ class controller(object):
         dome.timestamp = time.time()        
         self.pub_dome.publish(dome)
         return
-
+    
+    @logger
     @deco_check    
     def memb(self, value):
         """memb move
@@ -494,6 +519,7 @@ class controller(object):
             pass
         return
 
+    @logger
     @deco_check        
     def memb_open(self):
         """membrane open"""
@@ -505,6 +531,7 @@ class controller(object):
         self.pub_dome.publish(dome)
         return
 
+    @logger
     def memb_close(self):
         """membrane close"""
         dome = Dome_msg()
@@ -514,7 +541,7 @@ class controller(object):
         dome.timestamp = time.time()        
         self.pub_dome.publish(dome)
         return
-
+    @logger
     def dome_stop(self):
         """Dome stop"""
         dome = Dome_msg()
@@ -525,6 +552,7 @@ class controller(object):
         self.pub_dome.publish(dome)
         return
 
+    @logger
     @deco_check    
     def dome_track(self):
         """Dome sync antenna_az"""
@@ -535,7 +563,8 @@ class controller(object):
         dome.timestamp = time.time()        
         self.pub_dome.publish(dome)
         return
-
+    
+    @logger
     def dome_track_end(self):
         """Dome stop antenna_az sync"""
         dome = Dome_msg()
@@ -549,11 +578,12 @@ class controller(object):
     def _dome_tracking(self, req):
         self.dome_tracking_flag = req.data
         return
-
+    
+    @logger
     @deco_check    
     def dome_tracking_check(self):
         """dome tracking check"""
-        rospy.loginfo(" dome_tracking now... \n")
+        print(" dome_tracking now... \n")
         time.sleep(3.)
         while not self.dome_tracking_flag:
             time.sleep(0.01)
@@ -562,6 +592,7 @@ class controller(object):
 # ===================
 # mirror
 # ===================
+    @logger
     @deco_check
     def move_m4(self, position):
         """mirror4 move
@@ -577,7 +608,8 @@ class controller(object):
         status.timestamp = time.time()        
         self.pub_m4.publish(status)
         return
-
+    
+    @logger
     @deco_check    
     def move_hot(self, position):
         """hotload move
@@ -592,7 +624,8 @@ class controller(object):
         status.timestamp = time.time()        
         self.pub_hot.publish(status)
         return
-    
+
+    @logger
     @deco_check
     def move_m2(self, dist):
         """m2 move
@@ -613,6 +646,7 @@ class controller(object):
 # encoder
 # ===================
 
+    @logger
     @deco_check
     def observation(self, command, exposure):
         msg = Bool_necst()
@@ -632,6 +666,7 @@ class controller(object):
 # ===================
 # spectrometer
 # ===================
+    @logger
     @deco_check
     def oneshot_achilles(self, repeat=1, exposure=1.0, stime=0.0):
         """get spectrum by ac240
@@ -650,13 +685,15 @@ class controller(object):
 
         return data_dict
 
+    @logger
     @deco_check
     def old_oneshot(self, repeat=1, exposure=1.0, stime=0.0):
         dfs = achilles.dfs()
         data = dfs.oneshot(req.repeat, req.exposure, req.stime)
         data_dict = {'dfs1': data[0], 'dfs2': data[1]}
         return data_dict
-    
+
+    @logger
     @deco_check    
     def spectrometer(self, exposure):
         msg = Float64()
@@ -664,6 +701,7 @@ class controller(object):
         self.pub3.publish(msg)
         return
     
+    @logger
     def oneshot_XFFTS(self, integtime, repeat, synctime):
         """XFFTS Publisher
         Parameters
@@ -671,7 +709,6 @@ class controller(object):
         integtime : integration time of each observation.
         repeat    : How many times to repeat observation.
         """
-        
         msg = XFFTS_para_msg()
         msg.integtime = integtime
         msg.repeat = repeat
@@ -686,7 +723,8 @@ class controller(object):
     # ===================
     # status
     # ===================
-
+    
+    @logger
     def onepoint_status(self, active=False, target="", num_on=0, num_seq=0, exposure_hot=0, exposure_off=0, exposure_on=0, current_num=0, current_position=""):
         """observation status
         this function is used by ROS_onepoint.py etc...
@@ -734,7 +772,8 @@ class controller(object):
         
         self.pub_onestatus.publish(msg)
         return
-
+    
+    @logger
     def obs_status(self, active=False, obsmode="", obs_script="", obs_file="", target="", num_on=0, num_seq=0, xgrid=0, ygrid=0, exposure_hot=0, exposure_off=0, exposure_on=0, scan_direction="", current_num=0, current_position=""):
         """observation status
         this function is used by obs_script
@@ -802,7 +841,7 @@ class controller(object):
         self.pub_obsstatus.publish(msg)
         return
 
-    
+    @logger
     @deco_check
     def read_status(self):
         """read status
@@ -840,7 +879,7 @@ class controller(object):
     # others
     # ===================
 
-    
+    @logger
     def alert(self, message, emergency=False):
         msg = String_necst()
         msg.data = message
