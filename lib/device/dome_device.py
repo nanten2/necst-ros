@@ -31,7 +31,7 @@ class dome_device(object):
         dome_az = dome_az/3600.
         enc_az = float(enc_az)
         enc_az = enc_az/3600.
-        if math.fabs(enc_az - dome_az) >= 2.0:
+        if math.fabs(enc_az - dome_az) > 1.5 or math.fabs(enc_az - dome_az) < 358.5:
             dir = self.move(enc_az, dome_az*3600, track=True)
             print('tracking', enc_az, dome_az)
         else:
@@ -48,16 +48,19 @@ class dome_device(object):
         diff = dist - pos
         dir = diff % 360.0
         print('dir', dir)
+        """
         if dir < 0:
             dir = dir*(-1)
-
+        """
         if dir == 0:
             return dir
+        """
         if dir < 0:
             if abs(dir) >= 180:
                 turn = 'right'
             else:
                 turn = 'left'
+        """
         else:
             if abs(dir) >= 180:
                 turn = 'left'
@@ -66,11 +69,11 @@ class dome_device(object):
         print(abs(dir))
         if abs(dir) < 5.0 or abs(dir) > 355.0:
             speed = 'low'
-        elif abs(dir) > 15.0 and abs(dir) < 345.0:###or => and
+        elif abs(dir) > 15.0 and abs(dir) < 345.0:
             speed = 'high'
         else:
             speed = 'mid'
-        if not abs(dir) < 1.5:#0.5=>1.5
+        if not abs(dir) < 1.5 or not abs(dir) > 358.5:
             global buffer
             self.buffer[1] = 1
             self.do_output(turn, speed)
@@ -87,10 +90,10 @@ class dome_device(object):
 
     def dome_open(self):
         ret = self.get_door_status()
-        if ret[1] != "OPEN" and ret[3] != "OPEN":
+        if ret[1] != "OPEN" or ret[3] != "OPEN":
             buff = [1, 1]
             self.dio.output_point(buff, 5)
-            while ret[1] != 'OPEN':
+            while ret[1] != 'OPEN' and ret[3] != 'OPEN':
                 time.sleep(5)
                 ret = self.get_door_status()
         buff = [0, 0]
@@ -99,10 +102,10 @@ class dome_device(object):
 
     def dome_close(self):
         ret = self.get_door_status()
-        if ret[1] != 'CLOSE' and ret[3] != 'CLOSE':
+        if ret[1] != 'CLOSE' or ret[3] != 'CLOSE':
             buff = [0, 1]
             self.dio.output_point(buff, 5)
-            while ret[1] != 'CLOSE':
+            while ret[1] != 'CLOSE' and ret[3] != 'CLOSE':
                 time.sleep(5)
                 ret = self.get_door_status()
         buff = [0, 0]
@@ -130,6 +133,8 @@ class dome_device(object):
                 time.sleep(5)
                 ret = self.get_memb_status()
         buff = [0, 0]
+        self.dio.output_point(buff, 7)
+        return
 
     """
     def emergency_stop(self):
@@ -259,8 +264,6 @@ class dome_device(object):
             ret = 11
         elif limit[0:4] == [0,0,1,1]:
             ret = 12
-        return ret
-
         return ret
 
     def error_check(self):
