@@ -9,13 +9,15 @@ sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 import ROS_controller
 import signal
 import sys
-import ccd
-from astropy.coordinates import SkyCoord
+import ccd_old as ccd
+from astropy.coordinates import SkyCoord,EarthLocation
 from astropy.time import Time
 from datetime import datetime as dt
+import astropy.units as u
 sys.path.append('/home/amigos/ros/src/necst/lib')
 #import azel_calc
 import calc_coord
+nanten2 = EarthLocation(lat=-22.9699511*u.deg, lon=-67.60308139*u.deg, height=4863.84*u.m)
 
 
 """ 
@@ -176,12 +178,17 @@ class opt_point_controller(object):
             __ra = [_tbl[1]*3600.]
             __dec = [_tbl[2]*3600.]
             __now = [now]
-            
+
             ret = self.calc.coordinate_calc(__ra, __dec, __now, 'j2000', 0, 0, 'hosei_230.txt', 2600, 5, 20, 0.07)
             real_el = ret[1][0]/3600.
             print('#L161',ret)
             if real_el >= 30. and real_el < 80.:
-                self.ctrl.onepoint_move(_tbl[1], _tbl[2], "J2000",lamda = 500)#lamda = 0.5 => 500
+                temp_coord = SkyCoord(_tbl[1], _tbl[2], frame="fk5", unit="deg")
+                temp_coord.location = nanten2
+                temp_coord.obstime = Time(dt.utcnow())
+                azel = temp_coord.altaz
+                self.ctrl.onepoint_move(azel.az.deg, azel.alt.deg, "altaz", -5700, -6100, "altaz", lamda=0.5)
+                #self.ctrl.onepoint_move(_tbl[1], _tbl[2], "J2000",lamda = 500)#lamda = 0.5 => 500
 
                 #stop moving antenna and dome tracking
                 self.ctrl.antenna_tracking_check()
