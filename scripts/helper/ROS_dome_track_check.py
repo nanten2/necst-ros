@@ -48,7 +48,7 @@ class dome_tracking_check(object):
         d_az = abs(dome_az - enc_az)
         #rospy.logwarn(d_az)
 
-        if d_az <= 4*3600:
+        if d_az <= 4*3600 or d_az>=356*3600:
             self.tracking = True
         else:
             self.tracking = False
