@@ -9,7 +9,8 @@ sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 import ROS_controller
 import signal
 import sys
-import S_ccd as ccd
+#import S_ccd as ccd
+import ccd_old as ccd
 from astropy.coordinates import SkyCoord
 from astropy.time import Time
 from datetime import datetime as dt
@@ -155,7 +156,7 @@ class opt_point_controller(object):
         print("#################",table)
         num = len(table)
         
-        self.ctrl.dome_track()
+        #self.ctrl.dome_track()
         
         date = dt.today()
         month = str("{0:02d}".format(date.month))
@@ -181,11 +182,11 @@ class opt_point_controller(object):
             real_el = ret[1][0]/3600.
             print('#L161',ret)
             if real_el >= 30. and real_el < 80.:
-                self.ctrl.onepoint_move(_tbl[1], _tbl[2], "J2000",lamda = 500)#lamda = 0.5 => 500
+                #self.ctrl.onepoint_move(_tbl[1], _tbl[2], "J2000",lamda = 500)#lamda = 0.5 => 500
 
                 #stop moving antenna and dome tracking
-                self.ctrl.antenna_tracking_check()
-                self.ctrl.dome_tracking_check()
+                #self.ctrl.antenna_tracking_check()
+                #self.ctrl.dome_tracking_check()
                 
                 now = dt.now()
                 status = self.ctrl.read_status()
