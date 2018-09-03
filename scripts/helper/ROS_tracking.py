@@ -5,6 +5,7 @@ import threading
 import rospy
 from necst.msg import Status_antenna_msg
 from necst.msg import Status_encoder_msg
+from necst.msg import List_coord_msg
 from necst.msg import Bool_necst
 
 node_name = 'tracking'
@@ -19,7 +20,8 @@ class tracking_check(object):
         'command_el' : 200
         }
     tracking = False
-
+    list_coord = ''
+    
     def __init__(self):
         self.start_thread()
         pass
@@ -45,8 +47,12 @@ class tracking_check(object):
         self.enc_param['enc_az'] = req.enc_az
         self.enc_param['enc_el'] = req.enc_el
 
+    def set_list_param(self, req):
+        self.list_coord = req.coord
+        
     def check_track(self):
         track_count = 0
+        pub = rospy.Publisher("move_stop", Bool_necst, queue_size = 1)
         while not rospy.is_shutdown():
             command_az = self.antenna_param['command_az']
             command_el = self.antenna_param['command_el']
@@ -58,6 +64,9 @@ class tracking_check(object):
                 enc_az += 360*3600
             d_az = abs(command_az - enc_az)
             d_el = abs(command_el - enc_el)
+
+            before_coord = self.list_coord
+                
             #rospy.loginfo( self.antenna_param['command_az'])
             if d_az <= 3 and d_el <=3:
                 track_count += 1
@@ -68,6 +77,13 @@ class tracking_check(object):
                 track_count = 3
             else:
                 self.tracking = False
+                pub_flag = 0
+                
+            if self.tracking == True and before_coord == 'altaz' and pub_flag == 0:
+                pub.publish(True, 'ROS_tracking.py', time.time())
+                pub_flag = 1
+            else:
+                pass
             time.sleep(0.1)
             rospy.loginfo('tracking : %s'%self.tracking)
         return self.tracking
@@ -91,4 +107,5 @@ if __name__ == '__main__':
     t = tracking_check()
     sub1 = rospy.Subscriber('status_antenna', Status_antenna_msg, t.set_ant_param)
     sub2 = rospy.Subscriber('status_encoder',Status_encoder_msg, t.set_enc_param)
+    sub3 = rospy.Subscriber('list_azel',List_coord_msg, t.set_list_param, queue_size = 1)
     rospy.spin()
