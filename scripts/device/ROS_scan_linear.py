@@ -52,7 +52,6 @@ class worldcoord(object):
             command = self.command
             self.command = ""
             if command:
-
                 num_x = 0
                 num_y = 0
                 try:
@@ -78,10 +77,12 @@ class worldcoord(object):
                     else:
                         break
                 delta_t = min(num_x, num_y)
+                rospy.loginfo(command.off_x)
                 print(delta_t)
                 off_x_list = [command.off_x*delta_t/4*i for i in range(5)]
                 off_y_list = [command.off_y*delta_t/4*i for i in range(5)]
                 time_list = [dt.fromtimestamp(command.timestamp+delta_t/4*i) for i in range(5)]
+                rospy.loginfo(off_x_list)                
                 ret = calc_offset.calc_offset(
                     [command.x for i in range(5)],
                     [command.y for i in range(5)],
@@ -90,6 +91,8 @@ class worldcoord(object):
                     off_y_list,
                     command.offcoord, command.dcos,
                     time_list)
+                rospy.loginfo(command.x)
+                rospy.loginfo(ret[0])
                 if not ret:
                     continue
                 current_time = time.time()
