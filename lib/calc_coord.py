@@ -10,6 +10,7 @@ sys.path.append('/home/amigos/ros/src/necst/lib')
 sys.path.append('/home/necst/ros/src/necst/lib')
 import coord
 import numpy as np
+import rospy
 
 class azel_calc(object):
     
@@ -33,6 +34,7 @@ class azel_calc(object):
 
 
     def kisa_calc(self, altaz, hosei):
+        rospy.loginfo(hosei)
         _az = np.radians(altaz.az.deg)
         _el = np.radians(altaz.alt.deg)
         ret = self.coord.apply_kisa_test(_az, _el, hosei)
