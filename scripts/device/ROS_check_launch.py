@@ -8,9 +8,9 @@ from necst.msg import String_list_msg
 
 def launch_check():
     f1 = open("/home/amigos/ros/src/necst/launch/necobs.launch","r")
-    f2 = open("/home/amigos/ros/src/necst/launch/necctrl.launch","r")
+    #f2 = open("/home/amigos/ros/src/necst/launch/necctrl.launch","r")
     launch = []
-    for f in [f1, f2]:
+    for f in [f1]:
         _line = f.readlines()
         f.close()
         del _line[0]
