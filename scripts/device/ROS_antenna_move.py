@@ -209,7 +209,7 @@ class antenna_move(object):
                 self.dev.emergency_stop()
                 time.sleep(0.1)
                 continue
-            
+            """
             if self.parameters['az_list'][-1] == command_az_before and self.parameters['el_list'][-1] == command_el_before and self.list_coord == 'altaz':###for azel_move check
                 self.stop_flag = True
                 print('list_check')
@@ -227,7 +227,7 @@ class antenna_move(object):
                     print('altaz_check#stop_flag True')
             else:
                 pass
-
+            """
             ret = self.comp()
             if ret == None:
                 time.sleep(0.1)
