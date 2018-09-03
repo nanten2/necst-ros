@@ -45,8 +45,12 @@ class dome_tracking_check(object):
         if enc_az <0:
             enc_az += 360*3600
         """
+        dome_az = dome_az %  (360*3600)
+        enc_az = enc_az % (360*3600)
+        #print('dome_Az',dome_az)
+        #print('enc_az', enc_az)
         d_az = abs(dome_az - enc_az)
-        #rospy.logwarn(d_az)
+        print('d_az',d_az)
 
         if d_az <= 4*3600 or d_az>=356*3600:
             self.tracking = True
@@ -56,7 +60,7 @@ class dome_tracking_check(object):
         rospy.loginfo('tracking : %s'%self.tracking)
 
     def pub_tracking(self):
-        pub = rospy.Publisher('dome_tracking_check', Bool_necst, queue_size = 10, latch = True)
+        pub = rospy.Publisher('dome_tracking_check', Bool_necst, queue_size = 1)
         track_status = Bool_necst()
         while not rospy.is_shutdown():
             self.check_dome_track()
