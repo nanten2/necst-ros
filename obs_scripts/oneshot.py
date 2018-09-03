@@ -50,6 +50,7 @@ if args.name is not None: filename = args.name
 star_list = []
 planet_list = {"MERCURY":1, "VENUS":2, "MARS":4, "JUPITER":5, "SATURN":6, "URANUS":7, "NEPTUNE":8, "MOON":10, "SUN":11}
 planet = 0
+
 target = []
 
 #read star list
@@ -70,7 +71,9 @@ for i in range(len(star_list)):
 
 if len(target) == 0:
     if star.upper() in planet_list:
-        planet = planet_list[star.upper()]
+        #planet = planet_list[star.upper()]
+        planet = star
+        pass
     else:
         print('!!Can not find the name of star!!')
         sys.exit()
@@ -86,14 +89,29 @@ def handler(num, flame):
 
 signal.signal(signal.SIGINT, handler)
 
-ctrl.dome_track()
+#ctrl.dome_track()
 ctrl.move_stop()
-
+from astropy.coordinates import get_body,EarthLocation, SkyCoord
+from datetime import datetime as dt
+from astropy.time import Time
+import astropy.units as u
+nanten2 = EarthLocation(lat=-22.9699511*u.deg, lon=-67.60308139*u.deg, height=4863.84*u.m)
 if planet:
-    ctrl.planet_move(planet, off_x=-5800, off_y=-6300, hosei = "hosei_opt.txt", lamda = 0.5)
+    now = dt.utcnow()
+    cplanet = get_body(planet, Time(now))
+    cplanet.location = nanten2
+    altaz = cplanet.altaz
+    ctrl.onepoint_move(altaz.az.deg, altaz.alt.deg, 'altaz', -5600, -6000, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)
+    #ctrl.planet_move(planet, off_x=-5800, off_y=-6300, hosei = "hosei_opt.txt", lamda = 0.5)
     pass
 else:
-    ctrl.onepoint_move(target[0], target[1], 'fk5', -5800, -6300, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)
+    now = dt.utcnow()
+    coo = SkyCoord(target[0],target[1], frame="fk5", unit="deg")
+    coo.location = nanten2
+    coo.obstime = Time(now)
+    altaz = coo.altaz
+    ctrl.onepoint_move(altaz.az.deg, altaz.alt.deg, 'altaz', -5700, -6100, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)    
+    #ctrl.onepoint_move(target[0], target[1], 'fk5', -5600, -6000, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)
     #ctrl.onepoint_move(target[0], target[1], "J2000",lamda = 500)
     pass
 
@@ -103,7 +121,8 @@ ctrl.antenna_tracking_check()#test
 
 if not filename:
     filename = time.strftime("%H%M%S")
-dirname = "/home/amigos/data/experiment/oneshot/" + time.strftime("%Y%m%d")
+#dirname = "/home/amigos/data/experiment/oneshot/" + time.strftime("%Y%m%d")
+dirname = time.strftime("%Y%m%d")
 if not os.path.exists(dirname):
     os.makedirs(dirname)
 ccd.oneshot(dirname, filename)
@@ -121,7 +140,7 @@ for j in range(3):
 """
 
 print("###end###")
-ctrl.dome_track_end()
+#ctrl.dome_track_end()
 ctrl.move_stop()
 time.sleep(1)
 ctrl.move_stop()

@@ -76,11 +76,6 @@ class antenna_device(object):
         ret_el = calc_pid(el_arcsec, enc_el, self.pre_arcsec[1], self.pre_hensa[1], self.ihensa[1], self.enc_before[1], self.t_now, self.t_past, self.p_coeff[1], self.i_coeff[1], self.d_coeff[1])
         el_rate_ref = ret_el[0]
 
-        save_to = os.path.join(self.dir_name, 'pid.txt')
-        f = open(save_to ,'a')
-        f.write('%s %s %s %s %s %s %s\n'%(str(self.t_now),str(self.p_coeff[0]*(az_arcsec-enc_az)),str(self.i_coeff[0]*ret_az[1]*(self.t_now+self.t_past)),str(self.d_coeff[0]*(az_arcsec-enc_az-self.pre_hensa[0])/(self.t_now-self.t_past)),str(self.p_coeff[1]*(el_arcsec-enc_el)),str(self.i_coeff[1]*ret_el[1]*(self.t_now+self.t_past)),str(self.d_coeff[1]*(el_arcsec-enc_el-self.pre_hensa[1])/(self.t_now-self.t_past))))
-        f.close()
-        
         #update
         self.enc_before = [enc_az, enc_el]
         self.pre_hensa = [az_arcsec - enc_az, el_arcsec - enc_el]
@@ -140,7 +135,7 @@ class antenna_device(object):
         self.el_rate_d = dummy
          
 
-        return [ret_az[0], ret_el[0]]
+        return [ret_az[0], ret_az[2], ret_az[3], ret_az[4], az_arcsec, enc_az, self.pre_hensa[0], self.ihensa[0], self.enc_before[0], ret_el[0], ret_el[2], ret_el[3], ret_el[4], el_arcsec, enc_el, self.pre_hensa[1], self.ihensa[1], self.enc_before[1], self.t_now, self.t_past]
     
     """                                                                         
     def medi_calc(self, target_speed, i):                                      
@@ -192,5 +187,5 @@ def calc_pid(target_arcsec, encoder_arcsec, pre_arcsec, pre_hensa, ihensa, enc_b
 
         #PID
     rate = target_speed + p_coeff*hensa + i_coeff*ihensa*(t_now-t_past) + d_coeff*dhensa/(t_now-t_past)
-    
-    return [rate, ihensa]
+    #print(p_coeff*hensa, i_coeff*ihensa*(t_now-t_past),i_coeff, hensa, rate)
+    return [rate, ihensa, p_coeff*hensa, i_coeff*ihensa*(t_now-t_past), d_coeff*dhensa/(t_now-t_past)]
