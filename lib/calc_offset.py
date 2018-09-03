@@ -63,7 +63,16 @@ def calc_offset(input_x, input_y, coord, input_off_x, input_off_y, offcoord, dco
         on_x = on_coord.data.lon
         on_y = on_coord.data.lat
         pass
+    x_list = [0 if i < 1E-4 else i for i in on_x.arcsec]
+    y_list = [0 if i < 1E-4 else i for i in on_y.arcsec]
+    x_list = [0 if i > 1295990 else i for i in x_list]
+    y_list = [0 if i > 1295990 else i for i in y_list]    
 
-    return [on_x.arcsec, on_y.arcsec, 0, 0]
+    #print(on_x.arcsec)
+    #print(on_y.arcsec)    
+    #print("######################")
+    #print(x_list)
+    #print(y_list)
+    return [x_list, y_list, 0, 0]
         
     
