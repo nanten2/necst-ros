@@ -101,7 +101,12 @@ if planet:
     cplanet = get_body(planet, Time(now))
     cplanet.location = nanten2
     altaz = cplanet.altaz
-    ctrl.onepoint_move(altaz.az.deg, altaz.alt.deg, 'altaz', -5600, -6000, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)
+    azelcoord = SkyCoord(altaz.az.deg, altaz.alt.deg, frame="altaz", unit="deg",obstime=Time(now), location=nanten2)
+    radec = azelcoord.fk5
+
+    ctrl.onepoint_move(radec.ra.deg, radec.dec.deg, 'fk5', 0, 0, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)        
+    #ctrl.onepoint_move(radec.ra.deg, radec.dec.deg, 'fk5', 0, 0, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)    
+    #ctrl.onepoint_move(altaz.az.deg, altaz.alt.deg, 'altaz', -5500, -6600, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)
     #ctrl.planet_move(planet, off_x=-5800, off_y=-6300, hosei = "hosei_opt.txt", lamda = 0.5)
     pass
 else:
@@ -110,8 +115,8 @@ else:
     coo.location = nanten2
     coo.obstime = Time(now)
     altaz = coo.altaz
-    ctrl.onepoint_move(altaz.az.deg, altaz.alt.deg, 'altaz', -5700, -6100, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)    
-    #ctrl.onepoint_move(target[0], target[1], 'fk5', -5600, -6000, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)
+    #ctrl.onepoint_move(altaz.az.deg, altaz.alt.deg, 'altaz', -5800, -6300, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)    
+    ctrl.onepoint_move(target[0], target[1], 'fk5', 0, 0, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)
     #ctrl.onepoint_move(target[0], target[1], "J2000",lamda = 500)
     pass
 

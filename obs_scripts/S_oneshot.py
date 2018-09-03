@@ -8,7 +8,8 @@ sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 import ROS_controller
 #import ccd
-import S_ccd as ccd
+#import S_ccd as ccd
+import ccd_old as ccd
 import signal
 ccd = ccd.ccd_controller()
 

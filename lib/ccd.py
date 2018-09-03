@@ -48,6 +48,8 @@ class ccd_controller(object):
         
         f = open("/home/nfs/necopt-old/ccd-shot/ccd-shot-command.txt", "w")
         f.write(str(dirname) + "/" + str(filename) + ".bmp")
+        print(str(dirname) + "/" + str(filename) + ".bmp")
+        #f.write(str(filename) + ".bmp")        
         f.close()
 
         return
