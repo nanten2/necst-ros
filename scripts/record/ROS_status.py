@@ -17,6 +17,7 @@ from necst.msg import Status_drive_msg
 from necst.msg import Status_limit_msg
 from necst.msg import Read_status_msg
 from necst.msg import Bool_necst
+from necst.msg import String_list_msg
 
 node_name = 'Status'
 
@@ -70,6 +71,7 @@ class status_main(object):
     param9 = {"m2_pos": 0}
     param10 = {"alert_msg":""}
     param11 = {"tracking":False}
+    param12 = {"check_launch":""}    
 
     def __init__(self):
         if __name__ == '__main__':
@@ -179,6 +181,10 @@ class status_main(object):
     def callback11(self, req):
         self.param11['tracking'] = req.data
         pass
+
+    def callback12(self, req):
+        self.param12['check_launch'] = req.data
+        pass    
     
     def tel_status(self):
         print('*********************************')
@@ -232,6 +238,8 @@ class status_main(object):
                 print(self.param8["error_msg"])
             if self.param10["alert_msg"]:
                 print(self.param10["alert_msg"])
+            if self.param12["check_launch"]:
+                print("Don't move node : ", self.param12["check_launch"])                
 
             if self.args[1]:
                 if drive[0] == 1:
@@ -285,5 +293,7 @@ if __name__ == '__main__':
     sub8 = rospy.Subscriber('limit_check', Status_limit_msg, st.callback8)
     sub9 = rospy.Subscriber('status_m2', Float64_necst, st.callback9)
     sub10 = rospy.Subscriber('alert', String_necst, st.callback10)
+    sub11 = rospy.Subscriber("tracking_check", Bool_necst, st.callback11)
+    sub12 = rospy.Subscriber("check_launch", String_list_msg, st.callback12)    
     print("Subscribe Start")
     rospy.spin()

@@ -208,6 +208,4 @@ class antenna_device(object):
             #self.dev.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
             #self.dev.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
             time.sleep(0.05)
-            self.dev.command_az_speed = 0
-            self.dev.command_el_speed = 0
         return

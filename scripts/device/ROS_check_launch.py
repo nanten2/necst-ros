@@ -7,12 +7,15 @@ import rosnode
 from necst.msg import String_list_msg
 
 def launch_check():
-    f = open("/home/amigos/ros/src/necst/simulator/launch/simulator.launch","r")
-    _line = f.readlines()
-    f.close()
-    del _line[0]
-    del _line[-1]
-    launch = [ast.literal_eval(i.split()[2].split("=")[1]) for i in _line]
+    f1 = open("/home/amigos/ros/src/necst/launch/necobs.launch","r")
+    f2 = open("/home/amigos/ros/src/necst/launch/necctrl.launch","r")
+    launch = []
+    for f in [f1, f2]:
+        _line = f.readlines()
+        f.close()
+        del _line[0]
+        del _line[-1]
+        launch.extend([ast.literal_eval(i.split()[2].split("=")[1]) for i in _line])
     return launch
  
 def node_check():
