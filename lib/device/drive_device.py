@@ -7,7 +7,7 @@ board_name = 2724
 output_rsw_id = 1
 input_rsw_id = 0
 
-dio = pyinterface.open(self.board_name, self.output_rsw_id)
+dio = pyinterface.open(board_name, output_rsw_id)
 #dio_input = pyinterface.open(self.board_name, self.input_rsw_id)
 
 """ This publish is ROS_limit_check.py 
@@ -29,24 +29,20 @@ def get_position():
 """
 
 def move_drive(position):
-    """
-    position = [drive_position, contactor_position]
-    """
-    if position[0] == "on":
-        self.dio.output_point([1,1], 1) #output_byte([1,1,0,0,0,0,0,0],OUT1_8)
-    elif position[0] == "off":
-        self.dio.output_point([0,0], 1) #output_byte([0,0,0,0,0,0,0,0], 'OUT1_8')
+    
+    if position == "on":
+        dio.output_point([1,1], 1) #output_byte([1,1,0,0,0,0,0,0],OUT1_8)
+    elif position == "off":
+        dio.output_point([0,0], 1) #output_byte([0,0,0,0,0,0,0,0], 'OUT1_8')
     else:
         pass
     return
 
 def move_contactor(position):
-    """
-    position = [drive_position, contactor_position]
-    """
-    if position[1] == "on":
+    
+    if position == "on":
         dio.output_point([1,1,1,1], 9) #output_byte([1,1,1,1,0,0,0,0], 'OUT9_16')
-    elif position[1] == "off":
+    elif position == "off":
         dio.output_point([0,0,0,0], 9) #output_byte([0,0,0,0,0,0,0,0], 'OUT9_16')
     else:
         pass
