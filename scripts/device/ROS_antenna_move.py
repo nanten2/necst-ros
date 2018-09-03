@@ -199,12 +199,15 @@ class antenna_move(object):
         This function determine target Az and El from azel_list
         """
         st = self.parameters['start_time_list']
+    
         if st == []:
             return
 
         ct = self.time_check(st)
         if ct == None or self.parameters['az_list'] == []:
+
             return
+        
         else:
             num = numpy.where(numpy.array(st) > ct)[0][0]
             st2 = st[num]
@@ -236,7 +239,7 @@ class antenna_move(object):
                 self.dev.emergency_stop()
                 time.sleep(0.1)
                 continue
-            
+
             try:
                 if self.parameters['az_list'][-1] == command_az_before and self.parameters['el_list'][-1] == command_el_before and self.list_coord == 'altaz':###for azel_move check
                     self.stop_flag = True
@@ -260,6 +263,7 @@ class antenna_move(object):
                 pass
 
             ret = self.comp()
+            print(ret)
             if ret == None:
                 time.sleep(0.1)
                 continue
@@ -272,6 +276,7 @@ class antenna_move(object):
                 tar_el = ret[2] + hensa_el*(current_time-start_time)*10
                 
                 if self.limit_check(tar_az, tar_el):
+                    print(tar_az, tar_el)
                     time.sleep(0.1)
                     continue
 
