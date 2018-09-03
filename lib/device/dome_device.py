@@ -31,7 +31,7 @@ class dome_device(object):
         dome_az = dome_az/3600.
         enc_az = float(enc_az)
         enc_az = enc_az/3600.
-        if math.fabs(enc_az - dome_az) > 1.5 or math.fabs(enc_az - dome_az) < 358.5:
+        if math.fabs(enc_az - dome_az) > 1.5 and math.fabs(enc_az - dome_az) < 358.5:#or => and by shiotani
             dir = self.move(enc_az, dome_az*3600, track=True)
             print('tracking', enc_az, dome_az)
         else:
@@ -54,13 +54,13 @@ class dome_device(object):
         """
         if dir == 0:
             return dir
-        """
-        if dir < 0:
-            if abs(dir) >= 180:
-                turn = 'right'
-            else:
-                turn = 'left'
-        """
+        #"""
+        #if dir < 0:
+        #    if abs(dir) >= 180:
+        #        turn = 'right'
+        #    else:
+        #        turn = 'left'
+        #"""
         else:
             if abs(dir) >= 180:
                 turn = 'left'
