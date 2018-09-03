@@ -7,6 +7,7 @@ import numpy as np
 from PIL import Image
 from PIL import ImageOps
 import os
+import rospy #debug all_sky_shot
 #from pyslalib import slalib
 
 
@@ -54,15 +55,15 @@ class ccd_controller(object):
         return
     
     def save_status(self, x, y, number, magnitude, az_star, el_star, mjd, data_name, secofday, status):
-        time.sleep(5)#for test
+        #time.sleep(5)#for test
 
         #f = open("/home/amigos/data/experiment/opt/"+str(data_name)+"/process.log", "a")
-        f = open("/home/nfs/necobs/necopt-old/ccd-shot/data/"+str(data_name)+"/process.log", "a")
+        f = open("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/process.log", "a")
         #geo_status = [x1,x2,y1,y2] #for test
         geo_status = [0,0,0,0]
         geo_x = 0
         geo_y = 0
-        geo_temp = 0
+        geo_temp = [0, 0]
         
         #write papram
         f.write(str(number)+" "+str(magnitude)+" "+str(mjd)+" "+str(secofday)+" "+str(status.Command_Az)+" "+str(status.Command_El)+" "\
@@ -145,11 +146,18 @@ class ccd_controller(object):
         f = 0.
         x = int(x)
         y = int(y)
-        for i in range(21):
-            for j in range(21):
-                xx += (x+j-10.)*image[y+i-10][x+j-10]
-                yy += (y+i-10.)*image[y+i-10][x+j-10]
-                f += image[y+i-10][x+j-10]
+        try:
+            for i in range(21):
+                for j in range(21):
+                    xx += (x+j-10.)*image[y+i-10][x+j-10]
+                    yy += (y+i-10.)*image[y+i-10][x+j-10]
+                    f += image[y+i-10][x+j-10]
+        except Exception as e:
+            print(e)
+            rospy.loginfo(e)
+            xx = 10000
+            yy = 10000
+            f = 0
         
         if f == 0.: #two or more stars
             print("MANY STARS ARE PHOTOGRAPHED")
