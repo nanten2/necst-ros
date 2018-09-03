@@ -26,7 +26,7 @@ from necst.msg import String_necst
 from necst.msg import Int64_necst
 from necst.msg import Status_obs_msg
 from necst.msg import Status_onepoint_msg
-from nascorx_xffts.msg import XFFTS_para_msg
+#from nascorx_xffts.msg import XFFTS_para_msg
 sys.path.append("/home/amigos/ros/src/necst/lib")
 import achilles
 from necst.srv import ac240_srv
@@ -105,7 +105,7 @@ class controller(object):
         self.pub_hot = rospy.Publisher("hot", String_necst, queue_size = 1)
         self.pub_m2 = rospy.Publisher("m2", Int64_necst, queue_size=1)
         self.pub_achilles = rospy.Publisher("achilles", Achilles_msg, queue_size=1)
-        self.pub_XFFTS = rospy.Publisher("XFFTS_parameter", XFFTS_para_msg, queue_size=1)
+        #self.pub_XFFTS = rospy.Publisher("XFFTS_parameter", XFFTS_para_msg, queue_size=1)
         self.pub_regist = rospy.Publisher("authority_regist", String_necst, queue_size=1)
         self.pub_obsstatus = rospy.Publisher("obs_status", Status_obs_msg, queue_size=1)
         self.pub_onestatus = rospy.Publisher("one_status", Status_onepoint_msg, queue_size=1)        
@@ -841,8 +841,6 @@ class controller(object):
         self.pub_obsstatus.publish(msg)
         return
 
-    @logger
-    @deco_check
     def read_status(self):
         """read status
 
