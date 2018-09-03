@@ -19,13 +19,19 @@ def hoge(req):
         print(log)
     
     f = open(path,'a')
-    f.write(log)
+    f.write(log+'\n')
     f.close()    
 
 
 if __name__ == '__main__':
     sub = rospy.Subscriber('rosout_agg', Log, hoge, queue_size=100)
-    path = os.path.join(save_to, sys.argv[1])
+    try:
+        file_name = sys.argv[1]
+    except:
+        file_name = input('Please input file name : ')
+    path = os.path.join(save_to, file_name)
     if os.path.exists(save_to):pass
     else:os.mkdir(save_to)
+    print('Log is save to {}'.format(path))
+    print('*** Logger Start ***')
     rospy.spin()
