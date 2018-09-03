@@ -1,6 +1,6 @@
 <launch>
   <node pkg="necst" name="check_node" type="ROS_check_node.py"/>
-  <node pkg="necst" name="check_launch" type="ROS_check_launch.py"/>  
+  <node pkg="necst" name="check_launch" type="S_ROS_check_launch.py"/>  
   <node pkg="necst" name="timer" type="ROS_timer.py"/>
   <node pkg="necst" name="antenna_move" type="ROS_antenna_move.py" output="screen" args="Simulator"/>
   <node pkg='necst' name='authority_check' type='ROS_authority_check.py'/>
