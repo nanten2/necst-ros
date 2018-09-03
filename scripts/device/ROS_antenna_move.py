@@ -7,6 +7,7 @@ import numpy
 import time
 import threading
 sys.path.append("/home/necst/ros/src/necst/lib/device")
+sys.path.append("/home/amigos/ros/src/necst/lib/device")
 
 #ROS/import field
 #----------------
