@@ -240,28 +240,6 @@ class antenna_move(object):
                 time.sleep(0.1)
                 continue
 
-            try:
-                if self.parameters['az_list'][-1] == command_az_before and self.parameters['el_list'][-1] == command_el_before and self.list_coord == 'altaz':###for azel_move check
-                    self.stop_flag = True
-                    print('list_check')
-                    continue
-            except IndexError:
-                continue
-
-            print(self.list_coord)
-            if self.list_coord == 'altaz':#azel_move
-                print('altaz_check')
-                if self.tracking_status == False:
-                    pass
-                else:
-                    command_az_before = self.command_az
-                    command_el_before = self.command_el
-                    self.stop_flag = True
-                    print('altaz_check#stop_flag True')
-                    continue
-            else:
-                pass
-
             ret = self.comp()
             print(ret)
             if ret == None:
