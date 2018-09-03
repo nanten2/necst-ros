@@ -96,9 +96,10 @@ class dome_controller(object):
             print('dome_az',dome_az)
             print('enc_az',self.enc_az)
             dir = self.dev.move_track(self.enc_az, dome_az)
-            if dir <= 1.5:
+            if dir <= 1.5 or dir >= 358.5:
                 self.dev.dome_stop()
-        if self.end_flag == True:
+        if self.end_flag:
+            self.dev.dome_stop()
             while "dome_tracking" in self.paralist:
                 self.paralist.remove("dome_tracking")
         return
@@ -108,11 +109,12 @@ class dome_controller(object):
             pos = self.dome_enc
             dir = self.dev.move(dist, pos)
             print(dir,'<1.5 => stop')
-            if dir <= 1.5:#0.5=>1.5
-                self.paralist.remove("dome_move")
+            if dir <= 1.5 or dir >= 358.5:
                 self.dev.dome_stop()
+                self.paralist.remove("dome_move")
                 break
         if self.end_flag:
+            self.dev.dome_stop()
             while "dome_move" in self.paralist:
                 self.paralist.remove("dome_move")
         return
