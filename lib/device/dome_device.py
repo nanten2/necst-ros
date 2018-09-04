@@ -36,6 +36,7 @@ class dome_device(object):
             print('tracking', enc_az, dome_az)
         else:
             dir = 1.5
+            print("tracking_waiting: ", enc_az, dome_az)
         time.sleep(0.01)
         #print('dome_tracking')
         return dir
@@ -44,10 +45,12 @@ class dome_device(object):
         pos_arcsec = float(pos)#[arcsec]
         pos = pos_arcsec/3600.
         pos = pos % 360.0
+        print("pos: ", pos)
         dist = float(dist) % 360.0
+        print("dist: ", dist)
         diff = dist - pos
         dir = diff % 360.0
-        print('dir', dir)
+        print('dir: ', dir)
         """
         if dir < 0:
             dir = dir*(-1)
@@ -77,7 +80,7 @@ class dome_device(object):
             global buffer
             self.buffer[1] = 1
             self.do_output(turn, speed)
-            print(track)
+            print("track_flag: "track)
             if track:
                 time.sleep(0.1)
                 return dir
@@ -90,7 +93,7 @@ class dome_device(object):
 
     def dome_open(self):
         ret = self.get_door_status()
-        if ret[1] != "OPEN" or ret[3] != "OPEN":
+        if ret[1] != "OPEN" and ret[3] != "OPEN":
             buff = [1, 1]
             self.dio.output_point(buff, 5)
             while ret[1] != 'OPEN' and ret[3] != 'OPEN':
@@ -102,7 +105,7 @@ class dome_device(object):
 
     def dome_close(self):
         ret = self.get_door_status()
-        if ret[1] != 'CLOSE' or ret[3] != 'CLOSE':
+        if ret[1] != 'CLOSE' and ret[3] != 'CLOSE':
             buff = [0, 1]
             self.dio.output_point(buff, 5)
             while ret[1] != 'CLOSE' and ret[3] != 'CLOSE':
