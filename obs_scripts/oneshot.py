@@ -134,10 +134,11 @@ ccd.oneshot(dirname, filename)
 print(dirname, filename)
 
 """ scan test
-for j in range(3):
-    for i in range(15):
+for j in range(5):
+    for i in range(5):
+        ctrl.onepoint_move(radec.ra.deg, radec.dec.deg, 'fk5', -2000+i*500, -2000+j*500, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)                
         #ctrl.planet_move(planet, off_x = -6000, off_y=-6500-1000+j*500, hosei = "hosei_opt.txt", lamda = 0.5)
-        ctrl.onepoint_move(target[0], target[1], 'fk5', -5800-3500+500*i, -6300-500+500*j, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)
+        #ctrl.onepoint_move(target[0], target[1], 'fk5', -5800-3500+500*i, -6300-500+500*j, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)
         #ctrl.onepoint_move(5, 63, 'altaz', -5800-1000+500*i, -6300-1000+500*j, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)        
         ctrl.antenna_tracking_check()
         filename2 = filename + "_x"+str(i) +"_y"+str(j)

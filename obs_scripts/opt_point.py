@@ -123,7 +123,7 @@ class opt_point_controller(object):
             now = [now]
             print(ra,dec,now)
                         
-            ret = self.calc.coordinate_calc(ra, dec, now, 'j2000', 0, 0, 'hosei_230.txt', 2600, 5, 20, 0.07)
+            ret = self.calc.coordinate_calc(ra, dec, now, 'fk5', 0, 0, 'hosei_opt.txt', 2600, 5, 20, 0.07)
             _list.append(ret[0][0]) #arcsec
             #list = [number, ra, dec, magnitude, az]
             #print(str(ra)+"  "+str(dec))
@@ -179,7 +179,7 @@ class opt_point_controller(object):
             __dec = [_tbl[2]*3600.]
             __now = [now]
 
-            ret = self.calc.coordinate_calc(__ra, __dec, __now, 'j2000', 0, 0, 'hosei_230.txt', 2600, 5, 20, 0.07)
+            ret = self.calc.coordinate_calc(__ra, __dec, __now, 'fk5', 0, 0, 'hosei_opt.txt', 2600, 5, 20, 0.07)
             real_el = ret[1][0]/3600.
             print('#L161',ret)
             if real_el >= 30. and real_el < 80.:
@@ -187,8 +187,8 @@ class opt_point_controller(object):
                 temp_coord.location = nanten2
                 temp_coord.obstime = Time(dt.utcnow())
                 azel = temp_coord.altaz
-                self.ctrl.onepoint_move(azel.az.deg, azel.alt.deg, "altaz", -5700, -6100, "altaz", lamda=0.5)
-                #self.ctrl.onepoint_move(_tbl[1], _tbl[2], "J2000",lamda = 500)#lamda = 0.5 => 500
+                #self.ctrl.onepoint_move(azel.az.deg, azel.alt.deg, "altaz", -5700, -6100, "altaz", lamda=0.5)
+                self.ctrl.onepoint_move(_tbl[1], _tbl[2], "fk5",hosei="hosei_opt.txt",lamda = 0.5)#lamda = 0.5 => 500
 
                 #stop moving antenna and dome tracking
                 self.ctrl.antenna_tracking_check()
@@ -197,7 +197,7 @@ class opt_point_controller(object):
                 now = dt.now()
                 status = self.ctrl.read_status()
                 #n_star = self.calc_star_azel(_tbl[1], _tbl[2], _date)
-                ret = self.calc.coordinate_calc(__ra, __dec, __now, 'j2000', 0, 0, 'hosei_230.txt', 2600, 5, 20, 0.07)
+                ret = self.calc.coordinate_calc(__ra, __dec, __now, 'fk5', 0, 0, 'hosei_opt.txt', 2600, 5, 20, 0.07)
                 #__x = [_tbl[0]]
                 #__y = [_tbl[3]]
                 #__now = [dt.utcnow()]
