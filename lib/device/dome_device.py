@@ -31,13 +31,11 @@ class dome_device(object):
         dome_az = dome_az/3600.
         enc_az = float(enc_az)
         enc_az = enc_az/3600.
-        if math.fabs(enc_az - dome_az) > 1.5 and math.fabs(enc_az - dome_az) < 358.5:#or => and by shiotani
+        if math.fabs(enc_az - dome_az) > 1.5:
             dir = self.move(enc_az, dome_az*3600, track=True)
-            print('tracking', enc_az, dome_az)
         else:
             dir = 1.5
         time.sleep(0.01)
-        #print('dome_tracking')
         return dir
 
     def move(self, dist, pos, track=False):
@@ -47,7 +45,7 @@ class dome_device(object):
         dist = float(dist) % 360.0
         diff = dist - pos
         dir = diff % 360.0
-        print('dir', dir)
+        print('dir: ', dir)
         """
         if dir < 0:
             dir = dir*(-1)
@@ -73,11 +71,10 @@ class dome_device(object):
             speed = 'high'
         else:
             speed = 'mid'
-        if not abs(dir) < 1.5 or not abs(dir) > 358.5:
+        if not abs(dir) < 1.5 and not abs(dir) > 358.5:
             global buffer
             self.buffer[1] = 1
             self.do_output(turn, speed)
-            print(track)
             if track:
                 time.sleep(0.1)
                 return dir
@@ -90,7 +87,7 @@ class dome_device(object):
 
     def dome_open(self):
         ret = self.get_door_status()
-        if ret[1] != "OPEN" or ret[3] != "OPEN":
+        if ret[1] != "OPEN" and ret[3] != "OPEN":
             buff = [1, 1]
             self.dio.output_point(buff, 5)
             while ret[1] != 'OPEN' and ret[3] != 'OPEN':
@@ -102,7 +99,7 @@ class dome_device(object):
 
     def dome_close(self):
         ret = self.get_door_status()
-        if ret[1] != 'CLOSE' or ret[3] != 'CLOSE':
+        if ret[1] != 'CLOSE' and ret[3] != 'CLOSE':
             buff = [0, 1]
             self.dio.output_point(buff, 5)
             while ret[1] != 'CLOSE' and ret[3] != 'CLOSE':
