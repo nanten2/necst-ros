@@ -239,7 +239,7 @@ class status_main(object):
             if self.param10["alert_msg"]:
                 print(self.param10["alert_msg"])
             if self.param12["check_launch"]:
-                print("Don't move node : ", self.param12["check_launch"])                
+                print("Not moving in the launch file : ", self.param12["check_launch"])                
 
             if self.args[1]:
                 if drive[0] == 1:
