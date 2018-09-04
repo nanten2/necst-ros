@@ -100,6 +100,8 @@ class dome_controller(object):
                 self.dev.dome_stop()
         if self.end_flag:
             self.dev.dome_stop()
+            while "dome_move" in self.paralist: # 0904
+                self.paralist.remove("dome_move")
             while "dome_tracking" in self.paralist:
                 self.paralist.remove("dome_tracking")
         return
