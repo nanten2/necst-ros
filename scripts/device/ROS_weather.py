@@ -37,7 +37,7 @@ class weather_controller(object):
     RainRate = 0
 
     def __init__(self):
-        self.passwd = getpass.getpass()
+        #self.passwd = getpass.getpass()
         self.sub = rospy.Subscriber("outer_ondotori", tr7nw_values, self.get_ondotori)
         self.sub_davis = rospy.Subscriber("davis_weather", davis_weather, self.get_davis)
         pass
@@ -46,7 +46,7 @@ class weather_controller(object):
         pub = rospy.Publisher("status_weather", Status_weather_msg, queue_size = 10, latch = True)
         msg = Status_weather_msg()
         while not rospy.is_shutdown():
-            ret = self.get_weather()
+            #ret = self.get_weather()
             msg.in_temp = self.InTemp#ret[6]
             msg.out_temp = self.OutTemp#ret[7]
             #msg.out_temp = self.OutTemp_davis
@@ -57,12 +57,12 @@ class weather_controller(object):
             msg.wind_dir = self.WindDir#ret[10]
             msg.press = self.Press#ret[12]
             msg.rain = self.RainRate#ret[13]
-            msg.cabin_temp1 = ret[14]
-            msg.cabin_temp2 = ret[15]
-            msg.dome_temp1 = ret[16]
-            msg.dome_temp2 = ret[17]
-            msg.gen_temp1 = ret[18]
-            msg.gen_temp2 = ret[19]
+            #msg.cabin_temp1 = ret[14]
+            #msg.cabin_temp2 = ret[15]
+            #msg.dome_temp1 = ret[16]
+            #msg.dome_temp2 = ret[17]
+            #msg.gen_temp1 = ret[18]
+            #msg.gen_temp2 = ret[19]
             msg.from_node = node_name
             msg.timestamp = time.time()
             pub.publish(msg)

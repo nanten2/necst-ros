@@ -89,7 +89,7 @@ def handler(num, flame):
 
 signal.signal(signal.SIGINT, handler)
 
-#ctrl.dome_track()
+ctrl.dome_track()
 ctrl.move_stop()
 from astropy.coordinates import get_body,EarthLocation, SkyCoord
 from datetime import datetime as dt
@@ -146,7 +146,7 @@ for j in range(5):
 """
 
 print("###end###")
-#ctrl.dome_track_end()
+ctrl.dome_track_end()
 ctrl.move_stop()
 time.sleep(1)
 ctrl.move_stop()
