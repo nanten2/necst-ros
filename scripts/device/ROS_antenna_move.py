@@ -297,16 +297,19 @@ class antenna_move(object):
     def stop_move(self, req):
         if time.time() - self.start_time < 1:
             return
-        
+
         if req.data == False:
+            self.stop_flag = False
             pass
         else:
             rospy.loginfo('***subscribe move stop***')
-            self.parameters['az_list'] = []
-            self.parameters['el_list'] = []
-            self.parameters["start_time_list"] = []
-        
-        self.stop_flag = req.data
+            for i in range(3):
+                self.parameters['az_list'] = []
+                self.parameters['el_list'] = []
+                self.parameters["start_time_list"] = []
+                self.stop_flag = True
+                time.sleep(1.)
+            self.stop_flag = True                
         return  
 
     def emergency(self,req):
