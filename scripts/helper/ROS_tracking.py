@@ -20,7 +20,11 @@ class tracking_check(object):
         'command_el' : 200
         }
     tracking = False
+    
     list_coord = ''
+    before_x = -10
+    before_y = -10
+    same_azel_list_flag = False
     
     def __init__(self):
         self.start_thread()
@@ -49,6 +53,14 @@ class tracking_check(object):
 
     def set_list_param(self, req):
         self.list_coord = req.coord
+        if self.list_coord == 'altaz':
+            if  not abs(self.before_x - req.x_list[0]) < 0.0001 or not abs(self.before_y - req.y_list[0]) < 0.0001:
+                self.before_x = req.x_list[0]
+                self.before_y = req.y_list[0]
+                self.same_azel_list_flag = False
+            else:
+                self.same_azel_list_flag = True
+            
         
     def check_track(self):
         track_count = 0
@@ -65,7 +77,7 @@ class tracking_check(object):
             d_az = abs(command_az - enc_az)
             d_el = abs(command_el - enc_el)
 
-            before_coord = self.list_coord
+            list_coord = self.list_coord
                 
             #rospy.loginfo( self.antenna_param['command_az'])
             if d_az <= 3 and d_el <=3:
@@ -78,12 +90,13 @@ class tracking_check(object):
             else:
                 self.tracking = False
                 pub_flag = 0
-                
-            if self.tracking == True and before_coord == 'altaz' and pub_flag == 0:
+
+            if self.tracking == True and list_coord == 'altaz' and self.same_azel_list_flag and pub_flag == 0:
                 pub.publish(True, 'ROS_tracking.py', time.time())
-                pub_flag = 1
+                pub_flag =1
             else:
                 pass
+            
             time.sleep(0.1)
             rospy.loginfo('tracking : %s'%self.tracking)
         return self.tracking
