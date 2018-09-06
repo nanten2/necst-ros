@@ -6,6 +6,7 @@ import datetime
 import sys
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
+import opt_analy
 import ROS_controller
 import signal
 import sys
@@ -51,6 +52,7 @@ class opt_point_controller(object):
         self.ctrl.move_stop()
         self.ctrl.dome_stop()
         self.ctrl.obs_status(active=False)
+        time.sleep(3.)
         sys.exit()
 
 
@@ -179,14 +181,14 @@ class opt_point_controller(object):
             __dec = [_tbl[2]*3600.]
             __now = [now]
 
-            ret = self.calc.coordinate_calc(__ra, __dec, __now, 'fk5', 0, 0, 'hosei_opt.txt', 2600, 5, 20, 0.07)
+            ret = self.calc.coordinate_calc(__ra, __dec, __now, 'fk5', 0, 0, 'hosei_opt.txt', 0.5, 980, 260, 0.07)
             real_el = ret[1][0]/3600.
             print('#L161',ret)
-            if real_el >= 30. and real_el < 80.:
-                temp_coord = SkyCoord(_tbl[1], _tbl[2], frame="fk5", unit="deg")
-                temp_coord.location = nanten2
-                temp_coord.obstime = Time(dt.utcnow())
-                azel = temp_coord.altaz
+            if real_el >= 30. and real_el < 79.5:
+                #temp_coord = SkyCoord(_tbl[1], _tbl[2], frame="fk5", unit="deg")
+                #temp_coord.location = nanten2
+                #temp_coord.obstime = Time(dt.utcnow())
+                #azel = temp_coord.altaz
                 #self.ctrl.onepoint_move(azel.az.deg, azel.alt.deg, "altaz", -5700, -6100, "altaz", lamda=0.5)
                 self.ctrl.onepoint_move(_tbl[1], _tbl[2], "fk5",hosei="hosei_opt.txt",lamda = 0.5)#lamda = 0.5 => 500
 
@@ -202,14 +204,27 @@ class opt_point_controller(object):
                 #__y = [_tbl[3]]
                 #__now = [dt.utcnow()]
                 print('###ret###',ret)
-                
-                ccd.ccd_controller().all_sky_shot(_tbl[0], _tbl[3], ret[0][0]/3600., ret[1][0]/3600., data_name, status)
+                try:
+                    ccd.ccd_controller().all_sky_shot(_tbl[0], _tbl[3], ret[0][0]/3600., ret[1][0]/3600., data_name, status)
+                except Exception as e:
+                    print(e)
+                    self.ctrl.move_stop()
+                    time.sleep(3)
+                    sys.exit()
             else:
                 #out of range(El)
                 pass
 
 
         self.ctrl.move_stop()
+        time.sleep(3.)
+        try:
+            print('Analysis ...')
+            optdata_dir = '/home/nfs/necopt-old/ccd-shot/data/'
+            opt_analy.opt_plot([optdata_dir+data_name], savefig=False)
+        except Exception as e:
+            print(e)
+            
         print("OBSERVATION END")
         self.ctrl.obs_status(active=False)
         return
