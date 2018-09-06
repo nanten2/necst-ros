@@ -87,50 +87,70 @@ class dome_device(object):
 
     def dome_open(self):
         ret = self.get_door_status()
+        print(ret)
         if ret[1] != "OPEN" and ret[3] != "OPEN":
             buff = [1, 1]
             self.dio.output_point(buff, 5)
+            print("output")
             while ret[1] != 'OPEN' and ret[3] != 'OPEN':
+                print("while loop....")
                 time.sleep(5)
                 ret = self.get_door_status()
+                print(ret)
         buff = [0, 0]
         self.dio.output_point(buff, 5)
+        print("dio[0,0] output, End")
         return
 
     def dome_close(self):
         ret = self.get_door_status()
+        print(ret)
         if ret[1] != 'CLOSE' and ret[3] != 'CLOSE':
             buff = [0, 1]
             self.dio.output_point(buff, 5)
+            print("output")
             while ret[1] != 'CLOSE' and ret[3] != 'CLOSE':
+                print("while loop....")
                 time.sleep(5)
                 ret = self.get_door_status()
+                print(ret)
         buff = [0, 0]
         self.dio.output_point(buff, 5)
+        print("dio[0,0] output, End")
         return
 
     def memb_open(self):
         ret = self.get_memb_status()
+        print(ret)
         if ret[1] != 'OPEN':
             buff = [1, 1]
             self.dio.output_point(buff, 7)
+            print("output")
             while ret[1] != 'OPEN':
+                print("while loop....")
                 time.sleep(5)
                 ret = self.get_memb_status()
+                print(ret)
         buff = [0, 0]
         self.dio.output_point(buff, 7)
+        print("dio[0,0] output, End")
         return
 
     def memb_close(self):
         ret = self.get_memb_status()
+        print(ret)
         if ret[1] != 'CLOSE':
             buff = [0, 1]
             self.dio.output_point(buff, 7)
+            print("output")
             while ret[1] != 'CLOSE':
+                print("while loop....")
                 time.sleep(5)
                 ret = self.get_memb_status()
+                print(ret)
         buff = [0, 0]
         self.dio.output_point(buff, 7)
+        print("dio[0,0] output, End")
         return
 
     """
@@ -206,6 +226,7 @@ class dome_device(object):
                 self.left_pos = 'CLOSE'
         else:
             self.left_pos = 'OPEN'
+        print("get_door_status: ", ret)
         return [self.right_act, self.right_pos, self.left_act, self.left_pos]
 
     def get_memb_status(self):
@@ -222,6 +243,7 @@ class dome_device(object):
                 self.memb_pos = 'CLOSE'
         else:
             self.memb_pos = 'OPEN'
+        print("get_memb_status:  :", ret)
         return [self.memb_act, self.memb_pos]
     
     def get_remote_status(self):
