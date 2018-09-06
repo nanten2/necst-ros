@@ -7,7 +7,6 @@ import pyinterface
 import math
 
 class dome_device(object):
-    buffer = [0,0,0,0,0,0]
     stop = [0]
     error = []
     dome_enc = 0
@@ -72,8 +71,6 @@ class dome_device(object):
         else:
             speed = 'mid'
         if not abs(dir) < 1.5 and not abs(dir) > 358.5:
-            global buffer
-            self.buffer[1] = 1
             self.do_output(turn, speed)
             if track:
                 time.sleep(0.1)
@@ -173,20 +170,23 @@ class dome_device(object):
 
     ###output
     def do_output(self, turn, speed):
-        global buffer
+        buffer = [0, 0, 0, 0]
         global stop
-        if turn == 'right': self.buffer[0] = 0
-        else: self.buffer[0] = 1
+        if turn == 'right': buffer[0] = 0
+        else: buffer[0] = 1
         if speed == 'low':
-            self.buffer[2:4] = [0, 0]
+            buffer[2:4] = [0, 0]
         elif speed == 'mid':
-            self.buffer[2:4] = [1, 0]
+            buffer[2:4] = [1, 0]
         else:
-            self.buffer[2:4] = [0, 1]
+            buffer[2:4] = [0, 1]
         if self.stop[0] == 1:
-            self.buffer[1] = 0
-        else: self.buffer[1] = 1
-        self.dio.output_point(self.buffer, 1)
+            buffer[1] = 0
+        else: buffer[1] = 1
+        self.dio.output_point(buffer[0], 1)
+        self.dio.output_point(buffer[1], 2)
+        self.dio.output_point(buffer[2], 3)
+        self.dio.output_point(buffer[3], 4)
         print('do_output')
         return
 
