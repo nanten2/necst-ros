@@ -44,7 +44,7 @@ class dome_device(object):
         dist = float(dist) % 360.0
         diff = dist - pos
         dir = diff % 360.0
-        print('dir: ', dir)
+        #print('dir: ', dir)
         """
         if dir < 0:
             dir = dir*(-1)
@@ -63,7 +63,7 @@ class dome_device(object):
                 turn = 'left'
             else:
                 turn = 'right'
-        print(abs(dir))
+        #print(abs(dir))
         if abs(dir) < 5.0 or abs(dir) > 355.0:
             speed = 'low'
         elif abs(dir) > 15.0 and abs(dir) < 345.0:
@@ -183,10 +183,7 @@ class dome_device(object):
         if self.stop[0] == 1:
             buffer[1] = 0
         else: buffer[1] = 1
-        self.dio.output_point(buffer[0], 1)
-        self.dio.output_point(buffer[1], 2)
-        self.dio.output_point(buffer[2], 3)
-        self.dio.output_point(buffer[3], 4)
+        self.dio.output_point(buffer, 1)
         print('do_output')
         return
 
@@ -226,7 +223,6 @@ class dome_device(object):
                 self.left_pos = 'CLOSE'
         else:
             self.left_pos = 'OPEN'
-        print("get_door_status: ", ret)
         return [self.right_act, self.right_pos, self.left_act, self.left_pos]
 
     def get_memb_status(self):
@@ -243,7 +239,6 @@ class dome_device(object):
                 self.memb_pos = 'CLOSE'
         else:
             self.memb_pos = 'OPEN'
-        print("get_memb_status:  :", ret)
         return [self.memb_act, self.memb_pos]
     
     def get_remote_status(self):
