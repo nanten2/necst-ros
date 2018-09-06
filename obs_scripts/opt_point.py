@@ -221,7 +221,7 @@ class opt_point_controller(object):
         try:
             print('Analysis ...')
             optdata_dir = '/home/nfs/necopt-old/ccd-shot/data/'
-            opt_analy.opt_plot([optdata_dir+data_name], savefig=False)
+            opt_analy.opt_plot([optdata_dir+data_name], savefig=True, interactive=True)
         except Exception as e:
             print(e)
             
