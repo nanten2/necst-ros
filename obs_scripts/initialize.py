@@ -12,6 +12,7 @@ def handler(signal, frame):
     print("*** system stop!! ***")
     ctrl.move_stop()
     ctrl.obs_status(active=False)
+    time.sleep(2.)
     sys.exit()
     return
 signal.signal(signal.SIGINT, handler)
