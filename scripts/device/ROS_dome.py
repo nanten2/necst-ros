@@ -93,14 +93,14 @@ class dome_controller(object):
         print("dome_tracking start", self.end_flag)
         while not self.end_flag:
             dome_az = self.dome_enc
-            #print('dome_az',dome_az)
-            #print('enc_az',self.enc_az)
+            print('dome_az',dome_az)
+            print('enc_az',self.enc_az)
             dir = self.dev.move_track(self.enc_az, dome_az)
             if dir <= 1.5 or dir >= 358.5:
                 self.dev.dome_stop()
         if self.end_flag:
             self.dev.dome_stop()
-            while "dome_move" in self.paralist: # 0904
+            while "dome_move" in self.paralist:
                 self.paralist.remove("dome_move")
             while "dome_tracking" in self.paralist:
                 self.paralist.remove("dome_tracking")
