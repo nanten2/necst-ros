@@ -26,7 +26,7 @@ class antenna_device(object):
 
     #PID parameter
     p_coeff = [3.7, 3.7]
-    i_coeff = [3.0, 3.0]
+    i_coeff = [3.5, 5.0]
     d_coeff = [0, 0]
     dir_name = ''
     
