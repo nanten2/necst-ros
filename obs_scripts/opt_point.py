@@ -218,12 +218,25 @@ class opt_point_controller(object):
 
         self.ctrl.move_stop()
         time.sleep(3.)
+
+        ###plot Qlook
+        ###==========
+        optdata_dir = '/home/nfs/necopt-old/ccd-shot/data/'
         try:
             print('Analysis ...')
-            optdata_dir = '/home/nfs/necopt-old/ccd-shot/data/'
             opt_analy.opt_plot([optdata_dir+data_name], savefig=True, interactive=True)
         except Exception as e:
             print(e)
+
+        try:
+            import glob
+            date = dataname[:8]
+            file_list = glob.glob('{}{}*'.format(optdata_dir, date))
+            opt_analy.opt_plot(file_list, savefig=True, interactive=True)     
+            pass
+        except Exception as e:
+            print(e)
+        ###==========
             
         print("OBSERVATION END")
         self.ctrl.obs_status(active=False)
