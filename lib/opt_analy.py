@@ -15,7 +15,7 @@ def process2forfit(dir):
         return
 
 
-def process_static(dir_list, *, sigma_clip=None, const_clip=None):
+def process_static(dir_list, *, clip_sigma=None, clip_const=None):
     ind_az = 14
     ind_el = 15
     ind_dx = 10
@@ -39,10 +39,10 @@ def process_static(dir_list, *, sigma_clip=None, const_clip=None):
     #print(d)
 
     if sigma_clip != None:
-        x_clip, y_clip = sigma_clip
+        x_clip, y_clip = clip_sigma
         d=rawdata[(abs(rawdata[:,ind_dx] -rawdx_med) < x_clip * rawdx_std) & (abs(rawdata[:,ind_dy] -rawdy_med) < y_clip * rawdy_std)]
     elif const_clip != None:
-        x_clip, y_clip = const_clip
+        x_clip, y_clip = clip_const
         d=rawdata[(abs(rawdata[:,ind_dx] -rawdx_med) < x_clip) & (abs(rawdata[:,ind_dy] -rawdy_med) < y_clip)]
     else:
         d = rawdata
@@ -62,21 +62,21 @@ def process_static(dir_list, *, sigma_clip=None, const_clip=None):
     return dx_avg, dy_avg, dx_std, dy_std, dx_med, dy_med
 
 
-def opt_plot(dir_list, *, savefig=True, figname=None, interactive=False):
+def opt_plot(dir_list, *, clip_sigma=(3.,3.), savefig=True, figname=None, interactive=False):
 
     ind_az = 14
     ind_el = 15
     ind_dx = 10
     ind_dy = 9
 
-    dx_avg, dy_avg, dx_std, dy_std, *_ = process_static(dir_list, sigma_clip=(3.,3.))
+    dx_avg, dy_avg, dx_std, dy_std, *_ = process_static(dir_list, sigma_clip=clip_sigma)
 
     #files = multifiles(dirname)
     d_list = [np.loadtxt(os.path.join(_dir, 'process.log')) for _dir in dir_list]
     for _d in d_list:
         _d[:,ind_dx]=(_d[:,ind_dx]-350)*0.9267
         _d[:,ind_dy]=(_d[:,ind_dy]-240)*0.8392
-        _d = _d[(abs(_d[:,ind_dx] -dx_avg) < dx_std * 3.) & (abs(_d[:,ind_dy] -dy_avg) < dy_std * 3.)]
+        _d = _d[(abs(_d[:,ind_dx] -dx_avg) < dx_std * clip_sigma[0]) & (abs(_d[:,ind_dy] -dy_avg) < dy_std * clip_sigma[1])]
 
     axes = np.array([[ind_az, ind_dx, 'Az', 'dx'],
     [ind_az, ind_dy,'Az', 'dy'],
@@ -92,8 +92,14 @@ def opt_plot(dir_list, *, savefig=True, figname=None, interactive=False):
     [_a.set_xlabel(_x+' (deg)') for _a, _x in zip(ax, axes[:,2])]
     ax[4].set_xlabel('dx (arcsec)')
     [_a.set_ylabel(_y+' (arcsec)') for _a, _y in zip(ax, axes[:,3])]
-    ax[4].legend(labels=dir_list, loc=0)
-    
+
+    if len(dir_list) < 8:
+        tbl_loc = 'lower center'
+        legend_loc = (1.1, 0.35)
+    else:
+        tbl_loc = 'bottom'
+        legend_loc = (1.1, 0.02)
+
     tbl = fig.add_subplot(3,2,6)
 
     col_labels=['average','std dev']
@@ -104,11 +110,11 @@ def opt_plot(dir_list, *, savefig=True, figname=None, interactive=False):
     tbl.table(cellText=tbl_vals,
     rowLabels=row_labels,
     colLabels=col_labels,
-    loc='lower center')
+    loc=tbl_loc)
 
     tbl.set_axis_off()
     fig.tight_layout()
-    ax[4].legend(labels=dir_list, loc=(1.35, 0.35))
+    ax[4].legend(labels=dir_list, loc=legend_loc)
 
     if savefig == True:
         if figname == None:
@@ -135,9 +141,9 @@ def fdy(altaz, dEl, chi, omega, g1):
 
 def opt_fit(dir_list, *, hosei_path='hosei_opt.txt', output_dir=None, savefig=True, figname=None, interactive=False):
     if output_dir == None:
-        output_dir = './'
+        output_dir = '.'
     else:
-        if os.path.isdir(workind_dir) == False:
+        if os.path.isdir(output_dir) == False:
             os.makedirs(output_dir)
 
     ind_az = 0
@@ -175,11 +181,11 @@ def opt_fit(dir_list, *, hosei_path='hosei_opt.txt', output_dir=None, savefig=Tr
     res_dx_std, res_dy_std = np.std(res, axis=0)
 
     fig = plt.figure(figsize=(6.5,9))
-    axes = np.array([[ind_az, ind_dx, 'Az', 'dx'],
-    [ind_az, ind_dy, 'Az', 'dy'],
-    [ind_el, ind_dx, 'El', 'dx'],
-    [ind_el, ind_dy, 'El', 'dy'],
-    [ind_dx, ind_dy, 'dx', 'dy']])
+    axes = np.array([[ind_az, ind_resdx, 'Az', 'dx'],
+    [ind_az, ind_resdy, 'Az', 'dy'],
+    [ind_el, ind_resdx, 'El', 'dx'],
+    [ind_el, ind_resdy, 'El', 'dy'],
+    [ind_resdx, ind_resdy, 'dx', 'dy']])
     ax = [fig.add_subplot(3, 2, i) for i in range(1, 6)]
     [[_a.scatter(_d[:,int(_xind)], _r[:,int(_yind)], marker='.') for _a, _xind, _yind in zip(ax[0:4], axes[:4,0], axes[:4,1])] for _d, _r in zip(d_list, res_list)]
     [ax[4].scatter(_r[:,0], _r[:,1], marker='.') for _r in res_list]
@@ -189,18 +195,25 @@ def opt_fit(dir_list, *, hosei_path='hosei_opt.txt', output_dir=None, savefig=Tr
     ax[4].set_xlabel('dx (arcsec)')
     [_a.set_ylabel(_y+' (arcsec)') for _a, _y in zip(ax, axes[:,3])]
 
+    if len(dir_list) < 8:
+        tbl_loc = 'lower center'
+        legend_loc = (1.1, 0.35)
+    else:
+        tbl_loc = 'bottom'
+        legend_loc = (1.1, 0.02)
+
     tbl = fig.add_subplot(3,2,6)
     col_labels=['average','std dev']
     row_labels=[' dx ',' dy ']
     tbl_vals=[["{:.2e}".format(res_dx_avg), "{:.2f}".format(res_dx_std)],
     ["{:.2e}".format(res_dy_avg), "{:.2f}".format(res_dy_std)]]
-    tbl.table(cellText=tbl_vals,rowLabels=row_labels,colLabels=col_labels,loc='lower center')
+    tbl.table(cellText=tbl_vals,rowLabels=row_labels,colLabels=col_labels,loc=tbl_loc)
 
     fig.tight_layout()
     tbl.set_axis_off()
-    ax[4].legend(labels=dir_list, loc=(1.35, 0.35))
+    ax[4].legend(labels=dir_list, loc=legend_loc)
 
-    hosei_op = np.zeros(24)
+    hosei_op = hosei.copy()
     hosei_op[0] = dAz_n
     hosei_op[1] = de_n
     hosei_op[2] = chi_xn
@@ -210,16 +223,15 @@ def opt_fit(dir_list, *, hosei_path='hosei_opt.txt', output_dir=None, savefig=Tr
     hosei_op[8] = omega_yn
     hosei_op[11] = g1_n
     hosei_op[15] = dEl_n
-    np.savetxt(os.path.dirname(output_dir, 'new_hosei_opt.txt'), hosei_op.astype(str).T,)
+    np.savetxt(os.path.dirname(output_dir, 'new_hosei_opt.txt'), hosei_op.T)
 
     hosei_uct = np.zeros(16)
     hosei_uct[0:5] = np.sqrt(np.diag(coval_dx))
-    hosei_uct[7], hosei_uct[8], hosei_uct[11], hosei_uct[15] = np.sqrt(np.diag(coval_dy))
-    hosei_uct[hosei_uct != 0] /= hosei_op[hosei_uct != 0]
+    hosei_uct[[7, 8, 11, 15]] = np.sqrt(np.diag(coval_dy))
     param_names = ['daz', 'de', 'chi_az', 'omega_az', 'eps', 'chi2_az', 'omega2_az', 'chi_el', 'omega_el', 'chi2_el', 'omega2_el', 'g', 'gg', 'ggg', 'gggg', 'del']
 
-    hosei_print = ['| {} | {} | {} | {} | {:.3g%} |'.format(_nm, _ih, _oh, _oh - ih, _uct / _oh) for _ih, _oh, _uct in zip(param_names, hosei[:15], hosei_op[:15], hosei_uct)]
-    f = open(os.path.dirname(output_dir + '/')+'/fitting_result.txt', mode='a')
+    hosei_print = ['| {} | {} | {} | {} | {:.3%} |'.format(_nm, _ih, _oh, _oh - _ih, _uct / _oh) for _nm, _ih, _oh, _uct in zip(param_names, hosei[:16], hosei_op[:16], hosei_uct)]
+    f = open(os.path.join(output_dir, 'fitting_result.txt'), mode='a')
     f.write("-" * 32)
     f.write("directories of data :\t{}\n".format(',\t'.join(dir_list)))
     f.write("number of stars :\t{}\n".format(',\t'.join([str(len(_d)) for _d in d_list])))
@@ -247,16 +259,16 @@ if __name__ == '__main__':
     processing = args[1]
     dir_list = args[2:]
 
-    if processing == 'p' or 'pl' or 'plot' or '-p' or '-pl' or '-pl' or '-plot':
+    if processing == 'p':
         opt_plot(dir_list,savefig=True, interactive=False)
 
-    elif processing == 'f' or 'fit' or 'fitting' or '-f' or '-fit' or '-fitting':
+    elif processing == 'f':
         opt_fit(dir_list)
 
-    elif processing == 'c' or 'convert' or '-c' or 'convert':
+    elif processing == 'c':
         [process2forfit(_dir) for _d in dir_list]
 
-    elif processing == 'a' or 'all' or '-a' or '-all':
+    elif processing == 'a':
         opt_plot(dir_list,savefig=True, interactive=False)
         [process2forfit(_dir) for _d in dir_list]
         opt_fit(dir_list)
