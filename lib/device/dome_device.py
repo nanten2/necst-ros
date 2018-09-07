@@ -2,7 +2,6 @@
 
 import time
 import sys
-sys.path.append("/home/amigos/ros/src/necst/lib")
 import pyinterface
 import math
 
