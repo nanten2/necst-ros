@@ -33,7 +33,7 @@ class dome_controller(object):
         'command':0
         }
     paralist = []
-    parameter_az = 5
+    parameter_az = 0
     ###command flags
     end_flag = True
 
@@ -109,7 +109,6 @@ class dome_controller(object):
     def con_move(self, dist):
         while not self.end_flag:
             pos = self.dome_enc
-            print("con_move_dist: ",dist)
             dir = self.dev.move(dist, pos)
             print(dir,'<1.5 => stop')
             if dir <= 1.5 or dir >= 358.5:
@@ -205,7 +204,6 @@ class dome_controller(object):
         return
 
     def set_az_command(self, req):
-        print("req:  ", req.value)
         self.parameter_az = req.value
         print("set:  ", self.parameter_az)
         return
@@ -266,7 +264,6 @@ class dome_controller(object):
                 continue
             elif "dome_move" in self.paralist and "dome_tracking" in self.paralist:
                 if self.paralist.index("dome_move") < self.paralist.index("dome_tracking"):
-                    sub3 = rospy.Subscriber('dome_move_az', Dome_msg, self.set_az_command)
                     time.sleep(0.1)
                     self.end_flag = False
                     self.con_move(self.parameter_az)
@@ -274,10 +271,8 @@ class dome_controller(object):
                     self.end_flag = False
                     self.con_move_track()
             elif "dome_move" in self.paralist:
-                sub3 = rospy.Subscriber('dome_move_az', Dome_msg, self.set_az_command)
                 time.sleep(0.1)
                 self.end_flag = False
-                print("target_az  ", self.parameter_az)
                 self.con_move(self.parameter_az)
             elif "dome_tracking" in self.paralist:
                 self.end_flag = False
@@ -341,5 +336,6 @@ if __name__ == '__main__':
     print('[ROS_dome.py] : START SUBSCRIBE')
     sub1 = rospy.Subscriber('status_encoder', Status_encoder_msg, d.set_enc_parameter)
     sub2 = rospy.Subscriber('dome_move', Dome_msg, d.set_command)
+    sub3 = rospy.Subscriber('dome_move_az', Dome_msg, self.set_az_command)
     rospy.spin()
     
