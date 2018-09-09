@@ -205,7 +205,6 @@ class dome_controller(object):
 
     def set_az_command(self, req):
         self.parameter_az = req.value
-        print("set:  ", self.parameter_az)
         return
 
     ###function call to dome/memb action 
@@ -336,6 +335,6 @@ if __name__ == '__main__':
     print('[ROS_dome.py] : START SUBSCRIBE')
     sub1 = rospy.Subscriber('status_encoder', Status_encoder_msg, d.set_enc_parameter)
     sub2 = rospy.Subscriber('dome_move', Dome_msg, d.set_command)
-    sub3 = rospy.Subscriber('dome_move_az', Dome_msg, self.set_az_command)
+    sub3 = rospy.Subscriber('dome_move_az', Dome_msg, d.set_az_command)
     rospy.spin()
     
