@@ -40,7 +40,9 @@ class dome_device(object):
     def move(self, dist, pos, track=False):
         pos_arcsec = float(pos)#[arcsec]
         pos = pos_arcsec/3600.
+        print("pos: ", pos)
         pos = pos % 360.0
+        print("dist: ", dist)
         dist = float(dist) % 360.0
         diff = dist - pos
         dir = diff % 360.0
