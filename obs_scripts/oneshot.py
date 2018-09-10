@@ -154,6 +154,7 @@ ctrl.move_stop()
 ###show image
 try:
     from PIL import Image
+    time.sleep(2)#wait for picture
     i = Image.open(str(dirname)+'/'+str(filename)+'.bmp')#from ccd_old.py
     i.show()
 except Exception as e:
