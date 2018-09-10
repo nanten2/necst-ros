@@ -15,7 +15,7 @@ def process2forfit(dir):
         return
 
 
-def process_static(dir_list, *, clip_sigma=None, clip_const=None):
+def process_static(dir_list, *, sigma_clip=None, clip_const=None):
     ind_az = 14
     ind_el = 15
     ind_dx = 10
