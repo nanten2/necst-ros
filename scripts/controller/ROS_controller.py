@@ -144,8 +144,8 @@ class controller(object):
         @functools.wraps(func)
         def ros_logger(self, *args, **kwargs):
             rospy.loginfo((str(locals()['func']).split()[1].split('.')[1])+'#'+str(locals()['args']))
-            func(self, *args, **kwargs)
-            return
+            ret = func(self, *args, **kwargs)
+            return ret
         return ros_logger
         
 
@@ -249,7 +249,7 @@ class controller(object):
     
     @logger
     @deco_check
-    def onepoint_move(self, x, y, coord="altaz", off_x=0, off_y=0, offcoord='altaz', hosei='hosei_230.txt',  lamda=2600, dcos=0, limit=True,):
+    def onepoint_move(self, x, y, coord="altaz", off_x=0, off_y=0, offcoord='altaz', hosei='hosei_230.txt',  lamda=2600, dcos=0, limit=True, rotation=True):
         """ azel_move, radec_move, galactic_move
         
         Parameters
@@ -264,13 +264,14 @@ class controller(object):
         lamda    : observation wavelength [um] (default ; 2600)
         dcos     : projection (no:0, yes:1)
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
+        rotation : True -->  az=240 change az=-120 
         """
-        self.pub_onepoint.publish(x, y, coord, "", off_x, off_y, offcoord, hosei, lamda, dcos, limit, self.node_name, time.time())
+        self.pub_onepoint.publish(x, y, coord, "", off_x, off_y, offcoord, hosei, lamda, dcos, limit, rotation, self.node_name, time.time())
         return
     
     @logger
     @deco_check
-    def planet_move(self, planet, off_x=0, off_y=0, offcoord="altaz", hosei="hosei_230.txt", lamda=2600, dcos=0, limit=True):
+    def planet_move(self, planet, off_x=0, off_y=0, offcoord="altaz", hosei="hosei_230.txt", lamda=2600, dcos=0, limit=True, rotation=True):
         """ planet_move
         
         Parameters
@@ -291,12 +292,12 @@ class controller(object):
         else:
             pass
         print("planet name is ", planet)
-        self.pub_planet.publish(0, 0, "planet", planet, off_x, off_y, offcoord, hosei, lamda, dcos,limit, self.node_name, time.time())
+        self.pub_planet.publish(0, 0, "planet", planet, off_x, off_y, offcoord, hosei, lamda, dcos,limit, rotation, self.node_name, time.time())
         return
     
     @logger    
     @deco_check
-    def linear_move(self, x, y, coord="altaz", dx=0, dy=0, offcoord='altaz', hosei='hosei_230.txt',  lamda=2600, dcos=0, limit=True,):
+    def linear_move(self, x, y, coord="altaz", dx=0, dy=0, offcoord='altaz', hosei='hosei_230.txt',  lamda=2600, dcos=0, limit=True, rotation=True):
         """ azel_move, radec_move, galactic_move
         
         Parameters
@@ -312,7 +313,7 @@ class controller(object):
         dcos     : projection (no:0, yes:1)
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
         """
-        self.pub_linear.publish(x, y, coord, "", dx, dy, offcoord, hosei, lamda, dcos, limit, self.node_name, time.time())
+        self.pub_linear.publish(x, y, coord, "", dx, dy, offcoord, hosei, lamda, dcos, limit, rotation, self.node_name, time.time())
         return
     
     @logger
@@ -667,7 +668,7 @@ class controller(object):
 # spectrometer
 # ===================
     @logger
-    @deco_check
+    @deco_check    
     def oneshot_achilles(self, repeat=1, exposure=1.0, stime=0.0):
         """get spectrum by ac240
 
@@ -681,12 +682,17 @@ class controller(object):
         rospy.wait_for_service("ac240")
         response = self.service(repeat, exposure, stime)
         print(response)
-        data_dict = {"dfs1":response.dfs1, "dfs2":response.dfs2}
+        print(len(response.dfs1))
+        dfs1_list = []
+        dfs2_list = []
+        calc1 = [dfs1_list.extend(response.dfs1[i*16384:(i+1)*16384]) for i in range(int(len(response.dfs1)/16384))]
+        calc2 = [dfs2_list.extend(response.dfs2[i*16384:(i+1)*16384]) for i in range(int(len(response.dfs2)/16384))]
+        
+        data_dict = {"dfs1":[dfs1_list,response.dfs1_2], "dfs2":[dfs2_list, response.dfs2_2]}
 
         return data_dict
 
-    @logger
-    @deco_check
+
     def old_oneshot(self, repeat=1, exposure=1.0, stime=0.0):
         dfs = achilles.dfs()
         data = dfs.oneshot(req.repeat, req.exposure, req.stime)
@@ -840,7 +846,8 @@ class controller(object):
         
         self.pub_obsstatus.publish(msg)
         return
-
+    @logger
+    @deco_check        
     def read_status(self):
         """read status
 

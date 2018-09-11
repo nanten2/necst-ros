@@ -14,9 +14,10 @@ from necst.msg import String_necst
 
 import signal
 def handler(signal, frame):
+    print("***program end***")    
     sys.exit()
-    print("***program end***")
     return
+    
 signal.signal(signal.SIGINT, handler)
 
 node_name = "obs_log"
@@ -61,15 +62,15 @@ def obs_format():
     while not rospy.is_shutdown():
         ctime = dt.utcnow()            
         filename = ctime.strftime("%Y%m%d")
-        if os.path.isfile("/home/amigos/data/log/"+filename+".txt"):
+        if os.path.isfile("/home/amigos/data/obs_log/"+filename+".txt"):
             pass
         else:
             time.sleep(10.)
             continue
-        f = open("/home/amigos/data/log/"+filename+".txt", "r")
+        f = open("/home/amigos/data/obs_log/"+filename+".txt", "r")
         ff = f.readlines()
         f.close()
-        ft = open("/home/amigos/data/obs_log/"+filename+"_log.txt", "a")
+        ft = open("/home/amigos/data/log/"+filename+".txt", "a")
         for i in ff:
             if not "@" in i:
                 ft.write(i)
@@ -84,7 +85,7 @@ def end():
         try:
             ctime = dt.utcnow()            
             filename = ctime.strftime("%Y%m%d")            
-            f = open("/home/amigos/data/log/"+filename+".txt", "w")
+            f = open("/home/amigos/data/obs_log/"+filename+".txt", "w")
             f.write("- limit error"+"\n")
             f.write("-- "+str(stop)+"\n")
             f.write("\n")            
@@ -98,7 +99,7 @@ def end():
         try:
             ctime = dt.utcnow()            
             filename = ctime.strftime("%Y%m%d")
-            f = open("/home/amigos/data/log/"+filename+".txt", "r")    
+            f = open("/home/amigos/data/obs_log/"+filename+".txt", "r")    
             f.write("- alert message"+"\n")
             f.write("-- "+str(alert)+"\n")
             f.write("\n")
@@ -135,7 +136,7 @@ def weather_check(weather):
 '''
     ctime = dt.utcnow()        
     filename = ctime.strftime("%Y%m%d")
-    f = open("/home/amigos/data/log/"+filename+".txt", "a")
+    f = open("/home/amigos/data/obs_log/"+filename+".txt", "a")
     f.write(initial.format(date,
                            weather.in_temp,
                            weather.out_temp,
@@ -148,10 +149,10 @@ def weather_check(weather):
                            weather.press))
     f.write("<!--\n")
     f.write("- hosei_parameter"+"\n")
-    try:
+    if hosei:
         for i in range(0,len(hosei.data)):
             f.write(str(hosei.data[i])+"\n")
-    except:
+    else:
         f.write("no hosei file"+"\n")
     f.write("-->\n")
     f.close()
@@ -181,14 +182,14 @@ def observer(number=1):
     print(name.format(utctime=ctime, num=number))
     cctime = dt.utcnow()        
     filename = cctime.strftime("%Y%m%d")
-    f = open("/home/amigos/data/log/"+filename+".txt", "a")    
+    f = open("/home/amigos/data/obs_log/"+filename+".txt", "a")    
     f.write(name.format(utctime=ctime, num=number))
     f.close()
     return
 
 def observation(target="", obs=""):
     now = dt.utcnow()    
-    ctime = now.strftime("%Y%m%d")
+    ctime = now.strftime("%Y/%m/%d %H:%M:%S")
 
     title = '#### <i class="fa fa-paper-plane" aria-hidden="true"></i> {target}'
     if obs.active == True:
@@ -205,7 +206,7 @@ def observation(target="", obs=""):
 '''
     cctime = dt.utcnow()            
     filename = cctime.strftime("%Y%m%d")
-    f = open("/home/amigos/data/log/"+filename+".txt", "a")
+    f = open("/home/amigos/data/obs_log/"+filename+".txt", "a")
     if target != obs.target:
         print(title.format(target = obs.target))
         f.write(title.format(target = obs.target))
@@ -278,33 +279,40 @@ xxx
 '''
 
 def initialize():
+    stime = ""    
+    ctime = dt.utcnow()
+    day = ctime.strftime("%Y-%m-%d")
+    filename = ctime.strftime("%Y%m%d")            
+    if ctime.day != stime and not os.path.exists("/home/amigos/data/obs_log/"+filename+".txt"):
+        print( os.path.exists("/home/amigos/data/obs_log/"+day+".txt"))
+        print(data.format(**{"day":day}))            
+        f = open("/home/amigos/data/obs_log/"+filename+".txt", "a")
+        f.write(data.format(**{"day":day}))
+        f.close()
+        weather_check(weather)
+        stime = ctime.day
+        print("input observe number(1 or 2 or 3)")
+    else:
+        pass
+
+def start_program():
     global weather
     global obs
     global target
     global number
-    now = dt.utcnow()
-    day = now.strftime("%Y-%m-%d")
-    print(data.format(**{"day":day}))
-    ctime = dt.utcnow()        
-    filename = ctime.strftime("%Y%m%d")
-    f = open("/home/amigos/data/log/"+filename+".txt", "a")
-    f.write(data.format(**{"day":day}))
-    f.close()
     while not weather:
-        print("wait")
+        print("wait weather data...")
         time.sleep(1.)
-    weather_check(weather)
-    #number = input("num")
-    #observer(number)
-    #weather_check(weather)
+    initialize()
     ret = ""
     old_flag = ""
-    while not obs:
-        time.sleep(1.)
     while not rospy.is_shutdown():
+        while not obs:
+            time.sleep(1.)
         if  obs.active != old_flag or obs.target != ret:
             ret = observation(ret, obs)
             old_flag = obs.active
+            print("input observe number(1 or 2 or 3)")
         else:
             pass
         time.sleep(1.)
@@ -313,36 +321,41 @@ def initialize():
 
 def observer_change():
     time.sleep(3.)
+    old_num = ""
     while not rospy.is_shutdown():
-        number = input("observe number(1 or 2 or 3)")
-        observer(number)
-        weather_check(weather)
+        #number = input("input observe number(1 or 2 or 3)")
+        number = input("")
+        if isinstance(number, int) and number != old_num:
+            observer(number)
+            weather_check(weather)
+            old_num = number
+        else:
+            print("same number")
+            pass
     return
 
 
 if __name__ == "__main__":
     rospy.init_node(node_name)
-    rospy.Subscriber("obs_status", Status_obs_msg, _obs)
-    rospy.Subscriber("status_weather", Status_weather_msg, _weather)
-    rospy.Subscriber("hosei_parameter", String_list_msg, _hosei)
-    rospy.Subscriber("obs_stop", String_necst, _obs_stop)
-    rospy.Subscriber("alert", String_necst, _alert, queue_size=1)
-    thread = threading.Thread(target=obs_format)
-    thread.start()
+    sub1 = rospy.Subscriber("obs_status", Status_obs_msg, _obs)
+    sub2 = rospy.Subscriber("status_weather", Status_weather_msg, _weather)
+    sub3 = rospy.Subscriber("hosei_parameter", String_list_msg, _hosei)
+    sub4 = rospy.Subscriber("obs_stop", String_necst, _obs_stop)
+    sub5 = rospy.Subscriber("alert", String_necst, _alert, queue_size=1)
+    #thread = threading.Thread(target=obs_format)
+    #thread.start()
     obs_thread = threading.Thread(target=observer_change)
     obs_thread.start()
-    #weather = threading.Thread(target=get_weather)
-    #weather.start()
-    if os.path.exists("/home/amigos/data/log"):
-        pass
-    else:
-        os.mkdir("home/amigos/data/log")
+
     if os.path.exists("/home/amigos/data/obs_log"):
         pass
     else:
-        os.mkdir("home/amigos/data/obs_log")            
-    #obs_record()
+        os.mkdir("home/amigos/data/obs_log")
+    #if os.path.exists("/home/amigos/data/log"):
+        #pass
+    #else:
+        #os.mkdir("home/amigos/data/log")            
     
     time.sleep(1)
-    initialize()
+    start_program()
 
