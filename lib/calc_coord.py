@@ -42,7 +42,7 @@ class azel_calc(object):
         target_el = altaz.alt.arcsec+ret[1]
         return target_az, target_el
 
-    def coordinate_calc(self, x_list, y_list, time_list,  coord, off_az, off_el, hosei, lamda, press, temp, humi, limit=True):
+    def coordinate_calc(self, x_list, y_list, time_list,  coord, off_az, off_el, hosei, lamda, press, temp, humi, limit=True, rotation=True):
 
         # coordinate check len(x_list)=len(y_list)=len(time_list)
         frame = self.coord_list[coord.lower()]
@@ -72,8 +72,12 @@ class azel_calc(object):
                 #el_list.append(altaz_list[i].alt.arcsec+off_el) #no_kisa
 
             pass
-        
+
+        if rotation == False:
+            az_list = [i-360*3600. if i>180*3600. else i for i in az_list]
+            az_list = [i+180*3600. if i<-180*3600. else i for i in az_list]
         #print("az :",az_list[0]/3600.,"el :", el_list[0]/3600.)
+
         return[az_list, el_list]
             
 
