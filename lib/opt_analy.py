@@ -65,7 +65,7 @@ def opt_plot(dir_list, *, clip_sigma=(3.,3.), savefig=True, figname=None, intera
     ind_dx = 10
     ind_dy = 9
 
-    dx_avg, dy_avg, dx_std, dy_std, *_ = process_static(dir_list, sigma_clip=clip_sigma)
+    dx_avg, dy_avg, dx_std, dy_std, *_ = process_static(dir_list, clip_sigma=clip_sigma)
 
     #files = multifiles(dirname)
     d_list = [np.loadtxt(os.path.join(_dir, 'process.log')) for _dir in dir_list]
