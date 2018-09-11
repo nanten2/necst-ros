@@ -149,6 +149,8 @@ class status_main(object):
             self.param4['dome_status'] = 'MOVE'
         elif self.param4['right_pos'] == 'CLOSE' and self.param4['left_pos'] == 'CLOSE':
             self.param4['dome_status'] = 'CLOSE'
+        else:#Need check
+            self.param4['dome_status'] = 'ERROR'
         pass
         
     def callback5(self, req):#hot
