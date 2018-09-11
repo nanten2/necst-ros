@@ -43,7 +43,7 @@ class azel_list(object):
         pass
 
     def _receive_weather(self, req):
-        self.press = req.press
+        self.press = 550 #req.press temp
         self.out_temp = req.out_temp
         self.out_humi = req.out_humi
         return
