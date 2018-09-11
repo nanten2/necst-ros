@@ -129,8 +129,6 @@ def tsys(dhot, dsky, thot):
 tsys1 = tsys(d1_list[0], d1_list[1], cabin_temp)
 tsys2 = tsys(d2_list[0], d2_list[1], cabin_temp)
 
-print("#####d1_list#####")
-print(d1_list)
 d1_av = numpy.mean(d1_list[:,500:-500], axis=1)
 d2_av = numpy.mean(d2_list[:,500:-500], axis=1)
 tsys1_av = tsys(d1_av[0], d1_av[1], cabin_temp)
