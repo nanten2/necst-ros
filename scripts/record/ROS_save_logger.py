@@ -6,9 +6,13 @@ from rosgraph_msgs.msg import Log
 
 rospy.init_node('NECST_logger')
 
+###config
 save_to = '/home/amigos/log'
-def hoge(req):
-    if not req.file == 'ROS_controller.py':return
+debug_file = 'ROS_controller.py'
+###
+
+def save(req):
+    if not req.file == debug_file:return
     if '#' in list(req.msg):
         args = req.msg.split('#')[1]
         f_name = req.msg.split('#')[0]
@@ -24,7 +28,7 @@ def hoge(req):
 
 
 if __name__ == '__main__':
-    sub = rospy.Subscriber('rosout_agg', Log, hoge, queue_size=100)
+    sub = rospy.Subscriber('rosout_agg', Log, save, queue_size=100)
     try:
         file_name = sys.argv[1]
     except:
