@@ -72,7 +72,7 @@ class opt_point_controller(object):
         return [real_az, real_el]
         """
 
-    def create_table(self):
+    def create_table(self,sort = 'az'):
         """
         Returns
         -------
@@ -126,38 +126,60 @@ class opt_point_controller(object):
             print(ra,dec,now)
                         
             ret = self.calc.coordinate_calc(ra, dec, now, 'fk5', 0, 0, 'hosei_opt.txt', 2600, 5, 20, 0.07)
-            _list.append(ret[0][0]) #arcsec
+            _list.append(ret[0][0]) #az arcsec
+            _list.append(ret[1][0])
             #list = [number, ra, dec, magnitude, az]
             #print(str(ra)+"  "+str(dec))
             if _list[4] > 3600*180:
                 _list[4] = _list[4] -3600*360
             
-            if ret[1][0]/3600. >= 30 and ret[1][0]/3600. < 80:
-                print("============")
-                num = len(target_list)
-                if num == 0:
-                    target_list.append(_list) 
-                elif num == 1:
-                    if target_list[0][4] < _list[4]:
-                        target_list.append(_list)
+            if sort == 'az':
+                if ret[1][0]/3600. >= 30 and ret[1][0]/3600. < 80:
+                    print("============")
+                    num = len(target_list)
+                    if num == 0:
+                        target_list.append(_list) 
+                    elif num == 1:
+                        if target_list[0][4] < _list[4]:
+                            target_list.append(_list)
+                        else:
+                            target_list.insert(0, _list)
                     else:
-                        target_list.insert(0, _list)
-                else:
-                    for i in range(num):
-                        if target_list[i][4] > _list[4]:
-                            target_list.insert(i, _list)
-                            break
-                        if i == num-1:
-                            target_list.insert(num, _list)
+                        for i in range(num):
+                            if target_list[i][4] > _list[4]:
+                                target_list.insert(i, _list)
+                                break
+                            if i == num-1:
+                                target_list.insert(num, _list)
+                                pass
+            else:#el_sort
+                if ret[1][0]/3600. >= 30 and ret[1][0]/3600. < 80:
+                    print("============")
+                    num = len(target_list)
+                    if num == 0:
+                        target_list.append(_list) 
+                    elif num == 1:
+                        if target_list[0][5] < _list[5]:
+                            target_list.append(_list)
+                        else:
+                            target_list.insert(0, _list)
+                    else:
+                        for i in range(num):
+                            if target_list[i][5] > _list[5]:
+                                target_list.insert(i, _list)
+                                break
+                            if i == num-1:
+                                target_list.insert(num, _list)
+                                pass
             
             line = f.readline()
         
         f.close()
         return target_list
     
-    def start_observation(self):
+    def start_observation(self, sort = 'az'):
         signal.signal(signal.SIGINT, self.handler)
-        table = self.create_table()
+        table = self.create_table(sort = sort)
         print("#################",table)
         num = len(table)
         
