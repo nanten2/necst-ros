@@ -21,24 +21,20 @@ def process_static(dir_list, *, clip_sigma=None, clip_const=None):
     ind_dx = 10
     ind_dy = 9
 
-    #enable to input clips as list
-    #const_clip = tuple(const_clip)
-    #sigma_clip = tuple(sigma_clip)
-
     rawdata = np.concatenate([np.loadtxt(os.path.join(_dir, 'process.log')) for _dir in dir_list])
 
     rawdata[:,ind_dx]=(rawdata[:,ind_dx]-320)*0.9267
     rawdata[:,ind_dy]=(rawdata[:,ind_dy]-240)*0.8392
 
-    rawdx_avg = np.average(rawdata[:,ind_dx])
-    rawdy_avg = np.average(rawdata[:,ind_dy])
+    #rawdx_avg = np.average(rawdata[:,ind_dx])
+    #rawdy_avg = np.average(rawdata[:,ind_dy])
     rawdx_std = np.std(rawdata[:,ind_dx])
     rawdy_std = np.std(rawdata[:,ind_dy])
     rawdx_med = np.median(rawdata[:,ind_dx])
     rawdy_med = np.median(rawdata[:,ind_dy])
     #print(d)
 
-    if sigma_clip != None:
+    if clip_sigma != None:
         x_clip, y_clip = clip_sigma
         d=rawdata[(abs(rawdata[:,ind_dx] -rawdx_med) < x_clip * rawdx_std) & (abs(rawdata[:,ind_dy] -rawdy_med) < y_clip * rawdy_std)]
     elif const_clip != None:
@@ -153,7 +149,7 @@ def opt_fit(dir_list, *, hosei_path='hosei_opt.txt', output_dir=None, savefig=Tr
 
     dx_avg, dy_avg, dx_std, dy_std, *_= process_static(dir_list, sigma_clip=(3.,3.))
     d_list_noclip = [np.loadtxt(os.path.dirname(_dir + '/')+'/for_fit.log') for _dir in dir_list]
-    d_list = [_d[(abs(d[:,ind_dx] -dx_avg) < dx_std * 3.) & (abs(_d[:,ind_dy] -dy_avg) < dy_std * 3.)] for _d in d_list_noclip]
+    d_list = [_d[(abs(_d[:,ind_dx] -dx_avg) < dx_std * 3.) & (abs(_d[:,ind_dy] -dy_avg) < dy_std * 3.)] for _d in d_list_noclip]
 
     hosei = np.loadtxt(hosei_path)
     dAz = hosei[0]
@@ -179,6 +175,8 @@ def opt_fit(dir_list, *, hosei_path='hosei_opt.txt', output_dir=None, savefig=Tr
     res = np.concatenate(res_list)
     res_dx_avg, res_dy_avg = np.average(res, axis=0)
     res_dx_std, res_dy_std = np.std(res, axis=0)
+    ind_resdx = 0
+    ind_resdy = 1
 
     fig = plt.figure(figsize=(6.5,9))
     axes = np.array([[ind_az, ind_resdx, 'Az', 'dx'],
@@ -223,7 +221,7 @@ def opt_fit(dir_list, *, hosei_path='hosei_opt.txt', output_dir=None, savefig=Tr
     hosei_op[8] = omega_yn
     hosei_op[11] = g1_n
     hosei_op[15] = dEl_n
-    np.savetxt(os.path.dirname(output_dir, 'new_hosei_opt.txt'), hosei_op.T)
+    np.savetxt(os.path.join(output_dir, 'new_hosei_opt.txt'), hosei_op.T)
 
     hosei_uct = np.zeros(16)
     hosei_uct[0:5] = np.sqrt(np.diag(coval_dx))
