@@ -37,7 +37,7 @@ def process_static(dir_list, *, clip_sigma=None, clip_const=None):
     if clip_sigma != None:
         x_clip, y_clip = clip_sigma
         d=rawdata[(abs(rawdata[:,ind_dx] -rawdx_med) < x_clip * rawdx_std) & (abs(rawdata[:,ind_dy] -rawdy_med) < y_clip * rawdy_std)]
-    elif const_clip != None:
+    elif clip_const != None:
         x_clip, y_clip = clip_const
         d=rawdata[(abs(rawdata[:,ind_dx] -rawdx_med) < x_clip) & (abs(rawdata[:,ind_dy] -rawdy_med) < y_clip)]
     else:
