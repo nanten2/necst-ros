@@ -27,7 +27,7 @@ def oneshot(req):
             
     time.sleep(req.exposure*req.repeat)
     print("fin")
-    return ac240_srvResponse(data0, data[0][1], data1, data[1][1])
+    return ac240_srvResponse(data0, data[0][1].tolist(), data1, data[1][1].tolist())
 
 if __name__ == "__main__":
     rospy.init_node("achilles")
