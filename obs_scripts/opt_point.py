@@ -129,6 +129,8 @@ class opt_point_controller(object):
             _list.append(ret[0][0]) #arcsec
             #list = [number, ra, dec, magnitude, az]
             #print(str(ra)+"  "+str(dec))
+            if _list[4] > 3600*225:
+                _list[4] = _list[4] -3600*360
             
             if ret[1][0]/3600. >= 30 and ret[1][0]/3600. < 80:
                 print("============")
@@ -224,7 +226,7 @@ class opt_point_controller(object):
         optdata_dir = '/home/nfs/necopt-old/ccd-shot/data/'
         try:
             print('Analysis ...')
-            opt_analy.opt_plot([optdata_dir+data_name], savefig=True, interactive=True)
+            opt_analy.opt_plot([optdata_dir+data_name], savefig=True, figname=data_name, interactive=True)
         except Exception as e:
             print(e)
 

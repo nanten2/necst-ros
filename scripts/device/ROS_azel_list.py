@@ -170,11 +170,11 @@ class azel_list(object):
                     time_list3 = [datetime.fromtimestamp(time_list2[i]) for i in range(len(time_list2))]
                     astro_time = Time(time_list3)
 
-                    
+
                     ret = self.calc.coordinate_calc(x_list2, y_list2, astro_time,
                                                     param.coord, param.off_az, param.off_el, 
                                                     param.hosei, param.lamda, self.press,
-                                                    self.out_temp, self.out_humi, param.limit)
+                                                    self.out_temp, self.out_humi, param.limit, param.rotation)
 
                     
                     ret[0] = self.negative_change(ret[0])
