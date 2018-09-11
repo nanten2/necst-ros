@@ -199,28 +199,32 @@ class antenna_move(object):
         ===========
         This function determine target Az and El from azel_list
         """
-        st = self.parameters['start_time_list']
+        param = self.parameters
+        st = param['start_time_list']
     
         if st == []:
             return
 
         ct = self.time_check(st)
-        if ct == None or self.parameters['az_list'] == []:
+        if ct == None or param['az_list'] == []:
 
             return
         
         else:
-            num = numpy.where(numpy.array(st) > ct)[0][0]
-            st2 = st[num]
-            param = self.parameters
-            if len(param['az_list']) > num:
-                az_1 = param['az_list'][num-1]
-                az_2 = param['az_list'][num]
-                el_1 = param['el_list'][num-1]
-                el_2 = param['el_list'][num]
-            else:
+            try:
+                num = numpy.where(numpy.array(st) > ct)[0][0]
+                st2 = st[num]
+                if len(param['az_list']) > num:
+                    az_1 = param['az_list'][num-1]
+                    az_2 = param['az_list'][num]
+                    el_1 = param['el_list'][num-1]
+                    el_2 = param['el_list'][num]
+                else:
+                    return
+                return (az_1,az_2,el_1,el_2,st2)
+            except Exception as e:
+                print(e)
                 return
-            return (az_1,az_2,el_1,el_2,st2)
         
     def act_azel(self):
         ###for azel_move check

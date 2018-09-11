@@ -7,5 +7,6 @@ float32 off_el
 string hosei
 float64 lamda
 bool limit
+bool rotation
 string from_node
 float64 timestamp

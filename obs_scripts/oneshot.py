@@ -150,5 +150,16 @@ ctrl.dome_track_end()
 ctrl.move_stop()
 time.sleep(1)
 ctrl.move_stop()
+
+###show image
+try:
+    save_to = '/home/nfs/necopt-old/ccd-shot/data/'
+    from PIL import Image
+    time.sleep(2)#wait for picture
+    i = Image.open(save_to + str(dirname)+'/'+str(filename)+'.bmp')#from ccd_old.py
+    i.show()
+except Exception as e:
+    print(e)
+    
 print("Finish observation")
 

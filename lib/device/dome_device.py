@@ -62,7 +62,6 @@ class dome_device(object):
                 turn = 'left'
             else:
                 turn = 'right'
-        print(abs(dir))
         if abs(dir) < 5.0 or abs(dir) > 355.0:
             speed = 'low'
         elif abs(dir) > 15.0 and abs(dir) < 345.0:
