@@ -16,18 +16,21 @@ def oneshot(req):
     print(req)
     dfs = achilles.dfs()
     data = dfs.oneshot(req.repeat, req.exposure, req.stime)
+    
     #data = [
     #    [[[10000.0+np.random.randint(1000) for i in range(16384)]]*int(req.repeat),10],
     #    [[[20000.0+np.random.randint(1000) for i in range(16384)]]*int(req.repeat),20]
     #]
     data0 = []
     data1 = []
-    calc0 = [data0.extend(i) for i in data[0][0]]
-    calc1 = [data1.extend(i) for i in data[1][0]]            
-            
+    print(list(data[0][0]))
+    print(len(list(data[0][0])))
+    calc0 = [data0.extend(i) for i in list(data[0])]
+    calc1 = [data1.extend(i) for i in list(data[1])]            
     time.sleep(req.exposure*req.repeat)
     print("fin")
-    return ac240_srvResponse(data0, data[0][1].tolist(), data1, data[1][1].tolist())
+    #return ac240_srvResponse(data0, data[0][1].tolist(), data1, data[1][1].tolist())
+    return ac240_srvResponse(data0, data1)    
 
 if __name__ == "__main__":
     rospy.init_node("achilles")

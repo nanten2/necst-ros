@@ -667,8 +667,8 @@ class controller(object):
 # ===================
 # spectrometer
 # ===================
-    @logger
-    @deco_check    
+#@logger
+    #@deco_check    
     def oneshot_achilles(self, repeat=1, exposure=1.0, stime=0.0):
         """get spectrum by ac240
 
@@ -685,10 +685,10 @@ class controller(object):
         print(len(response.dfs1))
         dfs1_list = []
         dfs2_list = []
-        calc1 = [dfs1_list.extend(response.dfs1[i*16384:(i+1)*16384]) for i in range(int(len(response.dfs1)/16384))]
-        calc2 = [dfs2_list.extend(response.dfs2[i*16384:(i+1)*16384]) for i in range(int(len(response.dfs2)/16384))]
+        tmp1 = [dfs1_list.append(response.dfs1[i*16384:(i+1)*16384]) for i in range(int(len(response.dfs1)/16384))]
+        tmp2 = [dfs2_list.append(response.dfs2[i*16384:(i+1)*16384]) for i in range(int(len(response.dfs2)/16384))]
         
-        data_dict = {"dfs1":[dfs1_list,response.dfs1_2], "dfs2":[dfs2_list, response.dfs2_2]}
+        data_dict = {"dfs1":dfs1_list, "dfs2":dfs2_list}
 
         return data_dict
 
