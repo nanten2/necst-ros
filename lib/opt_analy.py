@@ -65,7 +65,7 @@ def opt_plot(dir_list, *, clip_sigma=(3.,3.), savefig=True, figname=None, intera
     ind_dx = 10
     ind_dy = 9
 
-    dx_avg, dy_avg, dx_std, dy_std, *_ = process_static(dir_list, sigma_clip=clip_sigma)
+    dx_avg, dy_avg, dx_std, dy_std, *_ = process_static(dir_list, clip_sigma=clip_sigma)
 
     #files = multifiles(dirname)
     d_list = [np.loadtxt(os.path.join(_dir, 'process.log')) for _dir in dir_list]
@@ -147,7 +147,7 @@ def opt_fit(dir_list, *, hosei_path='hosei_opt.txt', output_dir=None, savefig=Tr
     ind_dx = 2
     ind_dy = 3
 
-    dx_avg, dy_avg, dx_std, dy_std, *_= process_static(dir_list, sigma_clip=(3.,3.))
+    dx_avg, dy_avg, dx_std, dy_std, *_= process_static(dir_list, clip_sigma=(3.,3.))
     d_list_noclip = [np.loadtxt(os.path.dirname(_dir + '/')+'/for_fit.log') for _dir in dir_list]
     d_list = [_d[(abs(_d[:,ind_dx] -dx_avg) < dx_std * 3.) & (abs(_d[:,ind_dy] -dy_avg) < dy_std * 3.)] for _d in d_list_noclip]
 
@@ -228,9 +228,9 @@ def opt_fit(dir_list, *, hosei_path='hosei_opt.txt', output_dir=None, savefig=Tr
     hosei_uct[[7, 8, 11, 15]] = np.sqrt(np.diag(coval_dy))
     param_names = ['daz', 'de', 'chi_az', 'omega_az', 'eps', 'chi2_az', 'omega2_az', 'chi_el', 'omega_el', 'chi2_el', 'omega2_el', 'g', 'gg', 'ggg', 'gggg', 'del']
 
-    hosei_print = ['| {} | {} | {} | {} | {:.3%} |'.format(_nm, _ih, _oh, _oh - _ih, _uct / _oh) for _nm, _ih, _oh, _uct in zip(param_names, hosei[:16], hosei_op[:16], hosei_uct)]
+    hosei_print = ['| {} | {} | {} | {} | {:.3%} |'.format(_nm, _ih, _oh, _oh - _ih, _uct) for _nm, _ih, _oh, _uct in zip(param_names, hosei[:16], hosei_op[:16], hosei_uct)]
     f = open(os.path.join(output_dir, 'fitting_result.txt'), mode='a')
-    f.write("-" * 32)
+    f.write("-" * 32 + "\n")
     f.write("directories of data :\t{}\n".format(',\t'.join(dir_list)))
     f.write("number of stars :\t{}\n".format(',\t'.join([str(len(_d)) for _d in d_list])))
     f.write("number of cliped stars :\t{}\n".format(',\t'.join([str(len(_dc) - len(_d)) for _dc, _d in zip(d_list_noclip, d_list)])))
@@ -268,7 +268,7 @@ if __name__ == '__main__':
 
     elif processing == 'a':
         opt_plot(dir_list,savefig=True, interactive=False)
-        [process2forfit(_dir) for _d in dir_list]
+        [process2forfit(_d) for _d in dir_list]
         opt_fit(dir_list)
 
     else:
