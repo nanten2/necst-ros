@@ -79,9 +79,11 @@ if len(target) == 0:
         sys.exit()
 
 ctrl = ROS_controller.controller()
+ctrl.obs_status(active=True, obsmode="Oneshot", obs_script="oneshot.py", obs_file="", target=star)
 
 def handler(num, flame):
     ctrl.move_stop()
+    ctrl.obs_status(active=False)
     print("!!ctrl + c!!")
     print("Stop antenna")
     sys.exit()
@@ -160,6 +162,8 @@ try:
     i.show()
 except Exception as e:
     print(e)
-    
+
+ctrl.obs_status(active=False)
+time.sleep(1.5)
 print("Finish observation")
 
