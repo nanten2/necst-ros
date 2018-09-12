@@ -8,6 +8,7 @@ import time
 import threading
 sys.path.append("/home/necst/ros/src/necst/lib/device")
 sys.path.append("/home/amigos/ros/src/necst/lib/device")
+from datetime import datetime as dt
 
 #ROS/import field
 #----------------
@@ -85,7 +86,7 @@ class antenna_move(object):
 
     
     MOTOR_SAMPLING = 10 #memo
-    dt = MOTOR_SAMPLING/1000.
+    mdt = MOTOR_SAMPLING/1000.
     
     #error_box = [0]*32###0921
 
@@ -256,7 +257,10 @@ class antenna_move(object):
             print(ret)
             rospy.loginfo(str(dt.utcnow()))
             rospy.loginfo("act:start_time")
-            rospy.loginfo(str(ret[4]))
+            try:
+                rospy.loginfo(str(ret[4]))
+            except:
+                pass
             rospy.loginfo("act:current_time")
             rospy.loginfo(str(time.time()))
             if ret == None:
