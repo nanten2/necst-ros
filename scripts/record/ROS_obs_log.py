@@ -191,13 +191,14 @@ def observation(target="", obs=""):
     now = dt.utcnow()    
     ctime = now.strftime("%Y/%m/%d %H:%M:%S")
 
-    title = '#### <i class="fa fa-paper-plane" aria-hidden="true"></i> {target}'
+    title = '#### <i class="fa fa-paper-plane" aria-hidden="true"></i> {obsmode}'
     if obs.active == True:
         data ='''
 - [ UTC ] {obstime} start:
 ```
 {obs_script} 
 ```
+- target : {target} 
 - obsfile : {obs_file}
 '''
     else:
@@ -208,13 +209,18 @@ def observation(target="", obs=""):
     filename = cctime.strftime("%Y%m%d")
     f = open("/home/amigos/data/obs_log/"+filename+".txt", "a")
     if target != obs.target:
-        print(title.format(target = obs.target))
-        f.write(title.format(target = obs.target))
+        print(title.format(obsmode = obs.obsmode))
+        f.write(title.format(obsmode = obs.obsmode))
     else:
         pass
-    print(data.format(**{"target":obs.target, "obstime":ctime, "obs_script":obs.obs_script, "obs_file":obs.obs_file}))
+    print(data.format(**{"target":obs.target, "obstime":ctime, "obs_script":obs.obs_script, "target":obs.target, "obs_file":obs.obs_file}))
     f.write(data.format(**{"target":obs.target, "obstime":ctime, "obs_script":obs.obs_script, "obs_file":obs.obs_file}))
+    if obs.active == True:
+        pass
+    else:
+        f.write("\n")
     f.close()
+    
     
     return obs.target
 
