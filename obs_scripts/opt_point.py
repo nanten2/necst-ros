@@ -214,7 +214,7 @@ class opt_point_controller(object):
                 #temp_coord.obstime = Time(dt.utcnow())
                 #azel = temp_coord.altaz
                 #self.ctrl.onepoint_move(azel.az.deg, azel.alt.deg, "altaz", -5700, -6100, "altaz", lamda=0.5)
-                self.ctrl.onepoint_move(_tbl[1], _tbl[2], "fk5",hosei="hosei_opt.txt",lamda = 0.5)#lamda = 0.5 => 500
+                self.ctrl.onepoint_move(_tbl[1], _tbl[2], "fk5",hosei="hosei_opt.txt",lamda = 0.5, rotation = False)#lamda = 0.5 => 500
 
                 #stop moving antenna and dome tracking
                 self.ctrl.antenna_tracking_check()
