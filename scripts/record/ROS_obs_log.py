@@ -293,6 +293,10 @@ def initialize():
         stime = ctime.day
         print("input observe number(1 or 2 or 3)")
     else:
+        f = open("/home/amigos/data/obs_log/"+filename+".txt", "a")
+        f.write("\n")
+        f.close()
+        print("input observe number(1 or 2 or 3)")        
         pass
 
 def start_program():
@@ -325,6 +329,11 @@ def observer_change():
     while not rospy.is_shutdown():
         #number = input("input observe number(1 or 2 or 3)")
         number = input("")
+        try:
+            number = int(number)
+        except:
+            print("Not integer")
+            pass
         if isinstance(number, int) and number != old_num:
             observer(number)
             weather_check(weather)
