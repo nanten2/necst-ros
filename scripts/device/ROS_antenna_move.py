@@ -201,7 +201,9 @@ class antenna_move(object):
         """
         param = self.parameters
         st = param['start_time_list']
-    
+        rospy.loginfo(str(dt.utcnow()))
+        rospy.loginfo("start time : st")
+        rospy.loginfo(str(st))        
         if st == []:
             return
 
@@ -214,6 +216,10 @@ class antenna_move(object):
             try:
                 num = numpy.where(numpy.array(st) > ct)[0][0]
                 st2 = st[num]
+                rospy.loginfo(str(dt.utcnow()))
+                rospy.loginfo("num + ct")
+                rospy.loginfo(str(num))
+                rospy.loginfo(str(ct))
                 if len(param['az_list']) > num:
                     az_1 = param['az_list'][num-1]
                     az_2 = param['az_list'][num]
@@ -223,7 +229,8 @@ class antenna_move(object):
                     return
                 return (az_1,az_2,el_1,el_2,st2)
             except Exception as e:
-                print(e)
+                rospy.loginfo(str(dt.utcnow()))
+                rospy.logerr(e)
                 return
         
     def act_azel(self):
@@ -247,6 +254,11 @@ class antenna_move(object):
 
             ret = self.comp()
             print(ret)
+            rospy.loginfo(str(dt.utcnow()))
+            rospy.loginfo("act:start_time")
+            rospy.loginfo(str(ret[4]))
+            rospy.loginfo("act:current_time")
+            rospy.loginfo(str(time.time()))
             if ret == None:
                 time.sleep(0.1)
                 continue
