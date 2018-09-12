@@ -130,7 +130,7 @@ class opt_point_controller(object):
             _list.append(ret[1][0])
             #list = [number, ra, dec, magnitude, az]
             #print(str(ra)+"  "+str(dec))
-            if _list[4] > 3600*140:#
+            if _list[4] > 3600*180:#
                 _list[4] = _list[4] -3600*360
             
             if sort == 'az':
