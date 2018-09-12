@@ -2,7 +2,7 @@ import datetime
 from astropy.time import Time
 import math
 import time
-import pyinterface
+#import pyinterface
 import numpy as np
 from PIL import Image
 from PIL import ImageOps

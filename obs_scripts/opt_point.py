@@ -43,7 +43,7 @@ class opt_point_controller(object):
         self.ctrl = ROS_controller.controller()
         #self.calc = azel_calc.azel_calc()
         self.calc = calc_coord.azel_calc()
-        self.ctrl.obs_status(active=True, obsmode="All_sky_shot", obs_script=__file__, obs_file="", target="1st star")
+        self.ctrl.obs_status(active=True, obsmode="All_sky_shot", obs_script="all_sky_shot.py", obs_file="", target="fourth magnitude star")
         return
     
     def handler(self, num, flame):
