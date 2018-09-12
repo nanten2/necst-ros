@@ -70,6 +70,7 @@ if snow:
     ctrl.onepoint_move(-90, 0.0001, limit=False)
 else:
     ctrl.onepoint_move(0, 45)
+time.sleep(2.)
 ctrl.antenna_tracking_check()
 ctrl.obs_status(active=True, current_position="ok : home position")
 print("memb_close")
