@@ -6,6 +6,7 @@ import datetime
 import argparse
 import opt_point
 import sys
+arg = sys.argv
 
 # Info
 # ----
@@ -27,8 +28,8 @@ p = argparse.ArgumentParser(description=description)
 name = "all_sky_shot"
 
 opt = opt_point.opt_point_controller()
-_sort = input('Do you want to start observation in El sort mode ([y]/n)?')
-if _sort == 'y':
+arg.append("")
+if arg[1] != '':
     _sort = 'el'
     print('***start observation in EL sort mode***')
 else:
