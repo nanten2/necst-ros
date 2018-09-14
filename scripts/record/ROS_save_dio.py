@@ -10,10 +10,14 @@ from necst.msg import Float64_list_msg
 
 node_name = "save_dio"
 
-parser = argparse.ArgumentParser("save dio program")
-parser.add_argument("name", help="input save filename")
-param = parser.parse_args()
-dirname = "/home/amigos/data/log/dio/"+param.name
+arg = sys.argv
+arg.append("")
+if not arg[1]:
+    print("Please input node_name in argument[1].")
+    sys.exit()
+else:
+    name = arg[1]
+dirname = "/home/amigos/data/log/dio/"+name
 
 dio = []
 
@@ -53,7 +57,7 @@ def save_file():
 
 if __name__ == "__main__":
     print("save dio\n")
-    print("name : ", param.name)
+    print("name : ", name)
     rospy.init_node(node_name)
-    sub = rospy.Subscriber(param.name, Float64_list_msg, _save, queue_size = 1)
+    sub = rospy.Subscriber(name, Float64_list_msg, _save, queue_size = 1)
     save_file()
