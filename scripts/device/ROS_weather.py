@@ -48,11 +48,11 @@ class weather_controller(object):
         while not rospy.is_shutdown():
             #ret = self.get_weather()
             msg.in_temp = self.InTemp#ret[6]
-            msg.out_temp = self.OutTemp#ret[7]
-            #msg.out_temp = self.OutTemp_davis
+            #msg.out_temp = self.OutTemp#ret[7]
+            msg.out_temp = self.OutTemp_davis
             msg.in_humi = self.InHumi#ret[8]
-            msg.out_humi = self.OutHumi#ret[9]
-            #msg.out_humi = self.OutHumi_davis
+            #msg.out_humi = self.OutHumi#ret[9]
+            msg.out_humi = self.OutHumi_davis
             msg.wind_sp = self.WindSp#ret[11]
             msg.wind_dir = self.WindDir#ret[10]
             msg.press = self.Press#ret[12]
