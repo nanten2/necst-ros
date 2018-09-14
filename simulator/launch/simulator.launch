@@ -26,5 +26,5 @@
   <node pkg='necst' name='alert_encoder' type='ROS_alert_encoder.py'/>
   <node pkg='necst' name='alert_ping' type='ROS_alert_ping.py'/>  
   <node pkg='necst' name='achilles' type='S_ROS_oneshot_achilles.py'/>
-  <node pkg="necst" name="hosei_parameter" type="ROS_hosei_parameter.py"/>  
+  <node pkg="necst" name="hosei_parameter" type="ROS_hosei_parameter.py"/>
 </launch>
