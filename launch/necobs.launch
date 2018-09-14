@@ -16,5 +16,8 @@
   <node pkg='necst' name='alert_sun' type='ROS_alert_sun.py'/>
   <node pkg='necst' name='alert_weather' type='ROS_alert_weather.py'/>
   <node pkg='necst' name='alert_encoder' type='ROS_alert_encoder.py'/>
-  <node pkg="necst" name="hosei_parameter" type="ROS_hosei_parameter.py"/>  
+  <node pkg="necst" name="hosei_parameter" type="ROS_hosei_parameter.py"/>
+  <node pkg="necst" name="achilles" type="ROS_oneshot_achilles.py"/>
+  <node pkg="necst" name="save_dio1" type="ROS_save_dio.py" args="dome_dio"/>
+  <node pkg="necst" name="save_dio2" type="ROS_save_dio.py" args="antenna_dio"/>
 </launch>
