@@ -5,6 +5,4 @@ float64 stime
 ----------------
 
 float64[] dfs1
-float64[] dfs1_2
 float64[] dfs2
-float64[] dfs2_2
