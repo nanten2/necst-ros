@@ -6,8 +6,8 @@ import time
 import rospy
 from necst.msg import Float64_list_msg
 
-dio = pyinterface.open(2724, 0)
-node_name = "antenna_dio"
+dio = pyinterface.open(2724, 2)
+node_name = "dome_dio"
 
 
 def check_dio():
