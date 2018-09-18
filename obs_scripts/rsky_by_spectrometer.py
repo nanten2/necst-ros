@@ -71,8 +71,8 @@ else:
 con = ROS_controller.controller()
 status = con.read_status()
 cabin_temp = status.CabinTemp1
-if cabin_tmp < 10.: # if no data
-    cabin_tmp == 300
+if cabin_temp < 10.: # if no data
+    cabin_temp == 300
     print("No data from weather")
     print("temporary T=300[K]")
 else:
