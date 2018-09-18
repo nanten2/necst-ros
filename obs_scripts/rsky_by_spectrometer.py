@@ -71,6 +71,10 @@ else:
 con = ROS_controller.controller()
 status = con.read_status()
 cabin_temp = status.CabinTemp1
+if cabin_tmp < 10.: # if no data
+    cabin_tmp == 300
+else:
+    pass
 
 d1_list = []
 d2_list = []
