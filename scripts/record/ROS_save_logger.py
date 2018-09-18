@@ -8,11 +8,27 @@ rospy.init_node('NECST_logger')
 
 ###config
 save_to = '/home/amigos/log'
-debug_file = 'ROS_controller.py'
+file_name = sys.argv[1]
 ###
 
+def save_file_conf():
+    today = datetime.date.today()
+    year = today.year
+    month = today.month
+    day = today.day
+    _save_to = os.path.join(save_to, str(year), str(month), str(day))
+    _file_name = file_name.split('.')[0]+'.txt'
+    if os.path.exists(_save_to):pass
+    else:
+        os.makedirs(_save_to)
+        print('Log is save to {}'.format(_save_to))
+    return _save_to, _file_name
+
 def save(req):
-    if not req.file == debug_file:return
+    ret = save_file_conf()
+    savefile = os.path.join(ret[0], ret[1])
+    if not req.file == file_name:return
+    print(req)
     if '#' in list(req.msg):
         args = req.msg.split('#')[1]
         f_name = req.msg.split('#')[0]
@@ -22,20 +38,12 @@ def save(req):
         log = '[{}] : ({}) : {}'.format(datetime.datetime.fromtimestamp(req.header.stamp.to_time()), req.file,req.msg)
         print(log)
     
-    f = open(path,'a')
+    f = open(savefile,'a')
     f.write(log+'\n')
     f.close()    
 
 
 if __name__ == '__main__':
     sub = rospy.Subscriber('rosout_agg', Log, save, queue_size=100)
-    try:
-        file_name = sys.argv[1]
-    except:
-        file_name = input('Please input file name : ')
-    path = os.path.join(save_to, file_name)
-    if os.path.exists(save_to):pass
-    else:os.mkdir(save_to)
-    print('Log is save to {}'.format(path))
-    print('*** Logger Start ***')
+    print('*** Logger Start {} ***'.format(file_name))
     rospy.spin()
