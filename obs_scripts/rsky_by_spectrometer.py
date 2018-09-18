@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 # Configurations
 # ==============
@@ -54,12 +54,15 @@ import ROS_controller
 
 timestamp = time.strftime('%Y%m%d_%H%M%S')
 if memo != '':
-    dirname = timestamp + '-' + memo
+    name = name + '_' + memo
 else:
-    dirname = timestamp
     pass
-
-savedir = "/home/amigos/data/experiment/rsky/"
+day = time.strftime("%Y%m%d")
+savedir = "/home/amigos/data/experiment/rsky/"+day+"/"
+if not os.path.exists(savedir):
+    os.makedirs(savedir)
+else:
+    pass
 
 
 # Data aquisition
@@ -172,4 +175,5 @@ fig.suptitle('%s : %s,  integ = %.2f'%(name, timestamp, integ))
 fig.savefig(os.path.join(savedir, '%s_%s.png'%(name, timestamp)))
 
 matplotlib.pyplot.show()
+
 

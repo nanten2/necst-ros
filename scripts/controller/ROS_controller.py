@@ -681,8 +681,8 @@ class controller(object):
         """
         rospy.wait_for_service("ac240")
         response = self.service(repeat, exposure, stime)
-        print(response)
-        print(len(response.dfs1))
+        #print(response)
+        #print(len(response.dfs1))
         dfs1_list = []
         dfs2_list = []
         tmp1 = [dfs1_list.append(response.dfs1[i*16384:(i+1)*16384]) for i in range(int(len(response.dfs1)/16384))]
