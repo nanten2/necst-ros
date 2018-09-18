@@ -59,7 +59,7 @@ obs_log.start_script(name, list)
 
 con = ROS_controller.controller()
 
-datahome = 'data'
+datahome = '/home/amigos/data/experiment'
 timestamp = time.strftime('%Y%m%d_%H%M%S',time.gmtime())
 datetime = time.strftime("%Y/%m/%d - %H:%M:%S", time.gmtime())
 dirname = timestamp
