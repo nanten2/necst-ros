@@ -17,8 +17,8 @@ def oneshot(req):
     #dfs = achilles.dfs()
     #data = dfs.oneshot(req.repeat, req.exposure, req.stime)
     data = [
-        [[[10000.0+np.random.randint(10000) for i in range(16384)]]*int(req.repeat),10],
-        [[[20000.0+np.random.randint(10000) for i in range(16384)]]*int(req.repeat),20]
+        [[[10000.0+np.random.randint(100) for i in range(16384)]]*int(req.repeat),10],
+        [[[20000.0+np.random.randint(100) for i in range(16384)]]*int(req.repeat),20]
 ]
     data0 = []
     data1 = []
