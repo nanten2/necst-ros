@@ -124,7 +124,9 @@ numpy.savetxt(os.path.join(savedir, '%s_temp.txt'%(name)), [cabin_temp])
 def tsys(dhot, dsky, thot):
     dhot = numpy.array(dhot)
     dsky = numpy.array(dsky)
-    
+    print("#################")
+    print(dhot)
+    print(dsky)
     y = dhot / dsky
     tsys = thot / (y - 1.)
     return tsys
