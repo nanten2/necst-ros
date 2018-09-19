@@ -8,7 +8,10 @@ rospy.init_node('NECST_logger')
 
 ###config
 save_to = '/home/amigos/log'
-file_name = sys.argv[1]
+try:
+    file_name = sys.argv[1]
+except:
+    file_name = ''
 ###
 
 def save_file_conf():
@@ -28,7 +31,6 @@ def save(req):
     ret = save_file_conf()
     savefile = os.path.join(ret[0], ret[1])
     if not req.file == file_name:return
-    print(req)
     if '#' in list(req.msg):
         args = req.msg.split('#')[1]
         f_name = req.msg.split('#')[0]
@@ -44,6 +46,8 @@ def save(req):
 
 
 if __name__ == '__main__':
+    if file_name == '':
+        file_name = input('Pleae input script name [ex : ROS_controller.py]')
     sub = rospy.Subscriber('rosout_agg', Log, save, queue_size=100)
     print('*** Logger Start {} ***'.format(file_name))
     rospy.spin()
