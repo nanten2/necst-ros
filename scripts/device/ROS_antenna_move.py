@@ -142,9 +142,10 @@ class antenna_move(object):
             self.parameters['el_list'].extend(req.y_list)
             self.parameters['start_time_list'].extend(req.time_list)
         else:
-            self.parameters['az_list'] = []
-            self.parameters['el_list'] = []
-            self.parameters['start_time_list'] = []
+            #self.parameters['az_list'] = []
+            #self.parameters['el_list'] = []
+            #self.parameters['start_time_list'] = []
+            pass
         return
 
 
