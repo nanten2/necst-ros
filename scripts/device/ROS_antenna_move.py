@@ -127,7 +127,7 @@ class antenna_move(object):
         self.list_coord = req.coord
         if not self.stop_flag and self.start_time<req.time_list[0]:
             print("st,ct", self.stop_flag, self.start_time, req.time_list[0])
-            if self.parameters['start_time_list'] != []:
+            if self.parameters['start_time_list'] != []:##combine_list
                 time_len = len(self.parameters['start_time_list'])
                 for i in range(time_len):
                     if req.time_list[0]< self.parameters['start_time_list'][-1]:
@@ -138,6 +138,17 @@ class antenna_move(object):
                         break
             else:
                 pass
+            if len(self.parameters['start_time_list']) > 100:
+                now = time.time()
+                if self.parameters['start_time_list'][99] < now:
+                    del self.parameters['az_list'][0:100]
+                    del self.parameters['el_list'][0:100]
+                    del self.parameters['start_time_list'][0:100]
+                else:
+                    pass
+            else:
+                pass
+                    
             self.parameters['az_list'].extend(req.x_list)
             self.parameters['el_list'].extend(req.y_list)
             self.parameters['start_time_list'].extend(req.time_list)
@@ -204,8 +215,8 @@ class antenna_move(object):
         param = self.parameters
         st = param['start_time_list']
         rospy.loginfo(str(dt.utcnow()))
-        rospy.loginfo("start time : st")
-        rospy.loginfo(str(st))        
+        #rospy.loginfo("start time : st")
+        #rospy.loginfo(str(st))        
         if st == []:
             return
 
