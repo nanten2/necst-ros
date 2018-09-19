@@ -415,7 +415,7 @@ if __name__ == '__main__':
     ant = antenna_move()
     ant.start_thread()
     print('[ROS_antenna_move.py] : START SUBSCRIBE')
-    rospy.Subscriber('list_azel', List_coord_msg, ant.set_parameter, queue_size=1)
+    rospy.Subscriber('list_azel', List_coord_msg, ant.set_parameter, queue_size=1000)
     rospy.Subscriber('move_stop', Bool_necst, ant.stop_move)
     rospy.Subscriber('emergency_stop', Bool_necst, ant.emergency)
     rospy.Subscriber('status_encoder', Status_encoder_msg, ant.set_enc_parameter, queue_size=1)
