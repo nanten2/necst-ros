@@ -17,6 +17,7 @@ class ccd_controller(object):
 
     error = []
     status = ''
+    error_count = 0
     
     
     def __init__(self):
@@ -88,7 +89,15 @@ class ccd_controller(object):
         name = str(date.year)+month+day+hour+minute+second
         
         #oneshot
-        self.oneshot(data_name,name)
+        try:
+            self.oneshot(data_name,name)
+            self.error_count = 0
+        except:
+            self.error_count += 1
+        if self.error_count > 3:
+            self.oneshot(data_name,name)
+        else:
+            pass
         mjd = Time(date).mjd
         secofday = date.hour*60*60 + date.minute*60 + date.second + date.microsecond*0.000001
         
