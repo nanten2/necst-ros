@@ -49,9 +49,9 @@ class ccd_controller(object):
         return status
         """
         
-        #f = open("/home/nfs/necopt-old/ccd-shot/ccd-shot-command.txt", "w")
-        #f.write(str(dirname) + "/" + str(filename) + ".bmp")
-        #f.close()
+        f = open("/home/nfs/necopt-old/ccd-shot/ccd-shot-command.txt", "w")
+        f.write(str(dirname) + "/" + str(filename) + ".bmp")
+        f.close()
 
         return
     
@@ -224,10 +224,10 @@ class ccd_controller(object):
     def onepoint_shot(self, ra, dec, az_star, el_star, data_name, status):
         thr = 80 #threshold of brightness <=?
         
-        if os.path.exists("/home/nfs/necopt-old/ccd-shot/data"+str(data_name)):
+        if os.path.exists("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)):
             pass
         else:
-            os.mkdir("/home/nfs/necopt-old/ccd-shot/data"+str(data_name))
+            os.mkdir("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name))
         
         name = time.strftime('%Y%m%d_%H%M%S')
         
@@ -250,6 +250,7 @@ class ccd_controller(object):
         
         #load array
         #print(ret)
+
         in_image = Image.open("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/"+name+".bmp")
         image = np.array(ImageOps.grayscale(in_image))
         ori_image = np.array(image)
@@ -315,7 +316,7 @@ class ccd_controller(object):
         print("==============================================")
         print(xx)
         print(yy)
-        
+
         self.save_track_status(xx, yy, ra, dec, az_star, el_star, mjd, data_name, secofday, status)
         return
         
