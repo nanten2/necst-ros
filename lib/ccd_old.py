@@ -49,9 +49,9 @@ class ccd_controller(object):
         return status
         """
         
-        f = open("/home/nfs/necopt-old/ccd-shot/ccd-shot-command.txt", "w")
-        f.write(str(dirname) + "/" + str(filename) + ".bmp")
-        f.close()
+        #f = open("/home/nfs/necopt-old/ccd-shot/ccd-shot-command.txt", "w")
+        #f.write(str(dirname) + "/" + str(filename) + ".bmp")
+        #f.close()
 
         return
     
@@ -233,7 +233,7 @@ class ccd_controller(object):
         
         #oneshot
         dirname = "onepoint_track_"+time.strftime("%Y%m%d")
-        self.oneshot(dirname, name)
+        self.oneshot(data_name, name)
         #date = datetime.datetime.today()
         #ret = slalib.sla_cldj(date.year, date.month, date.day)
         #mjd = ret[0]
