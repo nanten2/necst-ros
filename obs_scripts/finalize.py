@@ -48,7 +48,7 @@ else:
 # ====
 
 ctrl = ROS_controller.controller()
-ctrl.obs_status(active=True, obsmode="FINALIZE", obs_script=__file__, obs_file="no file", target=target)
+ctrl.obs_status(active=True, obsmode="Finalize", obs_script=__file__, obs_file="no file", target=target)
 
 time.sleep(0.5)
 try:
