@@ -250,7 +250,7 @@ class ccd_controller(object):
         
         #load array
         #print(ret)
-
+        time.sleep(1.5)
         in_image = Image.open("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/"+name+".bmp")
         image = np.array(ImageOps.grayscale(in_image))
         ori_image = np.array(image)
