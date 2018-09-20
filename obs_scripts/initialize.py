@@ -46,7 +46,7 @@ else:
 # ====
 
 ctrl = ROS_controller.controller()
-ctrl.obs_status(active=True, obsmode="INITIALIZE", obs_script=__file__, obs_file="no file", target = target)
+ctrl.obs_status(active=True, obsmode="Preparation", obs_script=__file__, obs_file="no file", target = target)
 ctrl.drive("on")
 ctrl.obs_status(active=True, current_position="ok : drive on")
 print("dome_open")
