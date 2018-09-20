@@ -23,7 +23,7 @@ def save_file_conf():
     _file_name = file_name.split('.')[0]+'.txt'
     if os.path.exists(_save_to):pass
     else:
-        os.makedirs(_save_to)
+        os.makedirs(_save_to, exist_ok = True)
         print('Log is save to {}'.format(_save_to))
     return _save_to, _file_name
 
