@@ -96,7 +96,7 @@ calc = calc_coord.azel_calc()
 
 def handler(num, flame):
     con.move_stop()
-    con.dome_stop()()    
+    con.dome_stop()
     print("!!ctrl + c!!")
     print("Stop antenna")
     con.obs_status(active=False)
