@@ -24,7 +24,7 @@ node_name = "obs_log"
 
 obs = ''
 obs_flag = False
-observation = ""
+#observation = ""
 weather = ""
 hosei = ""
 stop = ""
@@ -112,15 +112,16 @@ def end():
     
     return
 
-def weather_check(weather):
+def weather_check(weather, mode=""):
     ctime = dt.utcnow()    
     filename = ctime.strftime("%Y%m%d")
     date = ctime.strftime("%Y/%m/%d %H:%M:%S")
-    initial ='''
+    title ='''
 #### <i class="fa fa-cloud" aria-hidden="true"></i> Initial Check 
 - Weather
 - {0} [UTC]
-    
+'''
+    initial = ''' 
 | In Temp [K] | Out Temp [K] | Dome Temp [K] | Cab Temp [K] | In Humi [%] | Out Hum [%] | Wind Dir [deg]  | Wind Sp [m/s] | Pressure [hPa] |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
 | {1}  | {2} | {3} | {4} | {5} | {6}  | {7} | {8} | {9} |
@@ -137,6 +138,8 @@ def weather_check(weather):
     ctime = dt.utcnow()        
     filename = ctime.strftime("%Y%m%d")
     f = open("/home/amigos/data/obs_log/"+filename+".txt", "a")
+    if not mode:
+        f.write(title.format(date))
     f.write(initial.format(date,
                            weather.in_temp,
                            weather.out_temp,
@@ -156,6 +159,7 @@ def weather_check(weather):
         f.write("no hosei file"+"\n")
     f.write("-->\n")
     f.close()
+    print(title.format(date))
     print(initial.format(date,
                          weather.in_temp,
                          weather.out_temp,
@@ -191,7 +195,7 @@ def observation(target="", obs=""):
     now = dt.utcnow()    
     ctime = now.strftime("%Y/%m/%d %H:%M:%S")
 
-    title = '#### <i class="fa fa-paper-plane" aria-hidden="true"></i> {obsmode}'
+    title = '#### <i class="fa fa-stop" aria-hidden="true"></i> {obsmode}'
     if obs.active == True:
         data ='''
 - [ UTC ] {obstime} start:
@@ -215,6 +219,10 @@ def observation(target="", obs=""):
         pass
     print(data.format(**{"target":obs.target, "obstime":ctime, "obs_script":obs.obs_script, "target":obs.target, "obs_file":obs.obs_file}))
     f.write(data.format(**{"target":obs.target, "obstime":ctime, "obs_script":obs.obs_script, "obs_file":obs.obs_file}))
+    if obs.obsmode == "Preparation" or obs.obsmode == "Finalize":
+        weather_check(weather,"preparation")
+    else:
+        pass
     if obs.active == True:
         pass
     else:
@@ -330,6 +338,7 @@ def start_program():
     return
 
 def observer_change():
+    global weather
     time.sleep(3.)
     old_num = ""
     while not rospy.is_shutdown():
