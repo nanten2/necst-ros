@@ -43,6 +43,9 @@ class azel_calc(object):
         return target_az, target_el
 
     def coordinate_calc(self, x_list, y_list, time_list,  coord, off_az, off_el, hosei, lamda, press, temp, humi, limit=True, rotation=True):
+        """
+        x_list and y_list == [deg]
+        """
 
         # coordinate check len(x_list)=len(y_list)=len(time_list)
         frame = self.coord_list[coord.lower()]
