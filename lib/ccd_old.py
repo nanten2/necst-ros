@@ -224,16 +224,16 @@ class ccd_controller(object):
     def onepoint_shot(self, ra, dec, az_star, el_star, data_name, status):
         thr = 80 #threshold of brightness <=?
         
-        if os.path.exists("/home/nfs/necopt-old/ccd-shot/data"+str(data_name)):
+        if os.path.exists("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)):
             pass
         else:
-            os.mkdir("/home/nfs/necopt-old/ccd-shot/data"+str(data_name))
+            os.mkdir("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name))
         
         name = time.strftime('%Y%m%d_%H%M%S')
         
         #oneshot
         dirname = "onepoint_track_"+time.strftime("%Y%m%d")
-        self.oneshot(dirname, name)
+        self.oneshot(data_name, name)
         #date = datetime.datetime.today()
         #ret = slalib.sla_cldj(date.year, date.month, date.day)
         #mjd = ret[0]
@@ -250,6 +250,7 @@ class ccd_controller(object):
         
         #load array
         #print(ret)
+
         in_image = Image.open("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/"+name+".bmp")
         image = np.array(ImageOps.grayscale(in_image))
         ori_image = np.array(image)
@@ -315,7 +316,7 @@ class ccd_controller(object):
         print("==============================================")
         print(xx)
         print(yy)
-        
+
         self.save_track_status(xx, yy, ra, dec, az_star, el_star, mjd, data_name, secofday, status)
         return
         
