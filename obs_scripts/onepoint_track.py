@@ -5,7 +5,7 @@ import time
 import math
 import argparse
 import signal
-from pyslalib import slalib
+#from pyslalib import slalib
 import ccd_old
 import coord
 import ROS_controller
