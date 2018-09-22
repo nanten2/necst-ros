@@ -88,7 +88,20 @@ print('')
 print('R')
 con.move_hot('in')
 
-time.sleep(1)
+status = con.read_status()
+hot_status = status.Current_Hot
+print('hot_status ### ', hot_status)
+
+
+while True:
+    status = con.read_status()
+    hot_status = status.Current_Hot
+    print('hot_status ### ',hot_status)
+    if not hot_status == 'IN':
+        time.sleep(0.5)
+        continue
+    else:
+        break
 
 print('cabin_temp: %.2f'%(cabin_temp))
 
@@ -103,7 +116,20 @@ d2_list.append(d2)
 print('SKY')
 con.move_hot('out')
 
-time.sleep(1)
+status = con.read_status()
+hot_status = status.Current_Hot
+
+print('hot_status ### ', hot_status)
+
+while True:
+    status = con.read_status()
+    hot_status = status.Current_Hot
+    if not hot_status == 'OUT':
+        time.sleep(0.5)
+        continue
+    else:
+        break
+
 
 print('get spectrum...')
 d = con.oneshot_achilles(exposure=integ)
@@ -167,8 +193,8 @@ ax21.set_ylabel('Power (count)')
 ax11.set_title('dfs01')
 ax21.set_title('dfs02')
 
-ax12.plot(x, tsys1, 'k.', alpha=0.2)
-ax22.plot(x, tsys2, 'k.', alpha=0.2)
+ax12.plot(x, tsys1, 'g', alpha=0.2)
+ax22.plot(x, tsys2, 'g', alpha=0.2)
 ax12.grid(True)
 ax22.grid(True)
 ax12.set_ylim(0, 200)
