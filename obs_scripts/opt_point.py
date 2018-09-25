@@ -133,7 +133,7 @@ class opt_point_controller(object):
             if _list[4] > 3600*180:#
                 _list[4] = _list[4] -3600*360
             
-            if sort == 'az':
+            if sort == 'az' or sort == "r_az":
                 if ret[1][0]/3600. >= 30 and ret[1][0]/3600. < 80:
                     print("============")
                     num = len(target_list)
@@ -152,6 +152,9 @@ class opt_point_controller(object):
                             if i == num-1:
                                 target_list.insert(num, _list)
                                 pass
+                if sort == "r_az":
+                    re_az = [i for i in reversed(target_list)]
+                    target_list = re_az
             else:#el_sort
                 if ret[1][0]/3600. >= 30 and ret[1][0]/3600. < 80:
                     print("============")
