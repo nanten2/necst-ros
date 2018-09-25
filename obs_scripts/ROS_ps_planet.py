@@ -173,7 +173,7 @@ con.obs_status(active=True, obsmode=obs["obsmode"], obs_script=__file__, obs_fil
 while num < n: 
     print('observation :'+str(num+1) + "\n")
         
-    con.planet_move(planet)
+    con.planet_move(planet, off_x=1200,off_y=1200)
 
     con.antenna_tracking_check()
     con.dome_tracking_check()
