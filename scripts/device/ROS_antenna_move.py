@@ -234,10 +234,14 @@ class antenna_move(object):
                 rospy.loginfo(str(num))
                 rospy.loginfo(str(ct))
                 if len(param['az_list']) > num:
-                    az_1 = param['az_list'][num-1]
-                    az_2 = param['az_list'][num]
-                    el_1 = param['el_list'][num-1]
-                    el_2 = param['el_list'][num]
+                    if num == 0:
+                        az_1 = az_2 =  param['az_list'][num]
+                        el_1 = el_2 =  param['el_list'][num]
+                    else:
+                        az_1 = param['az_list'][num-1]
+                        az_2 = param['az_list'][num]
+                        el_1 = param['el_list'][num-1]
+                        el_2 = param['el_list'][num]
                 else:
                     return
                 return (az_1,az_2,el_1,el_2,st2)
