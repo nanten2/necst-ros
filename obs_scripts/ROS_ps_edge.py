@@ -49,6 +49,7 @@ import shutil
 import time
 import math
 import numpy
+from datetime import datetime
 import sys
 sys.path.append("/home/amigos/ros/src/necst/lib")
 import doppler_nanten
@@ -267,7 +268,11 @@ while num < n:
     #if _now > latest_hottime+60*obs['load_interval']:
     print('R')
     con.move_hot('in')
-    time.sleep(1.5)
+    status = con.read_status()
+    while status.Current_Hot != "IN":
+        print("wait hot_move...")
+        status = con.read_status()        
+        time.sleep(0.5)
             
     temp = float(con.read_status().CabinTemp1)# + 273.15
         
@@ -320,7 +325,11 @@ while num < n:
     #pass
     print('OFF')
     con.move_hot('out')
-    time.sleep(1.5)
+    status = con.read_status()
+    while status.Current_Hot != "OUT":
+        print("wait hot_move...")
+        status = con.read_status()        
+        time.sleep(0.5)    
     print('get spectrum...')
     con.obs_status(active=True, current_num=num*obs["N"], current_position="OFF")
     status = con.read_status()
@@ -442,7 +451,11 @@ while num < n:
 
 print('R')#最初と最後をhotではさむ
 con.move_hot('in')
-time.sleep(1.5)
+status = con.read_status()
+while status.Current_Hot != "IN":
+    print("wait hot_move...")
+    status = con.read_status()        
+    time.sleep(0.5)
 con.obs_status(active=True, current_num=num*obs["N"], current_position="HOT")
 status = con.read_status()
 temp = float(status.CabinTemp1)# + 273.15
