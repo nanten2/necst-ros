@@ -190,7 +190,7 @@ while num < n:
         time.sleep(integ_off)
 
         status = con.read_status()
-        temp = float(status.CabinTemp1) + 273.15
+        temp = float(status.CabinTemp1)# + 273.15
         d = con.oneshot_achilles(exposure=integ_off)
         #d = {'dfs1': [[100]*16384,1], 'dfs2': [[10]*16384,11]}
         d1 = d['dfs1'][0]
@@ -240,7 +240,7 @@ while num < n:
     time.sleep(integ_off)
 
     status = con.read_status()
-    temp = float(status.CabinTemp1) + 273.15
+    temp = float(status.CabinTemp1)# + 273.15
     d = con.oneshot_achilles(exposure=integ_off)
     #d = {'dfs1': [[1]*16384,1], 'dfs2': [[10]*16384,11]}
     d1 = d['dfs1'][0]
@@ -285,7 +285,7 @@ while num < n:
     print('get spectrum...')
 
     status = con.read_status()
-    temp = float(status.CabinTemp1) + 273.15
+    temp = float(status.CabinTemp1)# + 273.15
     d = con.oneshot_achilles(exposure=integ_on)
     #d = {'dfs1': [[1]*16384,1], 'dfs2': [[10]*16384,11]}
     d1 = d['dfs1'][0]
@@ -326,7 +326,7 @@ time.sleep(1.5)
 con.obs_status(active=True, current_num=num, current_position="HOT")
 
 status = con.read_status()
-temp = float(status.CabinTemp1) + 273.15
+temp = float(status.CabinTemp1)# + 273.15
 print('Temp: %.2f'%(temp))
 print('get spectrum...')
 d = con.oneshot_achilles(exposure=integ_off)
