@@ -37,6 +37,7 @@ if args.tau is not None: tau = args.tau
 # ====
 import os
 import shutil
+from datetime import datetime
 import sys
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 sys.path.append("/home/amigos/ros/src/necst/lib")
@@ -217,7 +218,11 @@ while num < n:
         if _now > latest_hottime+60*obs['load_interval']:
             print('R')
             con.move_hot('in')
-            time.sleep(1.5)
+            status = con.read_status()
+            while not status.Current_Hot != "IN":
+                print("wait hot_move...")
+                status = con.read_status()
+                time.sleep(0.5)                
             con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="HOT")        
 
             status =  con.read_status()
@@ -236,7 +241,10 @@ while num < n:
             lamdel_list.append(0)
             betdel_list.append(0)
             tdim6_list.append([16384,1,1])
-            date_list.append(status.Time)
+            tmp_time = status.Time
+            tmp2 = datetime.fromtimestamp(tmp_time)
+            tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
+            date_list.append(tmp3)            
             thot_list.append(temp)
             vframe_list.append(dp1[0])
             vframe2_list.append(dp1[0])
@@ -263,7 +271,11 @@ while num < n:
         
         print('OFF')
         con.move_hot('out')
-        time.sleep(1.5)
+        status = con.read_status()
+        while not status.Current_Hot != "OUT":
+            print("wait hot_move...")
+            status = con.read_status()
+            time.sleep(0.5)            
         con.onepoint_move(offx, offy, obs['coordsys'])
         con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="OFF")
         
@@ -287,7 +299,10 @@ while num < n:
         d1_list.append(d1)
         d2_list.append(d2)
         tdim6_list.append([16384,1,1])
-        date_list.append(status.Time)
+        tmp_time = status.Time
+        tmp2 = datetime.fromtimestamp(tmp_time)
+        tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
+        date_list.append(tmp3)        
         thot_list.append(temp)
         vframe_list.append(dp1[0])
         vframe2_list.append(dp1[0])
@@ -335,7 +350,10 @@ while num < n:
         d1_list.append(d1)
         d2_list.append(d2)
         tdim6_list.append([16384,1,1])
-        date_list.append(status.Time)
+        tmp_time = status.Time
+        tmp2 = datetime.fromtimestamp(tmp_time)
+        tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
+        date_list.append(tmp3)
         thot_list.append(temp)
         vframe_list.append(dp1[0])
         vframe2_list.append(dp1[0])
@@ -374,7 +392,11 @@ while num < n:
 # hot->off->on->off->...->on->hot
 print('R')
 con.move_hot('in')
-time.sleep(1.5)
+status = con.read_status()
+while not status.Current_Hot != "IN":
+    print("wait hot_move...")
+    status = con.read_status()
+    time.sleep(0.5)    
 con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="HOT") 
 
 status =  con.read_status()
@@ -393,7 +415,10 @@ d2_list.append(d2)
 lamdel_list.append(0)
 betdel_list.append(0)
 tdim6_list.append([16384,1,1])
-date_list.append(status.Time)
+tmp_time = status.Time
+tmp2 = datetime.fromtimestamp(tmp_time)
+tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
+date_list.append(tmp3)
 thot_list.append(temp)
 vframe_list.append(dp1[0])
 vframe2_list.append(dp1[0])
