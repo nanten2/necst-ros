@@ -42,6 +42,7 @@ if args.tau is not None: tau = args.tau
 import os
 import time
 import numpy
+from datetime import datetime 
 import sys
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
@@ -198,7 +199,10 @@ while num < n:
         d1_list.append(d1)
         d2_list.append(d2)
         tdim6_list.append([16384,1,1])
-        date_list.append(status.Time)
+        tmp_time = status.Time
+        tmp2 = datetime.fromtimestamp(tmp_time)
+        tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
+        date_list.append(tmp3)
         thot_list.append(temp)
         vframe_list.append(dp1[0])
         vframe2_list.append(dp1[0])
@@ -248,7 +252,10 @@ while num < n:
     d1_list.append(d1)
     d2_list.append(d2)
     tdim6_list.append([16384,1,1])
-    date_list.append(status.Time)
+    tmp_time = status.Time
+    tmp2 = datetime.fromtimestamp(tmp_time)
+    tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
+    date_list.append(tmp3)    
     thot_list.append(temp)
     vframe_list.append(dp1[0])
     vframe2_list.append(dp1[0])
@@ -293,7 +300,10 @@ while num < n:
     d1_list.append(d1)
     d2_list.append(d2)
     tdim6_list.append([16384,1,1])
-    date_list.append(status.Time)
+    tmp_time = status.Time
+    tmp2 = datetime.fromtimestamp(tmp_time)
+    tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
+    date_list.append(tmp3)    
     thot_list.append(temp)
     vframe_list.append(dp1[0])
     vframe2_list.append(dp1[0])
@@ -336,7 +346,10 @@ d2 = d['dfs2'][0]
 d1_list.append(d1)
 d2_list.append(d2)
 tdim6_list.append([16384,1,1])
-date_list.append(status.Time)
+tmp_time = status.Time
+tmp2 = datetime.fromtimestamp(tmp_time)
+tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
+date_list.append(tmp3)
 thot_list.append(temp)
 vframe_list.append(dp1[0])
 vframe2_list.append(dp1[0])
