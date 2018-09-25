@@ -181,7 +181,7 @@ while num < n:
         
         con.move_hot('in')
         status = con.read_status()
-        while not status.Current_Hot != "IN":
+        while status.Current_Hot != "IN":
             print("wait hot_move...")
             status = con.read_status()
             time.sleep(0.5)
@@ -242,7 +242,7 @@ while num < n:
     print('OFF'+ "\n")
     con.move_hot('out')
     status = con.read_status()
-    while not status.Current_Hot != "OUT":
+    while status.Current_Hot != "OUT":
         print("wait hot_move...")
         status = con.read_status()
         time.sleep(0.5)    
@@ -341,7 +341,7 @@ while num < n:
 print('R'+"\n")#最初と最後をhotではさむ
 con.move_hot('in')
 status = con.read_status()
-while not status.Current_Hot != "IN":
+while status.Current_Hot != "IN":
     print("wait hot_move...")
     status = con.read_status()
     time.sleep(0.5)
