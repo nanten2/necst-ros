@@ -217,10 +217,11 @@ while num < n:
         if _now > latest_hottime+60*obs['load_interval']:
             print('R')
             con.move_hot('in')
+            time.sleep(1.5)
             con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="HOT")        
 
             status =  con.read_status()
-            temp = float(status.CabinTemp1) + 273.15
+            temp = float(status.CabinTemp1)# + 273.15
             
             print('Temp: %.2f'%(temp))
             
@@ -262,6 +263,7 @@ while num < n:
         
         print('OFF')
         con.move_hot('out')
+        time.sleep(1.5)
         con.onepoint_move(offx, offy, obs['coordsys'])
         con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="OFF")
         
@@ -277,7 +279,7 @@ while num < n:
         else:
             dp1 = dp.set_track(obs['lambda_on'], obs['beta_on'], obs['vlsr'], obs['coordsys'], 0, 0, offset_dcos, obs['coordsys'], integ+integ, obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)#obs['cosydel']非対応
         status = con.read_status()
-        temp = float(status.CabinTemp1) + 273.15
+        temp = float(status.CabinTemp1)# + 273.15
         #d = con.oneshot_achilles(exposure=integ)
         d = {"dfs1":[[10]*16384, 0], "dfs2":[[20]*16384, 1]}
         d1 = d['dfs1'][0]
@@ -325,7 +327,7 @@ while num < n:
         
         print('get spectrum...')
         status = con.read_status()
-        temp = float(status.CabinTemp1) + 273.15
+        temp = float(status.CabinTemp1)# + 273.15
         #d = con.oneshot_achilles(exposure=integ)
         d = {"dfs1":[[10]*16384, 0], "dfs2":[[20]*16384, 1]}
         d1 = d['dfs1'][0]
@@ -372,10 +374,11 @@ while num < n:
 # hot->off->on->off->...->on->hot
 print('R')
 con.move_hot('in')
+time.sleep(1.5)
 con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="HOT") 
 
 status =  con.read_status()
-temp = float(status.CabinTemp1) + 273.15
+temp = float(status.CabinTemp1)# + 273.15
 
 print('Temp: %.2f'%(temp))
 
