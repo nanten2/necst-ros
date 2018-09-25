@@ -184,7 +184,11 @@ while num < n:
         print('R'+ "\n")
         
         con.move_hot('in')
-        time.sleep(1.5)
+        status = con.read_status()
+        while status.Current_Hot != "IN":
+            print("wait hot_move")
+            time.sleep(0.5)
+            status = con.read_status()
         con.obs_status(active=True, current_num=num, current_position="HOT")               
 
         print('get spectrum...')
@@ -241,7 +245,11 @@ while num < n:
         pass
     print('OFF'+ "\n")
     con.move_hot('out')
-    time.sleep(1.5)
+    status = con.read_status()
+    while status.Current_Hot != "OUT":
+        print("wait hot_move")
+        time.sleep(0.5)
+        status = con.read_status()    
     con.obs_status(active=True, current_num=num, current_position="OFF")
     print('get spectrum...')
     #con.observation("start", integ_off)# getting one_shot_data
@@ -336,7 +344,11 @@ while num < n:
 
 print('R'+"\n")#最初と最後をhotではさむ
 con.move_hot('in')
-time.sleep(1.5)
+status = con.read_status()
+while status.Current_Hot != "IN":
+    print("wait hot_move")
+    time.sleep(0.5)
+    status = con.read_status()
 con.obs_status(active=True, current_num=num, current_position="HOT")
 
 status = con.read_status()
