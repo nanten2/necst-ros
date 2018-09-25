@@ -232,8 +232,8 @@ while num < n:
             
             print('get spectrum...')
             dp1 = dp.set_track(obs['lambda_on'], obs['beta_on'], obs['vlsr'], obs['coordsys'], 0, 0, offset_dcos, obs['coordsys'], integ*2+integ, obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)#obs['cosydel']非対応
-            #d = con.oneshot_achilles(exposure=integ)
-            d = {"dfs1":[[100]*16384, 0], "dfs2":[[200]*16384, 1]}
+            d = con.oneshot_achilles(exposure=integ)
+            #d = {"dfs1":[[100]*16384, 0], "dfs2":[[200]*16384, 1]}
             d1 = d['dfs1'][0]
             d2 = d['dfs2'][0]
             d1_list.append(d1)
@@ -292,8 +292,8 @@ while num < n:
             dp1 = dp.set_track(obs['lambda_on'], obs['beta_on'], obs['vlsr'], obs['coordsys'], 0, 0, offset_dcos, obs['coordsys'], integ+integ, obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)#obs['cosydel']非対応
         status = con.read_status()
         temp = float(status.CabinTemp1)# + 273.15
-        #d = con.oneshot_achilles(exposure=integ)
-        d = {"dfs1":[[10]*16384, 0], "dfs2":[[20]*16384, 1]}
+        d = con.oneshot_achilles(exposure=integ)
+        #d = {"dfs1":[[10]*16384, 0], "dfs2":[[20]*16384, 1]}
         d1 = d['dfs1'][0]
         d2 = d['dfs2'][0]
         d1_list.append(d1)
@@ -343,8 +343,8 @@ while num < n:
         print('get spectrum...')
         status = con.read_status()
         temp = float(status.CabinTemp1)# + 273.15
-        #d = con.oneshot_achilles(exposure=integ)
-        d = {"dfs1":[[10]*16384, 0], "dfs2":[[20]*16384, 1]}
+        d = con.oneshot_achilles(exposure=integ)
+        #d = {"dfs1":[[10]*16384, 0], "dfs2":[[20]*16384, 1]}
         d1 = d['dfs1'][0]
         d2 = d['dfs2'][0]
         d1_list.append(d1)
@@ -406,8 +406,8 @@ print('Temp: %.2f'%(temp))
 
 print('get spectrum...')
 dp1 = dp.set_track(obs['lambda_on'], obs['beta_on'], obs['vlsr'], obs['coordsys'], 0, 0, offset_dcos, obs['coordsys'], integ*2+integ, obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)#obs['cosydel']非対応
-#d = con.oneshot_achilles(exposure=integ)
-d = {"dfs1":[[100]*16384, 0], "dfs2":[[200]*16384, 1]}
+d = con.oneshot_achilles(exposure=integ)
+#d = {"dfs1":[[100]*16384, 0], "dfs2":[[200]*16384, 1]}
 d1 = d['dfs1'][0]
 d2 = d['dfs2'][0]
 d1_list.append(d1)
