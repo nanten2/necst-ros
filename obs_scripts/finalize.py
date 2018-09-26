@@ -70,7 +70,7 @@ if snow:
     ctrl.onepoint_move(-90, 0.0001, limit=False)
 else:
     ctrl.onepoint_move(0, 45)
-time.sleep(2.)
+time.sleep(3.)
 ctrl.antenna_tracking_check()
 ctrl.obs_status(active=True, current_position="ok : home position")
 print("memb_close")
@@ -87,6 +87,8 @@ print("dome_move")
 ctrl.dome_move(90)
 ctrl.obs_status(active=True, current_position="ok : dome move")
 time.sleep(2.)
+
+print("drive off")
 ctrl.drive("off")
 ctrl.obs_status(active=True, current_position="ok : drive off")
 
