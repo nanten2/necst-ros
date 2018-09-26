@@ -58,12 +58,12 @@ class weather_controller(object):
             msg.wind_dir = self.WindDir#ret[10]
             msg.press = ret[12]
             msg.rain = self.RainRate#ret[13]
-            msg.cabin_temp1 = ret[14]
-            msg.cabin_temp2 = ret[15]
-            msg.dome_temp1 = ret[16]
-            msg.dome_temp2 = ret[17]
-            msg.gen_temp1 = ret[18]
-            msg.gen_temp2 = ret[19]
+            msg.cabin_temp1 = ret[14] +273.15
+            msg.cabin_temp2 = ret[15] +273.15
+            msg.dome_temp1 = ret[16] +273.15
+            msg.dome_temp2 = ret[17] +273.15
+            msg.gen_temp1 = ret[18] +273.15
+            msg.gen_temp2 = ret[19] +273.15
             msg.from_node = node_name
             msg.timestamp = time.time()
             pub.publish(msg)
