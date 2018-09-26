@@ -132,7 +132,7 @@ class opt_point_controller(object):
             #print(str(ra)+"  "+str(dec))
             if _list[4] > 3600*180:#
                 _list[4] = _list[4] -3600*360
-            
+
             if sort == 'az' or sort == "r_az":
                 if ret[1][0]/3600. >= 30 and ret[1][0]/3600. < 80:
                     print("============")
