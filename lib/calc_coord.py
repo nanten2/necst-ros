@@ -42,16 +42,45 @@ class azel_calc(object):
         target_el = altaz.alt.arcsec+ret[1]
         return target_az, target_el
 
+    def kisa_calc2(self, az, el, hosei):
+        rospy.loginfo(hosei)
+        _az = np.radians(az/3600.)
+        _el = np.radians(el/3600.)
+        ret = self.coord.apply_kisa_test(_az, _el, hosei)
+        target_az = az+ret[0]
+        target_el = el+ret[1]
+        return target_az, target_el    
+
     def coordinate_calc(self, x_list, y_list, time_list,  coord, off_az, off_el, hosei, lamda, press, temp, humi, limit=True, rotation=True):
         """
         x_list and y_list == [deg]
         """
-
+        if coord == "planet":
+            planet_flag = True
+            coord = "altaz"
+        else:
+            planet_flag = False
+            pass
         # coordinate check len(x_list)=len(y_list)=len(time_list)
         frame = self.coord_list[coord.lower()]
+        az_list=[]
+        el_list=[]    
         if frame == "altaz":
             az_list = list(map(lambda k :k+off_az, x_list))
             el_list = list(map(lambda k :k+off_el, y_list))
+
+            if planet_flag == True:
+                tmp_az_list = []
+                tmp_el_list = []
+                for i in range(len(az_list)):
+                    azel_list = self.kisa_calc2(az_list[i],el_list[i], hosei)
+                    tmp_az_list.append(azel_list[0]+off_az)
+                    tmp_el_list.append(azel_list[1]+off_el)
+                az_list = tmp_az_list
+                el_list = tmp_el_list
+            else:
+                pass
+
         else:
             on_coord = SkyCoord(x_list, y_list,frame=frame, unit='arcsec',)
 
@@ -64,8 +93,6 @@ class azel_calc(object):
             on_coord.obswl = lamda*u.um #weather correction
 
             altaz_list = on_coord.transform_to(AltAz(obstime=time_list))
-            az_list=[]
-            el_list=[]
 
             for i in range(len(altaz_list)):
                 azel_list = self.kisa_calc(altaz_list[i], hosei)
