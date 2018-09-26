@@ -49,6 +49,8 @@ import os
 import shutil
 import time
 import numpy
+from astropy.time import Time
+from datetime import datetime
 import sys
 sys.path.append("/home/amigos/ros/src/necst/lib")
 import doppler_nanten
@@ -229,13 +231,13 @@ print('scan_point : ',scan_point)
     #print("!!ERROR scan number!!")
 print('coord_sys = '+coord_sys)
 total_count = int(obs['N'])#total scan_line
-    
+obsscript = __file__
 if direction == 0:
     dx = float(obs['otfvel'])*float(obs['exposure'])#[arcsec]
     dy = 0
     gridx = 0
     gridy = obs['grid']#[arcsec]
-    con.obs_status(True, obs["obsmode"], obs["object"], scan_point, total_count, dx, gridy, integ_off, integ_off, integ_on, "x")    
+    con.obs_status(active=True, obsmode=obs["obsmode"], obs_script=obsscript, obs_file=obsfile, target=obs["object"], num_on=scan_point, num_seq=total_count, xgrid=dx, ygrid=gridy, exposure_hot=integ_off, exposure_off=integ_off, exposure_on=integ_on, scan_direction="x")    
 elif direction ==1:
     dx = 0
     dy = float(obs['otfvel'])*float(obs['exposure'])#[arcsec]
@@ -322,7 +324,7 @@ while rp_num < rp:
             con.move_hot('in')
             con.obs_status(active=True, current_num=scan_point*num, current_position="HOT")            
         
-            temps = float(con.read_status().CabinTemp1) + 273.15
+            temp = float(con.read_status().CabinTemp1) + 273.15
         
             print('Temp: %.2f'%(temp))
             print('get spectrum...')
@@ -433,7 +435,7 @@ while rp_num < rp:
             ctime = time.time()
             start_on = Time(datetime.fromtimestamp(delay+ctime)).mjd
             
-            con.otf_scan(lambda_on, beta_on, coord_sys, dx, dy, dt, scan_point, rampt, delay, ctime, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = cosydel, dcos=offset_dcos,hosei="hosei_230.txt", lamda=2600)
+            con.planet_scan(planet, "planet", dx, dy, dt, scan_point, rampt, delay, ctime, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = "altaz", dcos=offset_dcos,hosei="hosei_230.txt", lamda=2600)
 
             d = con.oneshot_achilles(repeat = scan_point ,exposure = integ_on ,
                             stime = start_on)

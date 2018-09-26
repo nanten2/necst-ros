@@ -144,7 +144,7 @@ while duration*60 > e_time:
     now = dt.utcnow()
     target = calc.coordinate_calc([ra*3600], [dec*3600], Time(now), 'fk5', 0, 0, 'hosei_opt.txt', 0.5, 500, 300, 0.07)
     try:
-        ret = ccd.onepoint_shot(0, 0, target[0], target[1], "opt_track_"+timestamp, status)
+        ret = ccd.onepoint_shot(0, 0, target[0][0], target[1][0], "opt_track_"+timestamp, status)
         error_count = 0
     except Exception as e:
         print(e)        
