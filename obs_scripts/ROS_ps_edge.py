@@ -252,9 +252,9 @@ while num < n:
     
     if coord_sys == 'PLANET':
         print(planet)
-        con.planet_move(planet, off_x=offset_x, off_y=offset_y, dcos = offset_dcos, offcoord = cosydel)
-        print('off_x : ',offset_x)
-        print('off_y : ',offset_y)
+        con.planet_move(planet, off_x=offset_x+obs["offset_Az"], off_y=offset_y+obs["offset_El"], dcos = offset_dcos, offcoord = cosydel)
+        print('off_x : ',offset_x+obs["offset_Az"])
+        print('off_y : ',offset_y+obs["offset_El"])
         print('moving...')
         con.obs_status(active=True, current_num=num*obs["N"], current_position="HOT")
     else:
@@ -385,19 +385,19 @@ while num < n:
             if offset_x > r or offset_y > r:
                 off_x = offset_x + (-2*edge+obs['xgrid']*lp)*gx
                 off_y = offset_y + (-2*edge+obs['ygrid']*lp)*gy
-                con.planet_move(planet, off_x = off_x,off_y = off_y, 
+                con.planet_move(planet, off_x = off_x+obs["offset_Az"],off_y = off_y+obs["offset_El"], 
                                 offcoord = cosydel,dcos = offset_dcos)
                 print('right or upper')
-                print('off_x : ', off_x)
-                print('off_y : ', off_y)
+                print('off_x : ', off_x+obs["offset_Az"])
+                print('off_y : ', off_y+obs["offset_El"])
             else:
                 off_x = offset_x + (obs['xgrid']*lp)*gx
                 off_y = offset_y + (obs['ygrid']*lp)*gy
-                con.planet_move(planet, off_x = off_x,off_y = off_y, 
+                con.planet_move(planet, off_x = off_x+obs["offset_Az"],off_y = off_y+obs["offset_El"], 
                                 offcoord = cosydel,dcos = offset_dcos)
                 print('left or lower')
-                print('off_x : ', off_x)
-                print('off_y : ', off_y)
+                print('off_x : ', off_x+obs["offset_Az"])
+                print('off_y : ', off_y+obs["offset_El"])
 
         con.obs_status(active=True, current_num=num*obs["N"]+lp, current_position="ON")
         con.antenna_tracking_check()
