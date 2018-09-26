@@ -152,6 +152,49 @@ class opt_point_controller(object):
                             if i == num-1:
                                 target_list.insert(num, _list)
                                 pass
+
+            elif sort == 'line_az':
+                if ret[1][0]/3600. >= 35 and ret[1][0]/3600. <= 55:
+                    print("============")
+                    num = len(target_list)
+                    if num == 0:
+                        target_list.append(_list) 
+                    elif num == 1:
+                        if target_list[0][4] < _list[4]:
+                            target_list.append(_list)
+                        else:
+                            target_list.insert(0, _list)
+                    else:
+                        for i in range(num):
+                            if target_list[i][4] > _list[4]:
+                                target_list.insert(i, _list)
+                                break
+                            if i == num-1:
+                                target_list.insert(num, _list)
+                                pass                            
+                            
+            elif sort == 'line_el':
+                if not (-10*3600. <= _list[4] <= +10*3600.):
+                    pass
+                elif ret[1][0]/3600. >= 30 and ret[1][0]/3600. < 80:
+                    print("============")
+                    num = len(target_list)
+                    if num == 0:
+                        target_list.append(_list) 
+                    elif num == 1:
+                        if target_list[0][5] < _list[5]:
+                            target_list.append(_list)
+                        else:
+                            target_list.insert(0, _list)
+                    else:
+                        for i in range(num):
+                            if target_list[i][5] > _list[5]:
+                                target_list.insert(i, _list)
+                                break
+                            if i == num-1:
+                                target_list.insert(num, _list)
+                                pass
+
             else:#el_sort
                 if ret[1][0]/3600. >= 30 and ret[1][0]/3600. < 80:
                     print("============")
@@ -170,7 +213,7 @@ class opt_point_controller(object):
                                 break
                             if i == num-1:
                                 target_list.insert(num, _list)
-                                pass
+                                pass                            
             
             line = f.readline()
             
