@@ -203,10 +203,10 @@ class ccd_controller(object):
         
         
         #geo_status = [x1,x2,y1,y2] #for test
-        geo_status = 0#self.geo.read_geomech()
+        geo_status = [0,0,0,0]#self.geo.read_geomech()
         geo_x = 0#(geo_status[0]-geo_status[1])/2
         geo_y = 0#(geo_status[2]-geo_status[3])/2
-        geo_temp = 0#self.geo.read_geomech_temp()
+        geo_temp = [0,0]#self.geo.read_geomech_temp()
         
         #write papram
         f.write(str(ra)+" "+str(dec)+" "+str(mjd)+" "+str(secofday)+" "+str(status.Command_Az)+" "+str(status.Command_El)+" "\
