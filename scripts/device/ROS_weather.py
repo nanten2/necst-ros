@@ -56,7 +56,7 @@ class weather_controller(object):
             msg.out_humi = self.OutHumi_davis
             msg.wind_sp = self.WindSp#ret[11]
             msg.wind_dir = self.WindDir#ret[10]
-            msg.press = self.Press#ret[12]
+            msg.press = ret[12]
             msg.rain = self.RainRate#ret[13]
             msg.cabin_temp1 = ret[14]
             msg.cabin_temp2 = ret[15]
