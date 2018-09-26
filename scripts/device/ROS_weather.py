@@ -15,7 +15,8 @@ from davis.msg import davis_weather
 node_name = "weather_status"
 
 class weather_controller(object):
-    host = "amigos@200.91.8.66"
+    #host = "amigos@200.91.8.66"
+    host = "amigos@172.20.0.35"
     dir = "/home/weather/WeatherMonitor/Weather_Data/"
     #dir = "/home/necst/ros/src/necst/scripts/device/"
     copy_dir = "/home/amigos/data/monitor/"
@@ -37,7 +38,7 @@ class weather_controller(object):
     RainRate = 0
 
     def __init__(self):
-        #self.passwd = getpass.getpass()
+        self.passwd = getpass.getpass()
         #self.sub = rospy.Subscriber("outer_ondotori", tr7nw_values, self.get_ondotori)
         self.sub_davis = rospy.Subscriber("davis_weather", davis_weather, self.get_davis)
         pass
