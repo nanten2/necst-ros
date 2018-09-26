@@ -205,7 +205,7 @@ while num < n:
         print('observation :'+str(num))
         print('tracking start')
         con.move_stop()
-        con.onepoint_move(ra, dec, obs['coordsys'], off_x=off_x, off_y=off_y, offcoord = cosydel)
+        con.onepoint_move(ra, dec, obs['coordsys'], off_x=off_x+obs["offset_Az"], off_y=off_y+obs["offset_El"], offcoord = cosydel)
         print('moving...')
 
         con.antenna_tracking_check()
@@ -276,7 +276,7 @@ while num < n:
             print("wait hot_move...")
             status = con.read_status()
             time.sleep(0.5)            
-        con.onepoint_move(offx, offy, obs['coordsys'])
+        con.onepoint_move(offx, offy, obs['coordsys'],off_x=obs["offset_Az"], off_y=obs["offset_El"])
         con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="OFF")
         
 
@@ -330,7 +330,7 @@ while num < n:
         print('move ON')
         con.move_stop()
         
-        con.onepoint_move(ra, dec, obs['coordsys'], off_x = off_x, off_y = off_y, offcoord = cosydel)
+        con.onepoint_move(ra, dec, obs['coordsys'], off_x = off_x+obs["offset_Az"], off_y = off_y+obs["offset_El"], offcoord = cosydel)
         con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="ON")
         
 
