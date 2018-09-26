@@ -187,7 +187,7 @@ class ccd_controller(object):
     
     #for tracking(test)
     def save_track_status(self, x, y, ra, dec, az_star, el_star, mjd, data_name, secofday, status):
-        if os.path.exists("/home/amigos/NECST/soft/core/"+str(data_name)):
+        if os.path.exists("/home/nfs/necopt-old/ccd-shot/data"+str(data_name)):
             pass
         else:
             os.mkdir("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name))
@@ -227,12 +227,14 @@ class ccd_controller(object):
         if os.path.exists("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)):
             pass
         else:
+            print("create file")
+            print("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name))
             os.mkdir("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name))
         
         name = time.strftime('%Y%m%d_%H%M%S')
         
         #oneshot
-        dirname = "onepoint_track_"+time.strftime("%Y%m%d")
+        #dirname = "onepoint_track_"+time.strftime("%Y%m%d")
         self.oneshot(data_name, name)
         #date = datetime.datetime.today()
         #ret = slalib.sla_cldj(date.year, date.month, date.day)
