@@ -215,30 +215,30 @@ while num < n:
     gy = 0
     #print('observation :'+str(num))
     if num%4 == 0:
-        offset_x = -r - edge
-        offset_y = 0
-        line_point = int((edge*2)/obs['xgrid'])+1#obs['N']かも？
+        offset_x = -r - edge +obs["offset_Az"]
+        offset_y = 0 +obs["offset_El"]
+        line_point = obs['N']
         gx = 1
         subscan = 1
         place = 'left_edge'
     elif num%4 == 1:
-        offset_x = +r + edge
-        offset_y = 0
-        line_point = int((edge*2)/obs['xgrid'])+1
+        offset_x = +r + edge +obs["offset_Az"]
+        offset_y = 0 +obs["offset_El"]
+        line_point = obs['N']#int((edge*2)/obs['xgrid'])+1
         gx = 1
         subscan= 1
         place = 'right_edge'
     elif num%4 == 2:
-        offset_x = 0
-        offset_y = -r - edge
-        line_point = int((edge*2)/obs['ygrid'])+1
+        offset_x = 0 +obs["offset_Az"]
+        offset_y = -r - edge +obs["offset_El"]
+        line_point = obs['N']#int((edge*2)/obs['ygrid'])+1
         gy = 1
         subscan= 2
         place = 'lower_edge'
     elif num%4 == 3:
-        offset_x = 0
-        offset_y = +r + edge
-        line_point = int((edge*2)/obs['ygrid'])+1
+        offset_x = 0 +obs["offset_Az"]
+        offset_y = +r + edge +obs["offset_El"]
+        line_point = obs['N']#int((edge*2)/obs['ygrid'])+1
         gy = 1
         subscan= 2
         place = 'upper_edge'
@@ -252,9 +252,9 @@ while num < n:
     
     if coord_sys == 'PLANET':
         print(planet)
-        con.planet_move(planet, off_x=offset_x+obs["offset_Az"], off_y=offset_y+obs["offset_El"], dcos = offset_dcos, offcoord = cosydel)
-        print('off_x : ',offset_x+obs["offset_Az"])
-        print('off_y : ',offset_y+obs["offset_El"])
+        con.planet_move(planet, off_x=offset_x, off_y=offset_y, dcos = offset_dcos, offcoord = cosydel)
+        print('off_x : ',offset_x)
+        print('off_y : ',offset_y)
         print('moving...')
         con.obs_status(active=True, current_num=num*obs["N"], current_position="HOT")
     else:
@@ -323,6 +323,7 @@ while num < n:
     #dp1 = dp.set_track(obs['lambda_on'], obs['beta_on'], obs['vlsr'], obs['coordsys'], obs['lamdel'], obs['betdel'], offset_dcos, obs['coordsys'], integ_off+integ_on, obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
     #lambel_off,betdel_offかも？SYNTHが固定値の場合
     #pass
+    
     print('OFF')
     con.move_hot('out')
     status = con.read_status()
@@ -376,28 +377,22 @@ while num < n:
         con.move_stop()
 
         if coord_sys == 'EQUATRIAL':
-            #con.radec_move(ra, dec, obs['coordsys'].lower(), off_x=obs['lamdel_off'], off_y=obs['betdel_off'], dcos = offset_dcos)
             pass
         elif coord_sys == 'GALACTIC':
-            #con.galactic_move(l, b, off_x=obs['lamdel_off'], off_y=obs['betdel_off'], dcos = offset_dcos)
             pass
         elif coord_sys == 'PLANET':
-            if offset_x > r or offset_y > r:
+            if num%4 == 1 or num%4 == 3 :
+                print('right or upper')                
                 off_x = offset_x + (-2*edge+obs['xgrid']*lp)*gx
                 off_y = offset_y + (-2*edge+obs['ygrid']*lp)*gy
-                con.planet_move(planet, off_x = off_x+obs["offset_Az"],off_y = off_y+obs["offset_El"], 
-                                offcoord = cosydel,dcos = offset_dcos)
-                print('right or upper')
-                print('off_x : ', off_x+obs["offset_Az"])
-                print('off_y : ', off_y+obs["offset_El"])
             else:
+                print('left or lower')
                 off_x = offset_x + (obs['xgrid']*lp)*gx
                 off_y = offset_y + (obs['ygrid']*lp)*gy
-                con.planet_move(planet, off_x = off_x+obs["offset_Az"],off_y = off_y+obs["offset_El"], 
-                                offcoord = cosydel,dcos = offset_dcos)
-                print('left or lower')
-                print('off_x : ', off_x+obs["offset_Az"])
-                print('off_y : ', off_y+obs["offset_El"])
+            con.planet_move(planet, off_x = off_x,off_y = off_y, 
+                            offcoord = cosydel,dcos = offset_dcos)
+            print('off_x : ', off_x)
+            print('off_y : ', off_y)
 
         con.obs_status(active=True, current_num=num*obs["N"]+lp, current_position="ON")
         con.antenna_tracking_check()
