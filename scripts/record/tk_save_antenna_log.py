@@ -65,7 +65,7 @@ def save_status():
                 +str(com_el) +" "
                 +str(enc_az) +" "
                 +str(enc_el) +"\n")
-        time.sleep(0.01)
+        time.sleep(0.05)
     f.close()
     print("end")    
                 
@@ -73,7 +73,7 @@ def save_status():
 rospy.init_node("log_test")
 print("start")
 #sub = rospy.Subscriber("wc_list", List_coord_msg, test)
-sub = rospy.Subscriber("status_encoder", Status_encoder_msg, enc)
-sub = rospy.Subscriber("status_antenna", Status_antenna_msg, com)
+sub = rospy.Subscriber("status_encoder", Status_encoder_msg, enc, queu_size=1)
+sub = rospy.Subscriber("status_antenna", Status_antenna_msg, com, queue_size=1)
 
 save_status()
