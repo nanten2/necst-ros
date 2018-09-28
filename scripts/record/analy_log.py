@@ -15,6 +15,7 @@ try:
 except:
     f = open("/home/amigos/data/tk_log/"+param[1], "r")
 ff = f.readlines()
+del ff[0]#delete comment_out
 for i in ff:
     data = i.split()
     _time.append(data[0])

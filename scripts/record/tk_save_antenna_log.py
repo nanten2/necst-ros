@@ -14,6 +14,8 @@ enc_el = 0
 com_flag = False
 com_az = 0
 com_el = 0
+sp_az = 0
+sp_el = 0
 
 """
 def test(req):
@@ -36,9 +38,11 @@ def enc(req):
     return
     
 def com(req):
-    global com_flag, com_az, com_el
+    global com_flag, com_az, com_el, sp_az, sp_el
     com_az = req.command_az
     com_el = req.command_el
+    sp_az = req.command_azspeed
+    sp_el = req.command_elspeed
     time.sleep(0.5)
     enc_flag = True    
     return
@@ -57,6 +61,7 @@ def save_status():
         time.sleep(1.)
     time.sleep(1.)
     f = open(dir_name + name+".txt", "a")
+    f.write("# unix_time : command_az : command_el : encoder_az : encoder_el : speed_az : speed_el\n")
     print("start daving data")
     while not rospy.is_shutdown():
         now = time.time()
@@ -64,8 +69,10 @@ def save_status():
                 +str(com_az) +" "
                 +str(com_el) +" "
                 +str(enc_az) +" "
-                +str(enc_el) +"\n")
-        time.sleep(0.05)
+                +str(enc_el) +" "
+                +str(sp_az) +" "
+                +str(sp_el) +"\n")
+        time.sleep(0.1)
     f.close()
     print("end")    
                 
