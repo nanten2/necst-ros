@@ -33,7 +33,7 @@ def enc(req):
     global enc_flag, enc_az, enc_el
     enc_az = req.enc_az
     enc_el = req.enc_el
-    time.sleep(0.5)
+
     enc_flag = True    
     return
     
@@ -43,7 +43,7 @@ def com(req):
     com_el = req.command_el
     sp_az = req.command_azspeed
     sp_el = req.command_elspeed
-    time.sleep(0.5)
+
     enc_flag = True    
     return
 
@@ -72,7 +72,7 @@ def save_status():
                 +str(enc_el) +" "
                 +str(sp_az) +" "
                 +str(sp_el) +"\n")
-        time.sleep(0.1)
+        time.sleep(0.01)
     f.close()
     print("end")    
                 
