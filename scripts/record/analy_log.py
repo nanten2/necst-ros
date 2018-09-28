@@ -26,6 +26,7 @@ for i in ff:
 
 print(len(_time))
 print(len(enc_az))
-plt.plot(_time, enc_az,linestyle=None, marker=".")
+plt.plot(_time, com_az,linestyle=None, marker=".", label="command_az")
+plt.plot(_time, enc_az,linestyle=None, marker=".", label="encoder_az")
 plt.grid()
 plt.show()
