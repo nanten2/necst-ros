@@ -34,8 +34,8 @@ class enc_controller(object):
             self.dio.initialize()
             self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=1)
             self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=2)
-            self.dio.set_z_mode(clear_condition="CLS0", latch_condition="", z_polarity=0, ch=1)
-            self.dio.set_z_mode(clear_condition="CLS0", latch_condition="", z_polarity=0, ch=2)
+            self.dio.set_z_mode(clear_condition="", latch_condition="", z_polarity=0, ch=1)
+            self.dio.set_z_mode(clear_condition="", latch_condition="", z_polarity=0, ch=2)
             rospy.loginfo("initialize : end")
         else:
             pass
