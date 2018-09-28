@@ -21,6 +21,7 @@ def oneshot(req):
     #    [[[10000.0+np.random.randint(1000) for i in range(16384)]]*int(req.repeat),10],
     #    [[[20000.0+np.random.randint(1000) for i in range(16384)]]*int(req.repeat),20]
     #]
+    
     data0 = []
     data1 = []
     print(list(data[0][0]))
