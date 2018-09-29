@@ -51,7 +51,6 @@ class antenna_move(object):
     command_az = 0
     command_el = 0
 
-
     tracking_status = False
     list_coord = ''
     
@@ -103,7 +102,6 @@ class antenna_move(object):
         th2 = threading.Thread(target = self.pub_status)
         th2.setDaemon(True)
         th2.start()
-        
         th3 = threading.Thread(target = self.pub_status_pid)
         th3.setDaemon(True)
         th3.start()
@@ -120,6 +118,7 @@ class antenna_move(object):
         ===========
         This function recieves azel_list and start_time from publisher in ROS_antenna.py 
         """
+        rospy.loginfo('len {} '.format(len(self.parameters['az_list'])))
         if not req.time_list:
             return
         else:
@@ -130,32 +129,34 @@ class antenna_move(object):
             if self.parameters['start_time_list'] != []:##combine_list
                 time_len = len(self.parameters['start_time_list'])
                 for i in range(time_len):
-                    if req.time_list[0]< self.parameters['start_time_list'][-1]:
-                        del self.parameters['az_list'][-1]
-                        del self.parameters['el_list'][-1]
-                        del self.parameters['start_time_list'][-1]
+                    __tmp = self.parameters
+                    if req.time_list[0]< __tmp['start_time_list'][-1]:
+                        del __tmp['az_list'][-1]
+                        del __tmp['el_list'][-1]
+                        del __tmp['start_time_list'][-1]
+                        self.parameters = __tmp
                     else:
                         break
             else:
                 pass
-            if len(self.parameters['start_time_list']) > 100:
+
+            _tmp = self.parameters
+            if len(_tmp['start_time_list']) > 100:
                 now = time.time()
-                if self.parameters['start_time_list'][99] < now:
-                    del self.parameters['az_list'][0:100]
-                    del self.parameters['el_list'][0:100]
-                    del self.parameters['start_time_list'][0:100]
+                if _tmp['start_time_list'][99] < now:
+                    del _tmp['az_list'][:98]
+                    del _tmp['el_list'][:98]
+                    del _tmp['start_time_list'][:98]
+                    self.parameters = _tmp
                 else:
                     pass
-            else:
-                pass
-                    
-            self.parameters['az_list'].extend(req.x_list)
-            self.parameters['el_list'].extend(req.y_list)
-            self.parameters['start_time_list'].extend(req.time_list)
+                             
+            tmp_ = self.parameters
+            tmp_['az_list'].extend(req.x_list)
+            tmp_['el_list'].extend(req.y_list)
+            tmp_['start_time_list'].extend(req.time_list)
+            self.parameters = tmp_
         else:
-            #self.parameters['az_list'] = []
-            #self.parameters['el_list'] = []
-            #self.parameters['start_time_list'] = []
             pass
         return
 
@@ -214,7 +215,7 @@ class antenna_move(object):
         """
         param = self.parameters
         st = param['start_time_list']
-        rospy.loginfo(str(dt.utcnow()))
+        #rospy.loginfo(str(dt.utcnow()))
         #rospy.loginfo("start time : st")
         #rospy.loginfo(str(st))        
         if st == []:
@@ -228,25 +229,27 @@ class antenna_move(object):
         else:
             try:
                 num = numpy.where(numpy.array(st) > ct)[0][0]
-                st2 = st[num]
-                rospy.loginfo(str(dt.utcnow()))
-                rospy.loginfo("num + ct")
-                rospy.loginfo(str(num))
-                rospy.loginfo(str(ct))
+                #rospy.loginfo(str(dt.utcnow()))
+                #rospy.loginfo("num + ct")
+                #rospy.loginfo(str(num))
+                #rospy.loginfo(str(ct))
                 if len(param['az_list']) > num:
                     if num == 0:
                         az_1 = az_2 =  param['az_list'][num]
                         el_1 = el_2 =  param['el_list'][num]
+                        st2 = st[num]
                     else:
                         az_1 = param['az_list'][num-1]
                         az_2 = param['az_list'][num]
                         el_1 = param['el_list'][num-1]
                         el_2 = param['el_list'][num]
+                        st2 = st[num-1]
                 else:
                     return
+                #rospy.loginfo('len{}num{}'.format(len(param['az_list']), num))
                 return (az_1,az_2,el_1,el_2,st2)
             except Exception as e:
-                rospy.loginfo(str(dt.utcnow()))
+                #rospy.loginfo(str(dt.utcnow()))
                 rospy.logerr(e)
                 return
         
@@ -270,15 +273,11 @@ class antenna_move(object):
                 continue
 
             ret = self.comp()
-            print(ret)
-            rospy.loginfo(str(dt.utcnow()))
-            rospy.loginfo("act:start_time")
-            try:
-                rospy.loginfo(str(ret[4]))
-            except:
-                pass
-            rospy.loginfo("act:current_time")
-            rospy.loginfo(str(time.time()))
+            #print(ret)
+            #rospy.loginfo(str(dt.utcnow()))
+            #rospy.loginfo("act:start_time")
+            #rospy.loginfo("act:current_time")
+            #rospy.loginfo(str(time.time()))
             if ret == None:
                 time.sleep(0.1)
                 continue
@@ -289,7 +288,6 @@ class antenna_move(object):
                 start_time = ret[4]
                 tar_az = ret[0] + hensa_az*(current_time-start_time)*10
                 tar_el = ret[2] + hensa_el*(current_time-start_time)*10
-                
                 if self.limit_check(tar_az, tar_el):
                     print(tar_az, tar_el)
                     time.sleep(0.1)
@@ -302,7 +300,7 @@ class antenna_move(object):
 
                 ret = self.dev.move_azel(tar_az, tar_el, self.enc_parameter['az_enc'], self.enc_parameter['el_enc'])
                 rate = [ret[0],ret[9]]
-                rospy.loginfo(rate)
+                #rospy.loginfo(rate)
                 self.rate_az = ret[0]
                 self.p_az = ret[1]
                 self.i_az = ret[2]
