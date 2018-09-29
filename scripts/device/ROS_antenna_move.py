@@ -288,7 +288,6 @@ class antenna_move(object):
                 start_time = ret[4]
                 tar_az = ret[0] + hensa_az*(current_time-start_time)*10
                 tar_el = ret[2] + hensa_el*(current_time-start_time)*10
-                tar_el = ret[2]
                 if self.limit_check(tar_az, tar_el):
                     print(tar_az, tar_el)
                     time.sleep(0.1)
