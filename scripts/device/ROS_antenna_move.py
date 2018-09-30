@@ -140,16 +140,16 @@ class antenna_move(object):
             else:
                 pass
 
-            _tmp = self.parameters
-            if len(_tmp['start_time_list']) > 100:
-                now = time.time()
-                if _tmp['start_time_list'][99] < now:
-                    del _tmp['az_list'][:98]
-                    del _tmp['el_list'][:98]
-                    del _tmp['start_time_list'][:98]
-                    self.parameters = _tmp
-                else:
-                    pass
+            #_tmp = self.parameters
+            #if len(_tmp['start_time_list']) > 100:
+                #now = time.time()
+                #if _tmp['start_time_list'][99] < now:
+                    #del _tmp['az_list'][:98]
+                    #del _tmp['el_list'][:98]
+                    #del _tmp['start_time_list'][:98]
+                    #self.parameters = _tmp
+                #else:
+                    #pass
                              
             tmp_ = self.parameters
             tmp_['az_list'].extend(req.x_list)
