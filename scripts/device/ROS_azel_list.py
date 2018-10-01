@@ -176,10 +176,9 @@ class azel_list(object):
                                                     param.hosei, param.lamda, self.press,
                                                     self.out_temp, self.out_humi, param.limit, param.rotation)
 
-                    print(ret[0][0]/3600)
                     if param.rotation:
                         ret[0] = self.negative_change(ret[0])
-                    print(ret[0][0]/3600)
+
                 else:
                     limit_flag = True
                     
