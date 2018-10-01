@@ -105,7 +105,7 @@ class azel_calc(object):
 
         if rotation == False:
             az_list = [i-360*3600. if i>180*3600. else i for i in az_list]
-            az_list = [i+180*3600. if i<-180*3600. else i for i in az_list]
+            az_list = [i+360*3600. if i<-180*3600. else i for i in az_list]
         #print("az :",az_list[0]/3600.,"el :", el_list[0]/3600.)
 
         return[az_list, el_list]
