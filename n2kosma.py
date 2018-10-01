@@ -6,7 +6,7 @@ sys.path.append('/home/amigos/ros/src/necst/scripts/controller')
 sys.path.append('/home/amigos/ros/src/necst/scripts/record')
 import ROS_controller
 import ROS_status
-con = ROS_controller.controller()
+con = ROS_controller.controller('kosma')
 st = ROS_status.read_status()
 import threading
 import signal
@@ -551,7 +551,7 @@ class telescope(object):
         time_stamp = data_1['File update time stamp']
         time_stamp_ret = time_stamp.split('  ')
         time_stamp = float(time_stamp_ret[2])
-
+        print('ts {} / pre_ts {}'.format(time_stamp, self.Pre_timestamp_tel))
         newdata = time_stamp - float(self.Pre_timestamp_tel)
         return [data_1, time_stamp, newdata]
     
@@ -1009,6 +1009,7 @@ class telescope(object):
             except:
                 continue
             ###
+            print('newdata {}'.format(newdata))
             if newdata > 0:
                 otf_mode = self.tel_value['obs_otf_mode']
                 self.update_cycle_time = float(self.tel_value['obs_tel_info_update_time'])
