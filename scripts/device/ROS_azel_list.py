@@ -175,7 +175,6 @@ class azel_list(object):
                                                     param.coord, param.off_az, param.off_el, 
                                                     param.hosei, param.lamda, self.press,
                                                     self.out_temp, self.out_humi, param.limit, param.rotation)
-
                     if param.rotation:
                         ret[0] = self.negative_change(ret[0])
 
