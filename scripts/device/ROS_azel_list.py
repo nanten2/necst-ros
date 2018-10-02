@@ -43,7 +43,7 @@ class azel_list(object):
         pass
 
     def _receive_weather(self, req):
-        self.press = 550 #req.press temp
+        self.press = req.press
         self.out_temp = req.out_temp
         self.out_humi = req.out_humi
         return
@@ -175,9 +175,8 @@ class azel_list(object):
                                                     param.coord, param.off_az, param.off_el, 
                                                     param.hosei, param.lamda, self.press,
                                                     self.out_temp, self.out_humi, param.limit, param.rotation)
-
-                    
-                    ret[0] = self.negative_change(ret[0])
+                    if param.rotation:
+                        ret[0] = self.negative_change(ret[0])
 
                 else:
                     limit_flag = True
