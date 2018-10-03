@@ -7,7 +7,7 @@
 # Info
 # ----
 
-name = 'position_switching2018_planet'
+name = 'focus_planet'
 description = 'Get P/S spectrum'
 
 
@@ -63,7 +63,14 @@ def handler(num, flame):
     print("STOP MOVING")
     con.move_stop()
     con.dome_stop()
+    try:
+        status = con.read_status()
+        dist = start_m2.Current_M2 - status.Current_M2
+        con.move_m2(-dist*1000)
+    except:
+        pass
     con.obs_status(active=False)
+    time.sleep(1.)
     sys.exit()
 signal.signal(signal.SIGINT, handler)
 
@@ -168,9 +175,19 @@ savetime = con.read_status().Time
 num = 0
 n = int(obs['nSeq'])
 latest_hottime = 0
+start_m2 = con.read_status()
 
 con.obs_status(active=True, obsmode=obs["obsmode"], obs_script=__file__, obs_file=obsfile, target=obs["object"], num_on=obs["nON"], num_seq=obs["nSeq"], exposure_hot=obs["exposure_off"], exposure_off=obs["exposure_off"], exposure_on=obs["exposure"])
-while num < n: 
+while num < n:
+    print("moving m2...")
+    con.move_m2(-100*int(n/2)+100*num)
+    now = con.read_status()
+    if now.Current_M2 == start_m2.Current_M2:
+        print("moving m2...")
+        time.sleep(0.1)
+        now = con.read_status()        
+
+    
     print('observation :'+str(num+1) + "\n")
         
     con.planet_move(planet, off_x=1200,off_y=1200)
@@ -343,6 +360,14 @@ while num < n:
         
     num += 1
     continue
+
+print("moving m2...")
+con.move_m2(-100*int(n/2))
+now = con.read_status()
+if now.Current_M2 == start_m2.Current_M2:
+    print("moving m2...")
+    time.sleep(0.1)
+    now = con.read_status()        
 
 print('R'+"\n")#最初と最後をhotではさむ
 con.move_hot('in')

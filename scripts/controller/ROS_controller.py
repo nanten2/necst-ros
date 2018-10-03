@@ -407,10 +407,10 @@ class controller(object):
     def antenna_tracking_check(self):
         """antenna_tracking_check"""
         rospy.loginfo(" tracking now... \n")
-        time.sleep(3.)
         while not self.antenna_tracking_flag:
             time.sleep(0.01)
             pass
+        self.antenna_tracking_flag = False
         return
 
     def _obs_stop(self, req):
@@ -585,10 +585,11 @@ class controller(object):
     def dome_tracking_check(self):
         """dome tracking check"""
         print(" dome_tracking now... \n")
-        time.sleep(3.)
         while not self.dome_tracking_flag:
             time.sleep(0.01)
             pass
+        self.dome_tracking_flag = False
+        return
 
 # ===================
 # mirror
