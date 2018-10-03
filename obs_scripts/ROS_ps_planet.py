@@ -193,9 +193,10 @@ while num < n:
 
         print('get spectrum...')
         ###con.doppler_calc()
-        dp1 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, lamdel_on, betdel_on, dcos, cosydel, 
-                           integ_off*2, obs['restfreq_1']/1000., obs['restfreq_2']/1000., 
-                           sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
+        #dp1 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, lamdel_on, betdel_on, dcos, cosydel, 
+                           #integ_off*2, obs['restfreq_1']/1000., obs['restfreq_2']/1000., 
+                           #sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
+        dp1 = [0,0,0,{"sg21":0,"sg22":0}] 
         time.sleep(integ_off)
 
         status = con.read_status()
@@ -242,6 +243,7 @@ while num < n:
         #dp1 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, lamdel_on, betdel_on, dcos, cosydel,
                            #integ_off, obs['restfreq_1']/1000., obs['restfreq_2']/1000., 
                            #sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
+        dp1 = [0,0,0,{"sg21":0,"sg22":0}]         
         pass
     print('OFF'+ "\n")
     con.move_hot('out')
