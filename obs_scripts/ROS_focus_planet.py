@@ -65,7 +65,9 @@ def handler(num, flame):
     con.dome_stop()
     try:
         status = con.read_status()
+        print(start_m2.Current_M2 - status.Current_M2)
         dist = round(start_m2.Current_M2 - status.Current_M2,3)
+        print(dist)
         con.move_m2(dist*1000)
         print("*** m2 move : ", dist, " [um] ***")
         print("m2 move start position")
@@ -192,7 +194,7 @@ if now.Current_M2 == start_m2.Current_M2:
 con.obs_status(active=True, obsmode=obs["obsmode"], obs_script=__file__, obs_file=obsfile, target=obs["object"], num_on=obs["nON"], num_seq=obs["nSeq"], exposure_hot=obs["exposure_off"], exposure_off=obs["exposure_off"], exposure_on=obs["exposure"])
 while num < n:
     print("moving m2...")
-    dist = 400*num
+    dist = 400
     con.move_m2(dist)
     print("*** m2 move : ",  dist, " [ um ] ***")
     now = con.read_status()
