@@ -65,12 +65,17 @@ def handler(num, flame):
     con.dome_stop()
     try:
         status = con.read_status()
-        dist = start_m2.Current_M2 - status.Current_M2
-        con.move_m2(-dist*1000)
+        print(start_m2.Current_M2 - status.Current_M2)
+        dist = round(start_m2.Current_M2 - status.Current_M2,3)
+        print(dist)
+        con.move_m2(dist*1000)
+        print("*** m2 move : ", dist, " [um] ***")
+        print("m2 move start position")
     except:
+        print("m2 don't move...")
         pass
     con.obs_status(active=False)
-    time.sleep(1.)
+    time.sleep(3.)
     sys.exit()
 signal.signal(signal.SIGINT, handler)
 
@@ -176,17 +181,30 @@ num = 0
 n = int(obs['nSeq'])
 latest_hottime = 0
 start_m2 = con.read_status()
+print("moving m2...")
+dist = -400*int(n/2)
+con.move_m2(dist)
+print("*** m2 move : ",  dist, " [ um ] ***")
+now = con.read_status()
+if now.Current_M2 == start_m2.Current_M2:
+    print("moving m2...")
+    time.sleep(0.1)
+    now = con.read_status()        
 
 con.obs_status(active=True, obsmode=obs["obsmode"], obs_script=__file__, obs_file=obsfile, target=obs["object"], num_on=obs["nON"], num_seq=obs["nSeq"], exposure_hot=obs["exposure_off"], exposure_off=obs["exposure_off"], exposure_on=obs["exposure"])
 while num < n:
     print("moving m2...")
-    con.move_m2(-100*int(n/2)+100*num)
+    if num == 0:
+        dist = 0
+    else:
+        dist = 400
+    con.move_m2(dist)
+    print("*** m2 move : ",  dist, " [ um ] ***")
     now = con.read_status()
     if now.Current_M2 == start_m2.Current_M2:
         print("moving m2...")
         time.sleep(0.1)
         now = con.read_status()        
-
     
     print('observation :'+str(num+1) + "\n")
         
@@ -362,7 +380,9 @@ while num < n:
     continue
 
 print("moving m2...")
-con.move_m2(-100*int(n/2))
+dist = -400*int(n/2)
+con.move_m2(dist)
+print("*** m2 move : ", dist,  " [um] ***")
 now = con.read_status()
 if now.Current_M2 == start_m2.Current_M2:
     print("moving m2...")
