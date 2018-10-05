@@ -551,7 +551,6 @@ class telescope(object):
         time_stamp = data_1['File update time stamp']
         time_stamp_ret = time_stamp.split('  ')
         time_stamp = float(time_stamp_ret[2])
-        print('ts {} / pre_ts {}'.format(time_stamp, self.Pre_timestamp_tel))
         newdata = time_stamp - float(self.Pre_timestamp_tel)
         return [data_1, time_stamp, newdata]
     
@@ -644,7 +643,7 @@ class telescope(object):
         ###start_time check
         current_time = time.time()
         obs_start_time = float(self.tel_value['obs_start_time'])
-        start_time = current_time - obs_start_time
+        start_time = obs_start_time - current_time
         self.log.info('start_time {0}'.format(start_time))
 
         if start_time <= 0:
@@ -733,7 +732,8 @@ class telescope(object):
             utc = datetime.utcnow()
             #_list = [utc.year, utc.month, utc.day, utc.hour, utc.minute, utc.second, utc.microsecond]
             print(lam_on, bet_on, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, 0, time.time(), lam_del,bet_del, coord_sys_del,dcos_kosma, 'hosei_230.txt',int(lamda))
-            start_on = con.otf_scan(lam_on, bet_on, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, 0, time.time(), off_x = lam_del, off_y = bet_del, offcoord = coord_sys_del, dcos = dcos_kosma, hosei = 'hosei_230.txt', lamda = int(lamda))  
+            #start_on = con.otf_scan(lam_on, bet_on, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, 0, time.time(), off_x = lam_del, off_y = bet_del, offcoord = coord_sys_del, dcos = dcos_kosma, hosei = 'hosei_230.txt', lamda = int(lamda))
+            start_on = con.otf_scan(lam_on, bet_on, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, float(self.tel_value['obs_start_time'])-time.time(), time.time(), off_x = lam_del, off_y = bet_del, offcoord = coord_sys_del, dcos = dcos_kosma, hosei = 'hosei_230.txt', lamda = int(lamda))  
             #self.log.info(lam_on, bet_on, dcos_kosma, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, 0, lamda, 'hosei_230.txt', on_coord,lam_del, bet_del,  coord_sys_del)
             to_print = [lam_on, bet_on, dcos_kosma, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, 0, lamda, 'hosei_230.txt', on_coord,lam_del, bet_del,  coord_sys_del]
             self.log.info(([str(ele) for ele in to_print]))
@@ -1009,7 +1009,6 @@ class telescope(object):
             except:
                 continue
             ###
-            print('newdata {}'.format(newdata))
             if newdata > 0:
                 otf_mode = self.tel_value['obs_otf_mode']
                 self.update_cycle_time = float(self.tel_value['obs_tel_info_update_time'])
