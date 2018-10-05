@@ -244,6 +244,7 @@ class status_main(object):
             log = "telescope: %s %s %s %s %s %5.0f %6.1f %s:%s:%s %5.2f %5.2f  dome: door %s  membrane: %s %s %5.2f HOT :%s M4 :%s" %(drive[0],drive[1], drive[2], drive[3], antenna_status, mjd, secofday, lst_hh, lst_mm, lst_ss, enc_az, enc_el, doom_door, memb_status, remote_status, dome_enc, hot_position, m4_position)
             log_debug = "telescope: %s %s %s %s %s %5.0f %6.1f %s:%s:%s %5.2f %5.2f %5.2f %5.2f dome: door %s  membrane: %s %s %5.2f HOT :%s M4 :%s M2 :%s" %(drive[0],drive[1], drive[2], drive[3], antenna_status, mjd, secofday, lst_hh, lst_mm, lst_ss, enc_az, enc_el, command_az, command_el, doom_door, memb_status, remote_status, dome_enc, hot_position, m4_position, m2_position)
             f.write(log_debug + "\n")
+            f.close()
             
             print(log_debug)
             if self.param8["error_msg"]:
