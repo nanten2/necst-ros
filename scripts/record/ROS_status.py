@@ -3,6 +3,7 @@
 import sys
 sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 import time
+import os
 import math
 import rospy
 import threading
@@ -195,6 +196,14 @@ class status_main(object):
         time.sleep(1)
 
         while(1):
+            ###save tel status log config
+            now = dt.now()
+            dir_name = '/home/amigos/log/{}/{}/{}'.format(now.year, now.month, now.day)
+            if not os.path.exists(dir_name):
+                os.makedirs(dir_name, exist_ok=True)
+            f = open(dir_name+'/tel_status.txt', 'a')
+
+            
             #drive = self.param6["drive"]
             enc_az = self.param3['encoder_az']
             enc_el = self.param3['encoder_el']
@@ -234,7 +243,9 @@ class status_main(object):
             lst_ss = "{0:02d}".format(lst_ss)
             log = "telescope: %s %s %s %s %s %5.0f %6.1f %s:%s:%s %5.2f %5.2f  dome: door %s  membrane: %s %s %5.2f HOT :%s M4 :%s" %(drive[0],drive[1], drive[2], drive[3], antenna_status, mjd, secofday, lst_hh, lst_mm, lst_ss, enc_az, enc_el, doom_door, memb_status, remote_status, dome_enc, hot_position, m4_position)
             log_debug = "telescope: %s %s %s %s %s %5.0f %6.1f %s:%s:%s %5.2f %5.2f %5.2f %5.2f dome: door %s  membrane: %s %s %5.2f HOT :%s M4 :%s M2 :%s" %(drive[0],drive[1], drive[2], drive[3], antenna_status, mjd, secofday, lst_hh, lst_mm, lst_ss, enc_az, enc_el, command_az, command_el, doom_door, memb_status, remote_status, dome_enc, hot_position, m4_position, m2_position)
-            #f.write(log + "\n")
+            f.write(log_debug + "\n")
+            f.close()
+            
             print(log_debug)
             if self.param8["error_msg"]:
                 print(self.param8["error_msg"])
