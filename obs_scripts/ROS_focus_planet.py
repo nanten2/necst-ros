@@ -181,6 +181,7 @@ num = 0
 n = int(obs['nSeq'])
 latest_hottime = 0
 start_m2 = con.read_status()
+
 print("moving m2...")
 dist = -400*int(n/2)
 con.move_m2(dist)
@@ -201,7 +202,7 @@ while num < n:
     con.move_m2(dist)
     print("*** m2 move : ",  dist, " [ um ] ***")
     now = con.read_status()
-    if abs(now.Current_M2 - (start_m2.Current_M2 + dist*num/1000)) > 0.01:
+    if abs(now.Current_M2 - (start_m2.Current_M2 +(-400*int(n/2))/1000 + dist*num/1000)) > 0.01:
         print("moving m2...")
         time.sleep(0.1)
         now = con.read_status()        
