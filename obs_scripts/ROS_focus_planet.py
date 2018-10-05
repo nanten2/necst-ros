@@ -186,7 +186,7 @@ dist = -400*int(n/2)
 con.move_m2(dist)
 print("*** m2 move : ",  dist, " [ um ] ***")
 now = con.read_status()
-if not now.Current_M2 == start_m2.Current_M2 + dist/1000:
+if not now.Current_M2 - (start_m2.Current_M2 + dist/1000) < 0.1:
     print("moving m2...")
     time.sleep(0.1)
     now = con.read_status()        
@@ -201,7 +201,7 @@ while num < n:
     con.move_m2(dist)
     print("*** m2 move : ",  dist, " [ um ] ***")
     now = con.read_status()
-    if not now.Current_M2 == start_m2.Current_M2+dist*num:
+    if not now.Current_M2 - (start_m2.Current_M2 + dist*num/1000) < 0.1:
         print("moving m2...")
         time.sleep(0.1)
         now = con.read_status()        
