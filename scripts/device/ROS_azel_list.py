@@ -5,6 +5,9 @@ from necst.msg import List_coord_msg
 from necst.msg import Status_weather_msg
 from necst.msg import Bool_necst
 from necst.msg import String_necst
+from necst.srv import Bool_srv
+from necst.srv import Bool_srvResponse
+
 from datetime import datetime
 from astropy.time import Time
 import time
@@ -37,8 +40,9 @@ class azel_list(object):
         
         self.pub = rospy.Publisher("list_azel", List_coord_msg, queue_size=1000)
         #self.stop = rospy.Publisher("move_stop", Bool_necst, queue_size=1)
-        self.move = rospy.Publisher("move_flag", Bool_necst, queue_size=1)     
+        #self.move = rospy.Publisher("move_flag", Bool_necst, queue_size=1)     
         self.obs_stop = rospy.Publisher("obs_stop", String_necst, queue_size=1)
+        self.service = rospy.ServiceProxy("move_flag", Bool_srv)
         
         self.msg = Bool_necst()
         self.msg.from_node = node_name
@@ -59,7 +63,7 @@ class azel_list(object):
             print("receive_old_list...")
         else:
             self.stop_flag = False
-            self.move_flag = True
+            #self.move_flag = True
             self.move_count = 0
             self.param = req
             pass
@@ -97,9 +101,7 @@ class azel_list(object):
             else:
                 pass
             
-            print("##########")
-            print("stop,move", self.stop_flag ,self.move_flag)
-            if self.stop_flag == False and self.move_flag == True:
+            if self.stop_flag == False:# and self.move_flag == True:
                 if len(param.x_list) > 2:
                     dt = 0.1                    
 
@@ -208,9 +210,19 @@ class azel_list(object):
                     limit_flag = False
 
                 if self.move_count == 0:
-                    self.msg.timestamp = time.time()
-                    self.msg.data = self.move_flag                    
-                    self.move.publish(self.msg)
+                    #self.msg.timestamp = time.time()
+                    #self.msg.data = self.move_flag                    
+                    #self.move.publish(self.msg)
+                    print("##################")
+                    rospy.wait_for_service("move_flag")
+                    print("wait comunication to antenna_move...")
+                    response = self.service(True)
+                    if response == False:
+                        limit_flag = True
+                        print("disconnect antenna_move...")
+                    else:
+                        print("connect antenna_move! ")                        
+                        pass
                     self.move_count += 1
                     
                 if not limit_flag:

@@ -58,7 +58,7 @@ class tracking_check(object):
             self.command_flag = True
             #rospy.logwarn("change command")
         else:
-            pass        
+            pass
         self.antenna_param['command_az'] = req.command_az
         self.antenna_param['command_el'] = req.command_el
         return
@@ -100,7 +100,7 @@ class tracking_check(object):
 
     def check_track(self):
         track_count = 0
-        pub = rospy.Publisher("move_flag", Bool_necst, queue_size = 1)
+        pub = rospy.Publisher("move_stop", Bool_necst, queue_size = 1)
         while not self.coordinate_param:
             print("wait command...")
             time.sleep(0.1)
