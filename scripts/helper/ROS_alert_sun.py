@@ -21,7 +21,8 @@ class alert(object):
     alert_msg = ""
     emergency = ""
     warning = ""
-    dome_flag = True
+    status_dome = "OPEN"
+    status_memb = "OPEN"    
 
     def __init__(self):
         self.sub = rospy.Subscriber("list_azel", List_coord_msg, self.callback_azel)
@@ -99,19 +100,22 @@ class alert(object):
 
             check_az = [i for i in az_list if 0<abs(i-sun_az)<15*3600. or 345*3600.<abs(i-sun_az)<360*3600.]
             check_el = [i for i in el_list if 0<abs(i-sun_el)<15*3600.]
+
             #try:
             status = con.read_status()
-            if status.Door_Dome.upper() == "CLOSE":
-                self.dome_flag = False
-            else:
-                self.dome_flag = True                    
+            self.status_dome = status.Door_Dome.upper()
+            self.status_memb = status.Door_Membrane.upper()
             #except Exception as e:
                 #self.dome_flag = True
                 #rospy.logerr(e)
-            if check_az and check_el and self.dome_flag != False:
+            if check_az and check_el and self.status_dome != "CLOSE" and self.status_memb != "CLOSE":
                 emergency += "Emergency : antenna position near sun!! \n"
             elif check_az and check_el:
                 warning += "Warning : antenna position near sun!! \n"
+                warning += "dome status : "
+                warning += self.status_dome+"\n"
+                warning += "memb status : "
+                warning += self.status_memb+"\n"             
             else:
                 pass
             

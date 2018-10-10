@@ -213,7 +213,6 @@ class azel_list(object):
                     #self.msg.timestamp = time.time()
                     #self.msg.data = self.move_flag                    
                     #self.move.publish(self.msg)
-                    print("##################")
                     rospy.wait_for_service("move_flag")
                     print("wait comunication to antenna_move...")
                     response = self.service(True)
