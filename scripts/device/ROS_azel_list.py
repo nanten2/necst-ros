@@ -26,16 +26,19 @@ class azel_list(object):
     param = ""
     stop_flag = False
     old_list = ""
+    move_flag = False
 
     def __init__(self):
         self.start_time = time.time()
         rospy.Subscriber("wc_list", List_coord_msg, self._receive_list, queue_size=1)
         rospy.Subscriber("status_weather", Status_weather_msg, self._receive_weather, queue_size=1)
         rospy.Subscriber("move_stop", Bool_necst, self._stop, queue_size=1)
+        rospy.Subscriber("move_flag", Bool_necst, self._move_check, queue_size=1)             
         
         self.pub = rospy.Publisher("list_azel", List_coord_msg, queue_size=1000)
-        self.stop = rospy.Publisher("move_stop", Bool_necst, queue_size=1)
-        self.obs_stop = rospy.Publisher("obs_stop", String_necst, queue_size=1)        
+        #self.stop = rospy.Publisher("move_stop", Bool_necst, queue_size=1)
+        self.move = rospy.Publisher("move_flag", Bool_necst, queue_size=1)     
+        self.obs_stop = rospy.Publisher("obs_stop", String_necst, queue_size=1)
         
         self.msg = Bool_necst()
         self.msg.from_node = node_name
@@ -51,13 +54,19 @@ class azel_list(object):
     def _receive_list(self, req):
         ### x,y is [arcsec]
         print("list")
-        print(req)
+        #print(req)
         if req.timestamp < self.start_time:
             print("receive_old_list...")
         else:
             self.stop_flag = False
+            self.move_flag = True
+            self.move_count = 0
             self.param = req
             pass
+        return
+
+    def _move_check(self, req):
+        self.move_flag = req.data
         return
 
     '''
@@ -88,7 +97,9 @@ class azel_list(object):
             else:
                 pass
             
-            if self.stop_flag == False:
+            print("##########")
+            print("stop,move", self.stop_flag ,self.move_flag)
+            if self.stop_flag == False and self.move_flag == True:
                 if len(param.x_list) > 2:
                     dt = 0.1                    
 
@@ -195,10 +206,14 @@ class azel_list(object):
                     else:
                         pass
                     limit_flag = False
-                if not limit_flag:
+
+                if self.move_count == 0:
                     self.msg.timestamp = time.time()
-                    self.msg.data = False
-                    self.stop.publish(self.msg)
+                    self.msg.data = self.move_flag                    
+                    self.move.publish(self.msg)
+                    self.move_count += 1
+                    
+                if not limit_flag:
                     msg.x_list = ret[0]
                     msg.y_list = ret[1]
                     msg.coord = param.coord
@@ -206,11 +221,11 @@ class azel_list(object):
                     msg.from_node =node_name
                     msg.timestamp = time.time()
                     self.pub.publish(msg)
-                    #print("msg", msg)
-
-                    #print("publish ok")
+                    print("msg", msg)
+                    print("publish ok")
                 else:
                     limit_flag = False
+                    move_flag = False
             else:                
                 loop = 0
                 self.param = ""
