@@ -11,6 +11,7 @@ import rospy
 from necst.msg import Status_weather_msg
 #from ondo.msg import tr7nw_values
 from davis.msg import davis_weather
+from std_msgs.msg import Float64
 
 node_name = "weather_status"
 
@@ -22,7 +23,8 @@ class weather_controller(object):
     copy_dir = "/home/amigos/data/monitor/"
     data = [0]*20
     passwd = ""
-    
+
+    press = 0
     # from ondotori
     OutTemp = 0
     OutHumi = 0
@@ -38,16 +40,17 @@ class weather_controller(object):
     RainRate = 0
 
     def __init__(self):
-        self.passwd = getpass.getpass()
+        #self.passwd = getpass.getpass()
         #self.sub = rospy.Subscriber("outer_ondotori", tr7nw_values, self.get_ondotori)
         self.sub_davis = rospy.Subscriber("davis_weather", davis_weather, self.get_davis)
+        self.sub_press = rospy.Subscriber("press_raspi", Float64, self.get_pressure)        
         pass
 
     def pub_func(self):
         pub = rospy.Publisher("status_weather", Status_weather_msg, queue_size = 10, latch = True)
         msg = Status_weather_msg()
         while not rospy.is_shutdown():
-            ret = self.get_weather()
+            #ret = self.get_weather()
             msg.in_temp = self.InTemp#ret[6]
             #msg.out_temp = self.OutTemp#ret[7]
             msg.out_temp = self.OutTemp_davis
@@ -56,14 +59,14 @@ class weather_controller(object):
             msg.out_humi = self.OutHumi_davis
             msg.wind_sp = self.WindSp#ret[11]
             msg.wind_dir = self.WindDir#ret[10]
-            msg.press = ret[12]
+            msg.press =self.press# ret[12]
             msg.rain = self.RainRate#ret[13]
-            msg.cabin_temp1 = ret[14] +273.15
-            msg.cabin_temp2 = ret[15] +273.15
-            msg.dome_temp1 = ret[16] +273.15
-            msg.dome_temp2 = ret[17] +273.15
-            msg.gen_temp1 = ret[18] +273.15
-            msg.gen_temp2 = ret[19] +273.15
+            msg.cabin_temp1 = 0#ret[14] +273.15
+            msg.cabin_temp2 = 0#ret[15] +273.15
+            msg.dome_temp1 = 0#ret[16] +273.15
+            msg.dome_temp2 =0# ret[17] +273.15
+            msg.gen_temp1 =0# ret[18] +273.15
+            msg.gen_temp2 = 0#ret[19] +273.15
             msg.from_node = node_name
             msg.timestamp = time.time()
             pub.publish(msg)
@@ -87,6 +90,10 @@ class weather_controller(object):
     def get_ondotori(self,req):
         self.OutTemp = req.ch1_value
         self.OutHumi = req.ch2_value
+        return
+
+    def get_pressure(self, req):
+        self.press = req.data
         return
 
     def get_davis(self, req):
