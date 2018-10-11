@@ -12,6 +12,7 @@ from necst.msg import Status_weather_msg
 #from ondo.msg import tr7nw_values
 from davis.msg import davis_weather
 from std_msgs.msg import Float64
+from necst.msg import Float64_list_msg
 
 node_name = "weather_status"
 
@@ -24,6 +25,9 @@ class weather_controller(object):
     data = [0]*20
     passwd = ""
 
+    humi24 = [0]*24
+    wind24 = [0]*24
+    
     press = 0
     # from ondotori
     OutTemp = 0
@@ -43,12 +47,15 @@ class weather_controller(object):
         #self.passwd = getpass.getpass()
         #self.sub = rospy.Subscriber("outer_ondotori", tr7nw_values, self.get_ondotori)
         self.sub_davis = rospy.Subscriber("davis_weather", davis_weather, self.get_davis)
-        self.sub_press = rospy.Subscriber("press_raspi", Float64, self.get_pressure)        
+        self.sub_press = rospy.Subscriber("press_raspi", Float64, self.get_pressure)
+        self.pub_humi = rospy.Publisher("web_humi24", Float64_list_msg, queue_size=1)
+        self.pub_wind = rospy.Publisher("web_wind24", Float64_list_msg, queue_size=1)
         pass
 
     def pub_func(self):
         pub = rospy.Publisher("status_weather", Status_weather_msg, queue_size = 10, latch = True)
         msg = Status_weather_msg()
+        wmsg = Float64_list_msg()
         while not rospy.is_shutdown():
             #ret = self.get_weather()
             msg.in_temp = self.InTemp#ret[6]
@@ -71,6 +78,16 @@ class weather_controller(object):
             msg.timestamp = time.time()
             pub.publish(msg)
             print(msg)
+
+            now = time.gmtime()
+            hour = now.tm_hour
+            self.humi24[hour] = msg.out_humi
+            self.wind24[hour] = msg.wind_sp
+            wmsg.data = self.humi24
+            self.pub_humi.publish(wmsg)
+            wmsg.data = self.wind24
+            self.pub_wind.publish(wmsg)
+            
             time.sleep(1)
         return
 
