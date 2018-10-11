@@ -111,7 +111,7 @@ class opt_point_controller(object):
             _date = Time(now).mjd
             coord = SkyCoord(str(line[1])+'h'+ str(line[2]) +'m'+ str(line[3]) +'s',str(line[5]) + str(line[6]) + 'd' + str(line[7]) + 'm' + str(line[8]) + 's', frame='icrs')
             ra = coord.ra.deg + float(line[4])*(360./24.)/3600.*(_date - 51544)/36525.
-            dec = coord.dec.deg + float(line[9])*(360./24.)/3600.*(_date - 51544)/36525.
+            dec = coord.dec.deg + float(line[9])/3600.*(_date - 51544)/36525.
             
             _list.append(ra)
             _list.append(dec)

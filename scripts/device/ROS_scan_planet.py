@@ -89,7 +89,7 @@ class worldcoord(object):
             msg.limit = command.limit
             msg.timestamp = current_time
             self.pub.publish(msg)
-            #print(msg)
+            print(msg.time_list)
             print("publish status!!\n")
             print("end_create_list\n")
         return
