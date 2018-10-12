@@ -108,7 +108,8 @@ class tracking_check(object):
             #current_coordinate = self.coordinate_param
             command_az = self.antenna_param['command_az']
             command_el = self.antenna_param['command_el']
-            command_coord = self.coordinate_param.coord   
+            command_coord = self.coordinate_param.coord
+            command_node = self.coordinate_param.from_node               
             #print(current_coordinate,command_az, command_el)
 
             if not self.coord_flag:
@@ -144,7 +145,9 @@ class tracking_check(object):
                 track_count = 0
             if track_count >= 5:# if tracking is True for 0.5[se]
                 self.tracking = True
-                if command_coord == "altaz" and self.coordinate_param!="worldcoordinate_onepoint":
+                print(command_node)
+                if command_coord == "altaz" and command_node != "worldcoordinate_linear":
+                    print(command_node)                    
                     pub.publish(False, 'ROS_tracking.py', time.time())
 
                 self.coord_flag = False
