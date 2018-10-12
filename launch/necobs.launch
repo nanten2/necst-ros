@@ -20,4 +20,6 @@
   <node pkg="necst" name="achilles" type="ROS_oneshot_achilles.py"/>
   <node pkg="necst" name="save_dio1" type="ROS_save_dio.py" args="dome_dio"/>
   <node pkg="necst" name="save_dio2" type="ROS_save_dio.py" args="antenna_dio"/>
+  <node pkg="necst" name="save_dio3" type="ROS_save_dio.py" args="encoder_dio"/>
+  <node pkg="necst" name="save_dio4" type="ROS_save_dio.py" args="encoder_z_dio"/>
 </launch>
