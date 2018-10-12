@@ -334,8 +334,6 @@ class antenna_move(object):
         if time.time() - self.start_time < 1:
             return
         
-        rospy.logerr(time.time())    
-        print(req.data)##
         rospy.loginfo('***subscribe move stop***')
         self.stop_flag = True        
         self.parameters['az_list'] = []
