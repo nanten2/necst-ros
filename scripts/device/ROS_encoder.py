@@ -3,6 +3,7 @@
 import math
 import time
 import sys
+import threading
 import rospy
 import pyinterface
 from datetime import datetime as dt
@@ -32,7 +33,7 @@ class enc_controller(object):
         self.dio = pyinterface.open(board_name, rsw_id)
         self.initialize()
         self.sub = rospy.Service("encoder_origin", Bool_srv, self.origin_setting)
-        th = threading.thread(target=self.origin_flag_check)
+        th = threading.Thread(target=self.origin_flag_check)
         th.start()
         pass
 
