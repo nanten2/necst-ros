@@ -145,9 +145,7 @@ class tracking_check(object):
                 track_count = 0
             if track_count >= 5:# if tracking is True for 0.5[se]
                 self.tracking = True
-                print(command_node)
                 if command_coord == "altaz" and command_node != "worldcoordinate_linear":
-                    print(command_node)                    
                     pub.publish(False, 'ROS_tracking.py', time.time())
 
                 self.coord_flag = False
