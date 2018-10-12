@@ -31,7 +31,8 @@ sys.path.append("/home/amigos/ros/src/necst/lib")
 import achilles
 from necst.srv import ac240_srv
 from necst.srv import ac240_srvResponse
-
+from necst.srv import Bool_srv
+from necst.srv import Bool_srvResponse
 
 class controller(object):
 
@@ -111,7 +112,8 @@ class controller(object):
         self.pub_onestatus = rospy.Publisher("one_status", Status_onepoint_msg, queue_size=1)        
         self.pub_queue = rospy.Publisher("queue_obs", Bool_necst, queue_size=1)
         self.pub_alert = rospy.Publisher("alert", String_necst, queue_size=1)
-        self.service = rospy.ServiceProxy("ac240", ac240_srv)        
+        self.service_ac240 = rospy.ServiceProxy("ac240", ac240_srv)
+        self.service_encoder = rospy.ServiceProxy("encoder_origin", Bool_srv)        
         time.sleep(0.5)# authority regist time                
 
         """get authority"""
@@ -681,7 +683,7 @@ class controller(object):
         
         """
         rospy.wait_for_service("ac240")
-        response = self.service(repeat, exposure, stime)
+        response = self.service_ac240(repeat, exposure, stime)
         #print(response)
         #print(len(response.dfs1))
         dfs1_list = []
@@ -898,5 +900,24 @@ class controller(object):
             pass
         return
 
+    @logger
+    def encoder_origin_setting(self, mode=False):
+        """ encoder origin setting
 
-    
+        * Parameters *
+        ----------
+        mode : True  -> clear_condition of z_mode is "CLS0"
+               False -> clear_condition of z_mode is ""
+        
+        * How to use *
+        1.run "encoder_origin_setting(mode=True)"
+        2.Move antenna through the origin
+        3.run "encoder_origin_setting(mode=False)" 
+        """
+        rospy.wait_for_service("encoder_origin")
+        response = self.service_encoder(mode)
+        if response.data == True:
+            print("clear_condition is 'CLS0'.")
+        else:
+            print("clear_condition is ''.")
+        return
