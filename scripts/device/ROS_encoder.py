@@ -23,12 +23,17 @@ class enc_controller(object):
     vel_el = 0.
     resolution = 360*3600/(23600*400)  #0.13728813559 (4 multiplication)
 
+    origin_flag = False
+    mode = ""
+    
     def __init__(self):
         board_name = 6204
         rsw_id = 0
         self.dio = pyinterface.open(board_name, rsw_id)
         self.initialize()
         self.sub = rospy.Service("encoder_origin", Bool_srv, self.origin_setting)
+        th = threading.thread(target=self.origin_flag_check)
+        th.start()
         pass
 
     def initialize(self):
@@ -40,12 +45,28 @@ class enc_controller(object):
         
     def origin_setting(self, req):
         if req.data == True:
-            self.board_setting("CLS0")
+            self.mode = "CLS0"
+            self.origin_flag = True
+            while self.origin_flag == True:
+                time.sleep(0.1)
             return Bool_srvResponse(True)            
         else:
-            self.board_setting()
+            self.mode = ""
+            self.origin_flag = True
+            while self.origin_flag == True:
+                time.sleep(0.1)            
             return Bool_srvResponse(False)
+        
 
+    def origin_flag_check(self):
+        while not rospy.is_shutdown():
+            if self.origin_flag == True:
+                self.board_setting(self.mode)
+                self.origin_flag = False
+            else:
+                pass
+            time.sleep(0.1)
+        return
             
     def board_setting(self, z_mode=""):
         rospy.loginfo("initialize : start")
