@@ -8,6 +8,8 @@ import rospy
 
 from necst.msg import Status_encoder_msg
 from necst.msg import Status_antenna_msg
+from necst.srv import Bool_srv
+from necst.srv import Bool_srvResponse
 
 from datetime import datetime as dt
 
@@ -32,8 +34,35 @@ class enc_controller(object):
         sub = rospy.Subscriber("pyinterface", Status_encoder_msg, self.sub_enc)
         sub2 = rospy.Subscriber('status_antenna', Status_antenna_msg, self.sub_antenna, queue_size=1)
         #self.dio = pyinterface.open(board_name, rsw_id)
-        #self.board_initialize()
+        self.initialize()
+        self.sub = rospy.Service("encoder_origin", Bool_srv, self.origin_setting)
         pass
+
+    def initialize(self):
+        if True:#self.dio.get_mode().to_bit() == "00000000" :
+            #self.dio.initialize()            
+            self.board_setting()
+        else:
+            pass
+        
+    def origin_setting(self, req):
+        print("origin setting mode : ", req.data)
+        if req.data == True:
+            self.board_setting("CLS0")
+            return Bool_srvResponse(True)            
+        else:
+            self.board_setting()
+            return Bool_srvResponse(False)
+
+    def board_setting(self, z_mode=""):
+        rospy.loginfo("setting : start")
+        #self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=1)
+        #self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=2)
+        #self.dio.set_z_mode(clear_condition=z_mode, latch_condition="", z_polarity=0, ch=1)
+        #self.dio.set_z_mode(clear_condition=z_mode, latch_condition="", z_polarity=0, ch=2)
+        print("z_mode is : ", z_mode)
+        rospy.loginfo("initialize : end")
+        return
 
     def sub_antenna(self, req):
         print('get status antenns')
@@ -44,26 +73,13 @@ class enc_controller(object):
         self.enc_El += self.vel_el*0.01*0.617#
         return
 
-    """
-    def board_initialize(self):
-        if self.dio.get_mode().to_bit() == "00000000" :
-            rospy.loginfo("initialize : start")
-            self.dio.initialize()
-            self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=1)
-            self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=2)
-            self.dio.set_z_mode(clear_condition="CLS0", latch_condition="", z_polarity=0, ch=1)
-            self.dio.set_z_mode(clear_condition="CLS0", latch_condition="", z_polarity=0, ch=2)
-            rospy.loginfo("initialize : end")
-        else:
-            pass
-    """
     @deco
     def pub_status(self):
         pub = rospy.Publisher("status_encoder", Status_encoder_msg, queue_size = 1, latch = True)
         msg = Status_encoder_msg()
 
         while not rospy.is_shutdown():
-            print("loop...")
+            ##print("loop...")
             #ret = self.get_azel()
             #ret = self.test()
             
