@@ -95,7 +95,7 @@ class tracking_check(object):
             self.same_coord_flag = False
         self.coordinate_param = req
         self.coord_flag = True
-        self.receive_flag1 = True        
+        self.receive_flag1 = True
         return
 
     def check_track(self):
@@ -144,7 +144,7 @@ class tracking_check(object):
                 track_count = 0
             if track_count >= 5:# if tracking is True for 0.5[se]
                 self.tracking = True
-                if command_coord == "altaz":
+                if command_coord == "altaz" and self.coordinate_param!="worldcoordinate_onepoint":
                     pub.publish(False, 'ROS_tracking.py', time.time())
 
                 self.coord_flag = False
