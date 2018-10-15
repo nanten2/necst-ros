@@ -1,7 +1,9 @@
 #! /usr/bin/env python
 # coding:utf-8
 # ver_2.1
-
+import sys
+sys.path.append('/home/necst/ros/src/necst/scripts/controller')
+sys.path.append('/home/necst/ros/src/necst/lib')
 name = 'monitor_dfs_power'
 description = 'Get dfs power'
 
@@ -51,11 +53,11 @@ import time
 import numpy
 import math
 import ROS_controller
-import obs_log
+#import obs_log
 list = []
 list.append("--dt")
 list.append(dt)
-obs_log.start_script(name, list)
+#obs_log.start_script(name, list)
 
 con = ROS_controller.controller()
 
@@ -104,7 +106,7 @@ numpy.save(f+".IF1.npy", power1_list)
 numpy.save(f+".IF2.npy", power2_list)
 numpy.save(f+".time.npy", time_list)
 
-obs_log.end_script(name, dirname)
+#obs_log.end_script(name, dirname)
 
 #plot part
 #---------

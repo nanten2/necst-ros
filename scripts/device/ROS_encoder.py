@@ -3,14 +3,14 @@
 import math
 import time
 import sys
-import threading
+#import threading
 import rospy
 import pyinterface
 from datetime import datetime as dt
 
 from necst.msg import Status_encoder_msg
-from necst.srv import Bool_srv
-from necst.srv import Bool_srvResponse
+#from necst.srv import Bool_srv
+#from necst.srv import Bool_srvResponse
 
 node_name = "encoder_status"
 
@@ -32,9 +32,9 @@ class enc_controller(object):
         rsw_id = 0
         self.dio = pyinterface.open(board_name, rsw_id)
         self.initialize()
-        self.sub = rospy.Service("encoder_origin", Bool_srv, self.origin_setting)
-        th = threading.Thread(target=self.origin_flag_check)
-        th.start()
+        #self.sub = rospy.Service("encoder_origin", Bool_srv, self.origin_setting)
+        #th = threading.Thread(target=self.origin_flag_check)
+        #th.start()
         pass
 
     def initialize(self):
@@ -92,15 +92,15 @@ class enc_controller(object):
             msg.timestamp = time.time()
             time.sleep(0.01)
             pub.publish(msg)
-            rospy.loginfo('Az :'+str(msg.enc_az/3600.))
-            rospy.loginfo('El :'+str(msg.enc_el/3600.))
+            #rospy.loginfo('Az :'+str(msg.enc_az/3600.))
+            #rospy.loginfo('El :'+str(msg.enc_el/3600.))
         return
 
     def get_azel(self):
         cntAz = int(self.dio.get_counter(1).to_int())
         cntEl = int(self.dio.get_counter(2).to_int())
-        now = dt.utcnow()
-        _utc = now.strftime("%Y-%m-%d %H:%M:%S")
+        #now = dt.utcnow()
+        #_utc = now.strftime("%Y-%m-%d %H:%M:%S")
         #print(cntAz)
         #print(cntEl)
         
@@ -125,7 +125,7 @@ class enc_controller(object):
         encEl = cntEl*self.resolution
         self.El = encEl+45*3600      #arcsecond
             
-        return [self.Az, self.El, _utc]
+        return [self.Az, self.El]#, _utc]
 
 
 if __name__ == "__main__":
