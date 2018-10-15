@@ -29,7 +29,7 @@ def get_position():
 """
 
 def move_drive(position):
-    
+    print("$$$$")
     if position == "on":
         dio.output_point([1,1], 1) #output_byte([1,1,0,0,0,0,0,0],OUT1_8)
     elif position == "off":
@@ -39,7 +39,7 @@ def move_drive(position):
     return
 
 def move_contactor(position):
-    
+    print("####")
     if position == "on":
         dio.output_point([1,1,1,1], 9) #output_byte([1,1,1,1,0,0,0,0], 'OUT9_16')
     elif position == "off":
