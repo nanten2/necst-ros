@@ -80,7 +80,6 @@ class m2_controller(object):
             msg.data = round(self.status[0],3)
             msg.timestamp = time.time()
             self.pub.publish(msg)
-            rospy.loginfo(msg)
             time.sleep(0.1)
         return
 
