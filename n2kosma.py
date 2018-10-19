@@ -520,6 +520,7 @@ class telescope(object):
     tel_pos_in_range = 'Y'
     tel_return_cookie = 0
     tel_supports_ephemeris = 'Y'
+    limit_check = 0
     
     def __init__(self):
         ###start telescope part
@@ -529,9 +530,28 @@ class telescope(object):
         self.server_name = "{0}_{1}".format(__file__,self.__class__.__name__)         
         thread_status = threading.Thread(target = self.write_status)
         thread_status.start()
+        ###tmp
+        thread_limit = threading.Thread(target = self.monitor_limit)
+        thread_limit.start()
         self.Kosma_main()
-        
 
+    def monitor_limit(self):
+        import rospy
+        from necst.msg import String_necst
+        rospy.Subscriber('obs_stop', String_necst, self.c_back, queue_size=1)
+        rospy.spin()
+
+    def c_back(self, req):
+        #print('###', req)
+        self.limit_check = req.timestamp
+        pass
+
+    def limit_check(self):
+        if time.time() - self.limit_check < 4:
+            True
+        else:
+            False
+        
     def Read_set_file_tel(self, file_name = 'KOSMA_obs2tel.set'):
         try:
             with open(setfile_dir + file_name, 'r') as data_items_1:
@@ -696,14 +716,20 @@ class telescope(object):
             self.log.info('moving...')
             time.sleep(0.001)#分光計の指令値更新を待つ(一応)
             while not st.read_status()[10]['tracking']:#通り過ぎた場合もTrueになるため
+                if self.limit_check:
+                    return
                 time.sleep(0.001)
                 continue
             time.sleep(0.1)
             while not st.read_status()[10]['tracking']:#2回目
+                if self.limit_check:
+                    return
                 time.sleep(0.001)
                 continue
             time.sleep(0.1)
             while not st.read_status()[10]['tracking']:#一応3回目
+                if self.limit_check:
+                    return
                 time.sleep(0.001)
                 continue
             
@@ -927,16 +953,22 @@ class telescope(object):
             self.log.info(" ".join([str(ele) for ele in to_print]))
             
             self.log.info('moving...')
-            time.sleep(0.001)#分光計の指令値更新を待つ(一応)
+            
             while not st.read_status()[10]['tracking']:#通り過ぎた場合もTrueになるため
+                if self.limit_check:
+                    return
                 time.sleep(0.001)
                 continue
             time.sleep(0.1)
             while not st.read_status()[10]['tracking']:#2回目
+                if self.limit_check:
+                    return
                 time.sleep(0.001)
                 continue
             time.sleep(0.1)
             while not st.read_status()[10]['tracking']:#一応3回目
+                if self.limit_check:
+                    return
                 time.sleep(0.001)
                 continue
             self.log.info('tel_on_track = Y')
@@ -969,14 +1001,20 @@ class telescope(object):
         time.sleep(0.001)#分光計の指令値更新を待つ(一応)
         while not st.read_status()[10]['tracking']:#通り過ぎた場合もTrueになるため
             time.sleep(0.001)
+            if self.limit_check:
+                return
             continue
         time.sleep(0.1)
         while not st.read_status()[10]['tracking']:#2回目
             time.sleep(0.001)
+            if self.limit_check:
+                return
             continue
         time.sleep(0.1)
         while not st.read_status()[10]['tracking']:#一応3回目
             time.sleep(0.001)
+            if self.limit_check:
+                return
             continue
         print(st.read_status()[10])
         self.log.info('tracking : {0}'.format(st.read_status()[10]))
