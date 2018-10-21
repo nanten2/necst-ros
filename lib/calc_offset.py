@@ -35,9 +35,13 @@ def calc_offset(input_x, input_y, coord, input_off_x, input_off_y, offcoord, dco
         xsign = [round((np.sign(i)-1)/2) for i in x]
         ysign = 0#[round((np.sign(i)-1)/2) for i in y]
         on_coord = on_coord.transform_to(off_frame)
-        real_az = on_coord.az+360*(xsign*u.deg) + off_x
-        real_alt = on_coord.alt+360*(ysign*u.deg) + off_y
-
+        if dcos == 1:
+            real_alt = on_coord.alt+360*(ysign*u.deg) + off_y            
+            real_az = on_coord.az+360*(xsign*u.deg) + off_x/np.cos(np.radians(real_alt))
+        else:
+            real_az = on_coord.az+360*(xsign*u.deg) + off_x
+            real_alt = on_coord.alt+360*(ysign*u.deg) + off_y
+            pass
 
         xsign = [round((np.sign(i)-1)/2) for i in real_az]
         ysign = 0#[round((np.sign(i)-1)/2) for i in real_alt]
@@ -65,8 +69,8 @@ def calc_offset(input_x, input_y, coord, input_off_x, input_off_y, offcoord, dco
         pass
 
     if len(on_x.arcsec) > 1:
-        x_list = [0 if i < 1E-4 else i for i in on_x.arcsec]
-        y_list = [0 if i < 1E-4 else i for i in on_y.arcsec]
+        x_list = [0 if 0 < i < 1E-4 else i for i in on_x.arcsec]
+        y_list = [0 if 0 < i < 1E-4 else i for i in on_y.arcsec]
         x_list = [0 if i > 1295990 else i for i in x_list]
         y_list = [0 if i > 1295990 else i for i in y_list]    
     else:

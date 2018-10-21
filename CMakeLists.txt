@@ -90,6 +90,7 @@ add_message_files(
 add_service_files(
   FILES
   ac240_srv.srv
+  Bool_srv.srv  
 #  String_srv.srv
 )
 
