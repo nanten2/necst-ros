@@ -69,8 +69,8 @@ def calc_offset(input_x, input_y, coord, input_off_x, input_off_y, offcoord, dco
         pass
 
     if len(on_x.arcsec) > 1:
-        x_list = [0 if i < 1E-4 else i for i in on_x.arcsec]
-        y_list = [0 if i < 1E-4 else i for i in on_y.arcsec]
+        x_list = [0 if 0 < i < 1E-4 else i for i in on_x.arcsec]
+        y_list = [0 if 0 < i < 1E-4 else i for i in on_y.arcsec]
         x_list = [0 if i > 1295990 else i for i in x_list]
         y_list = [0 if i > 1295990 else i for i in y_list]    
     else:
