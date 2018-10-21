@@ -19,7 +19,21 @@ class tracking_check(object):
         'command_az' : 200,
         'command_el' : 200
         }
+    """
+    coordinate_param = {
+        "x_list" : "",
+        "y_list" : "",
+        "off_x" : "",
+        "off_y" : "",
+        "coord" : ""
+        }
+    """
+    coordinate_param = ""
     tracking = False
+    coord_flag = False
+    command_flag = False
+    same_coord_flag = False
+    receive_flag1 = False
     
     list_coord = ''
     before_x = -10
@@ -40,36 +54,82 @@ class tracking_check(object):
         
 
     def set_ant_param(self, req):
-        #rospy.loginfo(req.command_az)
-        #rospy.loginfo(req.command_el)
+        if abs(self.antenna_param['command_az']-req.command_az) > 3 or abs(self.antenna_param['command_az']-req.command_az) > 3:
+            self.command_flag = True
+            #rospy.logwarn("change command")
+        else:
+            pass
         self.antenna_param['command_az'] = req.command_az
         self.antenna_param['command_el'] = req.command_el
+        return
 
     def set_enc_param(self, req):
-        #rospy.loginfo(req.enc_az)
-        #rospy.loginfo(req.enc_el)
         self.enc_param['enc_az'] = req.enc_az
         self.enc_param['enc_el'] = req.enc_el
+        return
 
     def set_list_param(self, req):
-        self.list_coord = req.coord
-        if self.list_coord == 'altaz':
-            if  not abs(self.before_x - req.x_list[0]) < 0.0001 or not abs(self.before_y - req.y_list[0]) < 0.0001:
-                self.before_x = req.x_list[0]
-                self.before_y = req.y_list[0]
-                self.same_azel_list_flag = False
+        # check new list
+        tmp_list = self.coordinate_param        
+        try:
+            tmp_list.x_list = [round(i,1) for i in tmp_list.x_list]
+            tmp_list.y_list = [round(i,1) for i in tmp_list.y_list]           
+            tmp_list.time_list = []
+            tmp_list.timestamp = 0.0
+        except:
+            print("First receive !!")
+        tmp_req = req
+        tmp_req.x_list = [round(i,1) for i in tmp_req.x_list]
+        tmp_req.y_list = [round(i,1) for i in tmp_req.y_list]           
+        tmp_req.timestamp = 0.0
+        tmp_req.time_list = []
+
+        # parameter change
+        if tmp_list == tmp_req:
+            rospy.logerr("same command !!")
+            if tmp_req.coord == "altaz":
+                self.same_coord_flag = True
             else:
-                self.same_azel_list_flag = True
-            
-        
+                self.same_coord_flag = False
+        else:
+            self.same_coord_flag = False
+        self.coordinate_param = req
+        self.coord_flag = True
+        self.receive_flag1 = True
+        return
+
     def check_track(self):
         track_count = 0
         pub = rospy.Publisher("move_stop", Bool_necst, queue_size = 1)
+        while not self.coordinate_param:
+            print("wait command...")
+            time.sleep(0.1)
         while not rospy.is_shutdown():
+            #current_coordinate = self.coordinate_param
             command_az = self.antenna_param['command_az']
             command_el = self.antenna_param['command_el']
+            command_coord = self.coordinate_param.coord
+            command_node = self.coordinate_param.from_node               
+            #print(current_coordinate,command_az, command_el)
+
+            if not self.coord_flag:
+                print("coordinate check")
+                time.sleep(0.1)
+                continue
+            else:
+                print("coordinate clear")
+                self.tarcking = False                
+                pass
+
+            if self.command_flag == False or self.same_coord_flag == True:
+                print("same command")
+                time.sleep(0.1)
+                continue                
+
+            """ start checking track """
             enc_az = self.enc_param['enc_az']
-            enc_el = self.enc_param['enc_el']
+            enc_el = self.enc_param['enc_el']            
+            
             if command_az < 0:
                 command_az += 360*3600
             if enc_az <0:
@@ -79,23 +139,20 @@ class tracking_check(object):
 
             list_coord = self.list_coord
                 
-            #rospy.loginfo( self.antenna_param['command_az'])
             if d_az <= 3 and d_el <=3:
                 track_count += 1
             else:
                 track_count = 0
-            if track_count >= 3:
+            if track_count >= 5:# if tracking is True for 0.5[se]
                 self.tracking = True
-                track_count = 3
+                if command_coord == "altaz" and command_node != "worldcoordinate_linear":
+                    pub.publish(False, 'ROS_tracking.py', time.time())
+
+                self.coord_flag = False
+                self.command_flag = False
+                track_count = 0
             else:
                 self.tracking = False
-                pub_flag = 0
-
-            if self.tracking == True and list_coord == 'altaz' and self.same_azel_list_flag and pub_flag == 0:
-                pub.publish(True, 'ROS_tracking.py', time.time())
-                pub_flag =1
-            else:
-                pass
             
             time.sleep(0.1)
             rospy.loginfo('tracking : %s'%self.tracking)
@@ -105,11 +162,7 @@ class tracking_check(object):
         pub = rospy.Publisher('tracking_check', Bool_necst, queue_size = 10, latch = True)
         track_status = Bool_necst()
         while not rospy.is_shutdown():
-            if self.tracking:
-                track_status.data = True
-            else:
-                track_status.data = False
-                pass
+            track_status.data = self.tracking
             track_status.from_node = node_name
             track_status.timestamp = time.time()
             pub.publish(track_status)
@@ -120,5 +173,5 @@ if __name__ == '__main__':
     t = tracking_check()
     sub1 = rospy.Subscriber('status_antenna', Status_antenna_msg, t.set_ant_param)
     sub2 = rospy.Subscriber('status_encoder',Status_encoder_msg, t.set_enc_param)
-    sub3 = rospy.Subscriber('list_azel',List_coord_msg, t.set_list_param, queue_size = 1)
+    sub3 = rospy.Subscriber('wc_list',List_coord_msg, t.set_list_param, queue_size = 1)
     rospy.spin()

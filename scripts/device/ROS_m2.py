@@ -11,7 +11,7 @@ import time
 import threading
 
 sys.path.append("/home/amigos/ros/src/necst/lib/device")
-sys.path.append("home/necst/ros/src/necst/lib/device")
+sys.path.append("/home/necst/ros/src/necst/lib/device")
 import m2_device as dev
 
 from necst.msg import String_necst
@@ -77,7 +77,7 @@ class m2_controller(object):
         msg.from_node = node_name        
         while not rospy.is_shutdown():
             self.status = dev.get_pos()
-            msg.data = self.status[0]
+            msg.data = round(self.status[0],3)
             msg.timestamp = time.time()
             self.pub.publish(msg)
             rospy.loginfo(msg)
