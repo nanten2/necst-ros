@@ -12,12 +12,13 @@ mtr.set_limit_config('LOGIC', '+EL -EL', axis=1)
 
 
 def get_pos():
+    print(mtr.get_counter())
     status = mtr.get_status()
     #print(status)
-
+    """
     if status["busy"] == False and status["limit"]["+EL"] == 1:
         status["limit"]["-EL"] = 0
-    
+    """
     if status["busy"] == True:
         position = 'MOVE'
     elif status["limit"]["+EL"] == 0: #status == 0x0004:
@@ -27,8 +28,8 @@ def get_pos():
         #IN
         position = 'NAGOYA'
     else:
-        self.print_error('limit error')
-        return
+        print('limit error')
+        position = 'ERROR'
     return position
 
 
@@ -45,8 +46,11 @@ def move(position):
         print('parameter error')
         return
     mtr.set_motion(mode="JOG",step=step)
+    print("set_motion")
     mtr.start_motion(mode="JOG")
+    print("start_motion")
     if mtr.get_status()['busy'] == False:
+        print("status busy")
         counter_reset(position)
     else:
         pass
