@@ -6,7 +6,7 @@ sys.path.append('/home/amigos/ros/src/necst/scripts/controller')
 sys.path.append('/home/amigos/ros/src/necst/scripts/record')
 import ROS_controller
 import ROS_status
-con = ROS_controller.controller()
+con = ROS_controller.controller('kosma')
 st = ROS_status.read_status()
 import threading
 import signal
@@ -520,6 +520,7 @@ class telescope(object):
     tel_pos_in_range = 'Y'
     tel_return_cookie = 0
     tel_supports_ephemeris = 'Y'
+    limit_check_time = 0
     
     def __init__(self):
         ###start telescope part
@@ -529,9 +530,30 @@ class telescope(object):
         self.server_name = "{0}_{1}".format(__file__,self.__class__.__name__)         
         thread_status = threading.Thread(target = self.write_status)
         thread_status.start()
+        ###tmp
+        thread_limit = threading.Thread(target = self.monitor_limit)
+        thread_limit.start()
         self.Kosma_main()
-        
 
+    def monitor_limit(self):
+        import rospy
+        from necst.msg import String_necst
+        rospy.Subscriber('obs_stop', String_necst, self.c_back, queue_size=1)
+        rospy.spin()
+
+    def c_back(self, req):
+        #print('###', req)
+        self.limit_check_time = req.timestamp
+        pass
+
+    def limit_check(self):
+        if time.time() - self.limit_check_time < 3.5:
+            print('###limit_check True')
+            return True
+        else:
+            print('###limit_check False')            
+            return False
+        
     def Read_set_file_tel(self, file_name = 'KOSMA_obs2tel.set'):
         try:
             with open(setfile_dir + file_name, 'r') as data_items_1:
@@ -551,7 +573,6 @@ class telescope(object):
         time_stamp = data_1['File update time stamp']
         time_stamp_ret = time_stamp.split('  ')
         time_stamp = float(time_stamp_ret[2])
-
         newdata = time_stamp - float(self.Pre_timestamp_tel)
         return [data_1, time_stamp, newdata]
     
@@ -644,7 +665,7 @@ class telescope(object):
         ###start_time check
         current_time = time.time()
         obs_start_time = float(self.tel_value['obs_start_time'])
-        start_time = current_time - obs_start_time
+        start_time = obs_start_time - current_time
         self.log.info('start_time {0}'.format(start_time))
 
         if start_time <= 0:
@@ -696,16 +717,18 @@ class telescope(object):
                 
             self.log.info('moving...')
             time.sleep(0.001)#分光計の指令値更新を待つ(一応)
+            time.sleep(3)#test
+            if self.limit_check():
+                print(self.limit_check(), 'Ln722 ###limit check###')
+                return
             while not st.read_status()[10]['tracking']:#通り過ぎた場合もTrueになるため
-                time.sleep(0.001)
+                time.sleep(0.01)
                 continue
-            time.sleep(0.1)
             while not st.read_status()[10]['tracking']:#2回目
-                time.sleep(0.001)
+                time.sleep(0.01)
                 continue
-            time.sleep(0.1)
             while not st.read_status()[10]['tracking']:#一応3回目
-                time.sleep(0.001)
+                time.sleep(0.01)
                 continue
             
             self.log.info('Pre_Otf_Position')###-d
@@ -724,8 +747,9 @@ class telescope(object):
                 coord_sys_on = 'GALACTIC'
             elif coord_sys_on.lower() == 'horizon':
                 coord_sys_on = 'HORIZONTAL'
-                lam_on = lam_on*3600 #[arcsec]
-                bet_on = bet_on*3600 #[arcsec]
+                #lam_on = lam_on*3600 #[arcsec]
+                #bet_on = bet_on*3600 #[arcsec]
+                pass
             #start_on = con.otf_scan(lam_on, bet_on, dcos_kosma, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, 0, lamda, 'hosei_230.txt', on_coord,lam_del, bet_del, coord_sys_del)###v1
 
             ###tmp
@@ -733,7 +757,8 @@ class telescope(object):
             utc = datetime.utcnow()
             #_list = [utc.year, utc.month, utc.day, utc.hour, utc.minute, utc.second, utc.microsecond]
             print(lam_on, bet_on, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, 0, time.time(), lam_del,bet_del, coord_sys_del,dcos_kosma, 'hosei_230.txt',int(lamda))
-            start_on = con.otf_scan(lam_on, bet_on, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, 0, time.time(), off_x = lam_del, off_y = bet_del, offcoord = coord_sys_del, dcos = dcos_kosma, hosei = 'hosei_230.txt', lamda = int(lamda))  
+            #start_on = con.otf_scan(lam_on, bet_on, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, 0, time.time(), off_x = lam_del, off_y = bet_del, offcoord = coord_sys_del, dcos = dcos_kosma, hosei = 'hosei_230.txt', lamda = int(lamda))
+            start_on = con.otf_scan(lam_on, bet_on, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, float(self.tel_value['obs_start_time'])-time.time(), time.time(), off_x = lam_del, off_y = bet_del, offcoord = coord_sys_del, dcos = dcos_kosma, hosei = 'hosei_230.txt', lamda = int(lamda))  
             #self.log.info(lam_on, bet_on, dcos_kosma, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, 0, lamda, 'hosei_230.txt', on_coord,lam_del, bet_del,  coord_sys_del)
             to_print = [lam_on, bet_on, dcos_kosma, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, 0, lamda, 'hosei_230.txt', on_coord,lam_del, bet_del,  coord_sys_del]
             self.log.info(([str(ele) for ele in to_print]))
@@ -927,15 +952,17 @@ class telescope(object):
             self.log.info(" ".join([str(ele) for ele in to_print]))
             
             self.log.info('moving...')
-            time.sleep(0.001)#分光計の指令値更新を待つ(一応)
+            time.sleep(3)#test
+            if self.limit_check():
+                print('###L956', self.limit_check)
+                return
+            
             while not st.read_status()[10]['tracking']:#通り過ぎた場合もTrueになるため
                 time.sleep(0.001)
                 continue
-            time.sleep(0.1)
             while not st.read_status()[10]['tracking']:#2回目
                 time.sleep(0.001)
                 continue
-            time.sleep(0.1)
             while not st.read_status()[10]['tracking']:#一応3回目
                 time.sleep(0.001)
                 continue
@@ -966,17 +993,20 @@ class telescope(object):
             self.log.info("{0:3.3f} {1:3.3f} {2} off_x={3} off_y={4} offcoord={5} lamda={6}".format(lam_on_off, bet_on_off, coord_on, lam_del, bet_del,coord_map_offsets,obs_wavelength))
             #print(lam_on_off, bet_on_off, coord_on,'off_x =', lam_del, 'off_y = ',bet_del, 'offcoord = ',coord_map_offsets, 'lamda = ',obs_wavelength)
         self.log.info('moving...')
-        time.sleep(0.001)#分光計の指令値更新を待つ(一応)
+
+        time.sleep(3)#test
+        if self.limit_check():
+            return
+        
+        #time.sleep(0.001)#分光計の指令値更新を待つ(一応)
         while not st.read_status()[10]['tracking']:#通り過ぎた場合もTrueになるため
-            time.sleep(0.001)
+            time.sleep(0.01)
             continue
-        time.sleep(0.1)
         while not st.read_status()[10]['tracking']:#2回目
-            time.sleep(0.001)
+            time.sleep(0.01)
             continue
-        time.sleep(0.1)
         while not st.read_status()[10]['tracking']:#一応3回目
-            time.sleep(0.001)
+            time.sleep(0.01)
             continue
         print(st.read_status()[10])
         self.log.info('tracking : {0}'.format(st.read_status()[10]))
