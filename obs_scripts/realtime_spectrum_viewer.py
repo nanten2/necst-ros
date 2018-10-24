@@ -152,6 +152,7 @@ try:
         aa.set_data(x, d1)
         bb.set_data(x, d2)
         matplotlib.pyplot.pause(interbal)
+        print(d1[5000])
 except Exception as e:
     print(e)
         
