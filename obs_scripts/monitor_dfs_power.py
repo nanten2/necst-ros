@@ -181,6 +181,7 @@ ax4.legend(numpoints=1, prop={'size': 10})
 #sys.path.append("/home/amigos/NECST/script/data/monitor_dfs_power/"+timestamp+'/')
 plt.savefig(f+'.png')
 if graph == 'on':
-    plt.show()
+    #plt.show()
+    pass
 else:
     pass

@@ -43,6 +43,11 @@ class weather_controller(object):
     WindDir = 0
     RainRate = 0
 
+    cabin_hum = 0
+    cabin_temp = 0
+    dome_temp1 = 0
+    dome_temp2 = 0    
+
     def __init__(self):
         #self.passwd = getpass.getpass()
         #self.sub = rospy.Subscriber("outer_ondotori", tr7nw_values, self.get_ondotori)
@@ -50,6 +55,11 @@ class weather_controller(object):
         self.sub_press = rospy.Subscriber("press_raspi", Float64, self.get_pressure)
         self.pub_humi = rospy.Publisher("web_humi24", Float64_list_msg, queue_size=1)
         self.pub_wind = rospy.Publisher("web_wind24", Float64_list_msg, queue_size=1)
+        self.sub_hum1 = rospy.Subscriber("ondotori_hum", Float64, self.get_cabin_hum, queue_size=1)
+
+        self.sub_ondo1 = rospy.Subscriber("ondotori_temp", Float64, self.get_cabin_temp, queue_size=1)
+        self.sub_ondo1 = rospy.Subscriber("ondotori_dome_temp1", Float64, self.get_dome_temp1, queue_size=1)
+        self.sub_ondo1 = rospy.Subscriber("ondotori_dome_temp2", Float64, self.get_dome_temp2, queue_size=1)                        
         pass
 
     def pub_func(self):
@@ -68,10 +78,10 @@ class weather_controller(object):
             msg.wind_dir = self.WindDir#ret[10]
             msg.press =self.press# ret[12]
             msg.rain = self.RainRate#ret[13]
-            msg.cabin_temp1 = 0#ret[14] +273.15
-            msg.cabin_temp2 = 0#ret[15] +273.15
-            msg.dome_temp1 = 0#ret[16] +273.15
-            msg.dome_temp2 =0# ret[17] +273.15
+            msg.cabin_temp1 = self.cabin_temp+273.15#ret[14] +273.15
+            msg.cabin_temp2 = 296#ret[15] +273.15
+            msg.dome_temp1 = self.dome_temp1+273.15#ret[16] +273.15
+            msg.dome_temp2 = self.dome_temp2+273.15# ret[17] +273.15
             msg.gen_temp1 =0# ret[18] +273.15
             msg.gen_temp2 = 0#ret[19] +273.15
             msg.from_node = node_name
@@ -112,6 +122,22 @@ class weather_controller(object):
     def get_pressure(self, req):
         self.press = req.data
         return
+
+    def get_cabin_temp(self, req):
+        self.cabin_temp = req.data
+        return
+
+    def get_cabin_hum(self, req):
+        self.cabin_hum = req.data
+        return
+
+    def get_dome_temp1(self, req):
+        self.dome_temp1 = req.data
+        return
+
+    def get_dome_temp2(self, req):
+        self.dome_temp2 = req.data
+        return        
 
     def get_davis(self, req):
         if req.error_check == "Normal":
