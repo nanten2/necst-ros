@@ -299,6 +299,11 @@ while rp_num < rp:
         if _now > latest_hottime+60*obs['load_interval']:
             print('R')
             con.move_hot('in')
+            status = con.read_status()
+            while status.Current_Hot != "IN":
+                print("wait hot_move")
+                status = con.read_status()                
+                time.sleep(0.5)
             con.obs_status(active=True, current_num=scan_point*num, current_position="HOT")
         
             print('get spectrum...')
@@ -325,7 +330,10 @@ while rp_num < rp:
             d1_list.append(d1)
             d2_list.append(d2)
             tdim6_list.append([16384,1,1])
-            date_list.append(status.Time)
+            tmp_time = status.Time
+            tmp2 = datetime.fromtimestamp(tmp_time)
+            tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
+            date_list.append(tmp3)            
             thot_list.append(temp)
             vframe_list.append(dp1[0])
             vframe2_list.append(dp2[0]) 
@@ -371,6 +379,11 @@ while rp_num < rp:
         
         print('OFF')
         con.move_hot('out')
+        status = con.read_status()
+        while status.Current_Hot != "OUT":
+            print("wait hot_move")
+            status = con.read_status()                
+            time.sleep(0.5)        
         con.obs_status(active=True, current_num=scan_point*num, current_position="OFF")    
         print('get spectrum...')
         #con.observation("start", integ_off)# getting one_shot_data
@@ -385,7 +398,10 @@ while rp_num < rp:
         d1_list.append(d1)
         d2_list.append(d2)
         tdim6_list.append([16384,1,1])
-        date_list.append(status.Time)
+        tmp_time = status.Time
+        tmp2 = datetime.fromtimestamp(tmp_time)
+        tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
+        date_list.append(tmp3)        
         thot_list.append(temp)
         vframe_list.append(dp1[0]) 
         vframe2_list.append(dp2[0]) 
@@ -449,7 +465,10 @@ while rp_num < rp:
 
         status = con.read_status()
         temp = float(status.CabinTemp1) + 273.15
-        date = status.Time
+        tmp_time = status.Time
+        tmp2 = datetime.fromtimestamp(tmp_time)
+        tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")        
+        date = tmp3
         lst = status.LST
         az = status.Current_Az
         el = status.Current_El
@@ -513,6 +532,11 @@ while rp_num < rp:
 
 print('R')#最初と最後をhotではさむ
 con.move_hot('in')
+status = con.read_status()
+while status.Current_Hot != "IN":
+    print("wait hot_move")
+    status = con.read_status()                
+    time.sleep(0.5)
 con.obs_status(active=True, current_num=scan_point*num+1, current_position="HOT")
 
 #con.observation("start", integ_off)
@@ -529,7 +553,10 @@ d2 = d['dfs2'][0]
 d1_list.append(d1)
 d2_list.append(d2)
 tdim6_list.append([16384,1,1])
-date_list.append(status.Time)
+tmp_time = status.Time
+tmp2 = datetime.fromtimestamp(tmp_time)
+tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
+date_list.append(tmp3)
 thot_list.append(temp)
 vframe_list.append(dp1[0])
 vframe2_list.append(dp2[0])

@@ -81,7 +81,7 @@ class worldcoord(object):
             msg.x_list = ret[0]
             msg.y_list = ret[1]
             msg.time_list = [command.timestamp+delta_t*i for i in range(list_num)]
-            msg.coord = "altaz"
+            msg.coord = "planet"
             msg.off_az = ret[2]
             msg.off_el = ret[3]
             msg.hosei = command.hosei
@@ -89,7 +89,7 @@ class worldcoord(object):
             msg.limit = command.limit
             msg.timestamp = current_time
             self.pub.publish(msg)
-            #print(msg)
+            print(msg.time_list)
             print("publish status!!\n")
             print("end_create_list\n")
         return

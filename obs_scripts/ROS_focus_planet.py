@@ -7,7 +7,7 @@
 # Info
 # ----
 
-name = 'position_switching2018'
+name = 'focus_planet'
 description = 'Get P/S spectrum'
 
 
@@ -15,6 +15,7 @@ description = 'Get P/S spectrum'
 # ------------------
 obsfile = ''
 tau = 0.0
+planet = ""
 
 
 # Argument handler
@@ -27,11 +28,14 @@ p.add_argument('--obsfile', type=str,
                help='absolute path for obsfile')
 p.add_argument('--tau', type=float,
                help='tau. default=%.1f'%(tau))
+p.add_argument('--planet', type=str,
+               help='planet_name')
 
 args = p.parse_args()
 
 if args.obsfile is not None: obsfile = args.obsfile
 if args.tau is not None: tau = args.tau
+if args.planet is not None: planet = args.planet
 
 # Main
 # ====
@@ -42,7 +46,7 @@ if args.tau is not None: tau = args.tau
 import os
 import time
 import numpy
-from datetime import datetime 
+from datetime import datetime
 import sys
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
@@ -59,7 +63,19 @@ def handler(num, flame):
     print("STOP MOVING")
     con.move_stop()
     con.dome_stop()
+    try:
+        status = con.read_status()
+        print(start_m2.Current_M2 - status.Current_M2)
+        dist = round(start_m2.Current_M2 - status.Current_M2,3)
+        print(dist)
+        con.move_m2(dist*1000)
+        print("*** m2 move : ", dist, " [um] ***")
+        print("m2 move start position")
+    except:
+        print("m2 don't move...")
+        pass
     con.obs_status(active=False)
+    time.sleep(3.)
     sys.exit()
 signal.signal(signal.SIGINT, handler)
 
@@ -164,12 +180,36 @@ savetime = con.read_status().Time
 num = 0
 n = int(obs['nSeq'])
 latest_hottime = 0
+start_m2 = con.read_status()
+
+print("moving m2...")
+dist = -400*int(n/2)
+con.move_m2(dist)
+print("*** m2 move : ",  dist, " [ um ] ***")
+now = con.read_status()
+if abs(now.Current_M2 - (start_m2.Current_M2 + dist/1000)) > 0.01:
+    print("moving m2...")
+    time.sleep(0.1)
+    now = con.read_status()        
 
 con.obs_status(active=True, obsmode=obs["obsmode"], obs_script=__file__, obs_file=obsfile, target=obs["object"], num_on=obs["nON"], num_seq=obs["nSeq"], exposure_hot=obs["exposure_off"], exposure_off=obs["exposure_off"], exposure_on=obs["exposure"])
-while num < n: 
+while num < n:
+    print("moving m2...")
+    if num == 0:
+        dist = 0
+    else:
+        dist = 400
+    con.move_m2(dist)
+    print("*** m2 move : ",  dist, " [ um ] ***")
+    now = con.read_status()
+    if abs(now.Current_M2 - (start_m2.Current_M2 +(-400*int(n/2))/1000 + dist*num/1000)) > 0.01:
+        print("moving m2...")
+        time.sleep(0.1)
+        now = con.read_status()        
+    
     print('observation :'+str(num+1) + "\n")
         
-    con.onepoint_move(lambda_off, beta_off, coordsys, off_x=lamdel_off, off_y=betdel_off, offcoord = cosydel,dcos=dcos)
+    con.planet_move(planet, off_x=1200,off_y=1200)
 
     con.antenna_tracking_check()
     con.dome_tracking_check()
@@ -182,16 +222,17 @@ while num < n:
         con.move_hot('in')
         status = con.read_status()
         while status.Current_Hot != "IN":
-            print("wait hot_move...")
-            status = con.read_status()
+            print("wait hot_move")
             time.sleep(0.5)
+            status = con.read_status()
         con.obs_status(active=True, current_num=num, current_position="HOT")               
 
         print('get spectrum...')
         ###con.doppler_calc()
-        dp1 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, lamdel_on, betdel_on, dcos, cosydel, 
-                           integ_off*2, obs['restfreq_1']/1000., obs['restfreq_2']/1000., 
-                           sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
+        #dp1 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, lamdel_on, betdel_on, dcos, cosydel, 
+                           #integ_off*2, obs['restfreq_1']/1000., obs['restfreq_2']/1000., 
+                           #sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
+        dp1 = [0,0,0,{"sg21":0,"sg22":0}] 
         time.sleep(integ_off)
 
         status = con.read_status()
@@ -206,7 +247,7 @@ while num < n:
         tmp_time = status.Time
         tmp2 = datetime.fromtimestamp(tmp_time)
         tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
-        date_list.append(tmp3)
+        date_list.append(tmp3)        
         thot_list.append(temp)
         vframe_list.append(dp1[0])
         vframe2_list.append(dp1[0])
@@ -238,14 +279,15 @@ while num < n:
         #dp1 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, lamdel_on, betdel_on, dcos, cosydel,
                            #integ_off, obs['restfreq_1']/1000., obs['restfreq_2']/1000., 
                            #sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
+        dp1 = [0,0,0,{"sg21":0,"sg22":0}]         
         pass
     print('OFF'+ "\n")
     con.move_hot('out')
     status = con.read_status()
     while status.Current_Hot != "OUT":
-        print("wait hot_move...")
-        status = con.read_status()
-        time.sleep(0.5)    
+        print("wait hot_move")
+        time.sleep(0.5)
+        status = con.read_status()    
     con.obs_status(active=True, current_num=num, current_position="OFF")
     print('get spectrum...')
     #con.observation("start", integ_off)# getting one_shot_data
@@ -263,7 +305,7 @@ while num < n:
     tmp_time = status.Time
     tmp2 = datetime.fromtimestamp(tmp_time)
     tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
-    date_list.append(tmp3)    
+    date_list.append(tmp3)
     thot_list.append(temp)
     vframe_list.append(dp1[0])
     vframe2_list.append(dp1[0])
@@ -290,7 +332,7 @@ while num < n:
 
     print('move ON'+ "\n")
 
-    con.onepoint_move(lambda_on, beta_on, coordsys, off_x=lamdel_on, off_y=betdel_on, offcoord = cosydel, dcos=dcos)
+    con.planet_move(planet)
 
     con.obs_status(active=True, current_num=num, current_position="ON")    
     con.antenna_tracking_check()
@@ -338,13 +380,23 @@ while num < n:
     num += 1
     continue
 
+print("moving m2...")
+dist = -400*int(n/2)
+con.move_m2(dist)
+print("*** m2 move : ", dist,  " [um] ***")
+now = con.read_status()
+if now.Current_M2 == start_m2.Current_M2:
+    print("moving m2...")
+    time.sleep(0.1)
+    now = con.read_status()        
+
 print('R'+"\n")#最初と最後をhotではさむ
 con.move_hot('in')
 status = con.read_status()
 while status.Current_Hot != "IN":
-    print("wait hot_move...")
-    status = con.read_status()
+    print("wait hot_move")
     time.sleep(0.5)
+    status = con.read_status()
 con.obs_status(active=True, current_num=num, current_position="HOT")
 
 status = con.read_status()
@@ -385,7 +437,7 @@ _2NDLO_list2.append(dp1[3]['sg22']*1000)
 #print("sg21 : ", dp1[3]['sg21']*1000)
 #print("sg22 : ", dp1[3]['sg22']*1000, "\n")
 
-con.move_hot('out'+"\n")
+con.move_hot('out')
 print('observation end'+"\n")
 con.move_stop()
 con.dome_stop()

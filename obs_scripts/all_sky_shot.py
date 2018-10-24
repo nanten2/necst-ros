@@ -6,6 +6,7 @@ import datetime
 import argparse
 import opt_point
 import sys
+arg = sys.argv
 
 # Info
 # ----
@@ -27,7 +28,23 @@ p = argparse.ArgumentParser(description=description)
 name = "all_sky_shot"
 
 opt = opt_point.opt_point_controller()
-opt.start_observation()
+arg.append("")
+if arg[1] == "r_az":
+    _sort = "r_az"
+    print('***start observation in reverse Az sort mode***')
+elif arg[1] == "line_az":
+    _sort = "line_az"
+    print('***start observation in line Az sort mode***')
+elif arg[1] == "line_el":
+    _sort = "line_el"
+    print('***start observation in line El sort mode***')    
+elif arg[1] != '':
+    _sort = 'el'
+    print('***start observation in EL sort mode***')
+else:
+    _sort = 'az'
+    print('***start observation in Az sort mode (Defalut)***')
+opt.start_observation(sort=_sort)
 
 
 

@@ -3,11 +3,14 @@
 import math
 import time
 import sys
+import threading
 import rospy
 import pyinterface
 from datetime import datetime as dt
 
 from necst.msg import Status_encoder_msg
+from necst.srv import Bool_srv
+from necst.srv import Bool_srvResponse
 
 node_name = "encoder_status"
 
@@ -21,31 +24,67 @@ class enc_controller(object):
     vel_el = 0.
     resolution = 360*3600/(23600*400)  #0.13728813559 (4 multiplication)
 
+    origin_flag = False
+    mode = ""
+    
     def __init__(self):
         board_name = 6204
         rsw_id = 0
         self.dio = pyinterface.open(board_name, rsw_id)
-        self.board_initialize()
+        self.initialize()
+        self.sub = rospy.Service("encoder_origin", Bool_srv, self.origin_setting)
+        th = threading.Thread(target=self.origin_flag_check)
+        th.start()
         pass
 
-    def board_initialize(self):
+    def initialize(self):
         if self.dio.get_mode().to_bit() == "00000000" :
-            rospy.loginfo("initialize : start")
-            self.dio.initialize()
-            self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=1)
-            self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=2)
-            self.dio.set_z_mode(clear_condition="CLS0", latch_condition="", z_polarity=0, ch=1)
-            self.dio.set_z_mode(clear_condition="CLS0", latch_condition="", z_polarity=0, ch=2)
-            rospy.loginfo("initialize : end")
+            self.dio.initialize()            
+            self.board_setting()
         else:
             pass
+        
+    def origin_setting(self, req):
+        if req.data == True:
+            self.mode = "CLS0"
+            self.origin_flag = True
+            while self.origin_flag == True:
+                time.sleep(0.1)
+            return Bool_srvResponse(True)            
+        else:
+            self.mode = ""
+            self.origin_flag = True
+            while self.origin_flag == True:
+                time.sleep(0.1)            
+            return Bool_srvResponse(False)
+        
+
+    def origin_flag_check(self):
+        while not rospy.is_shutdown():
+            if self.origin_flag == True:
+                self.board_setting(self.mode)
+                self.origin_flag = False
+            else:
+                pass
+            time.sleep(0.1)
+        return
             
+    def board_setting(self, z_mode=""):
+        rospy.loginfo("initialize : start")
+        self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=1)
+        self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=2)
+        self.dio.set_z_mode(clear_condition=z_mode, latch_condition="", z_polarity=0, ch=1)
+        self.dio.set_z_mode(clear_condition=z_mode, latch_condition="", z_polarity=0, ch=2)
+        print("origin setting mode : ", z_mode)        
+        rospy.loginfo("initialize : end")
+        return
+        
     def pub_status(self):
         pub = rospy.Publisher("status_encoder", Status_encoder_msg, queue_size = 1, latch = True)
         msg = Status_encoder_msg()
 
         while not rospy.is_shutdown():
-            print("loop...")
+            #print("loop...")
             ret = self.get_azel()
             msg.enc_az = ret[0]
             msg.enc_el = ret[1]

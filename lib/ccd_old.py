@@ -2,7 +2,7 @@ import datetime
 from astropy.time import Time
 import math
 import time
-import pyinterface
+#import pyinterface
 import numpy as np
 from PIL import Image
 from PIL import ImageOps
@@ -17,6 +17,7 @@ class ccd_controller(object):
 
     error = []
     status = ''
+    error_count = 0
     
     
     def __init__(self):
@@ -88,7 +89,15 @@ class ccd_controller(object):
         name = str(date.year)+month+day+hour+minute+second
         
         #oneshot
-        self.oneshot(data_name,name)
+        try:
+            self.oneshot(data_name,name)
+            self.error_count = 0
+        except Exception as e:
+            self.error_count += 1
+            if self.error_count > 3:
+                raise 
+            else:
+                pass
         mjd = Time(date).mjd
         secofday = date.hour*60*60 + date.minute*60 + date.second + date.microsecond*0.000001
         
@@ -178,15 +187,15 @@ class ccd_controller(object):
     
     #for tracking(test)
     def save_track_status(self, x, y, ra, dec, az_star, el_star, mjd, data_name, secofday, status):
-        if os.path.exists("/home/amigos/NECST/soft/core/"+str(data_name)):
+        if os.path.exists("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)):
             pass
         else:
-            os.mkdir("/home/amigos/NECST/soft/core/"+str(data_name))
+            os.mkdir("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name))
             print("---------------------------------------------------------")
             print("---------------------------------------------------------")
             print("---------------------------------------------------------")
             print("---------------------------------------------------------")
-        f = open("/home/amigos/NECST/soft/core/"+str(data_name)+"/param.log", "a")
+        f = open("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/param.log", "a")
         
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
         print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -194,10 +203,10 @@ class ccd_controller(object):
         
         
         #geo_status = [x1,x2,y1,y2] #for test
-        geo_status = self.geo.read_geomech()
-        geo_x = (geo_status[0]-geo_status[1])/2
-        geo_y = (geo_status[2]-geo_status[3])/2
-        geo_temp = self.geo.read_geomech_temp()
+        geo_status = [0,0,0,0]#self.geo.read_geomech()
+        geo_x = 0#(geo_status[0]-geo_status[1])/2
+        geo_y = 0#(geo_status[2]-geo_status[3])/2
+        geo_temp = [0,0]#self.geo.read_geomech_temp()
         
         #write papram
         f.write(str(ra)+" "+str(dec)+" "+str(mjd)+" "+str(secofday)+" "+str(status.Command_Az)+" "+str(status.Command_El)+" "\
@@ -215,27 +224,36 @@ class ccd_controller(object):
     def onepoint_shot(self, ra, dec, az_star, el_star, data_name, status):
         thr = 80 #threshold of brightness <=?
         
-        if os.path.exists("/home/amigos/NECST/soft/data/"+str(data_name)):
+        if os.path.exists("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)):
             pass
         else:
-            os.mkdir("/home/amigos/NECST/soft/data/"+str(data_name))
+            print("create file")
+            print("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name))
+            os.mkdir("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name))
         
         name = time.strftime('%Y%m%d_%H%M%S')
         
         #oneshot
-        self.oneshot(name)
-        date = datetime.datetime.today()
-        ret = slalib.sla_cldj(date.year, date.month, date.day)
-        mjd = ret[0]
+        #dirname = "onepoint_track_"+time.strftime("%Y%m%d")
+        self.oneshot(data_name, name)
+        #date = datetime.datetime.today()
+        #ret = slalib.sla_cldj(date.year, date.month, date.day)
+        #mjd = ret[0]
+        date = datetime.datetime.now()
+        mjd = Time(date).mjd
         secofday = date.hour*60*60 + date.minute*60 + date.second + date.microsecond*0.000001
-        
+
+        #?????
+        """
         path = os.getcwd()
         com = "mv "+str(path)+"/"+str(name)+".bmp /home/amigos/NECST/soft/data/"+str(data_name)+"/"+str(name)+".bmp"
         ret = commands.getoutput(com)
+        """
         
         #load array
-        print(ret)
-        in_image = Image.open("/home/amigos/NECST/soft/data/"+str(data_name)+"/"+name+".bmp")
+        #print(ret)
+        time.sleep(1.5)
+        in_image = Image.open("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/"+name+".bmp")
         image = np.array(ImageOps.grayscale(in_image))
         ori_image = np.array(image)
         
@@ -300,7 +318,7 @@ class ccd_controller(object):
         print("==============================================")
         print(xx)
         print(yy)
-        
+
         self.save_track_status(xx, yy, ra, dec, az_star, el_star, mjd, data_name, secofday, status)
         return
         

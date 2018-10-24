@@ -9,19 +9,26 @@ import pexpect
 import getpass
 import rospy
 from necst.msg import Status_weather_msg
-from ondo.msg import tr7nw_values
+#from ondo.msg import tr7nw_values
 from davis.msg import davis_weather
+from std_msgs.msg import Float64
+from necst.msg import Float64_list_msg
 
 node_name = "weather_status"
 
 class weather_controller(object):
-    host = "amigos@200.91.8.66"
+    #host = "amigos@200.91.8.66"
+    host = "amigos@172.20.0.35"
     dir = "/home/weather/WeatherMonitor/Weather_Data/"
     #dir = "/home/necst/ros/src/necst/scripts/device/"
     copy_dir = "/home/amigos/data/monitor/"
     data = [0]*20
     passwd = ""
+
+    humi24 = [0]*24
+    wind24 = [0]*24
     
+    press = 0
     # from ondotori
     OutTemp = 0
     OutHumi = 0
@@ -38,35 +45,49 @@ class weather_controller(object):
 
     def __init__(self):
         #self.passwd = getpass.getpass()
-        self.sub = rospy.Subscriber("outer_ondotori", tr7nw_values, self.get_ondotori)
+        #self.sub = rospy.Subscriber("outer_ondotori", tr7nw_values, self.get_ondotori)
         self.sub_davis = rospy.Subscriber("davis_weather", davis_weather, self.get_davis)
+        self.sub_press = rospy.Subscriber("press_raspi", Float64, self.get_pressure)
+        self.pub_humi = rospy.Publisher("web_humi24", Float64_list_msg, queue_size=1)
+        self.pub_wind = rospy.Publisher("web_wind24", Float64_list_msg, queue_size=1)
         pass
 
     def pub_func(self):
         pub = rospy.Publisher("status_weather", Status_weather_msg, queue_size = 10, latch = True)
         msg = Status_weather_msg()
+        wmsg = Float64_list_msg()
         while not rospy.is_shutdown():
             #ret = self.get_weather()
             msg.in_temp = self.InTemp#ret[6]
-            msg.out_temp = self.OutTemp#ret[7]
-            #msg.out_temp = self.OutTemp_davis
+            #msg.out_temp = self.OutTemp#ret[7]
+            msg.out_temp = self.OutTemp_davis
             msg.in_humi = self.InHumi#ret[8]
-            msg.out_humi = self.OutHumi#ret[9]
-            #msg.out_humi = self.OutHumi_davis
+            #msg.out_humi = self.OutHumi#ret[9]
+            msg.out_humi = self.OutHumi_davis
             msg.wind_sp = self.WindSp#ret[11]
             msg.wind_dir = self.WindDir#ret[10]
-            msg.press = self.Press#ret[12]
+            msg.press =self.press# ret[12]
             msg.rain = self.RainRate#ret[13]
-            #msg.cabin_temp1 = ret[14]
-            #msg.cabin_temp2 = ret[15]
-            #msg.dome_temp1 = ret[16]
-            #msg.dome_temp2 = ret[17]
-            #msg.gen_temp1 = ret[18]
-            #msg.gen_temp2 = ret[19]
+            msg.cabin_temp1 = 0#ret[14] +273.15
+            msg.cabin_temp2 = 0#ret[15] +273.15
+            msg.dome_temp1 = 0#ret[16] +273.15
+            msg.dome_temp2 =0# ret[17] +273.15
+            msg.gen_temp1 =0# ret[18] +273.15
+            msg.gen_temp2 = 0#ret[19] +273.15
             msg.from_node = node_name
             msg.timestamp = time.time()
             pub.publish(msg)
             print(msg)
+
+            now = time.gmtime()
+            hour = now.tm_hour
+            self.humi24[hour] = msg.out_humi
+            self.wind24[hour] = msg.wind_sp
+            wmsg.data = self.humi24
+            self.pub_humi.publish(wmsg)
+            wmsg.data = self.wind24
+            self.pub_wind.publish(wmsg)
+            
             time.sleep(1)
         return
 
@@ -86,6 +107,10 @@ class weather_controller(object):
     def get_ondotori(self,req):
         self.OutTemp = req.ch1_value
         self.OutHumi = req.ch2_value
+        return
+
+    def get_pressure(self, req):
+        self.press = req.data
         return
 
     def get_davis(self, req):

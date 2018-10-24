@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="necst" name="logger_ctrl" type="ROS_save_logger.py" args="ROS_controller.py" output="screen"  />
+   <node pkg="necst" name="logger_antenna" type="ROS_save_logger.py" args="ROS_antenna_move.py" output="screen"  />
+   <node pkg="necst" name="logger_pid" type="ROS_log_pid.py" />
+   <node pkg="necst" name="logger_weather" type="ROS_weather_status.py" />
+</launch>
