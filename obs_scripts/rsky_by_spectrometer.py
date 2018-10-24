@@ -1,4 +1,4 @@
-#! /usr/bin/env python2
+#! /usr/bin/env python3
 
 # Configurations
 # ==============
@@ -54,12 +54,15 @@ import ROS_controller
 
 timestamp = time.strftime('%Y%m%d_%H%M%S')
 if memo != '':
-    dirname = timestamp + '-' + memo
+    name = name + '_' + memo
 else:
-    dirname = timestamp
     pass
-
-savedir = "/home/amigos/data/experiment/rsky/"
+day = time.strftime("%Y%m%d")
+savedir = "/home/amigos/data/experiment/rsky/"+day+"/"
+if not os.path.exists(savedir):
+    os.makedirs(savedir)
+else:
+    pass
 
 
 # Data aquisition
@@ -68,6 +71,12 @@ savedir = "/home/amigos/data/experiment/rsky/"
 con = ROS_controller.controller()
 status = con.read_status()
 cabin_temp = status.CabinTemp1
+if cabin_temp < 10.: # if no data
+    cabin_temp = 300
+    print("No data from weather")
+    print("temporary T=300[K]")
+else:
+    pass
 
 d1_list = []
 d2_list = []
@@ -79,7 +88,20 @@ print('')
 print('R')
 con.move_hot('in')
 
-time.sleep(1)
+status = con.read_status()
+hot_status = status.Current_Hot
+print('hot_status ### ', hot_status)
+
+
+while True:
+    status = con.read_status()
+    hot_status = status.Current_Hot
+    print('hot_status ### ',hot_status)
+    if not hot_status == 'IN':
+        time.sleep(0.5)
+        continue
+    else:
+        break
 
 print('cabin_temp: %.2f'%(cabin_temp))
 
@@ -94,7 +116,20 @@ d2_list.append(d2)
 print('SKY')
 con.move_hot('out')
 
-time.sleep(1)
+status = con.read_status()
+hot_status = status.Current_Hot
+
+print('hot_status ### ', hot_status)
+
+while True:
+    status = con.read_status()
+    hot_status = status.Current_Hot
+    if not hot_status == 'OUT':
+        time.sleep(0.5)
+        continue
+    else:
+        break
+
 
 print('get spectrum...')
 d = con.oneshot_achilles(exposure=integ)
@@ -121,7 +156,9 @@ numpy.savetxt(os.path.join(savedir, '%s_temp.txt'%(name)), [cabin_temp])
 def tsys(dhot, dsky, thot):
     dhot = numpy.array(dhot)
     dsky = numpy.array(dsky)
-    
+    print("#################")
+    print(dhot)
+    print(dsky)
     y = dhot / dsky
     tsys = thot / (y - 1.)
     return tsys
@@ -156,8 +193,8 @@ ax21.set_ylabel('Power (count)')
 ax11.set_title('dfs01')
 ax21.set_title('dfs02')
 
-ax12.plot(x, tsys1, 'k.', alpha=0.2)
-ax22.plot(x, tsys2, 'k.', alpha=0.2)
+ax12.plot(x, tsys1, 'g', alpha=0.2)
+ax22.plot(x, tsys2, 'g', alpha=0.2)
 ax12.grid(True)
 ax22.grid(True)
 ax12.set_ylim(0, 200)
@@ -172,4 +209,5 @@ fig.suptitle('%s : %s,  integ = %.2f'%(name, timestamp, integ))
 fig.savefig(os.path.join(savedir, '%s_%s.png'%(name, timestamp)))
 
 matplotlib.pyplot.show()
+
 

@@ -49,6 +49,7 @@ import shutil
 import time
 import math
 import numpy
+from datetime import datetime
 import sys
 sys.path.append("/home/amigos/ros/src/necst/lib")
 import doppler_nanten
@@ -214,30 +215,30 @@ while num < n:
     gy = 0
     #print('observation :'+str(num))
     if num%4 == 0:
-        offset_x = -r - edge
-        offset_y = 0
-        line_point = int((edge*2)/obs['xgrid'])+1#obs['N']かも？
+        offset_x = -r - edge +obs["offset_Az"]
+        offset_y = 0 +obs["offset_El"]
+        line_point = obs['N']
         gx = 1
         subscan = 1
         place = 'left_edge'
     elif num%4 == 1:
-        offset_x = +r + edge
-        offset_y = 0
-        line_point = int((edge*2)/obs['xgrid'])+1
+        offset_x = +r + edge +obs["offset_Az"]
+        offset_y = 0 +obs["offset_El"]
+        line_point = obs['N']#int((edge*2)/obs['xgrid'])+1
         gx = 1
         subscan= 1
         place = 'right_edge'
     elif num%4 == 2:
-        offset_x = 0
-        offset_y = -r - edge
-        line_point = int((edge*2)/obs['ygrid'])+1
+        offset_x = 0 +obs["offset_Az"]
+        offset_y = -r - edge +obs["offset_El"]
+        line_point = obs['N']#int((edge*2)/obs['ygrid'])+1
         gy = 1
         subscan= 2
         place = 'lower_edge'
     elif num%4 == 3:
-        offset_x = 0
-        offset_y = +r + edge
-        line_point = int((edge*2)/obs['ygrid'])+1
+        offset_x = 0 +obs["offset_Az"]
+        offset_y = +r + edge +obs["offset_El"]
+        line_point = obs['N']#int((edge*2)/obs['ygrid'])+1
         gy = 1
         subscan= 2
         place = 'upper_edge'
@@ -267,8 +268,13 @@ while num < n:
     #if _now > latest_hottime+60*obs['load_interval']:
     print('R')
     con.move_hot('in')
+    status = con.read_status()
+    while status.Current_Hot != "IN":
+        print("wait hot_move...")
+        status = con.read_status()        
+        time.sleep(0.5)
             
-    temp = float(con.read_status().CabinTemp1) + 273.15
+    temp = float(con.read_status().CabinTemp1)# + 273.15
         
     print('Temp: %.2f'%(temp))
     print('get spectrum...')
@@ -283,7 +289,10 @@ while num < n:
     d1_list.append(d1)
     d2_list.append(d2)
     tdim6_list.append([16384,1,1])
-    date_list.append(status.Time)
+    tmp_time = status.Time
+    tmp2 = datetime.fromtimestamp(tmp_time)
+    tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
+    date_list.append(tmp3)    
     thot_list.append(temp)
     vframe_list.append(dp1)#dp1[0])
     vframe2_list.append(dp1)#dp1[0])
@@ -314,19 +323,28 @@ while num < n:
     #dp1 = dp.set_track(obs['lambda_on'], obs['beta_on'], obs['vlsr'], obs['coordsys'], obs['lamdel'], obs['betdel'], offset_dcos, obs['coordsys'], integ_off+integ_on, obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
     #lambel_off,betdel_offかも？SYNTHが固定値の場合
     #pass
+    
     print('OFF')
     con.move_hot('out')
+    status = con.read_status()
+    while status.Current_Hot != "OUT":
+        print("wait hot_move...")
+        status = con.read_status()        
+        time.sleep(0.5)    
     print('get spectrum...')
     con.obs_status(active=True, current_num=num*obs["N"], current_position="OFF")
     status = con.read_status()
-    temp = float(status.CabinTemp1) + 273.15
+    temp = float(status.CabinTemp1)# + 273.15
     d = con.oneshot_achilles(exposure=integ_off)
     d1 = d['dfs1'][0]
     d2 = d['dfs2'][0]
     d1_list.append(d1)
     d2_list.append(d2)
     tdim6_list.append([16384,1,1])
-    date_list.append(status.Time)
+    tmp_time = status.Time
+    tmp2 = datetime.fromtimestamp(tmp_time)
+    tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
+    date_list.append(tmp3)    
     thot_list.append(temp)
     vframe_list.append(dp1)#dp1[0])
     vframe2_list.append(dp1)#dp1[0])
@@ -359,28 +377,22 @@ while num < n:
         con.move_stop()
 
         if coord_sys == 'EQUATRIAL':
-            #con.radec_move(ra, dec, obs['coordsys'].lower(), off_x=obs['lamdel_off'], off_y=obs['betdel_off'], dcos = offset_dcos)
             pass
         elif coord_sys == 'GALACTIC':
-            #con.galactic_move(l, b, off_x=obs['lamdel_off'], off_y=obs['betdel_off'], dcos = offset_dcos)
             pass
         elif coord_sys == 'PLANET':
-            if offset_x > r or offset_y > r:
+            if num%4 == 1 or num%4 == 3 :
+                print('right or upper')                
                 off_x = offset_x + (-2*edge+obs['xgrid']*lp)*gx
                 off_y = offset_y + (-2*edge+obs['ygrid']*lp)*gy
-                con.planet_move(planet, off_x = off_x,off_y = off_y, 
-                                offcoord = cosydel,dcos = offset_dcos)
-                print('right or upper')
-                print('off_x : ', off_x)
-                print('off_y : ', off_y)
             else:
+                print('left or lower')
                 off_x = offset_x + (obs['xgrid']*lp)*gx
                 off_y = offset_y + (obs['ygrid']*lp)*gy
-                con.planet_move(planet, off_x = off_x,off_y = off_y, 
-                                offcoord = cosydel,dcos = offset_dcos)
-                print('left or lower')
-                print('off_x : ', off_x)
-                print('off_y : ', off_y)
+            con.planet_move(planet, off_x = off_x,off_y = off_y, 
+                            offcoord = cosydel,dcos = offset_dcos)
+            print('off_x : ', off_x)
+            print('off_y : ', off_y)
 
         con.obs_status(active=True, current_num=num*obs["N"]+lp, current_position="ON")
         con.antenna_tracking_check()
@@ -391,14 +403,17 @@ while num < n:
         
         print('get spectrum...')
         status = con.read_status()
-        temp = float(status.CabinTemp1) + 273.15
+        temp = float(status.CabinTemp1)# + 273.15
         d = con.oneshot_achilles(exposure=integ_on)
         d1 = d['dfs1'][0]
         d2 = d['dfs2'][0]
         d1_list.append(d1)
         d2_list.append(d2)
         tdim6_list.append([16384,1,1])
-        date_list.append(status.Time)
+        tmp_time = status.Time
+        tmp2 = datetime.fromtimestamp(tmp_time)
+        tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
+        date_list.append(tmp3)        
         thot_list.append(temp)
         vframe_list.append(dp1)#dp1[0])
         vframe2_list.append(dp1)#dp1[0])
@@ -431,9 +446,14 @@ while num < n:
 
 print('R')#最初と最後をhotではさむ
 con.move_hot('in')
+status = con.read_status()
+while status.Current_Hot != "IN":
+    print("wait hot_move...")
+    status = con.read_status()        
+    time.sleep(0.5)
 con.obs_status(active=True, current_num=num*obs["N"], current_position="HOT")
 status = con.read_status()
-temp = float(status.CabinTemp1) + 273.15
+temp = float(status.CabinTemp1)# + 273.15
         
 print('Temp: %.2f'%(temp))
 print('get spectrum...')
@@ -443,7 +463,10 @@ d2 = d['dfs2'][0]
 d1_list.append(d1)
 d2_list.append(d2)
 tdim6_list.append([16384,1,1])
-date_list.append(status.Time)
+tmp_time = status.Time
+tmp2 = datetime.fromtimestamp(tmp_time)
+tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
+date_list.append(tmp3)
 thot_list.append(temp)
 vframe_list.append(dp1)#dp1[0])
 vframe2_list.append(dp1)#dp1[0])

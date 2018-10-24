@@ -31,7 +31,8 @@ sys.path.append("/home/amigos/ros/src/necst/lib")
 import achilles
 from necst.srv import ac240_srv
 from necst.srv import ac240_srvResponse
-
+from necst.srv import Bool_srv
+from necst.srv import Bool_srvResponse
 
 class controller(object):
 
@@ -111,7 +112,8 @@ class controller(object):
         self.pub_onestatus = rospy.Publisher("one_status", Status_onepoint_msg, queue_size=1)        
         self.pub_queue = rospy.Publisher("queue_obs", Bool_necst, queue_size=1)
         self.pub_alert = rospy.Publisher("alert", String_necst, queue_size=1)
-        self.service = rospy.ServiceProxy("ac240", ac240_srv)        
+        self.service_ac240 = rospy.ServiceProxy("ac240", ac240_srv)
+        self.service_encoder = rospy.ServiceProxy("encoder_origin", Bool_srv)        
         time.sleep(0.5)# authority regist time                
 
         """get authority"""
@@ -144,8 +146,8 @@ class controller(object):
         @functools.wraps(func)
         def ros_logger(self, *args, **kwargs):
             rospy.loginfo((str(locals()['func']).split()[1].split('.')[1])+'#'+str(locals()['args']))
-            func(self, *args, **kwargs)
-            return
+            ret = func(self, *args, **kwargs)
+            return ret
         return ros_logger
         
 
@@ -249,7 +251,7 @@ class controller(object):
     
     @logger
     @deco_check
-    def onepoint_move(self, x, y, coord="altaz", off_x=0, off_y=0, offcoord='altaz', hosei='hosei_230.txt',  lamda=2600, dcos=0, limit=True,):
+    def onepoint_move(self, x, y, coord="altaz", off_x=0, off_y=0, offcoord='altaz', hosei='hosei_230.txt',  lamda=2600, dcos=0, limit=True, rotation=True):
         """ azel_move, radec_move, galactic_move
         
         Parameters
@@ -264,13 +266,14 @@ class controller(object):
         lamda    : observation wavelength [um] (default ; 2600)
         dcos     : projection (no:0, yes:1)
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
+        rotation : True -->  az=240 change az=-120 
         """
-        self.pub_onepoint.publish(x, y, coord, "", off_x, off_y, offcoord, hosei, lamda, dcos, limit, self.node_name, time.time())
+        self.pub_onepoint.publish(x, y, coord, "", off_x, off_y, offcoord, hosei, lamda, dcos, limit, rotation, self.node_name, time.time())
         return
     
     @logger
     @deco_check
-    def planet_move(self, planet, off_x=0, off_y=0, offcoord="altaz", hosei="hosei_230.txt", lamda=2600, dcos=0, limit=True):
+    def planet_move(self, planet, off_x=0, off_y=0, offcoord="altaz", hosei="hosei_230.txt", lamda=2600, dcos=0, limit=True, rotation=True):
         """ planet_move
         
         Parameters
@@ -291,12 +294,12 @@ class controller(object):
         else:
             pass
         print("planet name is ", planet)
-        self.pub_planet.publish(0, 0, "planet", planet, off_x, off_y, offcoord, hosei, lamda, dcos,limit, self.node_name, time.time())
+        self.pub_planet.publish(0, 0, "planet", planet, off_x, off_y, offcoord, hosei, lamda, dcos,limit, rotation, self.node_name, time.time())
         return
     
     @logger    
     @deco_check
-    def linear_move(self, x, y, coord="altaz", dx=0, dy=0, offcoord='altaz', hosei='hosei_230.txt',  lamda=2600, dcos=0, limit=True,):
+    def linear_move(self, x, y, coord="altaz", dx=0, dy=0, offcoord='altaz', hosei='hosei_230.txt',  lamda=2600, dcos=0, limit=True, rotation=True):
         """ azel_move, radec_move, galactic_move
         
         Parameters
@@ -312,7 +315,7 @@ class controller(object):
         dcos     : projection (no:0, yes:1)
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
         """
-        self.pub_linear.publish(x, y, coord, "", dx, dy, offcoord, hosei, lamda, dcos, limit, self.node_name, time.time())
+        self.pub_linear.publish(x, y, coord, "", dx, dy, offcoord, hosei, lamda, dcos, limit, rotation, self.node_name, time.time())
         return
     
     @logger
@@ -406,7 +409,7 @@ class controller(object):
     def antenna_tracking_check(self):
         """antenna_tracking_check"""
         rospy.loginfo(" tracking now... \n")
-        time.sleep(3.)
+        time.sleep(2.)
         while not self.antenna_tracking_flag:
             time.sleep(0.01)
             pass
@@ -584,10 +587,11 @@ class controller(object):
     def dome_tracking_check(self):
         """dome tracking check"""
         print(" dome_tracking now... \n")
-        time.sleep(3.)
+        time.sleep(2.)
         while not self.dome_tracking_flag:
             time.sleep(0.01)
             pass
+        return
 
 # ===================
 # mirror
@@ -666,8 +670,8 @@ class controller(object):
 # ===================
 # spectrometer
 # ===================
-    @logger
-    @deco_check
+#@logger
+    #@deco_check    
     def oneshot_achilles(self, repeat=1, exposure=1.0, stime=0.0):
         """get spectrum by ac240
 
@@ -679,14 +683,19 @@ class controller(object):
         
         """
         rospy.wait_for_service("ac240")
-        response = self.service(repeat, exposure, stime)
-        print(response)
-        data_dict = {"dfs1":response.dfs1, "dfs2":response.dfs2}
+        response = self.service_ac240(repeat, exposure, stime)
+        #print(response)
+        #print(len(response.dfs1))
+        dfs1_list = []
+        dfs2_list = []
+        tmp1 = [dfs1_list.append(response.dfs1[i*16384:(i+1)*16384]) for i in range(int(len(response.dfs1)/16384))]
+        tmp2 = [dfs2_list.append(response.dfs2[i*16384:(i+1)*16384]) for i in range(int(len(response.dfs2)/16384))]
+        
+        data_dict = {"dfs1":dfs1_list, "dfs2":dfs2_list}
 
         return data_dict
 
-    @logger
-    @deco_check
+
     def old_oneshot(self, repeat=1, exposure=1.0, stime=0.0):
         dfs = achilles.dfs()
         data = dfs.oneshot(req.repeat, req.exposure, req.stime)
@@ -840,7 +849,8 @@ class controller(object):
         
         self.pub_obsstatus.publish(msg)
         return
-
+    @logger
+    @deco_check        
     def read_status(self):
         """read status
 
@@ -890,5 +900,24 @@ class controller(object):
             pass
         return
 
+    @logger
+    def encoder_origin_setting(self, mode=False):
+        """ encoder origin setting
 
-    
+        * Parameters *
+        ----------
+        mode : True  -> clear_condition of z_mode is "CLS0"
+               False -> clear_condition of z_mode is ""
+        
+        * How to use *
+        1.run "encoder_origin_setting(mode=True)"
+        2.Move antenna through the origin
+        3.run "encoder_origin_setting(mode=False)" 
+        """
+        rospy.wait_for_service("encoder_origin")
+        response = self.service_encoder(mode)
+        if response.data == True:
+            print("clear_condition is 'CLS0'.")
+        else:
+            print("clear_condition is ''.")
+        return

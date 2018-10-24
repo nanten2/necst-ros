@@ -15,6 +15,7 @@ description = 'Do radio pointing'
 # ------------------
 obsfile = ''
 tau = 0.0
+planet = ""
 
 
 # Argument handler
@@ -27,11 +28,14 @@ p.add_argument('--obsfile', type=str,
                help='absolute path for obsfile', required=True)
 p.add_argument('--tau', type=float,
                help='tau. default=%.1f'%(tau))
+p.add_argument('--planet', type=str,
+               help='planet name', required=True)
 
 args = p.parse_args()
 
 if args.obsfile is not None: obsfile = args.obsfile
 if args.tau is not None: tau = args.tau
+if args.planet is not None: planet = args.planet
 
 # Main
 # ====
@@ -205,7 +209,7 @@ while num < n:
         print('observation :'+str(num))
         print('tracking start')
         con.move_stop()
-        con.onepoint_move(ra, dec, obs['coordsys'], off_x=off_x+obs["offset_Az"], off_y=off_y+obs["offset_El"], offcoord = cosydel)
+        con.planet_move(planet, off_x=off_x+obs["offset_Az"], off_y=off_y+obs["offset_El"], offcoord = cosydel)
         print('moving...')
 
         con.antenna_tracking_check()
@@ -231,7 +235,8 @@ while num < n:
             print('Temp: %.2f'%(temp))
             
             print('get spectrum...')
-            dp1 = dp.set_track(obs['lambda_on'], obs['beta_on'], obs['vlsr'], obs['coordsys'], 0, 0, offset_dcos, obs['coordsys'], integ*2+integ, obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)#obs['cosydel']非対応
+            #dp1 = dp.set_track(obs['lambda_on'], obs['beta_on'], obs['vlsr'], obs['coordsys'], 0, 0, offset_dcos, obs['coordsys'], integ*2+integ, obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)#obs['cosydel']非対応
+            dp1 = [0,0,0,{"sg21":0, "sg22":0},0]#test
             d = con.oneshot_achilles(exposure=integ)
             #d = {"dfs1":[[100]*16384, 0], "dfs2":[[200]*16384, 1]}
             d1 = d['dfs1'][0]
@@ -276,7 +281,7 @@ while num < n:
             print("wait hot_move...")
             status = con.read_status()
             time.sleep(0.5)            
-        con.onepoint_move(offx, offy, obs['coordsys'],off_x=obs["offset_Az"], off_y=obs["offset_El"])
+        con.planet_move(planet, off_x=obs["lamdel_off"]+obs["offset_Az"], off_y=obs["betdel_off"]+obs["offset_El"])
         con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="OFF")
         
 
@@ -289,7 +294,8 @@ while num < n:
         if latest_hottime > _now:
             pass
         else:
-            dp1 = dp.set_track(obs['lambda_on'], obs['beta_on'], obs['vlsr'], obs['coordsys'], 0, 0, offset_dcos, obs['coordsys'], integ+integ, obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)#obs['cosydel']非対応
+            #dp1 = dp.set_track(obs['lambda_on'], obs['beta_on'], obs['vlsr'], obs['coordsys'], 0, 0, offset_dcos, obs['coordsys'], integ+integ, obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)#obs['cosydel']非対応
+            dp1 = [0,0,0,{"sg21":0, "sg22":0},0]#test
         status = con.read_status()
         temp = float(status.CabinTemp1)# + 273.15
         d = con.oneshot_achilles(exposure=integ)
@@ -330,7 +336,7 @@ while num < n:
         print('move ON')
         con.move_stop()
         
-        con.onepoint_move(ra, dec, obs['coordsys'], off_x = off_x+obs["offset_Az"], off_y = off_y+obs["offset_El"], offcoord = cosydel)
+        con.planet_move(planet, off_x = off_x+obs["offset_Az"], off_y = off_y+obs["offset_El"], offcoord = cosydel)
         con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="ON")
         
 
@@ -405,7 +411,8 @@ temp = float(status.CabinTemp1)# + 273.15
 print('Temp: %.2f'%(temp))
 
 print('get spectrum...')
-dp1 = dp.set_track(obs['lambda_on'], obs['beta_on'], obs['vlsr'], obs['coordsys'], 0, 0, offset_dcos, obs['coordsys'], integ*2+integ, obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)#obs['cosydel']非対応
+#dp1 = dp.set_track(obs['lambda_on'], obs['beta_on'], obs['vlsr'], obs['coordsys'], 0, 0, offset_dcos, obs['coordsys'], integ*2+integ, obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)#obs['cosydel']非対応
+dp1 = [0,0,0, {"sg21":0, "sg22":0},0]#test
 d = con.oneshot_achilles(exposure=integ)
 #d = {"dfs1":[[100]*16384, 0], "dfs2":[[200]*16384, 1]}
 d1 = d['dfs1'][0]

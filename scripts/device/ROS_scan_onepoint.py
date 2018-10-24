@@ -59,6 +59,7 @@ class worldcoord(object):
                 msg.hosei = command.hosei
                 msg.lamda = command.lamda
                 msg.limit = command.limit
+                msg.rotation = command.rotation
                 msg.timestamp = current_time
                 self.pub.publish(msg)
                 print(msg)

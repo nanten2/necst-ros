@@ -79,9 +79,11 @@ if len(target) == 0:
         sys.exit()
 
 ctrl = ROS_controller.controller()
+ctrl.obs_status(active=True, obsmode="Oneshot", obs_script="oneshot.py", obs_file="", target=star)
 
 def handler(num, flame):
     ctrl.move_stop()
+    ctrl.obs_status(active=False)
     print("!!ctrl + c!!")
     print("Stop antenna")
     sys.exit()
@@ -150,5 +152,18 @@ ctrl.dome_track_end()
 ctrl.move_stop()
 time.sleep(1)
 ctrl.move_stop()
+
+###show image
+try:
+    save_to = '/home/nfs/necopt-old/ccd-shot/data/'
+    from PIL import Image
+    time.sleep(2)#wait for picture
+    i = Image.open(save_to + str(dirname)+'/'+str(filename)+'.bmp')#from ccd_old.py
+    i.show()
+except Exception as e:
+    print(e)
+
+ctrl.obs_status(active=False)
+time.sleep(1.5)
 print("Finish observation")
 

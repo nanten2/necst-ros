@@ -56,7 +56,7 @@ class dome_tracking_check(object):
             self.tracking = True
         else:
             self.tracking = False
-        time.sleep(0.2)
+        #time.sleep(0.2) why?
         rospy.loginfo('tracking : %s'%self.tracking)
 
     def pub_tracking(self):

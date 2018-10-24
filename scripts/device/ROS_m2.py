@@ -77,10 +77,9 @@ class m2_controller(object):
         msg.from_node = node_name        
         while not rospy.is_shutdown():
             self.status = dev.get_pos()
-            msg.data = self.status[0]
+            msg.data = round(self.status[0],3)
             msg.timestamp = time.time()
             self.pub.publish(msg)
-            rospy.loginfo(msg)
             time.sleep(0.1)
         return
 
