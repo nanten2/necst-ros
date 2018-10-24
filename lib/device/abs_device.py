@@ -12,7 +12,9 @@ dio.initialize()
 
 
 def get_position():
-    ret = self.dio.input_byte('IN1_8').to_list()
+
+    ret = dio.input_byte('IN1_8').to_list()
+    print(ret)
 
     if ret[0] == 0 and ret[1] == 1:#ret == 0x02
         position = 'IN'
