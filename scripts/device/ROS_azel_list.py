@@ -50,8 +50,14 @@ class azel_list(object):
         pass
 
     def _receive_weather(self, req):
+        if req.press == 0:
+            req.press = 500
         self.press = req.press
+        if req.out_temp > 273.15:
+            req.out_temp -= 273.15
         self.out_temp = req.out_temp
+        if req.out_humi > 1:
+            req.out_humi = req.out_humi/100.
         self.out_humi = req.out_humi
         return
     
