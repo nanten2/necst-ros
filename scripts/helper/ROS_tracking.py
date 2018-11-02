@@ -102,8 +102,8 @@ class tracking_check(object):
         track_count = 0
         pub = rospy.Publisher("move_stop", Bool_necst, queue_size = 1)
         while not self.coordinate_param:
-            print("wait command...")
-            time.sleep(0.1)
+            #print("wait command...")
+            time.sleep(0.01)
         while not rospy.is_shutdown():
             #current_coordinate = self.coordinate_param
             command_az = self.antenna_param['command_az']
@@ -113,8 +113,8 @@ class tracking_check(object):
             #print(current_coordinate,command_az, command_el)
 
             if not self.coord_flag:
-                print("coordinate check")
-                time.sleep(0.1)
+                #print("coordinate check")
+                time.sleep(0.01)
                 continue
             else:
                 print("coordinate clear")
@@ -122,8 +122,8 @@ class tracking_check(object):
                 pass
 
             if self.command_flag == False or self.same_coord_flag == True:
-                print("same command")
-                time.sleep(0.1)
+                #print("same command")
+                time.sleep(0.01)
                 continue                
 
             """ start checking track """
@@ -154,7 +154,7 @@ class tracking_check(object):
             else:
                 self.tracking = False
             
-            time.sleep(0.01)
+            time.sleep(0.1)
             rospy.loginfo('tracking : %s'%self.tracking)
         return self.tracking
 
