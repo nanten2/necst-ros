@@ -154,7 +154,7 @@ class tracking_check(object):
             else:
                 self.tracking = False
             
-            time.sleep(0.1)
+            time.sleep(0.01)
             rospy.loginfo('tracking : %s'%self.tracking)
         return self.tracking
 
