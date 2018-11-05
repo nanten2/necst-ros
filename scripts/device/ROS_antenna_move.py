@@ -25,6 +25,8 @@ if mode == 'Actual':
     import antenna_device
 elif mode == 'Simulator':
     import S_antenna_device as antenna_device
+elif mode == 'Actual_reverse':
+    import antenna_device_reverse as antenna_device
 else:
     rospy.logwarn('Launch this node with launch file')
 
