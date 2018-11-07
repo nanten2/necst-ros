@@ -18,7 +18,7 @@ from astropy.coordinates import SkyCoord
 import socket
 import logging
 
-#kosma_setfile directry
+#kosma_setfile directry test commit
 #======================
 setfile_dir = '/home/amigos/kosma_setfile/'
 #=====================
