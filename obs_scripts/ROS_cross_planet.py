@@ -209,7 +209,7 @@ while num < n:
         print('observation :'+str(num))
         print('tracking start')
         con.move_stop()
-        con.planet_move(planet, off_x=off_x+obs["offset_Az"], off_y=off_y+obs["offset_El"], offcoord = cosydel)
+        con.planet_move(planet, off_x=off_x+obs["offset_Az"], off_y=off_y+obs["offset_El"], offcoord = cosydel, dcos=1)
         print('moving...')
 
         con.antenna_tracking_check()
@@ -281,7 +281,7 @@ while num < n:
             print("wait hot_move...")
             status = con.read_status()
             time.sleep(0.5)            
-        con.planet_move(planet, off_x=obs["lamdel_off"]+obs["offset_Az"], off_y=obs["betdel_off"]+obs["offset_El"])
+        con.planet_move(planet, off_x=obs["lamdel_off"]+obs["offset_Az"], off_y=obs["betdel_off"]+obs["offset_El"],dcos=1)
         con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="OFF")
         
 
@@ -336,7 +336,7 @@ while num < n:
         print('move ON')
         con.move_stop()
         
-        con.planet_move(planet, off_x = off_x+obs["offset_Az"], off_y = off_y+obs["offset_El"], offcoord = cosydel)
+        con.planet_move(planet, off_x = off_x+obs["offset_Az"], off_y = off_y+obs["offset_El"], offcoord = cosydel, dcos=1)
         con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="ON")
         
 
