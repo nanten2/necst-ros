@@ -210,7 +210,7 @@ while num < n:
     
     print('observation :'+str(num+1) + "\n")
         
-    con.planet_move(planet, off_x=1200,off_y=1200)
+    con.planet_move(planet, off_x=1200,off_y=1200,dcos=1)
 
     con.antenna_tracking_check()
     con.dome_tracking_check()
@@ -333,7 +333,7 @@ while num < n:
 
     print('move ON'+ "\n")
 
-    con.planet_move(planet)
+    con.planet_move(planet, dcos=1)
 
     con.obs_status(active=True, current_num=num, current_position="ON")    
     con.antenna_tracking_check()
