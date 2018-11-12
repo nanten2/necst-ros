@@ -30,7 +30,7 @@ def analysis(file_name):
 
 
 # calc Ta*
-    integlist = numpy.sum(hdu[1].data["DATA"][:, 3000:15000], axis = 1) ##TODO change range
+    integlist = numpy.sum(hdu[1].data["DATA"][:, 5000:10000], axis = 1) ##TODO change range
 
     tmp = []
     HOT = integlist[hotmask]
