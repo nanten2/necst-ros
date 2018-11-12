@@ -410,7 +410,7 @@ while rp_num < rp:
         betdel_list.append(0)#
         subscan_list.append(int(num)+1)
 
-        try:#デバッグ用
+        if 1:#try:#デバッグ用
             print('move ON')
             con.move_stop()
 
@@ -434,8 +434,9 @@ while rp_num < rp:
             delay = 3
             ctime = time.time()
             start_on = Time(datetime.fromtimestamp(delay+ctime)).mjd
-            
-            con.planet_scan(planet, "planet", dx, dy, dt, scan_point, rampt, delay, ctime, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = "altaz", dcos=offset_dcos,hosei="hosei_230.txt", lamda=2600)
+            print(sx, num*gridx)
+            print(sx+num*gridx)
+            con.planet_scan(planet, dx, dy, dt, scan_point, rampt, delay, ctime, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = "altaz", dcos=offset_dcos,hosei="hosei_230.txt", lamda=2600)
 
             d = con.oneshot_achilles(repeat = scan_point ,exposure = integ_on ,
                             stime = start_on)
@@ -498,7 +499,7 @@ while rp_num < rp:
             print('stop')
             con.move_stop()
 
-        except Exception as e:
+        else:#except Exception as e:
             con.move_stop()
             print('Error : loop')
             print(e)
@@ -517,7 +518,7 @@ temp = float(status.CabinTemp1) + 273.15
         
 print('Temp: %.2f'%(temp))
 print('get spectrum...')
-d = con.oneshot(exposure=integ_off)
+d = con.oneshot_achilles(exposure=integ_off)
 d1 = d['dfs1'][0]
 d2 = d['dfs2'][0]
 d1_list.append(d1)
