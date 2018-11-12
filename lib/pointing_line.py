@@ -16,7 +16,7 @@ def gaussian(x, a, mu, gamma):
 
 para_init = numpy.array([25000., 0.1, 0.0001])
     #-----
-def analysis(file_name, mi=5000, ma=15000, width=500, integ_mi=5000, integ_ma=10000):
+def analysis(file_name, mi=5000, ma=15000, width=500, integ_mi=8000, integ_ma=9000):
 # open file
     hdu = fits.open(file_name)
 
@@ -229,8 +229,8 @@ def analysis(file_name, mi=5000, ma=15000, width=500, integ_mi=5000, integ_ma=10
 
     plt.axes([0.625,0.25, 0.25, 0.1])
     plt.axis("off")
-    plt.text(0,0,"dAz = {}".format(round(dAz, 2)) + "               dEl = {}".format(round(dEl, 2)) + "   (arcsec)", fontsize = 18)
-    plt.text(0,-0.5,"HPBW_AZ = {}".format(round(hpbw_az, 2)) + "  HPBW_EL = {}".format(round(hpbw_el, 2)), fontsize = 18)
+    plt.text(0,0,"dAz = {}".format(round(dAz, 2)) + "               dEl = {}".format(round(dEl, 2)) + "   (arcsec)", fontsize = 10)
+    plt.text(0,-0.5,"HPBW_AZ = {}".format(round(hpbw_az, 2)) + "  HPBW_EL = {}".format(round(hpbw_el, 2)), fontsize = 10)
 
     plt.show()
     return
@@ -248,8 +248,8 @@ if __name__ == "__main__":
     ma = int(15000) 
     width = int(500)
 # integration range
-    integ_mi = int(5000)
-    integ_ma = int(10000)
+    integ_mi = int(8000)
+    integ_ma = int(9000)
 # specify option
     if len(args) == 7:
         # for baseline fitting to avoid spurious
