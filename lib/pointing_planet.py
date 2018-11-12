@@ -15,7 +15,7 @@ def gaussian(x, a, mu, gamma):
 para_init = numpy.array([10, 0.1, 0.0001])
 #-----
 
-def analysis(file_name, integ_mi=3000, integ_ma=15000):
+def analysis(file_name, integ_mi=5000, integ_ma=10000):
 
 # open file
     hdu = fits.open(file_name)
@@ -136,8 +136,8 @@ if __name__ == "__main__":
     file_name = args[1]
 # option
 # integration range
-    integ_mi = int(3000)
-    integ_ma = int(15000)
+    integ_mi = int(5000)
+    integ_ma = int(10000)
 
 # specify option
     if len(args) == 4:
