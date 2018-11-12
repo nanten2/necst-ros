@@ -620,6 +620,5 @@ dirname = timestamp
 con.obs_status(active=False)
 
 
-sys.path.append("/home/python/n2_pointing_tools/tools")
 import pointing_planet
 pointing_planet.analysis(f1) # f2?
