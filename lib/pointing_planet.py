@@ -15,7 +15,7 @@ def gaussian(x, a, mu, gamma):
 para_init = numpy.array([10, 0.1, 0.0001])
 #-----
 
-def analysis(file_name, integ_mi=5000, integ_ma=10000):
+def analysis(file_name, integ_mi=8000, integ_ma=9000):
 
 # open file
     hdu = fits.open(file_name)
@@ -119,8 +119,8 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000):
 
     plt.axes([0.55,0.25, 0.25, 0.2])
     plt.axis("off")
-    plt.text(0,0,"dAz = {}".format(round(dAz, 2)) + "              dEl = {}".format(round(dEl, 2)) + "   (arcsec)", fontsize = 18)
-    plt.text(0,-0.2,"HPBW_AZ = {}".format(round(hpbw_az, 2)) + "      HPBW_EL = {}".format(round(hpbw_el, 2)), fontsize = 18)
+    plt.text(0,0,"dAz = {}".format(round(dAz, 2)) + "              dEl = {}".format(round(dEl, 2)) + "   (arcsec)", fontsize = 10)
+    plt.text(0,-0.2,"HPBW_AZ = {}".format(round(hpbw_az, 2)) + "      HPBW_EL = {}".format(round(hpbw_el, 2)), fontsize = 10)
 
     [a.grid() for a in axlist]
     plt.show()
@@ -136,8 +136,8 @@ if __name__ == "__main__":
     file_name = args[1]
 # option
 # integration range
-    integ_mi = int(5000)
-    integ_ma = int(10000)
+    integ_mi = int(8000)
+    integ_ma = int(9000)
 
 # specify option
     if len(args) == 4:
