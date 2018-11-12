@@ -668,3 +668,7 @@ n2fits_write.write(read2,f2)
 
 shutil.copy("/home/amigos/ros/src/necst/lib/hosei_230.txt", savedir+"/hosei_copy")
 con.obs_status(active=False)
+
+
+import pointing_planet
+pointing_planet.analysis(f1) # f2?

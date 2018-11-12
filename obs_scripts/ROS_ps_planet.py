@@ -618,3 +618,7 @@ n2fits_write.write(read2,f2)
 timestamp = time.strftime('%Y%m%d_%H%M%S')
 dirname = timestamp
 con.obs_status(active=False)
+
+
+import pointing_planet
+pointing_planet.analysis(f1) # f2?
