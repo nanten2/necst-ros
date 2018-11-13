@@ -60,6 +60,7 @@ def analysis(file_name, integ_mi=8000, integ_ma=9000):
 
 
 # create data for plot
+if numpy.sum(subscan):
     xscan_Ta = Taslist[xmask]
     xscan_x= lam[xmask]
     xscan_y= bet[xmask]
@@ -67,6 +68,15 @@ def analysis(file_name, integ_mi=8000, integ_ma=9000):
     yscan_Ta = Taslist[ymask]
     yscan_x= lam[ymask]
     yscan_y= bet[ymask]
+    
+else:
+    xscan_Ta = Taslist[onmask][:5]
+    xscan_x= lam[onmask][:5]
+    xscan_y= bet[onmask][:5]
+
+    yscan_Ta = Taslist[onmask][5:]
+    yscan_x= lam[onmask][5:]
+    yscan_y= bet[onmask][5:]
 
 
 # TA* integration
