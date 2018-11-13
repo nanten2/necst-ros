@@ -12,7 +12,7 @@ def gaussian(x, a, mu, gamma):
     return a * numpy.exp(- gamma * (x - mu) **2) 
 
 #-----
-def analysis(file_name):
+def analysis(file_name, integ_mi=5000, integ_ma=10000):
 # open file
     hdu = fits.open(file_name)
 
@@ -30,7 +30,7 @@ def analysis(file_name):
 
 
 # calc Ta*
-    integlist = numpy.sum(hdu[1].data["DATA"][:, 5000:10000], axis = 1) ##TODO change range
+    integlist = numpy.sum(hdu[1].data["DATA"][:, integ_mi:integ_ma], axis = 1) ##TODO change range
 
     tmp = []
     HOT = integlist[hotmask]
@@ -168,4 +168,17 @@ if __name__ =="__main__":
         sys.exit()
     file_name = args[1]
 
-    analysis(file_name)
+# option
+# integration range
+    integ_mi = int(5000)
+    integ_ma = int(10000)
+
+# specify option
+    if len(args) == 4:
+        if args[2] != "DEF":
+            integ_mi = int(args[2])
+        if args[3] != "DEF":
+            integ_ma = int(args[3])
+    else: pass
+
+    analysis(file_name, integ_mi, integ_ma)
