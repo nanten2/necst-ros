@@ -105,14 +105,14 @@ def analysis(file_name, mi=5000, ma=15000, width=500, integ_mi=8000, integ_ma=90
 
 # Gaussian Fitting function
 # Az fitting
-    popt_az, pcov_az = curve_fit(gaussian, xscan_x, xscan_integ, p0 = para_init)
+    popt_az, pcov_az = curve_fit(gaussian, xscan_x, xscan_integ, p0 = para_init, maxfev=10000)
     error_az = numpy.sqrt(numpy.diag(pcov_az))
 
     x_g = numpy.linspace(xscan_x[0], xscan_x[-1], 1001)
     gaus_az = gaussian(x_g, popt_az[0], popt_az[1], popt_az[2])
 
 # El fitting
-    popt_el, pcov_el = curve_fit(gaussian, yscan_y, yscan_integ, p0 = para_init)
+    popt_el, pcov_el = curve_fit(gaussian, yscan_y, yscan_integ, p0 = para_init, maxfev=10000)
     error_el = numpy.sqrt(numpy.diag(pcov_el))
 
     gaus_el = gaussian(x_g, popt_el[0], popt_el[1], popt_el[2])
