@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import rospy
 from necst.msg import Bool_necst
 from necst.msg import String_necst
@@ -111,8 +112,9 @@ def select_target():
             print("add1",additional_time)
         elif float(tmp_target[6])*60 < additional_time:
             num = int(additional_time/(float(tmp_target[6])*60))
-            tmp_obs1 = "0x"+str(priority -1) + tmp_obs[3:-2]+str(num)+"\n"
-            tmp_obs2 = tmp_obs[:-2]+str(int(tmp_target[7])-num)+"\n"
+            ltmp_obs = tmp_obs.rsplit(" ",1)[0]
+            tmp_obs1 = "0x"+str(priority -1) +" "+ ltmp_obs.split(" ",1)[1] + " " +str(num)+"\n"
+            tmp_obs2 = ltmp_obs+" "+str(int(tmp_target[7])-num)+"\n"
             tmp_list.append(tmp_obs1)
             tmp_list.append(tmp_obs2)
             additional_time -= float(tmp_target[6])*60*int(num)
@@ -135,7 +137,7 @@ def select_target():
     print(target)
     print(target[7])
     if int(target[7]) > 1:
-        obs = obs[:-2] + str(int(obs[-2])-1)+"\n"
+        obs = obs.rsplit(" ",1)[0] +" "+ str(int(target[-1])-1)+"\n"
         obs_list.put(obs)
 
     # wait observation
