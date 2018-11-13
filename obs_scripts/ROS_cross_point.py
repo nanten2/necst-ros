@@ -15,7 +15,7 @@ description = 'Do radio pointing'
 # ------------------
 obsfile = ''
 tau = 0.0
-integmix = 8000
+integmin = 8000
 integmax = 9000
 
 # Argument handler

@@ -21,7 +21,7 @@ description = 'Get P/S spectrum'
 obsfile = ''
 tau = 0.0
 planet = ''
-integmix = 5000
+integmin = 5000
 integmax = 10000
 
 # Argument handler
