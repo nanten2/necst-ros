@@ -16,7 +16,7 @@ description = 'Do radio pointing'
 obsfile = ''
 tau = 0.0
 planet = ""
-integmix = 8000
+integmin = 8000
 integmax = 9000
 
 
