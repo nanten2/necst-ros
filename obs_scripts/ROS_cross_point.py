@@ -15,7 +15,8 @@ description = 'Do radio pointing'
 # ------------------
 obsfile = ''
 tau = 0.0
-
+integmin = 8000
+integmax = 9000
 
 # Argument handler
 # ================
@@ -27,11 +28,17 @@ p.add_argument('--obsfile', type=str,
                help='absolute path for obsfile', required=True)
 p.add_argument('--tau', type=float,
                help='tau. default=%.1f'%(tau))
+p.add_argument('--integmin', type=float,
+               help='integrange_min', required=True)
+p.add_argument('--integmax', type=float,
+               help='integrange_max', required=True)
 
 args = p.parse_args()
 
 if args.obsfile is not None: obsfile = args.obsfile
 if args.tau is not None: tau = args.tau
+if args.integmin is not None: integmin = args.integmin
+if args.integmax is not None: integmax = args.integmax
 
 # Main
 # ====
@@ -664,4 +671,4 @@ con.obs_status(active=False)
 
 
 import pointing_line
-pointing_line.analysis(f1) # f2?
+pointing_line.analysis(f1, integ_mi=integmin, integ_ma=integmax) # f2?
