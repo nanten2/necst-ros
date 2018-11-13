@@ -20,11 +20,11 @@ import signal
 def handler(signal, frame):
     global obs_flag
     obs_flag = False
-    try:
-        proc.send_signal(signal.SIGINT)
-    except:
-        pass
-    print("**** system is down... ****")
+    #try:
+    #    proc.send_signal(signal.SIGINT)
+    #except:
+    #    pass
+    print("**** queue system is down... ****")
     sys.exit()
 signal.signal(signal.SIGINT, handler)
 
@@ -36,6 +36,7 @@ signal.signal(signal.SIGINT, handler)
 start_flag = False
 stop_flag = False
 additional_time = 0
+proc = ""
 
 # ----------
 # callback
@@ -43,12 +44,21 @@ additional_time = 0
 
 def _start(req):
     global start_flag
+    global stop_flag
     start_flag = req
+    stop_flag = False
+    print("*******")
     return
 
 def _stop(req):
     global stop_flag
+    global proc
     stop_flag = req
+    try:
+        proc.send_signal(signal.SIGINT)
+    except:
+        pass
+
     return
 
 # ----------
@@ -56,6 +66,7 @@ def _stop(req):
 # ----------
 
 def initialize():
+    rospy.init_node("queue_observation")
     rospy.Subscriber("queue_obs", Bool_necst, _start, queue_size=1)
     rospy.Subscriber("obs_stop", String_necst, _stop, queue_size=1)
     pub = rospy.Publisher("next_obs", String_necst,queue_size = 1)
@@ -74,23 +85,12 @@ def create_list():
 def select_target():
     global additional_time
     global obs_list
-    print("$$$$$$$$$$")
     print(obs_list.queue)
     utc = dt.utcnow()
-    #now = float(utc.strftime("%H%M%S"))
     now = time.time()
     obs = obs_list.get()
-    #print("ww")
-    #print(obs[-1])# \n
-    #print("ee")
-    #print(obs[-2])# num
-    #print("ss")
-    #print(obs[-3])# space
-    #print("dd")
     target = obs.split()    
     if float(target[3]) < now:
-        #print("bad time")
-        #print(float(target[1]) , now , float(target[2]))
         return
     if now+300 < float(target[2]):# wait time 5[min]
         additional_time = float(target[2])-(now+300)
@@ -102,14 +102,10 @@ def select_target():
             break
         tmp_obs = obs_list.get()
         tmp_target = tmp_obs.split()
-        #print(obs_list)
-        #print(float(tmp_target[6])*60)
-        print("#####",tmp_target)
         if float(tmp_target[6])*60*int(tmp_target[7]) < additional_time:
             tmp_obs = "0x"+str(priority -1) + tmp_obs[3:]
             tmp_list.append(tmp_obs)
             additional_time -= float(tmp_target[6])*60*int(tmp_target[7])
-            print("add1",additional_time)
         elif float(tmp_target[6])*60 < additional_time:
             num = int(additional_time/(float(tmp_target[6])*60))
             ltmp_obs = tmp_obs.rsplit(" ",1)[0]
@@ -118,7 +114,6 @@ def select_target():
             tmp_list.append(tmp_obs1)
             tmp_list.append(tmp_obs2)
             additional_time -= float(tmp_target[6])*60*int(num)
-            print("add2",additional_time)            
         else:
             tmp_list.append(tmp_obs)
     if tmp_list:
@@ -131,11 +126,6 @@ def select_target():
 
     print("observation")
     print(obs_list.queue)
-    #obs = obs_list.get()
-    print(obs)
-    #target = obs.split()
-    print(target)
-    print(target[7])
     if int(target[7]) > 1:
         obs = obs.rsplit(" ",1)[0] +" "+ str(int(target[-1])-1)+"\n"
         obs_list.put(obs)
@@ -145,25 +135,27 @@ def select_target():
     while now < float(target[2]):
         ut = dt.fromtimestamp(float(target[2]))
         print("current time : %s & next observation : %s" %(utc.strftime("%H:%M:%S"), ut.strftime("%H:%M:%S")))
+        if stop_flag:
+            print("stop observation!!")
+            return
         utc = dt.utcnow()
-        #now = float(utc.strftime("%H%M%S"))
         now = time.time()
         time.sleep(1.)    
     return target
 
 def observation(target):
-    #print("target : ", target[3])
+    global proc
     cmd = "python "+target[4]
     if target[5]:
         cmd+= " --obsfile "+ target[5]
     print("start observation : ", cmd)
     cmd = cmd.split()
-    try:
-        proc = Popen(cmd)
-        proc.wait()
-    except Exception as e:
-        print("parameter error")
-        rospy.logerr(e)
+    #try:
+    proc = Popen(cmd)
+    proc.wait()
+    #except Exception as e:
+    #    print("parameter error")
+    #    rospy.logwarn(e)
     print("end observation")
     time.sleep(1)
     return
@@ -171,7 +163,11 @@ def observation(target):
 if __name__ == "__main__":
     initialize()
     create_list()
+    print("start queue observation")
     while not rospy.is_shutdown():
+        #while not start_flag or stop_flag:
+        while stop_flag:            
+            time.sleep(1.)
         if not obs_list.queue:
             print("end queue observation")
             sys.exit()
@@ -180,6 +176,9 @@ if __name__ == "__main__":
             print("no observation")
             continue
         observation(target)
+        if stop_flag:
+            print("stop observation")
+            sys.exit()
         time.sleep(1.)
     
     
