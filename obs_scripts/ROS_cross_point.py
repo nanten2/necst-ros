@@ -29,9 +29,9 @@ p.add_argument('--obsfile', type=str,
 p.add_argument('--tau', type=float,
                help='tau. default=%.1f'%(tau))
 p.add_argument('--integmin', type=float,
-               help='integrange_min', required=True)
+               help='integrange_min')
 p.add_argument('--integmax', type=float,
-               help='integrange_max', required=True)
+               help='integrange_max')
 
 args = p.parse_args()
 
