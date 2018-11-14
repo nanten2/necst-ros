@@ -99,8 +99,8 @@ def analysis(file_name, mi=5000, ma=15000, width=500, integ_mi=8000, integ_ma=90
 
 
 # TA* integration
-    xscan_integ = numpy.sum(xscan_Ta[:, integ_mi:integ_ma], axis=1)
-    yscan_integ = numpy.sum(yscan_Ta[:, integ_mi:integ_ma], axis=1)
+    xscan_integ = numpy.sum(xscan_Ta[:, int(integ_mi):int(integ_ma)], axis=1)
+    yscan_integ = numpy.sum(yscan_Ta[:, int(integ_mi):int(integ_ma)], axis=1)
 
 
 # Gaussian Fitting function
