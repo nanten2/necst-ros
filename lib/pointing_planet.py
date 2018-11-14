@@ -80,8 +80,8 @@ else:
 
 
 # TA* integration
-    xscan_integ = numpy.sum(xscan_Ta[:, integ_mi:integ_ma], axis=1)
-    yscan_integ = numpy.sum(yscan_Ta[:, integ_mi:integ_ma], axis=1)
+    xscan_integ = numpy.sum(xscan_Ta[:, int(integ_mi):int(integ_ma)], axis=1)
+    yscan_integ = numpy.sum(yscan_Ta[:, int(integ_mi):int(integ_ma)], axis=1)
 
 
 # Gaussian Fitting function add errorbar
