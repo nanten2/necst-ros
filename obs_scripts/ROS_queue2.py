@@ -20,10 +20,10 @@ import signal
 def handler(signal, frame):
     global obs_flag
     obs_flag = False
-    #try:
-    #    proc.send_signal(signal.SIGINT)
-    #except:
-    #    pass
+    try:
+        proc.send_signal(signal.SIGINT)
+    except:
+        pass
     print("**** queue system is down... ****")
     sys.exit()
 signal.signal(signal.SIGINT, handler)
@@ -56,6 +56,7 @@ def _stop(req):
     stop_flag = req
     try:
         proc.send_signal(signal.SIGINT)
+        proc.terminate()
     except:
         pass
 
@@ -150,12 +151,12 @@ def observation(target):
         cmd+= " --obsfile "+ target[5]
     print("start observation : ", cmd)
     cmd = cmd.split()
-    #try:
-    proc = Popen(cmd)
-    proc.wait()
-    #except Exception as e:
-    #    print("parameter error")
-    #    rospy.logwarn(e)
+    try:
+        proc = Popen(cmd)
+        proc.wait()
+    except Exception as e:
+        print("parameter error")
+        rospy.logwarn(e)
     print("end observation")
     time.sleep(1)
     return
