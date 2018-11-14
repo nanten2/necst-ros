@@ -586,15 +586,15 @@ else:
 imagfreq2 = obs['obsfreq_2'] - ul*obs['if1st_freq_2']*2
 lofreq2 = obs['obsfreq_2'] - ul*obs['if1st_freq_2']*1
 
-if obs['lo1st_sb_1'] == 'U':
+if obs['lo1st_sb_2'] == 'U':
     ul2_1 = +1
 else:
     ul2_1 = -1
-if obs['lo2nd_sb_1'] == 'U':
+if obs['lo2nd_sb_2'] == 'U':
     ul2_2 = +1
 else:
     ul2_2 = -1
-if obs['lo3rd_sb_1'] == 'U':
+if obs['lo3rd_sb_2'] == 'U':
     ul2_3 = +1
 else:
     ul2_3 = -1
