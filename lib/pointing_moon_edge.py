@@ -30,7 +30,7 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000):
 
 
 # calc Ta*
-    integlist = numpy.sum(hdu[1].data["DATA"][:, integ_mi:integ_ma], axis = 1) ##TODO change range
+    integlist = numpy.sum(hdu[1].data["DATA"][:, int(integ_mi):int(integ_ma)], axis = 1) ##TODO change range
 
     tmp = []
     HOT = integlist[hotmask]
