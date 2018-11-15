@@ -323,7 +323,7 @@ while rp_num < rp:
             time.sleep(integ_off)
 
             status = con.read_status()
-            temp = float(status.CabinTemp1) + 273.15
+            temp = float(status.CabinTemp1)
             d = con.oneshot_achilles(exposure=integ_off)
             d1 = d['dfs1'][0]
             d2 = d['dfs2'][0]
@@ -391,7 +391,7 @@ while rp_num < rp:
 
 
         status = con.read_status()
-        temp = float(status.CabinTemp1) + 273.15
+        temp = float(status.CabinTemp1)
         d = con.oneshot_achilles(exposure=integ_off)
         d1 = d['dfs1'][0]
         d2 = d['dfs2'][0]
@@ -464,7 +464,7 @@ while rp_num < rp:
             time.sleep(0.001)
 
         status = con.read_status()
-        temp = float(status.CabinTemp1) + 273.15
+        temp = float(status.CabinTemp1)
         tmp_time = status.Time
         tmp2 = datetime.fromtimestamp(tmp_time)
         tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")        
@@ -543,7 +543,7 @@ con.obs_status(active=True, current_num=scan_point*num+1, current_position="HOT"
 time.sleep(integ_off)
 
 
-temp = float(status.CabinTemp1) + 273.15
+temp = float(status.CabinTemp1)
         
 print('Temp: %.2f'%(temp))
 print('get spectrum...')
