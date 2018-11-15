@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 import glob
+###
 key_word = '20181114'
+###
+
 dir_list = glob.glob('./*{}*pointing'.format(key_word))
 print(dir_list)
 
@@ -137,7 +140,7 @@ def analysis(directory, file_name, mi=5000, ma=15000, width=500, integ_mi=8000, 
     center_az_x = az_list[onmask][:5][2]#xscan
     center_el_x = el_list[onmask][:5][2]#xscan
     center_az_y = az_list[onmask][5:][2]#yscan
-    center_el_y = az_list[onmask][5:][2]#yscan
+    center_el_y = el_list[onmask][5:][2]#yscan
 
     f_ = open(directory+'/hosei_copy', 'r')
     hosei_parameter = f_.read()
