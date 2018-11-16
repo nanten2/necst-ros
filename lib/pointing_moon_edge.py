@@ -12,7 +12,7 @@ def gaussian(x, a, mu, gamma):
     return a * numpy.exp(- gamma * (x - mu) **2) 
 
 #-----
-def analysis(file_name, integ_mi=5000, integ_ma=10000):
+def analysis(file_name, integ_mi=int(5000), integ_ma=int(10000)):
 # open file
     hdu = fits.open(file_name)
 
@@ -142,7 +142,8 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000):
 
     plt.axes([0.45,0.28, 0.25, 0.2])
     plt.axis("off")
-    plt.text(0,0,"dAz = {}".format(round(dAz, 2)) + "              dEl = {}".format(round(dEl, 2)) + "   (arcsec)", fontsize = 18)
+    plt.text(0,0,"dAz = {}".format(round(dAz, 2)) + "              dEl = {}".format(round(dEl, 2)) + "   (arcsec)", fontsize = 16)
+    plt.text(0, -0.3, "DATA PATH :   {}".format(file_name), fontsize=10)
 
     [a.grid() for a in axlist]
 
