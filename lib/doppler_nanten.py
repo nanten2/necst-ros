@@ -124,7 +124,7 @@ class doppler_nanten (object):
         t_now = Time.now().unix
         self.t = Time(t_now + stime, format = "unix")
         mjd = 40587.0 + time.time()/(24.*3600.)
-        vobs_mjd = mjd + stime/24./3600.        
+        vobs_mjd = mjd + stime/24./3600.
         vobs = self.get_vobs(vobs_mjd, x, y, coord,
                              offset_x, offset_y, offset_dcos, offset_coord)
         c = self.dic1["LIGHT_SPEED"]
@@ -221,13 +221,12 @@ class doppler_nanten (object):
         return {"freq":freq, "power":power}
     """
     def get_vobs(self, mjdtmp, xtmp, ytmp, mode, offx, offy, dcos, offmode):
-        utc = Time(dt.utcnow())
         mode = mode.lower()
         offmode = offmode.lower()
         mode = self.coord_dict[mode]
         offmode = self.coord_dict[offmode]
-        on_coord = SkyCoord(xtmp, ytmp, unit="deg", frame=mode, obstime=utc, location=self.nanten2)
-        offset_coord = SkyCoord(offx, offy, unit="arcsec", frame=offmode, obstime=utc, location=self.nanten2)
+        on_coord = SkyCoord(xtmp, ytmp, unit="deg", frame=mode, obstime=self.t, location=self.nanten2)
+
         if offmode == "galactic":
             tmp = on_coord.transform_to(Galactic)            
         elif offmode == "altaz":
@@ -241,13 +240,14 @@ class doppler_nanten (object):
         else:
             print("no coordinate")
             pass
-        xxtmp = offset_coord.data.lon + tmp.data.lon
-        yytmp = offset_coord.data.lat + tmp.data.lat
+        xxtmp = offx/3600. + tmp.data.lon.deg
+        yytmp = offy/3600. + tmp.data.lat.deg
+        calc_coord = SkyCoord(xxtmp, yytmp, unit="deg", frame=offmode, obstime=self.t,location=self.nanten2)
+        radec_coord = calc_coord.transform_to(FK5)
+        ra_tmp = math.radians(radec_coord.ra.deg)
+        dec_tmp = math.radians(radec_coord.dec.deg)
 
-        xxtmp = math.radians(xxtmp.deg)
-        yytmp = math.radians(yytmp.deg)
-
-        vobs = self.calc_vobs(xxtmp, yytmp)
+        vobs = self.calc_vobs(ra_tmp, dec_tmp)
         print('vobs',vobs,type(vobs))
 
         return vobs
