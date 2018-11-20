@@ -7,12 +7,15 @@ import matplotlib.pyplot as plt
 from astropy.io import fits
 from scipy.optimize import curve_fit
 
+
+para_init1 = numpy.array([75, -1000, 0.0001])###
+para_init2 = numpy.array([-75, 1000, 0.0001])###
 #------
 def gaussian(x, a, mu, gamma):
     return a * numpy.exp(- gamma * (x - mu) **2) 
 
 #-----
-def analysis(file_name, integ_mi=int(5000), integ_ma=int(10000)):
+def analysis(file_name, integ_mi=5000, integ_ma=10000):
 # open file
     hdu = fits.open(file_name)
 
@@ -61,6 +64,17 @@ def analysis(file_name, integ_mi=int(5000), integ_ma=int(10000)):
     yscan_y= bet[ymask]
 
 
+# color image
+    fig = plt.figure()
+
+    ax = fig.add_subplot(1,1,1, aspect = 1)
+
+    im = ax.scatter(xscan_x, xscan_y, c = xscan_Ta, vmin = 0, vmax = 280)
+    ax.scatter(yscan_x, yscan_y, c = yscan_Ta, vmin = 0, vmax = 280)
+
+    fig.colorbar(im)
+
+
 # Differential function
     xscan_tmp = numpy.roll(xscan_Ta,1)
     xscan_tmp[0] = 0
@@ -72,93 +86,112 @@ def analysis(file_name, integ_mi=int(5000), integ_ma=int(10000)):
 
 
 # Gaussian Fitting function add errorbar
-    x_az = numpy.linspace(xscan_x[0], xscan_x[-1], 2000)
-    para_init1 = numpy.array([75, -1000, 0.0001])###
-    para_init2 = numpy.array([-75, 1000, 0.0001])###
+    try:
+        x_az = numpy.linspace(xscan_x[0], xscan_x[-1], 2000)
 
 # dAz fitting
-    popt_az1, pcov_az1 = curve_fit(gaussian, xscan_x[:21], xscan_dif[:21], p0 = para_init1)
-    error_az1 = numpy.sqrt(numpy.diag(pcov_az1))
+        popt_az1, pcov_az1 = curve_fit(gaussian, xscan_x[:21], xscan_dif[:21], p0 = para_init1)
+        error_az1 = numpy.sqrt(numpy.diag(pcov_az1))
 #print("error",error_az1)
-    popt_az2, pcov_az2 = curve_fit(gaussian, xscan_x[21:], xscan_dif[21:], p0 = para_init2)
-    error_az2 = numpy.sqrt(numpy.diag(pcov_az2))
+        popt_az2, pcov_az2 = curve_fit(gaussian, xscan_x[21:], xscan_dif[21:], p0 = para_init2)
+        error_az2 = numpy.sqrt(numpy.diag(pcov_az2))
 #print("error",error_az2)
 
-    gaus_az1 = gaussian(x_az[:1000], popt_az1[0], popt_az1[1], popt_az1[2])
-    gaus_az2 = gaussian(x_az[1000:], popt_az2[0], popt_az2[1], popt_az2[2])
+        gaus_az1 = gaussian(x_az[:1000], popt_az1[0], popt_az1[1], popt_az1[2])
+        gaus_az2 = gaussian(x_az[1000:], popt_az2[0], popt_az2[1], popt_az2[2])
 
-    x_el = numpy.linspace(yscan_y[0], yscan_y[-1], 2000)
-
+        x_el = numpy.linspace(yscan_y[0], yscan_y[-1], 2000)
 # El fitting
-    popt_el1, pcov_el1 = curve_fit(gaussian, yscan_y[:21], yscan_dif[:21], p0 = para_init1)
-    error_el1 = numpy.sqrt(numpy.diag(pcov_el1))
-    popt_el2, pcov_el2 = curve_fit(gaussian, yscan_y[21:], yscan_dif[21:], p0 = para_init2)
-    error_el2 = numpy.sqrt(numpy.diag(pcov_el2))
+        popt_el1, pcov_el1 = curve_fit(gaussian, yscan_y[:21], yscan_dif[:21], p0 = para_init1)
+        error_el1 = numpy.sqrt(numpy.diag(pcov_el1))
+        popt_el2, pcov_el2 = curve_fit(gaussian, yscan_y[21:], yscan_dif[21:], p0 = para_init2)
+        error_el2 = numpy.sqrt(numpy.diag(pcov_el2))
 
-    gaus_el1 = gaussian(x_el[:1000], popt_el1[0], popt_el1[1], popt_el1[2])
-    gaus_el2 = gaussian(x_el[1000:], popt_el2[0], popt_el2[1], popt_el2[2])
+        gaus_el1 = gaussian(x_el[:1000], popt_el1[0], popt_el1[1], popt_el1[2])
+        gaus_el2 = gaussian(x_el[1000:], popt_el2[0], popt_el2[1], popt_el2[2])
 
 
 # dAz dEl
-    dAz_mi = popt_az1[1]
-    dAz_pu = popt_az2[1]
-    dEl_mi = popt_el1[1]
-    dEl_pu = popt_el2[1]
-    dAz = (dAz_mi + dAz_pu)/2
-    dEl = (dEl_mi + dEl_pu)/2
+        dAz_mi = popt_az1[1]
+        dAz_pu = popt_az2[1]
+        dEl_mi = popt_el1[1]
+        dEl_pu = popt_el2[1]
+        dAz = (dAz_mi + dAz_pu)/2
+        dEl = (dEl_mi + dEl_pu)/2
 
 
 # Dif plot
-    fig = plt.figure(figsize = (18, 8))
+        fig2 = plt.figure(figsize = (18, 8))
 
-    axlist = [fig.add_subplot(3,2,i+1) for i in range(6)]
+        axlist = [fig2.add_subplot(3,2,i+1) for i in range(6)]
 
-    axlist[0].plot(xscan_x, xscan_Ta, "o")
-    axlist[0].vlines(dAz_mi, 0, 300, linestyle = "dashed")
-    axlist[0].vlines(dAz_pu, 0, 300, linestyle = "dashed")
-    axlist[0].vlines(dAz, 0, 300)
-    axlist[0].set_ylabel("Ta* [K]")
+        axlist[0].plot(xscan_x, xscan_Ta, "o")
+        axlist[0].vlines(dAz_mi, 0, 300, linestyle = "dashed")
+        axlist[0].vlines(dAz_pu, 0, 300, linestyle = "dashed")
+        axlist[0].vlines(dAz, 0, 300)
+        axlist[0].set_ylabel("Ta* [K]")
 
-    axlist[1].plot(yscan_y, yscan_Ta, "o")
-    axlist[1].vlines(dEl_mi, 0, 300, linestyle = "dashed")
-    axlist[1].vlines(dEl_pu, 0, 300, linestyle = "dashed")
-    axlist[1].vlines(dEl, 0, 300)
-    axlist[1].set_ylabel("Ta* [K]")
+        axlist[1].plot(yscan_y, yscan_Ta, "o")
+        axlist[1].vlines(dEl_mi, 0, 300, linestyle = "dashed")
+        axlist[1].vlines(dEl_pu, 0, 300, linestyle = "dashed")
+        axlist[1].vlines(dEl, 0, 300)
+        axlist[1].set_ylabel("Ta* [K]")
 
-    axlist[2].plot(xscan_x, xscan_dif, "o")
-    axlist[2].plot(x_az[:1000], gaus_az1, color="k")
-    axlist[2].plot(x_az[1000:], gaus_az2, color="k")
-    axlist[2].set_xlabel("dAz [arcsec]")
-    axlist[2].set_ylabel("differential [K]")
+        axlist[2].plot(xscan_x, xscan_dif, "o")
+        axlist[2].plot(x_az[:1000], gaus_az1, color="k")
+        axlist[2].plot(x_az[1000:], gaus_az2, color="k")
+        axlist[2].set_xlabel("dAz [arcsec]")
+        axlist[2].set_ylabel("differential [K]")
 
-    axlist[3].plot(yscan_y, yscan_dif, "o")
-    axlist[3].plot(x_el[:1000], gaus_el1, color="k")
-    axlist[3].plot(x_el[1000:], gaus_el2, color="k")
-    axlist[3].set_xlabel("dEl [arcsec]")
-    axlist[3].set_ylabel("differential [K]")
+        axlist[3].plot(yscan_y, yscan_dif, "o")
+        axlist[3].plot(x_el[:1000], gaus_el1, color="k")
+        axlist[3].plot(x_el[1000:], gaus_el2, color="k")
+        axlist[3].set_xlabel("dEl [arcsec]")
+        axlist[3].set_ylabel("differential [K]")
 
-    axlist[4].set_visible(False)
-    axlist[5].set_visible(False)
+        axlist[4].set_visible(False)
+        axlist[5].set_visible(False)
 
-    plt.axes([0.45,0.28, 0.25, 0.2])
-    plt.axis("off")
-    plt.text(0,0,"dAz = {}".format(round(dAz, 2)) + "              dEl = {}".format(round(dEl, 2)) + "   (arcsec)", fontsize = 16)
-    plt.text(0, -0.3, "DATA PATH :   {}".format(file_name), fontsize=10)
+        plt.axes([0.45,0.28, 0.25, 0.2])
+        plt.axis("off")
+        plt.text(0,0,"dAz = {}".format(round(dAz, 2)) + "              dEl = {}".format(round(dEl, 2)) + "   (arcsec)", fontsize = 16)
+        plt.text(0, -0.3, "DATA PATH :   {}".format(file_name), fontsize=10)
 
-    [a.grid() for a in axlist]
+        [a.grid() for a in axlist]
 
+    except Exception as e:
+        print("\033[31m[ERROR OCCURRED]\033[0m\n", e)
+        fig2 = plt.figure(figsize = (18, 8))
 
-# color image
-    fig2 = plt.figure()
+        axlist = [fig2.add_subplot(3,2,i+1) for i in range(6)]
 
-    ax = fig2.add_subplot(1,1,1, aspect = 1)
+        axlist[0].plot(xscan_x, xscan_Ta, "o")
+        axlist[0].set_ylabel("Ta* [K]")
 
-    im = ax.scatter(xscan_x, xscan_y, c = xscan_Ta, vmin = 0, vmax = 280)
-    ax.scatter(yscan_x, yscan_y, c = yscan_Ta, vmin = 0, vmax = 280)
+        axlist[1].plot(yscan_y, yscan_Ta, "o")
+        axlist[1].set_ylabel("Ta* [K]")
 
-    fig2.colorbar(im)
+        axlist[2].plot(xscan_x, xscan_dif, "o")
+        axlist[2].set_xlabel("dAz [arcsec]")
+        axlist[2].set_ylabel("differential [K]")
 
-    plt.show()
+        axlist[3].plot(yscan_y, yscan_dif, "o")
+        axlist[3].set_xlabel("dEl [arcsec]")
+        axlist[3].set_ylabel("differential [K]")
+
+        axlist[4].set_visible(False)
+        axlist[5].set_visible(False)
+
+        plt.axes([0.45,0.28, 0.25, 0.2])
+        plt.axis("off")
+        plt.text(0,0, "ERROR OCCURRED", fontsize = 16)
+        plt.text(0, -0.3, "DATA PATH :   {}".format(file_name), fontsize=10)
+
+            
+        [a.grid() for a in axlist]
+    
+    finally:
+        plt.show()
 
     return
 
