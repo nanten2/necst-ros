@@ -530,7 +530,6 @@ class telescope(object):
         self.server_name = "{0}_{1}".format(__file__,self.__class__.__name__)         
         thread_status = threading.Thread(target = self.write_status)
         thread_status.start()
-        ###tmp
         thread_limit = threading.Thread(target = self.monitor_limit)
         thread_limit.start()
         self.Kosma_main()
@@ -541,8 +540,21 @@ class telescope(object):
         rospy.Subscriber('obs_stop', String_necst, self.c_back, queue_size=1)
         rospy.spin()
 
+    def tracking_check(self):
+        tracking_status = st.read_status()[10]['tracking']
+        limit_check = self.limit_check()
+        if tracking_status == True and self.limit_check() == False:
+            print("tracking_check ### True")
+            return True
+        else:
+            if not self.limit_check() == False:
+                print("tracking_check ### error")
+                return "error"#error
+            else:
+                print('tracking_check ### False')
+                return False
+
     def c_back(self, req):
-        #print('###', req)
         self.limit_check_time = req.timestamp
         pass
 
@@ -687,10 +699,7 @@ class telescope(object):
         ### To pre_otf position move_telescope
         on_coord = coord_sys_on.lower()
         if duration == 0:
-            
-            ###stop tracking
-            #con.tracking_end()#v1
-            con.move_stop()#v2
+            con.move_stop()
             if coord_sys_on.lower() == 'j2000' or coord_sys_on.lower() == 'b1950':
                 coord_sys_on = 'EQUATORIAL'
             elif coord_sys_on.lower() == 'galactic':
@@ -717,7 +726,9 @@ class telescope(object):
                 
             self.log.info('moving...')
             time.sleep(0.001)#分光計の指令値更新を待つ(一応)
-            time.sleep(3)#test
+
+            """
+            #time.sleep(3)#test
             if self.limit_check():
                 print(self.limit_check(), 'Ln722 ###limit check###')
                 return
@@ -730,7 +741,38 @@ class telescope(object):
             while not st.read_status()[10]['tracking']:#一応3回目
                 time.sleep(0.01)
                 continue
-            
+            """
+        while True:
+            if not self.tracking_check() == True:
+                time.sleep(0.001)
+                continue
+            elif self.tracking_check() == "error":
+                print('###error###')
+                return
+            else:
+                break
+
+        while True:
+            if not self.tracking_check() == True:
+                time.sleep(0.001)
+                continue
+            elif self.tracking_check() == "error":
+                print('###error###')
+                return
+            else:
+                break
+
+        while True:
+            if not self.tracking_check() == True:
+                time.sleep(0.001)
+                continue
+            elif self.tracking_check() == "error":
+                print('###error###')
+                return
+            else:
+                break
+                                        
+
             self.log.info('Pre_Otf_Position')###-d
             self.tel_on_track = 'Y'
             self.pre_otf_position_flag = 1
@@ -750,9 +792,6 @@ class telescope(object):
                 #lam_on = lam_on*3600 #[arcsec]
                 #bet_on = bet_on*3600 #[arcsec]
                 pass
-            #start_on = con.otf_scan(lam_on, bet_on, dcos_kosma, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, 0, lamda, 'hosei_230.txt', on_coord,lam_del, bet_del, coord_sys_del)###v1
-
-            ###tmp
             from datetime import datetime
             utc = datetime.utcnow()
             #_list = [utc.year, utc.month, utc.day, utc.hour, utc.minute, utc.second, utc.microsecond]
@@ -803,8 +842,6 @@ class telescope(object):
 
         coord_map_offsets = self.tel_value['obs_coord_sys_del']
         coord_off = self.tel_value['obs_coord_sys_off']
-
-        ###set lam_off bet_off(off position = lam_on_off, bet_on_off)
         ###coordintate transform
 
         if coord_on.lower() == 'j2000':
@@ -952,20 +989,54 @@ class telescope(object):
             self.log.info(" ".join([str(ele) for ele in to_print]))
             
             self.log.info('moving...')
-            time.sleep(3)#test
-            if self.limit_check():
-                print('###L956', self.limit_check)
-                return
-            
-            while not st.read_status()[10]['tracking']:#通り過ぎた場合もTrueになるため
-                time.sleep(0.001)
-                continue
-            while not st.read_status()[10]['tracking']:#2回目
-                time.sleep(0.001)
-                continue
-            while not st.read_status()[10]['tracking']:#一応3回目
-                time.sleep(0.001)
-                continue
+            #time.sleep(3)#test
+            """
+            while not rospy.is_shutdown():
+                print('#$%$%$#')
+                if not self.tracking_check == True:
+                    time.sleep(0.001)
+                    continue
+                elif self.tracking_check == 0:
+                    print('###error###')
+                    return
+            while not rospy.is_shutdown():
+                if not self.tracking_check == True:
+                    time.sleep(0.001)
+                    continue
+                elif self.tracking_check == 0:
+                    print('###error###')
+                    return
+            """
+            while True:
+                if not self.tracking_check() == True:
+                    time.sleep(0.001)
+                    continue
+                elif self.tracking_check == "error":
+                    print('###error###')
+                    return
+                else:
+                    break
+
+            while True:
+                if not self.tracking_check() == True:
+                    time.sleep(0.001)                    
+                    continue
+                elif self.tracking_check == "error":
+                    print('###error###')
+                    return
+                else:
+                    break
+
+            while True:
+                if not self.tracking_check() == True:
+                    time.sleep(0.001)
+                    continue
+                elif self.tracking_check == "error":
+                    print('###error###')
+                    return
+                else:
+                    break
+                
             self.log.info('tel_on_track = Y')
             self.tel_on_track = 'Y'
             #self.cookie_flag = 1
@@ -994,20 +1065,35 @@ class telescope(object):
             #print(lam_on_off, bet_on_off, coord_on,'off_x =', lam_del, 'off_y = ',bet_del, 'offcoord = ',coord_map_offsets, 'lamda = ',obs_wavelength)
         self.log.info('moving...')
 
-        time.sleep(3)#test
-        if self.limit_check():
-            return
-        
-        #time.sleep(0.001)#分光計の指令値更新を待つ(一応)
-        while not st.read_status()[10]['tracking']:#通り過ぎた場合もTrueになるため
-            time.sleep(0.01)
-            continue
-        while not st.read_status()[10]['tracking']:#2回目
-            time.sleep(0.01)
-            continue
-        while not st.read_status()[10]['tracking']:#一応3回目
-            time.sleep(0.01)
-            continue
+        while True:
+            if not self.tracking_check() == True:
+                time.sleep(0.001)
+                continue
+            elif self.tracking_check == "error":
+                print('###error###')
+                return
+            else:
+                break
+        while True:
+            if not self.tracking_check() == True:
+                time.sleep(0.001)
+                continue
+            elif self.tracking_check() == "error":
+                print('###error###')
+                return
+            else:
+                break
+
+        while True:
+            if not self.tracking_check() == True:
+                time.sleep(0.001)
+                continue
+            elif self.tracking_check() == "error":
+                print('###error###')
+                return
+            else:
+                break
+            
         print(st.read_status()[10])
         self.log.info('tracking : {0}'.format(st.read_status()[10]))
         self.tel_on_track = 'Y'
