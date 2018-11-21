@@ -554,12 +554,25 @@ class telescope(object):
                 print('tracking_check ### False')
                 return False
 
+    def wait_tracking(self, count=3):
+        for i in range(count):
+            while True:
+                print(self.tracking_check())
+                if self.tracking_check() == "error":
+                    print('###error1###')
+                    return 'error'
+                elif not self.tracking_check() == True:
+                    time.sleep(0.001)
+                    continue
+                else:
+                    break
+
     def c_back(self, req):
         self.limit_check_time = req.timestamp
         pass
 
     def limit_check(self):
-        if time.time() - self.limit_check_time < 3.5:
+        if time.time() - self.limit_check_time < 4:
             print('###limit_check True')
             return True
         else:
@@ -723,42 +736,13 @@ class telescope(object):
                 con.onepoint_move(lam_on + (lam_del+start_x)/3600., bet_on + (bet_del+start_y)/3600.)
                 self.log.info("{0} {1}".format(lam_on*3600. + lam_del , bet_on*3600.+bet_del))
                 #self.log.info(lam_on*3600. + lam_del , bet_on*3600.+bet_del)
-                
-        self.log.info('moving...')
-        time.sleep(3.5)
-
-        while True:
-            if not self.tracking_check() == True:
-                time.sleep(0.001)
-                continue
-            elif self.tracking_check() == "error":
-                print('###error###')
+            self.log.info('moving...')
+            time.sleep(3.5)
+            a = self.wait_tracking()
+            if a == 'error':
+                print('command error')
                 return
-            else:
-                break
-
-        while True:
-            if not self.tracking_check() == True:
-                time.sleep(0.001)
-                continue
-            elif self.tracking_check() == "error":
-                print('###error###')
-                return
-            else:
-                break
-
-        while True:
-            if not self.tracking_check() == True:
-                time.sleep(0.001)
-                continue
-            elif self.tracking_check() == "error":
-                print('###error###')
-                return
-            else:
-                break
-                                        
-
-            self.log.info('Pre_Otf_Position')###-d
+            self.log.info('Pre_Otf_Position')###
             self.tel_on_track = 'Y'
             self.pre_otf_position_flag = 1
             #self.cookie_flag = 1
@@ -969,42 +953,48 @@ class telescope(object):
                 return
             self.log.info('source_name == {0}'.format(source_name))
         
-            con.planet_move(int(number), off_x = lam_del, off_y = bet_del, hosei = 'hosei_230.txt', offcoord = coord_map_offsets, lamda=obs_wavelength, az_rate=12000, el_rate=12000, dcos=0)
-            to_print = [int(number), 'off_x =', lam_del, 'off_y =', bet_del, 'hosei = ','hosei_230.txt', 'offcoord = ',coord_map_offsets,' lamda=',obs_wavelength, 'az_rate=',12000, 'el_rate=',12000, 'dcos=',0]
+            con.planet_move(int(number), off_x = lam_del, off_y = bet_del, hosei = 'hosei_230.txt', offcoord = coord_map_offsets, lamda=obs_wavelength, dcos=0)
+            to_print = [int(number), 'off_x =', lam_del, 'off_y =', bet_del, 'hosei = ','hosei_230.txt', 'offcoord = ',coord_map_offsets,' lamda=',obs_wavelength, 'dcos=',0]
             self.log.info(" ".join([str(ele) for ele in to_print]))
             
             self.log.info('moving...')
             time.sleep(3.5)
+            """
+            print('$%&&%$#')
             while True:
-                if not self.tracking_check() == True:
+                print(self.tracking_check())
+                if self.tracking_check() == "error":
+                    print('###error1###')
+                    return
+                elif not self.tracking_check() == True:
                     time.sleep(0.001)
                     continue
-                elif self.tracking_check == "error":
-                    print('###error###')
-                    return
                 else:
                     break
-
             while True:
-                if not self.tracking_check() == True:
-                    time.sleep(0.001)                    
-                    continue
-                elif self.tracking_check == "error":
-                    print('###error###')
+                if self.tracking_check() == "error":
+                    print('###error2###')
                     return
-                else:
-                    break
-
-            while True:
-                if not self.tracking_check() == True:
+                elif not self.tracking_check() == True:
                     time.sleep(0.001)
                     continue
-                elif self.tracking_check == "error":
-                    print('###error###')
-                    return
                 else:
                     break
-                
+                    
+            while True:
+                if self.tracking_check() == "error":
+                    print('###error3###')
+                    return
+                elif not self.tracking_check() == True:
+                    time.sleep(0.001)
+                    continue
+                else:
+                    break
+            """
+            a = self.wait_tracking()
+            if a == 'error':
+                print('command error')
+                return
             self.log.info('tel_on_track = Y')
             self.tel_on_track = 'Y'
             #self.cookie_flag = 1
@@ -1034,35 +1024,40 @@ class telescope(object):
         self.log.info('moving...')
         
         time.sleep(3.5)
+        a = self.wait_tracking()
+        if a == 'error':
+            print('command error')
+            return
+        """
         while True:
-            if not self.tracking_check() == True:
-                time.sleep(0.001)
-                continue
-            elif self.tracking_check == "error":
+            if self.tracking_check == "error":
                 print('###error###')
                 return
+            elif not self.tracking_check() == True:
+                time.sleep(0.001)
+                continue
             else:
                 break
         while True:
-            if not self.tracking_check() == True:
-                time.sleep(0.001)
-                continue
-            elif self.tracking_check() == "error":
+            if self.tracking_check() == "error":
                 print('###error###')
                 return
+            elif not self.tracking_check() == True:
+                time.sleep(0.001)
+                continue
             else:
                 break
 
         while True:
-            if not self.tracking_check() == True:
-                time.sleep(0.001)
-                continue
-            elif self.tracking_check() == "error":
+            if self.tracking_check() == "error":
                 print('###error###')
                 return
+            elif not self.tracking_check() == True:
+                time.sleep(0.001)
+                continue
             else:
                 break
-            
+        """    
         print(st.read_status()[10])
         self.log.info('tracking : {0}'.format(st.read_status()[10]))
         self.tel_on_track = 'Y'
