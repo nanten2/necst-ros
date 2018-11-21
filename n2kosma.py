@@ -724,24 +724,9 @@ class telescope(object):
                 self.log.info("{0} {1}".format(lam_on*3600. + lam_del , bet_on*3600.+bet_del))
                 #self.log.info(lam_on*3600. + lam_del , bet_on*3600.+bet_del)
                 
-            self.log.info('moving...')
-            time.sleep(0.001)#分光計の指令値更新を待つ(一応)
+        self.log.info('moving...')
+        time.sleep(3.5)
 
-            """
-            #time.sleep(3)#test
-            if self.limit_check():
-                print(self.limit_check(), 'Ln722 ###limit check###')
-                return
-            while not st.read_status()[10]['tracking']:#通り過ぎた場合もTrueになるため
-                time.sleep(0.01)
-                continue
-            while not st.read_status()[10]['tracking']:#2回目
-                time.sleep(0.01)
-                continue
-            while not st.read_status()[10]['tracking']:#一応3回目
-                time.sleep(0.01)
-                continue
-            """
         while True:
             if not self.tracking_check() == True:
                 time.sleep(0.001)
@@ -989,24 +974,7 @@ class telescope(object):
             self.log.info(" ".join([str(ele) for ele in to_print]))
             
             self.log.info('moving...')
-            #time.sleep(3)#test
-            """
-            while not rospy.is_shutdown():
-                print('#$%$%$#')
-                if not self.tracking_check == True:
-                    time.sleep(0.001)
-                    continue
-                elif self.tracking_check == 0:
-                    print('###error###')
-                    return
-            while not rospy.is_shutdown():
-                if not self.tracking_check == True:
-                    time.sleep(0.001)
-                    continue
-                elif self.tracking_check == 0:
-                    print('###error###')
-                    return
-            """
+            time.sleep(3.5)
             while True:
                 if not self.tracking_check() == True:
                     time.sleep(0.001)
@@ -1064,7 +1032,8 @@ class telescope(object):
             self.log.info("{0:3.3f} {1:3.3f} {2} off_x={3} off_y={4} offcoord={5} lamda={6}".format(lam_on_off, bet_on_off, coord_on, lam_del, bet_del,coord_map_offsets,obs_wavelength))
             #print(lam_on_off, bet_on_off, coord_on,'off_x =', lam_del, 'off_y = ',bet_del, 'offcoord = ',coord_map_offsets, 'lamda = ',obs_wavelength)
         self.log.info('moving...')
-
+        
+        time.sleep(3.5)
         while True:
             if not self.tracking_check() == True:
                 time.sleep(0.001)
