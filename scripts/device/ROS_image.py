@@ -29,7 +29,7 @@ class Image(object):
         img = cv2.imread(self.filename, 1)
         cv2.imshow(self.filename, img_data)
         print('push [s] key to preserve image')
-        if cv2.waitKey(1) == ord('s'):
+        if cv2.waitkey(1) == ord('s'):
             cv2.imwrite('/home/amigos/Pictures/capture/'+ self.filename, img)
             cv2.destroyAllWindows()
         self.filename = ''
