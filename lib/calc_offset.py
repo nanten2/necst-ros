@@ -6,7 +6,7 @@ from datetime import datetime as dt
 import sys
 import numpy as np
 
-coord_list = {"icrs":"icrs", "j2000":"fk5", "fk5":"fk5", "b1950":"fk4", "fk4":"fk4", "gal":"galactic", "galactic":"galactic","altaz":"altaz", "horizontal":"altaz","gcrs":"gcrs"}
+coord_list = {"icrs":"icrs", "j2000":"fk5", "fk5":"fk5", "b1950":"fk4", "fk4":"fk4", "gal":"galactic", "galactic":"galactic","altaz":"altaz", "horizontal":"altaz", "horizon":"altaz", "gcrs":"gcrs"}
 
 latitude = -22.96995611
 longitude = -67.70308139
