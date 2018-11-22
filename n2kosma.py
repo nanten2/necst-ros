@@ -738,8 +738,8 @@ class telescope(object):
                 #self.log.info(lam_on*3600. + lam_del , bet_on*3600.+bet_del)
             self.log.info('moving...')
             time.sleep(3.5)
-            a = self.wait_tracking()
-            if a == 'error':
+            ret_status = self.wait_tracking()
+            if ret_status == 'error':
                 print('command error')
                 return
             self.log.info('Pre_Otf_Position')###
@@ -959,40 +959,9 @@ class telescope(object):
             
             self.log.info('moving...')
             time.sleep(3.5)
-            """
-            print('$%&&%$#')
-            while True:
-                print(self.tracking_check())
-                if self.tracking_check() == "error":
-                    print('###error1###')
-                    return
-                elif not self.tracking_check() == True:
-                    time.sleep(0.001)
-                    continue
-                else:
-                    break
-            while True:
-                if self.tracking_check() == "error":
-                    print('###error2###')
-                    return
-                elif not self.tracking_check() == True:
-                    time.sleep(0.001)
-                    continue
-                else:
-                    break
-                    
-            while True:
-                if self.tracking_check() == "error":
-                    print('###error3###')
-                    return
-                elif not self.tracking_check() == True:
-                    time.sleep(0.001)
-                    continue
-                else:
-                    break
-            """
-            a = self.wait_tracking()
-            if a == 'error':
+
+            ret_status = self.wait_tracking()
+            if ret_status == 'error':
                 print('command error')
                 return
             self.log.info('tel_on_track = Y')
@@ -1024,40 +993,10 @@ class telescope(object):
         self.log.info('moving...')
         
         time.sleep(3.5)
-        a = self.wait_tracking()
-        if a == 'error':
+        ret_status = self.wait_tracking()
+        if ret_status == 'error':
             print('command error')
             return
-        """
-        while True:
-            if self.tracking_check == "error":
-                print('###error###')
-                return
-            elif not self.tracking_check() == True:
-                time.sleep(0.001)
-                continue
-            else:
-                break
-        while True:
-            if self.tracking_check() == "error":
-                print('###error###')
-                return
-            elif not self.tracking_check() == True:
-                time.sleep(0.001)
-                continue
-            else:
-                break
-
-        while True:
-            if self.tracking_check() == "error":
-                print('###error###')
-                return
-            elif not self.tracking_check() == True:
-                time.sleep(0.001)
-                continue
-            else:
-                break
-        """    
         print(st.read_status()[10])
         self.log.info('tracking : {0}'.format(st.read_status()[10]))
         self.tel_on_track = 'Y'
