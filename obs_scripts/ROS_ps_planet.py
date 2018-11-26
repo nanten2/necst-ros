@@ -32,9 +32,9 @@ p.add_argument('--tau', type=float,
                help='tau. default=%.1f'%(tau))
 p.add_argument('--planet', type=str,
                help='planet_name')
-p.add_argument('--integmin', type=float,
+p.add_argument('--integmin', type=int,
                help='integrange_min')
-p.add_argument('--integmax', type=float,
+p.add_argument('--integmax', type=int,
                help='integrange_max')
 
 args = p.parse_args()
