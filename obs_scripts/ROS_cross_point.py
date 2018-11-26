@@ -665,10 +665,14 @@ import n2fits_write
 n2fits_write.write(read1,f1)
 n2fits_write.write(read2,f2)
 
-
 shutil.copy("/home/amigos/ros/src/necst/lib/hosei_230.txt", savedir+"/hosei_copy")
 con.obs_status(active=False)
 
+import correct_fits # correct velocity
+f1 = correct_fits.calc(f1)
+f2 = correct_fits.calc(f2)
 
 import pointing_line
 pointing_line.analysis(f1, integ_mi=integmin, integ_ma=integmax) # f2?
+
+
