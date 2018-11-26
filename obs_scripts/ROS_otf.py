@@ -815,3 +815,7 @@ n2fits_write.write(read2,f2)
 timestamp = time.strftime('%Y%m%d_%H%M%S')
 dirname = timestamp
 con.obs_status(active=False)
+
+import correct_fits
+correct_fits.calc(f1)
+correct_fits.calc(f2)
