@@ -1,7 +1,7 @@
 string pc_name
 string time
-float32 cpu_per
-int32 used_memory
-float32 memory_per
+float64 cpu_per
+int64 used_memory
+float64 memory_per
 string from_node
 float64 timestamp
