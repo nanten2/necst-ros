@@ -5,6 +5,7 @@ import time
 import threading
 import rospy
 from necst.msg import Status_weather_msg
+from necst.msg import Bool_necst
 
 node_name = "alert_weather"
 
@@ -18,15 +19,23 @@ class alert(object):
     warning = ""
 
     error_flag = False
+    stop_flag = False
     
     def __init__(self):
         self.sub = rospy.Subscriber("status_weather", Status_weather_msg, self.callback_weather)
+        rospy.Subscriber("stop_alert", Bool_necst, self.callback_stop)        
         
     def callback_weather(self, req):
         """ callback : status_weather """
         self.wind_speed = req.wind_sp
         self.rain = req.rain
         self.out_humi = req.out_humi
+        return
+
+    def callback_stop(self, req):
+        if req.from_node in ["alert_weather", "/alert_weather"]:
+            self.stop_flag = req.data
+            print("stop_flag : ", req.data)
         return
     
     def thread_start(self):
@@ -43,29 +52,30 @@ class alert(object):
         """ publish : alert """
         error_flag = False
         while not rospy.is_shutdown():
+            if self.stop_flag:
+                time.sleep(1.)
+                continue
             if self.emergency:
                 rospy.logfatal(self.emergency)
                 con.move_stop()
                 con.dome_stop()
                 con.memb_close()
                 con.dome_close()
-                con.alert(self.emergency, emergency=True)
+                con.alert(self.emergency, node_name, emergency=True)
                 error_flag = True                
             elif self.warning:
                 rospy.logwarn(self.warning)
-                con.alert(self.warning)
+                con.alert(self.warning, node_name)
                 error_flag = True
             else:
                 if error_flag:
                     msg = "weather error release !!\n\n\n"
                     rospy.loginfo(msg)
-                    con.alert(msg)                    
-                    time.sleep(0.5)
-                    msg = ""
-                    rospy.loginfo(msg)
-                    con.alert(msg)                    
+                    con.alert(msg, node_name)
                     error_flag = False
                 else:
+                    msg = ""
+                    con.alert(msg, node_name)
                     pass
             time.sleep(0.01)
         return
