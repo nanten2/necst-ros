@@ -65,7 +65,7 @@ class enc_controller(object):
         return
 
     def sub_antenna(self, req):
-        print('get status antenns')
+        print('get status antenna')
         print("speed", req.command_azspeed)
         self.vel_az = req.command_azspeed
         self.vel_el = req.command_elspeed

@@ -887,11 +887,11 @@ class controller(object):
     # others
     # ===================
 
-    @logger
-    def alert(self, message, emergency=False):
+    #@logger
+    def alert(self, message, node_name="", emergency=False):
         msg = String_necst()
         msg.data = message
-        msg.from_node = self.node_name
+        msg.from_node = node_name
         msg.timestamp = time.time()
         self.pub_alert.publish(msg)
         if emergency:

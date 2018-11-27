@@ -7,6 +7,7 @@ import threading
 import rospy
 from necst.msg import Status_antenna_msg
 from necst.msg import Status_encoder_msg
+from necst.msg import Bool_necst
 
 node_name = "alert_encoder"
 
@@ -21,10 +22,12 @@ class alert(object):
     warning = ""
 
     error_flag = False
+    stop_flag = False
     
     def __init__(self):
         self.sub = rospy.Subscriber("status_antenna", Status_antenna_msg, self.callback_command)
-        self.sub = rospy.Subscriber("status_encoder", Status_encoder_msg, self.callback_encoder)        
+        self.sub = rospy.Subscriber("status_encoder", Status_encoder_msg, self.callback_encoder)
+        rospy.Subscriber("stop_alert", Bool_necst, self.callback_stop)                
         return
 
     def callback_command(self, req):
@@ -37,8 +40,14 @@ class alert(object):
         """ callback : encoder_status """
         self.enc_az = req.enc_az
         self.enc_el = req.enc_el
-        return        
-    
+        return
+
+    def callback_stop(self, req):
+        if req.from_node in ["alert_encoder", "/alert_encoder"]:
+            self.stop_flag = req.data
+            print("stop_flag : ", req.data)
+        return
+            
     def thread_start(self):
         """ checking alert """
         self.thread_alert = threading.Thread(target=self.pub_status)
@@ -53,6 +62,9 @@ class alert(object):
         """ publish : alert """
         error_flag = False
         while not rospy.is_shutdown():
+            if self.stop_flag:
+                time.sleep(1.)
+                continue
             timestamp = time.time()
             if self.emergency:
                 rospy.logfatal(self.emergency)
@@ -61,24 +73,22 @@ class alert(object):
                 con.memb_close()
                 con.dome_close()
                 msg = self.emergency
-                con.alert(msg)
+                con.alert(msg, node_name, emergency=True)
                 error_flag = True                
             elif self.warning:
                 rospy.logwarn(self.warning)
                 msg = self.warning
-                con.alert(msg)
+                con.alert(msg, node_name)
                 error_flag = True
             else:
                 if error_flag:
                     msg = "encoder error release !!\n\n\n"
                     rospy.loginfo(msg)
-                    con.alert(msg)                    
-                    time.sleep(2.)
-                    msg = ""
-                    rospy.loginfo(msg)
-                    con.alert(msg)                    
+                    con.alert(msg, node_name)
                     error_flag = False
                 else:
+                    msg = ""
+                    con.alert(msg, node_name)
                     pass
             time.sleep(0.01)
         return
