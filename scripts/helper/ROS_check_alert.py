@@ -16,9 +16,6 @@ def _regist(req):
     if req.data == True and (not req.from_node in stop_node):
         stop_node.append(req.from_node)
     elif req.data == False and (req.from_node in stop_node):
-        print("wait starting alert...")
-        time.sleep(3.)
-        print("restart checking")
         stop_node.remove(req.from_node)
     else:
         pass
