@@ -591,7 +591,6 @@ class controller(object):
     def dome_tracking_check(self):
         """dome tracking check"""
         print(" dome_tracking now... \n")
-        time.sleep(2)
         while not self.dome_tracking_flag:
             time.sleep(0.01)
             pass
