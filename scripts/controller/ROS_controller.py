@@ -591,6 +591,7 @@ class controller(object):
     def dome_tracking_check(self):
         """dome tracking check"""
         print(" dome_tracking now... \n")
+        time.sleep(2)
         while not self.dome_tracking_flag:
             time.sleep(0.01)
             pass
@@ -909,7 +910,7 @@ class controller(object):
 
         * Parameters *
         ----------
-        mode : True  -> clear_condition of z_mode is "CLS0"
+        mode : Tre  -> clear_condition of z_mode is "CLS0"
                False -> clear_condition of z_mode is ""
         
         * How to use *
