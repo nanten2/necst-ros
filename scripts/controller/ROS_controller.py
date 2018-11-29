@@ -38,6 +38,8 @@ class controller(object):
 
     task_flag = False
     antenna_tracking_flag = False
+    antenna_tracking_time = ""
+    command_time = ""
     dome_tracking_flag = False
     access_authority = "no_data"
 
@@ -268,7 +270,8 @@ class controller(object):
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
         rotation : True -->  az=240 change az=-120 
         """
-        self.pub_onepoint.publish(x, y, coord, "", off_x, off_y, offcoord, hosei, lamda, dcos, limit, rotation, self.node_name, time.time())
+        self.command_time = time.time()
+        self.pub_onepoint.publish(x, y, coord, "", off_x, off_y, offcoord, hosei, lamda, dcos, limit, rotation, self.node_name, self.command_time)
         return
     
     @logger
@@ -403,6 +406,7 @@ class controller(object):
 
     def _antenna_tracking(self, req):
         self.antenna_tracking_flag = req.data
+        #self.antenna_tracking_time = req.command_time
         return
 
     @logger
@@ -410,7 +414,7 @@ class controller(object):
         """antenna_tracking_check"""
         rospy.loginfo(" tracking now... \n")
         time.sleep(2.)
-        while not self.antenna_tracking_flag:
+        while not self.antenna_tracking_flag:# or (int(self.command_time) != self.antenna_tracking_time):
             time.sleep(0.01)
             pass
         return
@@ -874,7 +878,7 @@ class controller(object):
             else:
                 rospy.loginfo("read now...")
                 status = ""
-                time.sleep(1.)
+                time.sleep(0.1)
 
         return status
     
