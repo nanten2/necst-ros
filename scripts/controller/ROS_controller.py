@@ -910,7 +910,7 @@ class controller(object):
 
         * Parameters *
         ----------
-        mode : Tre  -> clear_condition of z_mode is "CLS0"
+        mode : True  -> clear_condition of z_mode is "CLS0"
                False -> clear_condition of z_mode is ""
         
         * How to use *
