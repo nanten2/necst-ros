@@ -265,7 +265,7 @@ class status_main(object):
                 except Exception as e:
                     print('error {0}'.format(e))
                     print("Propably not running launch.")
-            time.sleep(0.1)
+            time.sleep(0.05)
 
 class read_status(status_main):
 
