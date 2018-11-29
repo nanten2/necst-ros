@@ -413,7 +413,6 @@ class controller(object):
     def antenna_tracking_check(self):
         """antenna_tracking_check"""
         rospy.loginfo(" tracking now... \n")
-        time.sleep(2.)
         while not self.antenna_tracking_flag:# or (int(self.command_time) != self.antenna_tracking_time):
             time.sleep(0.01)
             pass
