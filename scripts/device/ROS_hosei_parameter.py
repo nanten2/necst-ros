@@ -15,7 +15,6 @@ node_name = "hosei_parameter"
 def _hosei(req):
     global hosei_file
     hosei_file = req.hosei
-    print("no file")
     return
 
 rospy.init_node(node_name)
