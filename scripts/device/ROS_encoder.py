@@ -41,7 +41,9 @@ class enc_controller(object):
         if self.dio.get_mode().to_bit() == "00000000" :
             self.dio.initialize()            
             self.board_setting()
+            #self.board_setting('CLS0')
         else:
+            #self.board_setting('CLS0')
             pass
         
     def origin_setting(self, req):
@@ -92,15 +94,15 @@ class enc_controller(object):
             msg.timestamp = time.time()
             time.sleep(0.01)
             pub.publish(msg)
-            rospy.loginfo('Az :'+str(msg.enc_az/3600.))
-            rospy.loginfo('El :'+str(msg.enc_el/3600.))
+            #rospy.loginfo('Az :'+str(msg.enc_az/3600.))
+            #rospy.loginfo('El :'+str(msg.enc_el/3600.))
         return
 
     def get_azel(self):
         cntAz = int(self.dio.get_counter(1).to_int())
         cntEl = int(self.dio.get_counter(2).to_int())
-        now = dt.utcnow()
-        _utc = now.strftime("%Y-%m-%d %H:%M:%S")
+        #now = dt.utcnow()
+        #_utc = now.strftime("%Y-%m-%d %H:%M:%S")
         #print(cntAz)
         #print(cntEl)
         
@@ -125,7 +127,7 @@ class enc_controller(object):
         encEl = cntEl*self.resolution
         self.El = encEl+45*3600      #arcsecond
             
-        return [self.Az, self.El, _utc]
+        return [self.Az, self.El]#, _utc]
 
 
 if __name__ == "__main__":
