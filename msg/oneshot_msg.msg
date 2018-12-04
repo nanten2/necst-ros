@@ -1,2 +1,1 @@
-string filename
-float64 filesize
+float64 time
