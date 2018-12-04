@@ -15,31 +15,32 @@ from sensor_msgs.msg import Image as Imagemsg
 
 class Image(object):
     filename = ''
-    
 
     def __init__(self):
         pass
     
-    def Image_view(self, req):
+    def Image_save(self, req):
         print('subscribe picture')
-        ut = time.gmtime()
-        self.filename = str(ut) + '.jpg'
+        t = time.time()
+        self.filename = str(t) + '.jpg'
         bridge = CvBridge()
         img_data = bridge.imgmsg_to_cv2(req, 'bgr8')
         img = cv2.imread(self.filename, 1)
         cv2.imshow(self.filename, img_data)
+        cv2.imwrite('/home/amigos/Pictures/capture/'+ self.filename, img)
+        '''
         print('push [s] key to preserve image')
-        if cv2.waitkey(1) == ord('s'):
+        if cv2.waitKey(1) == ord('s'):
             cv2.imwrite('/home/amigos/Pictures/capture/'+ self.filename, img)
             cv2.destroyAllWindows()
+        '''
         self.filename = ''
         return
 
 if __name__ == '__main__':
-    Image =Image()
-    rospy.init_node('Image')
-    #Image.start_thread()
-    sub = rospy.Subscriber('Image', Imagemsg, Image.Image_view)
+    Image =image()
+    rospy.init_node('Image_saver')
+    #image.start_thread()
+    sub = rospy.Subscriber('Image', Imagemsg, image.Image_save)
     print('waiting picture')
-    #sub2 = rospy.Subscriber('shot', shot_msg, Image.dec_filename)
     rospy.spin()
