@@ -25,9 +25,8 @@ class Image(object):
         self.filename = str(t) + '.jpg'
         bridge = CvBridge()
         img_data = bridge.imgmsg_to_cv2(req, 'bgr8')
-        img = cv2.imread(self.filename, 1)
-        cv2.imshow(self.filename, img_data)
-        cv2.imwrite('/home/amigos/Pictures/capture/'+ self.filename, img)
+        #cv2.imshow(self.filename, img_data)
+        cv2.imwrite('/home/amigos/Pictures/capture/'+ self.filename, img_data)
         '''
         print('push [s] key to preserve image')
         if cv2.waitKey(1) == ord('s'):
@@ -40,7 +39,6 @@ class Image(object):
 if __name__ == '__main__':
     Image =image()
     rospy.init_node('Image_saver')
-    #image.start_thread()
     sub = rospy.Subscriber('Image', Imagemsg, image.Image_save)
     print('waiting picture')
     rospy.spin()
