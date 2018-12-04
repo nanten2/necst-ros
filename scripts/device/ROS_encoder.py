@@ -3,14 +3,14 @@
 import math
 import time
 import sys
-#import threading
+import threading
 import rospy
 import pyinterface
 from datetime import datetime as dt
 
 from necst.msg import Status_encoder_msg
-#from necst.srv import Bool_srv
-#from necst.srv import Bool_srvResponse
+from necst.srv import Bool_srv
+from necst.srv import Bool_srvResponse
 
 node_name = "encoder_status"
 
@@ -32,16 +32,18 @@ class enc_controller(object):
         rsw_id = 0
         self.dio = pyinterface.open(board_name, rsw_id)
         self.initialize()
-        #self.sub = rospy.Service("encoder_origin", Bool_srv, self.origin_setting)
-        #th = threading.Thread(target=self.origin_flag_check)
-        #th.start()
+        self.sub = rospy.Service("encoder_origin", Bool_srv, self.origin_setting)
+        th = threading.Thread(target=self.origin_flag_check)
+        th.start()
         pass
 
     def initialize(self):
         if self.dio.get_mode().to_bit() == "00000000" :
             self.dio.initialize()            
             self.board_setting()
+            #self.board_setting('CLS0')
         else:
+            #self.board_setting('CLS0')
             pass
         
     def origin_setting(self, req):
