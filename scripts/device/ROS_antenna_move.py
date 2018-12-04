@@ -301,7 +301,6 @@ class antenna_move(object):
                 self.command_el = tar_el
 
                 b_time = time.time()
-
                 ret = self.dev.move_azel(tar_az, tar_el, self.enc_parameter['az_enc'], self.enc_parameter['el_enc'])
                 rate = [ret[0],ret[9]]
                 #rospy.loginfo(rate)
