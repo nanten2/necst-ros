@@ -15,7 +15,6 @@ from sensor_msgs.msg import Image as Imagemsg
 
 class Image(object):
     filename = ''
-    
 
     def __init__(self):
         pass
