@@ -1,4 +1,4 @@
-#! /usr/bin/env python3
+1;95;0c#! /usr/bin/env python3
 
 """
 ------------------------------------------------
@@ -32,7 +32,6 @@ class drive(object):
         return
 
     def _drive(self, req):
-        print("%%%%")
         self.switch["drive"] = req.data
         return 
 
@@ -44,7 +43,6 @@ class drive(object):
         while not rospy.is_shutdown():
             if self.switch["drive"]:
                 dev.move_drive(self.switch["drive"])
-                print("$$$")
                 self.switch["drive"] = ""
             else:
                 pass
