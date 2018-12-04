@@ -6,7 +6,6 @@ import threading
 import os
 import glob
 import sys
-#sys.path.append('/home/amigos')
 sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append('/home/amigos/Pictures/capture')
@@ -23,13 +22,12 @@ from necst.msg import oneshot_msg
 
 class cam_controller(object):
     filename = ''
-    flag = False
 
     def __init__(self):
-        #self.DLSR = camera.controller()
-        #self.DLSR.detect_camera()
-        #self.DLSR.set_whitebalance(white='SKY')
-        #self.DLSR.set_crop(crop='1.3x')
+        self.DLSR = camera.controller()
+        self.DLSR.detect_camera()
+        self.DLSR.set_whitebalance(white='SKY')
+        self.DLSR.set_crop(crop='1.3x')
         print('ready')
         pass
     
@@ -40,7 +38,6 @@ class cam_controller(object):
         return
     
     def take_picture(self, req):
-        
         print('start ROS_camera.py')
         self.filename = str(req.time)+'.jpg'
         if os.path.exists('/home/amigos/Pictures/capture/'+self.filename) == True:
@@ -48,25 +45,24 @@ class cam_controller(object):
         else:
             self.DLSR.shutter_download(filename='/home/amigos/Pictures/capture/'+self.filename)
             print('oneshot!')
-            #self.pub_image()
-        
         return
 
     def pub_image(self):
-        
+        while True:
+            if not self.filename == '':
+                break
         while True:
             if os.path.exists('/home/amigos/Pictures/capture/'+capture) == True:
                 break
             time.sleep(0.1)
-        if self.flag == True:
-            image_path = '/home/amigos/Pictures/capture/'
-            img = cv2.imread(image_path + capture)
-            bridge = CvBridge()
-            pub = rospy.Publisher('Image', Image, queue_size = 100, latch=True)
-            pub.publish(bridge.cv2_to_imgmsg(img, 'bgr8'))
-            print('publish picture')
-        else:
-            print('not True')
+        
+        image_path = '/home/amigos/Pictures/capture/'
+        img = cv2.imread(image_path + capture)
+        bridge = CvBridge()
+        pub = rospy.Publisher('Image', Image, queue_size = 100, latch=True)
+        pub.publish(bridge.cv2_to_imgmsg(img, 'bgr8'))
+        print('publish picture')
+        self.filename = ''
         return
     
 if __name__ == '__main__':
