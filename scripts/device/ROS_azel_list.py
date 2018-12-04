@@ -53,7 +53,7 @@ class azel_list(object):
         if req.press == 0:
             req.press = 500
         self.press = req.press
-        if req.out_temp > 273.15:
+        if req.out_temp > 100.0: # K --> deg_C
             req.out_temp -= 273.15
         self.out_temp = req.out_temp
         if req.out_humi > 1:
