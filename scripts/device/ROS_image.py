@@ -25,9 +25,9 @@ class Image(object):
         self.filename = str(t) + '.jpg'
         bridge = CvBridge()
         img_data = bridge.imgmsg_to_cv2(req, 'bgr8')
-        img = cv2.imread(self.filename, 1)
-        cv2.imshow(self.filename, img_data)
-        cv2.imwrite('/home/amigos/Pictures/capture/'+ self.filename, img)
+        #img = cv2.imread(self.filename, 1)
+        #cv2.imshow(self.filename, img_data)
+        cv2.imwrite('/home/amigos/Pictures/capture/'+ self.filename, img_data)
         '''
         print('push [s] key to preserve image')
         if cv2.waitKey(1) == ord('s'):
