@@ -39,7 +39,9 @@ class enc_controller(object):
 
     def initialize(self):
         if self.dio.get_mode().to_bit() == "00000000" :
-            self.dio.initialize()            
+            self.dio.initialize()
+            self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=1)
+            self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=2)
             self.board_setting()
         else:
             pass
@@ -71,8 +73,6 @@ class enc_controller(object):
             
     def board_setting(self, z_mode=""):
         rospy.loginfo("initialize : start")
-        self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=1)
-        self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=2)
         self.dio.set_z_mode(clear_condition=z_mode, latch_condition="", z_polarity=0, ch=1)
         self.dio.set_z_mode(clear_condition=z_mode, latch_condition="", z_polarity=0, ch=2)
         print("origin setting mode : ", z_mode)        
