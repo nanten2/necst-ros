@@ -43,9 +43,9 @@ class worldcoord(object):
 
                 start_x = command.off_x-float(command.dx)/2.-float(command.dx)/float(command.dt)*command.rampt
                 start_y = command.off_y-float(command.dy)/2.-float(command.dy)/float(command.dt)*command.rampt
-                total_t = command.rampt + command.dt * command.num
-                end_x = command.off_x + command.dx * (command.num - 0.5)
-                end_y = command.off_y + command.dy * (command.num - 0.5)
+                total_t = command.rampt*2 + command.dt * command.num
+                end_x = command.off_x + command.dx * (command.rampt/command.dt+command.num - 0.5)
+                end_y = command.off_y + command.dy * (command.rampt/command.dt+command.num - 0.5)
                 print(start_x, end_x, command.x)
                 #off_dx_vel = (end_x - start_x) / total_t #(obs_end - obs_start)                                                                                    
                 #off_dy_vel = (end_y - start_y) / total_t #(obs_end - obs_start)                                                                                    
