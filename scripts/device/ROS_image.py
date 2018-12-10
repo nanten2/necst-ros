@@ -27,6 +27,7 @@ class Image(object):
         img_data = bridge.imgmsg_to_cv2(req, 'bgr8')
         #cv2.imshow(self.filename, img_data)
         cv2.imwrite('/home/amigos/Pictures/capture/'+ self.filename, img_data)
+        print('save picture')
         '''
         print('push [s] key to preserve image')
         if cv2.waitKey(1) == ord('s'):
@@ -37,7 +38,7 @@ class Image(object):
         return
 
 if __name__ == '__main__':
-    Image =image()
+    image =Image()
     rospy.init_node('Image_saver')
     sub = rospy.Subscriber('Image', Imagemsg, image.Image_save)
     print('waiting picture')
