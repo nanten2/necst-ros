@@ -10,6 +10,7 @@ import numpy as np
 import time
 from necst.srv import ac240_srv
 from necst.srv import ac240_srvResponse
+from necst.msg import String_list_msg
 
 def oneshot(req):
     print("start oneshot")
@@ -27,10 +28,12 @@ def oneshot(req):
             
     time.sleep(req.exposure*req.repeat)
     print("fin")
+    pub.publish([str(req.repeat), str(req.exposure), str(req.stime)], "achilles", time.time())
     return ac240_srvResponse(data0, data1)
 
 if __name__ == "__main__":
     rospy.init_node("achilles")
     print("start\n")
     sub = rospy.Service("ac240",ac240_srv, oneshot)
+    pub = rospy.Publisher("ac240_get_data", String_list_msg, queue_size=1)
     rospy.spin()
