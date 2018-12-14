@@ -49,7 +49,7 @@ def com(req):
 
 def save_status():
     now = dt.utcnow()
-    dir_name = "/home/amigos/data/tk_log/"    
+    dir_name = "/home/amigos/data/experiment/tk_log/"    
     if not os.path.exists(dir_name):
         print("create file")
         os.makedirs(dir_name)
@@ -74,7 +74,8 @@ def save_status():
                 +str(sp_el) +"\n")
         time.sleep(0.01)
     f.close()
-    print("end")    
+    print("end")
+    print("filename : ", dir_name + name+".txt")
                 
 
 rospy.init_node("log_test")
