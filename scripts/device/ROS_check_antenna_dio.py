@@ -14,7 +14,7 @@ def check_dio():
     while not rospy.is_shutdown():
         now = dt.utcnow()
         date = now.strftime("[UTC] %Y/%m/%d %H:%M:%S")
-        parameter = dio.input_dword().to_list()
+        parameter = dio.input_dword("IN1_32").to_list()
         print(date, " ", parameter)    
         
         msg = Float64_list_msg()
