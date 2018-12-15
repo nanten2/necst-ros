@@ -38,7 +38,9 @@ class enc_controller(object):
         pass
 
     def initialize(self):
-        if self.dio.get_mode().to_bit() == "00000000" :
+        mode = self.dio.get_mode()
+        if mode["mode"] == "":
+            #if self.dio.get_mode().to_bit() == "00000000" :
             self.dio.initialize()
             self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=1)
             self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=2)
