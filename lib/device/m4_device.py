@@ -12,7 +12,7 @@ mtr.set_limit_config('LOGIC', '+EL -EL', axis=1)
 
 
 def get_pos():
-    print(mtr.get_counter())
+    print(mtr.read_counter())
     status = mtr.get_status()
     #print(status)
     """
@@ -45,7 +45,7 @@ def move(position):
     else:
         print('parameter error')
         return
-    mtr.set_motion(mode="JOG",step=step)
+    mtr.set_motion(mode="JOG",acc_mode="SIN", low_speed=100, speed=1000, acc=500, step=step, axis=1)
     print("set_motion")
     mtr.start_motion(mode="JOG")
     print("start_motion")
