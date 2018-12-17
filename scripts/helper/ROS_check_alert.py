@@ -48,7 +48,8 @@ def check_alert_node():
             rospy.logfatal("Alert node is some down...")
             rospy.logfatal(str(diff))
             error_flag = True
-        pub.publish(data=move_node, from_node=node_name, timestamp=time.time())
+        current_node = list(set(move_node)-set(stop_node))
+        pub.publish(data=current_node, from_node=node_name, timestamp=time.time())
         time.sleep(0.1)
 
 if __name__ == "__main__":
