@@ -34,7 +34,7 @@ limit_pub = rospy.Publisher("limit", Bool_necst, queue_size=10, latch=True)
 
 while not rospy.is_shutdown():#stop_flag == 0:
     msg = ""
-    ret = dio.input_dword().to_list()
+    ret = dio.input_dword("IN1_32").to_list()
     for i in range(4,16):
         if ret[i] == 0:
             msg = msg+str(limit_list[i+1])

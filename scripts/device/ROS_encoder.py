@@ -38,7 +38,9 @@ class enc_controller(object):
         pass
 
     def initialize(self):
-        if self.dio.get_mode().to_bit() == "00000000" :
+        mode = self.dio.get_mode()
+        if mode["mode"] == "":
+            #if self.dio.get_mode().to_bit() == "00000000" :
             self.dio.initialize()
             self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=1)
             self.dio.set_mode(mode="MD0 SEL1",direction=1, equal=0, latch=0, ch=2)
@@ -99,8 +101,8 @@ class enc_controller(object):
         return
 
     def get_azel(self):
-        cntAz = int(self.dio.get_counter(1).to_int())
-        cntEl = int(self.dio.get_counter(2).to_int())
+        cntAz = int(self.dio.get_counter(unsigned=False, ch=1))
+        cntEl = int(self.dio.get_counter(unsigned=False, ch=2))
         #now = dt.utcnow()
         #_utc = now.strftime("%Y-%m-%d %H:%M:%S")
         #print(cntAz)
