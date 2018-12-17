@@ -101,8 +101,8 @@ class enc_controller(object):
         return
 
     def get_azel(self):
-        cntAz = int(self.dio.get_counter(1))
-        cntEl = int(self.dio.get_counter(2))
+        cntAz = int(self.dio.get_counter(unsigned=False, ch=1))
+        cntEl = int(self.dio.get_counter(unsigned=False, ch=2))
         #now = dt.utcnow()
         #_utc = now.strftime("%Y-%m-%d %H:%M:%S")
         #print(cntAz)
