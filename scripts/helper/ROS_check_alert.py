@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 import time
+import json
 import rospy
 import rosnode
 from necst.msg import Bool_necst
-from necst.msg import String_list_msg
+from necst.msg import String_necst
 
 node_name = "check_alert"
 stop_node = []
@@ -48,8 +49,10 @@ def check_alert_node():
             rospy.logfatal("Alert node is some down...")
             rospy.logfatal(str(diff))
             error_flag = True
-        current_node = list(set(move_node)-set(stop_node))
-        pub.publish(data=current_node, from_node=node_name, timestamp=time.time())
+        current_node = {"true": list(set(move_node)-set(stop_node)),
+                        "false":list(stop_node)}
+        bb = json.dumps(current_node)
+        pub.publish(data=bb, from_node=node_name, timestamp=time.time())
         time.sleep(0.1)
 
 if __name__ == "__main__":
@@ -57,7 +60,7 @@ if __name__ == "__main__":
     con = ROS_controller.controller(escape=node_name)
     rospy.loginfo("check start!! : ROS_alert.py ")
     sub = rospy.Subscriber("stop_alert", Bool_necst, _regist, queue_size=1)
-    pub = rospy.Publisher("check_alert", String_list_msg, queue_size=1)
+    pub = rospy.Publisher("check_alert", String_necst, queue_size=1)
     time.sleep(5.)
     check_alert_node()
     
