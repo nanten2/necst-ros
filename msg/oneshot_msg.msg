@@ -1,1 +1,2 @@
-float64 time
+string filename
+string dirname

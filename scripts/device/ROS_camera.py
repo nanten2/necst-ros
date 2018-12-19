@@ -39,7 +39,8 @@ class cam_controller(object):
     
     def take_picture(self, req):
         print('start ROS_camera.py')
-        self.filename = str(req.time)+'.jpg'
+        #self.filename = str(req.time)+'.jpg'
+        self.filename = req.filename + '.jpg'
         if os.path.exists('/home/amigos/Pictures/capture/'+self.filename) == True:
             pass
         else:

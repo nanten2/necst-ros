@@ -6,10 +6,13 @@ import sys
 import argparse
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
+sys.path.append("/home/amigos/ros/src/necst/scripts/device")
 import ROS_controller
-import ccd
+import ROS_oneshot
+#import ccd
 import signal
-ccd = ccd.ccd_controller()
+#ccd = ccd.ccd_controller()
+one = ROS_oneshot.oneshot()
 
 # Info
 # ----
@@ -132,8 +135,12 @@ if not filename:
 dirname = time.strftime("%Y%m%d")
 if not os.path.exists(dirname):
     os.makedirs(dirname)
-ccd.oneshot(dirname, filename)
+
+
+one.oneshot(filename, dirname)
+#ccd.oneshot(dirname, filename)
 print(dirname, filename)
+
 
 """ scan test
 for j in range(5):
@@ -146,13 +153,16 @@ for j in range(5):
         filename2 = filename + "_x"+str(i) +"_y"+str(j)
         ccd.oneshot(dirname, filename2)
 """
-
+while True:
+    if os.path.exists(dirname + filename) == True:
+        break
 print("###end###")
 ctrl.dome_track_end()
 ctrl.move_stop()
 time.sleep(1)
 ctrl.move_stop()
 
+'''
 ###show image
 try:
     save_to = '/home/nfs/necopt-old/ccd-shot/data/'
@@ -162,8 +172,9 @@ try:
     i.show()
 except Exception as e:
     print(e)
-
+'''
 ctrl.obs_status(active=False)
 time.sleep(1.5)
+
 print("Finish observation")
 
