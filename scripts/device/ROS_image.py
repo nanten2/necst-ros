@@ -11,7 +11,7 @@ sys.path.append('/home/amigos/Pictures/capture')
 import cv2
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image as Imagemsg
-#from necst.msg import shot_msg
+from necst.msg import oneshot_msg
 
 class Image(object):
     filename = ''
@@ -30,7 +30,7 @@ class Image(object):
         self.filename = ''
         return
 
-    def filename(self,req):
+    def dif_file(self,req):
         self.filename = req.filename + '.jpg'
         self.dirname = req.dirname
         print(self.filename)
@@ -40,6 +40,6 @@ if __name__ == '__main__':
     image =Image()
     rospy.init_node('Image_saver')
     sub1 = rospy.Subscriber('Image', Imagemsg, image.Image_save)
-    sub2 = rospy.Subscriber('oneshot', oneshot_msg, Image.filename)
+    sub2 = rospy.Subscriber('oneshot', oneshot_msg, image.dif_file)
     print('waiting picture')
     rospy.spin()
