@@ -16,7 +16,7 @@ def gaussian(x, a, mu, gamma):
 
 para_init = numpy.array([25000., 0.1, 0.0001])
     #-----
-def analysis(file_name, mi=5000, ma=15000, width=500, integ_mi=8000, integ_ma=9000):
+def analysis(file_name, mi=5000, ma=15000, width=500, integ_mi=8000, integ_ma=9000, plot_mode="plot", savepath_filename='/home/amigos/latest_obs/pointing_line.png'):
 # open file
     hdu = fits.open(file_name)
 
@@ -290,7 +290,12 @@ def analysis(file_name, mi=5000, ma=15000, width=500, integ_mi=8000, integ_ma=90
         [a.grid() for a in axlist]
 
     finally:
-        plt.show()
+        if plot_mode == 'plot':
+            plt.show()
+        elif plot_mode == 'savefig':
+            plt.savefig(savepath_filename)
+        else:
+            pass
     return
 
 if __name__ == "__main__":
