@@ -17,7 +17,7 @@ obsfile = ''
 tau = 0.0
 integmin = 8000
 integmax = 9000
-
+plot_mode = 'plot'
 # Argument handler
 # ================
 
@@ -32,6 +32,8 @@ p.add_argument('--integmin', type=int,
                help='integrange_min')
 p.add_argument('--integmax', type=int,
                help='integrange_max')
+p.add_argument('--plot_mode', type=str,
+               help='plot mode : plot/savefig')
 
 args = p.parse_args()
 
@@ -39,6 +41,7 @@ if args.obsfile is not None: obsfile = args.obsfile
 if args.tau is not None: tau = args.tau
 if args.integmin is not None: integmin = args.integmin
 if args.integmax is not None: integmax = args.integmax
+if args.plot_mode is not None: plot_mode = 'plot'
 
 # Main
 # ====
@@ -673,6 +676,6 @@ f1 = correct_fits.calc(f1)
 f2 = correct_fits.calc(f2)
 
 import pointing_line
-pointing_line.analysis(f1, integ_mi=integmin, integ_ma=integmax) # f2?
+pointing_line.analysis(f1, integ_mi=integmin, integ_ma=integmax, plot_mode=plot_mode, savepath_filename=savedir+"/result.png") # f2?
 
 
