@@ -30,12 +30,6 @@ class oneshot(object):
             pub.publish(msg)
             #print('oneshot!!')
             time.sleep(0.1)
-        '''
-        while not rospy.is_shutdown():
-            pub.publish(msg)
-            print('oneshot!!')
-            time.sleep(0.1)
-        '''
         return
 
 if __name__=='__main__':

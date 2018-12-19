@@ -14,6 +14,7 @@ from sensor_msgs.msg import Image as Imagemsg
 #from necst.msg import shot_msg
 
 class Image(object):
+    
     filename = ''
     dirname = ''
 
@@ -27,12 +28,6 @@ class Image(object):
         #cv2.imshow(self.filename, img_data)
         cv2.imwrite(self.dirname + self.filename, img_data)
         print('save picture')
-        '''
-        print('push [s] key to preserve image')
-        if cv2.waitKey(1) == ord('s'):
-            cv2.imwrite('/home/amigos/Pictures/capture/'+ self.filename, img)
-            cv2.destroyAllWindows()
-        '''
         self.filename = ''
         return
 
