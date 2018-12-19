@@ -15,18 +15,17 @@ from sensor_msgs.msg import Image as Imagemsg
 
 class Image(object):
     filename = ''
+    dirname = '/home/amigos/Pictures/capture/oneshot'
 
     def __init__(self):
         pass
     
     def Image_save(self, req):
         print('subscribe picture')
-        t = time.time()
-        self.filename = str(t) + '.jpg'
         bridge = CvBridge()
         img_data = bridge.imgmsg_to_cv2(req, 'bgr8')
         #cv2.imshow(self.filename, img_data)
-        cv2.imwrite('/home/amigos/Pictures/capture/'+ self.filename, img_data)
+        cv2.imwrite(self.dirname + self.filename, img_data)
         print('save picture')
         '''
         print('push [s] key to preserve image')
@@ -37,9 +36,15 @@ class Image(object):
         self.filename = ''
         return
 
+    def filename(self,req):
+        self.filename = req.filename + '.jpg'
+        print(self.filename)
+        return
+
 if __name__ == '__main__':
     image =Image()
     rospy.init_node('Image_saver')
-    sub = rospy.Subscriber('Image', Imagemsg, image.Image_save)
+    sub1 = rospy.Subscriber('Image', Imagemsg, image.Image_save)
+    sub2 = rospy.Subscriber('oneshot', oneshot_msg, Image.filename)
     print('waiting picture')
     rospy.spin()
