@@ -38,7 +38,7 @@ class oneshot(object):
         return
 
 if __name__=='__main__':
-    rospy.init_node('oneshot_con')
+    #rospy.init_node('oneshot_con')
     one = oneshot()
     one.oneshot(filename)
     
