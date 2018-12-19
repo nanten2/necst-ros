@@ -135,7 +135,7 @@ if not filename:
 dirname = time.strftime("%Y%m%d")
 if not os.path.exists(dirname):
     os.makedirs(dirname)
-one.oneshot(filename)
+one.oneshot(filename, dirname)
 #ccd.oneshot(dirname, filename)
 print(dirname, filename)
 

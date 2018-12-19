@@ -18,16 +18,17 @@ class oneshot(object):
         rospy.init_node('oneshot_con')
         pass
     
-    def oneshot(self, filename):
+    def oneshot(self, filename, dirname):
         msg = oneshot_msg()
         msg.filename = filename
+        msg.dirname = dirname
         pub = rospy.Publisher('oneshot', oneshot_msg, queue_size=1, latch=True)
         time.sleep(0.1)
         #pub.publish(msg)
         
         for i in range(100):
             pub.publish(msg)
-            print('oneshot!!')
+            #print('oneshot!!')
             time.sleep(0.1)
         '''
         while not rospy.is_shutdown():
