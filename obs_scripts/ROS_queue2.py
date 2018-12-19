@@ -48,11 +48,16 @@ proc = ""
 # callback
 # ----------
 
-def _start(req):
+def _web(req):
     global queue_flag
     global stop_flag
-    queue_flag = req
-    stop_flag = False
+    if req.data == True:
+        queue_flag = True
+        #stop_flag = False
+    else:
+        queue_flag = False
+        #stop_flag = True
+        obs_stop()
     print("*******")
     return
 
@@ -60,12 +65,15 @@ def _stop(req):
     global stop_flag
     global proc
     stop_flag = req
+    obs_stop()
+    return
+
+def obs_stop():
     try:
         proc.send_signal(signal.SIGINT)
         proc.terminate()
     except:
         pass
-
     return
 
 # ----------
@@ -74,7 +82,7 @@ def _stop(req):
 
 def initialize():
     rospy.init_node("queue_observation")
-    rospy.Subscriber("queue_obs", Bool_necst, _start, queue_size=1)
+    rospy.Subscriber("queue_obs", Bool_necst, _web, queue_size=1)
     rospy.Subscriber("obs_stop", String_necst, _stop, queue_size=1)
     pub = rospy.Publisher("next_obs", String_necst,queue_size = 1)
     return
@@ -186,7 +194,7 @@ def select_target():
     while now < float(target[2][check]):
         ut = dt.fromtimestamp(float(target[2][check]))
         print(target[5]+"current time : %s & next observation : %s" %(utc.strftime("%H:%M:%S"), ut.strftime("%H:%M:%S")))
-        if stop_flag:# or not queue_flag:
+        if stop_flag or not queue_flag:
             print("stop observation!!")
             return
         utc = dt.utcnow()
@@ -201,15 +209,15 @@ def observation(target):
         cmd+= " --obsfile "+ target[5] + " --plot_mode savefig"
     print("start observation : ", cmd)
     cmd = cmd.split()
-    try:
-        write_log(target[4], target[5], "start")
-        proc = Popen(cmd)
-        proc.wait()
-        write_log(target[4], target[5],"end")
+    #try:
+    write_log(target[4], target[5], "start")
+    proc = Popen(cmd)
+    proc.wait()
+    write_log(target[4], target[5],"end")
 
-    except Exception as e:
-        print("parameter error")
-        rospy.logwarn(e)
+    #except Exception as e:
+        #print("parameter error")
+        #rospy.logwarn(e)
     print("end observation")
     time.sleep(1)
     return
@@ -225,10 +233,14 @@ if __name__ == "__main__":
     if not data:
         print("no observation list")
         sys.exit()
-    print("start queue observation")
+    print("start queue observation program")
     while not rospy.is_shutdown():
-        #while not queue_flag or stop_flag:
-        while stop_flag:            
+        count = 0
+        while not queue_flag or stop_flag:
+        #while stop_flag:
+            if count == 0:
+                print("wait starting queue")
+                count += 1
             time.sleep(1.)
         if not obs_list.queue:
             print("end queue observation")
