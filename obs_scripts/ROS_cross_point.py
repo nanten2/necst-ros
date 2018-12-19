@@ -17,7 +17,8 @@ obsfile = ''
 tau = 0.0
 integmin = 8000
 integmax = 9000
-
+plot_mode = 'plot'
+save_path = '/home/amigos/data/result_png'
 # Argument handler
 # ================
 
@@ -32,13 +33,18 @@ p.add_argument('--integmin', type=int,
                help='integrange_min')
 p.add_argument('--integmax', type=int,
                help='integrange_max')
-
+p.add_argument('--plot_mode', type=str,
+               help='plot mode : plot/savefig')
+p.add_argument('--savepath', type=str,
+               help='save path')
 args = p.parse_args()
 
 if args.obsfile is not None: obsfile = args.obsfile
 if args.tau is not None: tau = args.tau
 if args.integmin is not None: integmin = args.integmin
 if args.integmax is not None: integmax = args.integmax
+if args.plot_mode is not None: plot_mode = 'plot'
+if args.plot_mode is not None: savepath = '/home/amigos/data/result_png/'
 
 # Main
 # ====
@@ -51,7 +57,6 @@ sys.path.append("/home/amigos/ros/src/necst/lib")
 import time
 import signal
 import numpy
-
 import doppler_nanten
 dp = doppler_nanten.doppler_nanten()
 
@@ -673,6 +678,6 @@ f1 = correct_fits.calc(f1)
 f2 = correct_fits.calc(f2)
 
 import pointing_line
-pointing_line.analysis(f1, integ_mi=integmin, integ_ma=integmax) # f2?
+pointing_line.analysis(f1, integ_mi=integmin, integ_ma=integmax, plot_mode=plot_mode, savepath_filename=savepath+"/result_cross_point{}.png".format(timestamp)) # f2?
 
 
