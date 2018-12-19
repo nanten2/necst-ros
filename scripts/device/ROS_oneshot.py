@@ -14,7 +14,6 @@ class oneshot(object):
     dirname = ''
     
     def __init__(self):
-        #self.time = time.time()
         rospy.init_node('oneshot_con')
         pass
     

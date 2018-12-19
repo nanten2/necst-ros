@@ -14,7 +14,6 @@ from sensor_msgs.msg import Image as Imagemsg
 #from necst.msg import shot_msg
 
 class Image(object):
-    
     filename = ''
     dirname = ''
 
