@@ -15,7 +15,7 @@ from sensor_msgs.msg import Image as Imagemsg
 
 class Image(object):
     filename = ''
-    dirname = '/home/amigos/Pictures/capture/oneshot'
+    dirname = ''
 
     def __init__(self):
         pass
@@ -38,6 +38,7 @@ class Image(object):
 
     def filename(self,req):
         self.filename = req.filename + '.jpg'
+        self.dirname = req.dirname
         print(self.filename)
         return
 
