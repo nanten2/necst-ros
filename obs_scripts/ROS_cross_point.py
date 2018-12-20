@@ -678,6 +678,6 @@ f1 = correct_fits.calc(f1)
 f2 = correct_fits.calc(f2)
 
 import pointing_line
-pointing_line.analysis(f1, integ_mi=integmin, integ_ma=integmax, plot_mode=plot_mode, savepath_filename=savepath+"/result_cross_point{}.png".format(timestamp)) # f2?
+pointing_line.analysis(f1, integ_mi=integmin, integ_ma=integmax, plot_mode=plot_mode, savepath_filename=save_path+"/result_cross_point{}.png".format(timestamp)) # f2?
 
 
