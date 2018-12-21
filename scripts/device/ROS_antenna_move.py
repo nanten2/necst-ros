@@ -118,8 +118,11 @@ class antenna_move(object):
         if self.stop_flag and req.timestamp == self.timestamp :
             self.parameters = {"az_list":[], "el_list":[], "start_time_list":[]}
             return
+        elif req.timestamp == self.timestamp and self.parameters["az_list"]==[]:
+            return
         else:
             self.stop_flag = False
+            self.timestamp = req.timestamp
         
         """
         DESCRIPTION
