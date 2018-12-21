@@ -4,6 +4,7 @@ import time
 import threading
 import rospy
 import numpy
+import os
 import sys
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
@@ -21,19 +22,22 @@ class Image(object):
         pass
     
     def Image_save(self, req):
-        print('subscribe picture')
-        bridge = CvBridge()
-        img_data = bridge.imgmsg_to_cv2(req, 'bgr8')
-        #cv2.imshow(self.filename, img_data)
-        cv2.imwrite(self.dirname + self.filename, img_data)
-        print('save picture')
-        self.filename = ''
-        return
+        if os.path.exists(self.dirname + self.filename) == True:
+            return
+        else:
+            print('subscribe picture')
+            bridge = CvBridge()
+            img_data = bridge.imgmsg_to_cv2(req, 'bgr8')
+            #cv2.imshow(self.filename, img_data)
+            cv2.imwrite(self.dirname + self.filename, img_data)
+            print('save picture')
+            self.filename = ''
+            return
 
     def dif_file(self,req):
         self.filename = req.filename + '.jpg'
         self.dirname = req.dirname
-        print(self.filename)
+        print(self.dirname + self.filename)
         return
 
 if __name__ == '__main__':
