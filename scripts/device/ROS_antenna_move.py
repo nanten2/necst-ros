@@ -17,7 +17,6 @@ from necst.msg import List_coord_msg
 from necst.msg import Status_encoder_msg
 from necst.msg import Bool_necst
 from necst.msg import Status_pid_msg
-from necst.srv import Bool_srv
 
 node_name = 'antenna_move'
 mode = sys.argv[1]#'Actual/Simulator'
@@ -47,7 +46,6 @@ class antenna_move(object):
         }
 
     stop_flag = True #False
-    move_flag = False
     error = False #False = ok
     emergency_flag = False
     limit_az = True###(True/False = okay/limit)
@@ -57,6 +55,7 @@ class antenna_move(object):
 
     tracking_status = False
     list_coord = ''
+    timestamp = ""
     
     """
     ###for module
@@ -116,7 +115,12 @@ class antenna_move(object):
 
         
     def set_parameter(self, req):
-
+        if self.stop_flag and req.timestamp == self.timestamp :
+            self.parameters = {"az_list":[], "el_list":[], "start_time_list":[]}
+            return
+        else:
+            self.stop_flag = False
+        
         """
         DESCRIPTION
         ===========
@@ -128,7 +132,7 @@ class antenna_move(object):
         else:
             pass
         self.list_coord = req.coord
-        if not self.stop_flag and self.move_flag and  self.start_time<req.time_list[0]:
+        if not self.stop_flag  and  self.start_time<req.time_list[0]:
             print("st,ct", self.stop_flag, self.start_time, req.time_list[0])
             if self.parameters['start_time_list'] != []:##combine_list
                 time_len = len(self.parameters['start_time_list'])
@@ -262,12 +266,11 @@ class antenna_move(object):
         command_el_before = ''
         ###
         while True:
-            if self.stop_flag or not self.move_flag:
+            if self.stop_flag or self.parameters["az_list"] == []:
                 print("stop_flag")
                 self.dev.emergency_stop()
                 self.dev.command_az_speed = 0
                 self.dev.command_el_speed = 0
-                self.move_flag = False
                 time.sleep(1)
                 continue
             
@@ -342,20 +345,6 @@ class antenna_move(object):
         self.parameters["start_time_list"] = []
         return
         
-
-    def move_check(self,req):
-        if time.time() - self.start_time < 1:
-            return False
-
-        if req.data == True:
-            self.move_flag = True
-            self.stop_flag = False
-        else:
-            self.move_flag = False
-        return True
-        
-        
-
     def emergency(self,req):
         if req.data:
             self.emergency_flag = True
@@ -433,5 +422,4 @@ if __name__ == '__main__':
     rospy.Subscriber('emergency_stop', Bool_necst, ant.emergency)
     rospy.Subscriber('status_encoder', Status_encoder_msg, ant.set_enc_parameter, queue_size=1)
     rospy.Subscriber('tracking_check', Bool_necst, ant.set_tracking, queue_size=1)
-    rospy.Service("move_flag",Bool_srv, ant.move_check)
     rospy.spin()    
