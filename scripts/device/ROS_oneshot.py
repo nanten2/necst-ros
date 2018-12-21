@@ -14,7 +14,7 @@ class oneshot(object):
     dirname = ''
     
     def __init__(self):
-        rospy.init_node('oneshot_con')
+        #rospy.init_node('oneshot_con')
         pass
     
     def oneshot(self, filename, dirname):
@@ -34,6 +34,6 @@ class oneshot(object):
 if __name__=='__main__':
     #rospy.init_node('oneshot_con')
     one = oneshot()
-    one.oneshot(filename)
+    one.oneshot(filename,dirname)
     
     
