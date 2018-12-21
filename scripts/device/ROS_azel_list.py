@@ -219,6 +219,7 @@ class azel_list(object):
                         pass
                     limit_flag = False
 
+                """
                 if self.move_count == 0:
                     #self.msg.timestamp = time.time()
                     #self.msg.data = self.move_flag                    
@@ -233,14 +234,14 @@ class azel_list(object):
                         print("connect antenna_move! ")                        
                         pass
                     self.move_count += 1
-                    
+                """    
                 if not limit_flag:
                     msg.x_list = ret[0]
                     msg.y_list = ret[1]
                     msg.coord = param.coord
                     msg.time_list = time_list2
                     msg.from_node =node_name
-                    msg.timestamp = time.time()
+                    msg.timestamp = param.timestamp
                     self.pub.publish(msg)
                     print("msg", msg)
                     print("publish ok")
