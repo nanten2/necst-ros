@@ -132,7 +132,8 @@ ctrl.antenna_tracking_check()#test
 if not filename:
     filename = time.strftime("%H%M%S")
 dirname = "/home/amigos/data/experiment/oneshot/" + time.strftime("%Y%m%d") + "/"
-#dirname = '/home/amigos/data/opt/oneshot/'+time.strftime("%Y%m%d")
+#dirname = time.strftime("%Y%m%d")
+
 if not os.path.exists(dirname):
     os.makedirs(dirname)
 
