@@ -43,8 +43,8 @@ if args.obsfile is not None: obsfile = args.obsfile
 if args.tau is not None: tau = args.tau
 if args.integmin is not None: integmin = args.integmin
 if args.integmax is not None: integmax = args.integmax
-if args.plot_mode is not None: plot_mode = 'plot'
-if args.plot_mode is not None: savepath = '/home/amigos/data/result_png/'
+if args.plot_mode is not None: plot_mode = args.plot_mode
+if args.savepath is not None: savepath = args.savepath
 
 # Main
 # ====
