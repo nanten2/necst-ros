@@ -101,6 +101,7 @@ def create_list():
     data = fb.get(name,None)
     if not data:
         return
+    print(data)
     [obs_list.put(i) for i in data]
     return obs_list
 
@@ -127,14 +128,17 @@ def select_target():
         additional_time = float(target[2][0])-(now+300)
         priority = target[0]
         print("additional", additional_time)
-    elif now+300 < float(target[2][1]):
-        additional_time = float(target[2][1])-(now+300)
-        priority = target[0]
-        print("additional", additional_time)
+    #elif now+300 < float(target[2][1]):
+    #    additional_time = float(target[2][1])-(now+300)
+    #    priority = target[0]
+    #    print("additional", additional_time)
     else:
+        priority = target[0]
         pass
     tmp_list = []
     change = 0
+    print("ssssss",additional_time)
+    print(priority)
     for i in range(len(obs_list.queue)):
         if additional_time < 180: # min operation time is 300[s] 300<500
             break
