@@ -5,8 +5,6 @@ from necst.msg import List_coord_msg
 from necst.msg import Status_weather_msg
 from necst.msg import Bool_necst
 from necst.msg import String_necst
-from necst.srv import Bool_srv
-from necst.srv import Bool_srvResponse
 
 from datetime import datetime
 from astropy.time import Time
@@ -36,13 +34,10 @@ class azel_list(object):
         rospy.Subscriber("wc_list", List_coord_msg, self._receive_list, queue_size=1)
         rospy.Subscriber("status_weather", Status_weather_msg, self._receive_weather, queue_size=1)
         rospy.Subscriber("move_stop", Bool_necst, self._stop, queue_size=1)
-        rospy.Subscriber("move_flag", Bool_necst, self._move_check, queue_size=1)             
         
         self.pub = rospy.Publisher("list_azel", List_coord_msg, queue_size=1000)
         #self.stop = rospy.Publisher("move_stop", Bool_necst, queue_size=1)
-        #self.move = rospy.Publisher("move_flag", Bool_necst, queue_size=1)     
         self.obs_stop = rospy.Publisher("obs_stop", String_necst, queue_size=1)
-        self.service = rospy.ServiceProxy("move_flag", Bool_srv)
         
         self.msg = Bool_necst()
         self.msg.from_node = node_name
@@ -219,6 +214,7 @@ class azel_list(object):
                         pass
                     limit_flag = False
 
+                """
                 if self.move_count == 0:
                     #self.msg.timestamp = time.time()
                     #self.msg.data = self.move_flag                    
@@ -233,14 +229,14 @@ class azel_list(object):
                         print("connect antenna_move! ")                        
                         pass
                     self.move_count += 1
-                    
+                """    
                 if not limit_flag:
                     msg.x_list = ret[0]
                     msg.y_list = ret[1]
                     msg.coord = param.coord
                     msg.time_list = time_list2
                     msg.from_node =node_name
-                    msg.timestamp = time.time()
+                    msg.timestamp = param.timestamp
                     self.pub.publish(msg)
                     print("msg", msg)
                     print("publish ok")

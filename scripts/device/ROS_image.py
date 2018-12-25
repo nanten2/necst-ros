@@ -4,6 +4,7 @@ import time
 import threading
 import rospy
 import numpy
+import os
 import sys
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("/opt/ros/kinetic/lib/python2.7/dist-packages")
