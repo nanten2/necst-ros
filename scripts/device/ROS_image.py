@@ -28,9 +28,13 @@ class Image(object):
             print('subscribe picture')
             bridge = CvBridge()
             img_data = bridge.imgmsg_to_cv2(req, 'bgr8')
-            #cv2.imshow(self.filename, img_data)
             cv2.imwrite(self.dirname + self.filename, img_data)
             print('save picture')
+            img = cv2.imread(self.dirname + self.filename)
+            cv2.imshow(self.dirname + self.filename, img)
+            cv2.waitKey(0)
+            cv2.destroyAllwindows()
+            
             self.filename = ''
             return
 
