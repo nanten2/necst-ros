@@ -8,9 +8,11 @@ from necst.msg import String_list_msg
 
 def _get_data(req):
     if float(req.data[2]) == 0:
-        return
-    stime = (float(req.data[2])-40587)*24*3600
-    etime = stime + float(req.data[0])*float(req.data[1])
+        etime = time.time()
+        stime = etime - float(req.data[0])*float(req.data[1])        
+    else:
+        stime = (float(req.data[2])-40587)*24*3600
+        etime = stime + float(req.data[0])*float(req.data[1])
     f.write(str(time.time())+" "+str(stime)+" "+str(etime)+"\n")
     print("save_file : ", save_dir+file_name)
     return
