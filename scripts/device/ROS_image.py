@@ -18,7 +18,8 @@ from necst.msg import oneshot_msg
 class Image(object):
     filename = ''
     dirname = ''
-
+    shot_mode = ''
+    
     def __init__(self):
         pass
     
@@ -31,16 +32,17 @@ class Image(object):
             img_data = bridge.imgmsg_to_cv2(req, 'bgr8')
             cv2.imwrite(self.dirname + self.filename, img_data)
             print('save picture')
-            img = i.open(self.dirname + self.filename)
-            img.show()
-            
+            if self.shot_mode == 'oneshot':
+                img = i.open(self.dirname + self.filename)
+                img.show()
+            elif self.shot_mode == 'all_sky':
+                pass
             self.filename = ''
             return
 
     def dif_file(self,req):
         self.filename = req.filename + '.jpg'
         self.dirname = req.dirname
-        print(self.dirname + self.filename)
         return
 
 if __name__ == '__main__':
