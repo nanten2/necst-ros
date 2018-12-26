@@ -138,7 +138,7 @@ if not os.path.exists(dirname):
     os.makedirs(dirname)
 
 
-one.oneshot(filename, dirname)
+one.oneshot(filename, dirname, 'oneshot')
 #ccd.oneshot(dirname, filename)
 print(dirname, filename)
 
