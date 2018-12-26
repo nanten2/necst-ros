@@ -8,9 +8,11 @@ from PIL import Image
 from PIL import ImageOps
 import os
 import rospy #debug all_sky_shot
+import sys
+sys.path.append('/home/amigos/ros/src/necst/scripts/device')
+import ROS_oneshot
+one = ROS_oneshot.oneshot()
 #from pyslalib import slalib
-
-
 
 
 class ccd_controller(object):
@@ -49,10 +51,11 @@ class ccd_controller(object):
         return status
         """
         
+        
         f = open("/home/nfs/necopt-old/ccd-shot/ccd-shot-command.txt", "w")
         f.write(str(dirname) + "/" + str(filename) + ".bmp")
         f.close()
-
+        
         return
     
     def save_status(self, x, y, number, magnitude, az_star, el_star, mjd, data_name, secofday, status):
@@ -90,7 +93,8 @@ class ccd_controller(object):
         
         #oneshot
         try:
-            self.oneshot(data_name,name)
+            one.oneshot(name, "/home/nfs/necopt-old/ccd-shot/data/"+str(data_name) + '/', 'all_sky')
+            #self.oneshot(data_name,name)
             self.error_count = 0
         except Exception as e:
             self.error_count += 1
@@ -106,8 +110,19 @@ class ccd_controller(object):
         #com = "mv "+str(path)+"/"+str(name)+".bmp /home/amigos/NECST/soft/data/"+str(data_name)+"/"+str(name)+".bmp"
         #ret = commands.getoutput(com)
         #print(ret)
+
+        while not rospy.is_shutdown():
+            if os.path.exists("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/"+name+".jpg") == True:
+                break
+            time.sleep(0.1)
+        '''
+        while not rospy.is_shutdown():
+            if os.path.exists("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/"+name+".jpg") == True:
+                break
+            time.sleep(0.1)
+        '''
         time.sleep(5.)
-        in_image = Image.open("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/"+name+".bmp")
+        in_image = Image.open("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/"+name+".jpg")
         image = np.array(ImageOps.grayscale(in_image))
         ori_image = np.array(image)
         
