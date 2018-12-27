@@ -23,8 +23,8 @@ def process_static(dir_list, *, clip_sigma=None, clip_const=None):
 
     rawdata = np.concatenate([np.loadtxt(os.path.join(_dir, 'process.log')) for _dir in dir_list])
 
-    rawdata[:,ind_dx]=(rawdata[:,ind_dx]-320)*0.9267
-    rawdata[:,ind_dy]=(rawdata[:,ind_dy]-240)*0.8392
+    rawdata[:,ind_dx]=(rawdata[:,ind_dx]-109)*1.18
+    rawdata[:,ind_dy]=(rawdata[:,ind_dy]-210)*1.18
 
     #rawdx_avg = np.average(rawdata[:,ind_dx])
     #rawdy_avg = np.average(rawdata[:,ind_dy])
