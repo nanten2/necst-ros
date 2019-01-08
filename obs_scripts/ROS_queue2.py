@@ -208,7 +208,7 @@ def observation(target):
     global proc
     cmd = "python "+target[4]
     if target[5]:
-        cmd+= " --obsfile "+ target[5] + " --plot_mode savefig"
+        cmd+= " --obsfile "+ target[5] #+ " --plot_mode savefig"
     print("start observation : ", cmd)
     cmd = cmd.split()
     #try:
