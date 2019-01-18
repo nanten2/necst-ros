@@ -62,7 +62,8 @@ class ccd_controller(object):
         #time.sleep(5)#for test
 
         #f = open("/home/amigos/data/experiment/opt/"+str(data_name)+"/process.log", "a")
-        f = open("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/process.log", "a")
+        #f = open("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/process.log", "a")
+        f = open("/home/amigos/data/experiment/all_sky_shot/"+str(data_name)+"/process.log", "a")#shiotani changed save path
         #geo_status = [x1,x2,y1,y2] #for test
         geo_status = [0,0,0,0]
         geo_x = 0
@@ -93,7 +94,8 @@ class ccd_controller(object):
         
         #oneshot
         try:
-            one.oneshot(name, "/home/nfs/necopt-old/ccd-shot/data/"+str(data_name) + '/', 'all_sky')
+            one.oneshot(name, "/home/amigos/data/experiment/all_sky_shot/"+str(data_name) + '/', 'all_sky')#shiotani changed  save path
+            #one.oneshot(name, "/home/nfs/necopt-old/ccd-shot/data/"+str(data_name) + '/', 'all_sky')            
             #self.oneshot(data_name,name)
             self.error_count = 0
         except Exception as e:
@@ -112,9 +114,10 @@ class ccd_controller(object):
         #print(ret)
 
         while not rospy.is_shutdown():
-            if os.path.exists("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/"+name+".jpg") == True:
+            if os.path.exists("/home/amigos/data/experiment/all_sky_shot/"+str(data_name)+"/"+name+".jpg") == True:
                 break
             time.sleep(0.1)
+            print('L120')
         '''
         while not rospy.is_shutdown():
             if os.path.exists("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/"+name+".jpg") == True:
@@ -122,10 +125,17 @@ class ccd_controller(object):
             time.sleep(0.1)
         '''
         time.sleep(5.)
-        in_image = Image.open("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/"+name+".jpg")
+        #in_image = Image.open("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/"+name+".jpg")
+        ###triming
+        origin_image = Image.open("/home/amigos/data/experiment/all_sky_shot/"+str(data_name)+"/"+name+".jpg")#shiotani added
+        trim_image = origin_image.crop((2080.0, 1360.0, 2720.0, 1840.0))
+        trim_image.save("/home/amigos/data/experiment/all_sky_shot/"+str(data_name)+"/"+name+"_trim.jpg")
+        ###triming end
+
+        in_image = Image.open("/home/amigos/data/experiment/all_sky_shot/"+str(data_name)+"/"+name+"_trim.jpg")#shiotani changed save path
         image = np.array(ImageOps.grayscale(in_image))
         ori_image = np.array(image)
-        
+        #"""
         #threshold
         width = len(image[0])
         height = len(image)
@@ -193,7 +203,9 @@ class ccd_controller(object):
         print(yy)
         
         self.save_status(xx, yy, number, magnitude, az_star, el_star, mjd, data_name, secofday, status)
-        return [xx, yy]
+        return [xx, yy]#"""
+        pass
+
     
     
     
