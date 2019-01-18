@@ -30,7 +30,10 @@ class Image(object):
             print('subscribe picture')
             bridge = CvBridge()
             img_data = bridge.imgmsg_to_cv2(req, 'bgr8')
-            cv2.imwrite(self.dirname + self.filename, img_data)
+            if not os.path.exists(self.dirname):
+                os.makedirs(self.dirname)
+            cv2.imwrite(self.dirname + self.filename, img_data)            
+            print(self.dirname, self.filename)
             print('save picture')
             if self.shot_mode == 'oneshot':
                 img = i.open(self.dirname + self.filename)
