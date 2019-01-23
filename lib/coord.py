@@ -195,192 +195,7 @@ class coord_calc(object):
         if(math.fabs(math.cos(el))>0.001):
             delta[0]=delta[0]/math.cos(el)
 
-        geo_x = geo_kisa[0]*(-math.sin((geo_kisa[1]-az)*(math.pi/180.))+math.cos((geo_kisa[1]-az)*(math.pi/180.)))+geo_kisa[2]
-        geo_y = geo_kisa[0]*(-math.sin((geo_kisa[1]-az)*(math.pi/180.))-math.cos((geo_kisa[1]-az)*(math.pi/180.)))+geo_kisa[3]
-        ret = self.geomech.read_geomech_col() # ret[0] = geomech_x, ret[1] = geomech_y
-        
-        gx = ret[0]-geo_x
-        gy = ret[1]-geo_y
-        ggx = -((gx+gy)/math.sqrt(2))*math.sin(el*(math.pi/180.)) # arcsec
-        ggy = -(gx-gy)/math.sqrt(2) # arcsec
-        
-        delta[0] = delta[0]-ggx
-        delta[1] = delta[1]-ggy
         return delta
-    
-    
-    
-    def apply_kisa_test(self, az, el, hosei):
-        """ from [coordinate.cpp]
-        #kisa parameter
-        (daz[0], de[1], kai_az[2], omega_az[3], eps[4], kai2_az[5], omega2_az[6], kai_el[7], omega_el[8], kai2_el[9], omega2_el[10], g[11], gg[12], ggg[13], gggg[14],
-        del[15], de_radio[16], del_radio[17], cor_v[18], cor_p[19], g_radio[20], gg_radio[21], ggg_radio[22], gggg_radio[23])
-        """
-        kisa = self.read_kisa_file(hosei,24)
-        
-        DEG2RAD = math.pi/180
-        RAD2DEG = 180/math.pi
-        ARCSEC2RAD = math.pi/(180*60*60.)
-        kisa[3] = kisa[3]*DEG2RAD
-        kisa[6] = kisa[6]*DEG2RAD
-        kisa[8] = kisa[8]*DEG2RAD
-        kisa[10] = kisa[10]*DEG2RAD
-        kisa[19] = kisa[19]*DEG2RAD
-        el_d = el*RAD2DEG
-        delta = [0,0]
-        
-        # reference from src/coord/correct.h 
-        # line 242, 248
-        dx = kisa[2]*math.sin(kisa[3]-az)*math.sin(el)+kisa[4]*math.sin(el)+kisa[0]*math.cos(el)+kisa[1]+kisa[5]*math.cos(2*(kisa[3]-az))*math.sin(el)\
-            +kisa[16]+kisa[18]*math.cos(el+kisa[19])
-        delta[0] = -dx # arcsec
-        
-        dy = -kisa[7]*math.cos(kisa[8]-az)-kisa[9]*math.sin(2*(kisa[10]-az))+kisa[15]+kisa[11]*el_d+kisa[12]*el_d*el_d+kisa[13]*el_d*el_d*el_d+kisa[14]*el_d*el_d*el_d*el_d\
-            +kisa[17]-kisa[18]*math.sin(el+kisa[19])+kisa[20]*el_d+kisa[21]*el_d*el_d+kisa[22]*el_d*el_d*el_d+kisa[23]*el_d*el_d*el_d*el_d
-        delta[1] = -dy # arcsec
-        if(math.fabs(math.cos(el))>0.001):
-            delta[0]=delta[0]/math.cos(el)
-        
-        return delta
-    
-    
-    '''
-    def calc_vobs_fk5(self, ra_2000, dec_2000, gcalc_flag):
-        x_2000 = x = x1 = v = v_rev = v_rot = v2 = solx = solv = solx1 =[0,0,0]
-        jd_utc = self.calc_jd_utc()
-        jd = jd_utc + (self.tai_utc + 32.184) / (24. * 3600.)
-        
-        #ra_2000=DEG2RAD
-        #dec_2000=DEG2RAD
-        a = math.cos(dec_2000)
-        x_2000[0] = a*math.cos(ra_2000)
-        x_2000[1] = a*math.sin(ra_2000)
-        x_2000[2]= math.sin(dec_2000)
-        
-        tu= (jd - 2451545.)/36525.
-        ret = slalib.sla_preces( "FK5", 2000., 2000.+tu*100., ra_2000, dec_2000)
-        #ret[0] =ranow,    ret[1] = delow
-        
-        a = math.cos(ret[1])
-        x[0] = a*math.cos(ret[0])
-        x[1] = a*math.sin(ret[0])
-        x[2] = math.sin(ret[1])
-        
-        ret = slalib.sla_nutc(jd-2400000.5)
-        #ret[0] = nut_long, ret[1] = nut_obliq, ret[2] = eps0
-        nut_long = ret[0]
-        nut_obliq = ret[1]
-        eps0 = ret[2]
-        x1[0]=x[0]-(x[1]*math.cos(ret[2])+x[2]*math.sin(ret[2]))*ret[0]
-        x1[1]=x[1]+x[0]*math.cos(ret[2])*ret[0]-x[2]*ret[1]
-        x1[2]=x[2]+x[0]*math.sin(ret[2])*ret[0]+x[1]*ret[1]
-        
-        x[0]=x1[0]
-        x[1]=x1[1]
-        x[2]=x1[2]
-        v0= 47.404704e-3
-        
-        ramda=35999.3729*tu+100.4664+(1.9146-0.0048*tu)*math.cos((35999.05*tu+267.53)*DEG2RAD)+0.0200*math.cos((71998.1*tu+265.1)*DEG2RAD)
-        
-        r=1.000141+(0.016707-0.000042*tu)*math.cos((35999.05*tu+177.53)*DEG2RAD)+0.000140*math.cos((71998.*tu+175.)*DEG2RAD)
-        
-        ramda1=628.308+(20.995-0.053*tu)*math.cos((35999.5*tu+357.52)*DEG2RAD)+0.439*math.cos((71998.1*tu+355.1)*DEG2RAD)\
-            +0.243*math.cos((445267.*tu+298.)*DEG2RAD)
-        
-        beta=0.024*math.cos((483202.*tu+273.)*DEG2RAD)
-        
-        r1 = (10.497-0.026*tu)*math.cos((35999.05*tu+267.53)*DEG2RAD)+0.243*math.cos((445267.*tu+28.)*DEG2RAD)+0.176*math.cos((71998.*tu+265.)*DEG2RAD)
-        
-        ramda   = ramda *DEG2RAD
-        
-        v[0] = -r*ramda1*math.sin(ramda)+r1*math.cos(ramda)
-        v[1] = r*ramda1*math.cos(ramda)+r1*math.sin(ramda)
-        v[2] = r*beta
-        
-        v[0] = v[0]-(0.263*math.cos((3034.9*tu+124.4)*DEG2RAD)+0.058*math.cos((1222. *tu+140.)*DEG2RAD)+0.013*math.cos((6069. *tu+144.)*DEG2RAD))
-        v[1] = v[1]-(0.263*math.cos((3034.9*tu+34.4)*DEG2RAD)+0.058*math.cos((1222. *tu+50.)*DEG2RAD)+0.013*math.cos((6069. *tu+54.)*DEG2RAD))
-            
-        v[0] = v[0]*v0
-        v[1] = v[1]*v0
-        v[2] = v[2]*v0
-        
-        e = (23.439291-0.013004*tu)*3600.
-        
-        v_rev[0] = v[0]
-        v_rev[1] = v[1]*math.cos(e*ARCSEC2RAD)-v[2]*math.sin(e*ARCSEC2RAD)
-        v_rev[2] = v[1]*math.sin(e*ARCSEC2RAD)+v[2]*math.cos(e*ARCSEC2RAD)
-        
-        v_e = (465.1e-3)*(1.+0.0001568*gheight/1000.)*math.cos(glatitude)/math.sqrt(1.+0.0066945*math.pow(math.sin(glatitude),2.0))
-        
-        am = 18.*3600.+41.*60.+50.54841+8640184.812866*tu+0.093104*tu*tu-0.0000062*tu*tu*tu
-        
-        gmst = (jd-0.5-(long)(jd-0.5))*24.*3600.+am-12.*3600.
-        
-        l = 280.4664*3600.+129602771.36*tu- 1.093*tu*tu
-        l = l*ARCSEC2RAD
-        p = (282.937+1.720*tu)*3600.
-        p = p*ARCSEC2RAD
-        
-        w = (125.045-1934.136*tu+0.002*tu*tu)*3600.
-        w = w*ARCSEC2RAD
-        ll = (218.317+481267.881*tu-0.001*tu*tu)*3600.
-        ll = ll*ARCSEC2RAD
-        pp = (83.353+4069.014*tu-0.010*tu*tu)*3600.
-        pp = pp*ARCSEC2RAD
-        dpsi = (-17.1996-0.01742*tu)*math.sin(w)+(-1.3187)*math.sin(2*l)+0.2062*math.sin(2*w)+0.1426*math.sin(l-p)-0.0517*math.sin(3*l-p)+0.0217*math.sin(l+p)\
-                +0.0129*math.sin(2*l-w)-0.2274*math.sin(2*ll)+0.0712*math.sin(ll-pp)-0.0386*math.sin(2*ll-w)-0.0301*math.sin(3*ll-pp)\
-                -0.0158*sin(-ll+3*l-pp)+0.0123*sin(ll+pp)
-        e = e*ARCSEC2RAD
-        
-        dpsicose = dpsi*math.cos(e)
-        
-        lst = gmst+(dpsicose+glongitude*RAD2DEG*3600.)/15.
-        
-        v_rot[0] = -v_e*math.sin(lst*SEC2RAD)
-        v_rot[1] = v_e*math.cos(lst*SEC2RAD)
-        v_rot[2] = 0.
-        
-        v2[0] = v_rev[0]+v_rot[0]
-        v2[1] = v_rev[1]+v_rot[1]
-        v2[2] = v_rev[2]+v_rot[2]
-        
-        vobs = -(v2[0]*x_2000[0]+v2[1]*x_2000[1]+v2[2]*x_2000[2])
-        rasol = 18.*15.*DEG2RAD
-        delsol = 30.*DEG2RAD
-            
-        #slaPreces( "FK4", 1950.,2000.+tu*100.,&rasol,&delsol)
-        ret = slalib.sla_preces( "FK4", 1900.,2000.+tu*100.,rasol,delsol)
-        #ret[0]=rasol, ret[1]=delsol
-        a = math.cos(ret[1])
-        solx[0] = a*math.cos(ret[0])
-        solx[1] = a*math.sin(ret[0])
-        solx[2] = math.sin(ret[1])
-        
-        """
-        solx1[0] = solx[0] - (solx[1] * cos(nut_obliq) + solx[2] * \
-            sin(nut_obliq)) * nut_long;
-        solx1[1] = solx[1] + (solx[0] * cos(nut_obliq) * nut_long\
-            - solx[2] * nut_obliq);
-        solx1[2] = solx[2] + (solx[0] * sin(nut_obliq) * nut_long \
-            + solx[1] * nut_obliq);
-        """
-        solx1[0] = solx[0]-(solx[1]*math.cos(eps0)+solx[2]*math.sin(eps0))* nut_long
-        solx1[1] = solx[1]+(solx[0]*math.cos(eps0)*nut_long-solx[2]*nut_obliq)
-        solx1[2] = solx[2]+(solx[0]*math.sin(eps0)*nut_long+solx[1]*nut_obliq)
-        
-        solv[0]=solx1[0]*20.
-        solv[1]=solx1[1]*20.
-        solv[2]=solx1[2]*20.
-        
-        vobs = vobs-(solv[0]*x[0]+solv[1]*x[1]+solv[2]*x[2])
-        vobs = -vobs
-        
-        #printf("vobs=%f\n",vobs);
-        if gcalc_flag == 1:
-            return vobs
-        elif gcalc_flag == 2:
-            return lst
-            '''
 
     def read_kisa_file(self, hosei, num):
         try:
@@ -390,15 +205,14 @@ class coord_calc(object):
         line = f.readline()
         kisa = [0]*num
         n = 0
-        
+
         while line:
             line = line.rstrip()
             kisa[n] = float(line)
             line = f.readline()
             n = n+1
         f.close
-        
-        
+
         #apply hosei file
         """
         f = open(diff_f)
