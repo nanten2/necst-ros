@@ -135,19 +135,39 @@ class coord_calc(object):
         kisa[19] = kisa[19]*DEG2RAD
         el_d = el*RAD2DEG
         delta = [0,0]
-        
-        # reference from src/coord/correct.h 
+
+        # reference from src/coord/correct.h
         # line 242, 248
-        dx = kisa[2]*math.sin(kisa[3]-az)*math.sin(el)+kisa[4]*math.sin(el)+kisa[0]*math.cos(el)+kisa[1]+kisa[5]*math.cos(2*(kisa[3]-az))*math.sin(el)\
-            +kisa[16]+kisa[18]*math.cos(el+kisa[19])
-        delta[0] = -dx # arcsec
-        
-        dy = -kisa[7]*math.cos(kisa[8]-az)-kisa[9]*math.sin(2*(kisa[10]-az))+kisa[15]+kisa[11]*el_d+kisa[12]*el_d*el_d+kisa[13]*el_d*el_d*el_d+kisa[14]*el_d*el_d*el_d*el_d\
-            +kisa[17]-kisa[18]*math.sin(el+kisa[19])+kisa[20]*el_d+kisa[21]*el_d*el_d+kisa[22]*el_d*el_d*el_d+kisa[23]*el_d*el_d*el_d*el_d
-        delta[1] = -dy # arcsec
+        # (*) : not using now.
+        dx = kisa[2] * math.sin(kisa[3] - az) * math.sin(el) \      # Az axis inclination
+          + kisa[4] * math.sin(el) \                                # Az-El skew sngle
+          + kisa[0] * math.cos(el) \                                # Az encoder offset
+          + kisa[1] \                                               # Az offset
+          + kisa[5] * math.cos(2 * (kisa[6] - az)) * math.sin(el) \ # 180 deg. periodic term
+          + kisa[16] \                                              # Az offset (radio)
+          + kisa[18] * math.cos(el + kisa[19])                      # Collimation error (radio)
+
+        delta[0] = -dx # arcsec.
+
+        dy = - kisa[2] * math.cos(kisa[3] - az) \                   # Az axis inclination
+          - kisa[5] * math.sin(2 * (kisa[6] - az)) \                # 180 deg. periodic term
+          + kisa[15] \                                              # El offset
+          + kisa[11] * el_d \                                       # Optical gravitational deflection
+          + kisa[12] * el_d * el_d \                                # Optical gravitational deflection (*)
+          + kisa[13] * el_d * el_d * el_d \                         # Optical gravitational deflection (*)
+          + kisa[14] * el_d * el_d * el_d * el_d \                  # Optical gravitational deflection (*)
+          + kisa[17] \                                              # El offset (radio)
+          - kisa[18] * math.sin(el + kisa[19]) \                    # Collimation error (radio)
+          + kisa[20] * el_d \                                       # Radio gravitational deflection
+          + kisa[21] * el_d * el_d \                                # Radio gravitational deflection
+          + kisa[22] * el_d * el_d * el_d \                         # Radio gravitational deflection
+          + kisa[23] * el_d * el_d * el_d * el_d                    # Radio gravitational deflection
+
+        delta[1] = -dy # arcsec.
+
         if(math.fabs(math.cos(el))>0.001):
             delta[0]=delta[0]/math.cos(el)
-        
+
         geo_x = geo_kisa[0]*(-math.sin((geo_kisa[1]-az)*(math.pi/180.))+math.cos((geo_kisa[1]-az)*(math.pi/180.)))+geo_kisa[2]
         geo_y = geo_kisa[0]*(-math.sin((geo_kisa[1]-az)*(math.pi/180.))-math.cos((geo_kisa[1]-az)*(math.pi/180.)))+geo_kisa[3]
         ret = self.geomech.read_geomech_col() # ret[0] = geomech_x, ret[1] = geomech_y
