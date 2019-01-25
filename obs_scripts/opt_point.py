@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import math
+import os
 import time
 import datetime
 import sys
@@ -11,7 +12,8 @@ import ROS_controller
 import signal
 
 import sys
-import ccd_old as ccd
+import ccd_old
+ccd = ccd_old.ccd_controller()
 from astropy.coordinates import SkyCoord,EarthLocation
 from astropy.time import Time
 from datetime import datetime as dt
@@ -98,7 +100,7 @@ class opt_point_controller(object):
         #calculate mjd(now) and mjd(2000)
         now = dt.now()
         _date = Time(now).mjd
-        
+        status = self.ctrl.read_status()        
         while line:
             _list = []
             line = line.replace(";", " ")
@@ -108,7 +110,7 @@ class opt_point_controller(object):
             _list.append(line[0])
             
             #ra,dec(degree)
-            now = dt.now()
+            now = dt.utcnow()
             _date = Time(now).mjd
             coord = SkyCoord(str(line[1])+'h'+ str(line[2]) +'m'+ str(line[3]) +'s',str(line[5]) + str(line[6]) + 'd' + str(line[7]) + 'm' + str(line[8]) + 's', frame='icrs')
             ra = coord.ra.deg + float(line[4])*(360./24.)/3600.*(_date - 51544)/36525.
@@ -118,15 +120,14 @@ class opt_point_controller(object):
             _list.append(dec)
             _list.append(line[21]) #magnitude
             
-            #ret = self.calc.coordinate_calc(ra, dec, "j2000", 0, off_x=0, off_y=0, offcoord="horizontal", hosei="hosei_230.txt", lamda=2600, dcos=1, temp=20, press=5, humi=0.07, now=now, movetime=0.1)
-
             #store parameters in lists to use self.calc.coordinate_calc
             ra = [ra*3600.]
             dec = [dec*3600.]
             now = [now]
             print(ra,dec,now)
-                        
-            ret = self.calc.coordinate_calc(ra, dec, now, 'fk5', 0, 0, 'hosei_opt.txt', 2600, 5, 20, 0.07)
+
+            #status = self.ctrl.read_status()
+            ret = self.calc.coordinate_calc(ra, dec, now, 'fk5', 0, 0, 'hosei_opt.txt', lamda=0.5, press=status.Press, temp=status.OutTemp, humi=status.OutHumi/100)
             _list.append(ret[0][0]) #az arcsec
             _list.append(ret[1][0])
             #list = [number, ra, dec, magnitude, az]
@@ -228,20 +229,11 @@ class opt_point_controller(object):
         signal.signal(signal.SIGINT, self.handler)
         table = self.create_table(sort = sort)
         print("#################",table)
-        num = len(table)
-        
+        num = len(table)        
         self.ctrl.dome_track()
-        
-        date = dt.today()
-        month = str("{0:02d}".format(date.month))
-        day = str("{0:02d}".format(date.day))
-        hour = str("{0:02d}".format(date.hour))
-        minute = str("{0:02d}".format(date.minute))
-        second = str("{0:02d}".format(date.second))
-        data_name = "opt_"+str(date.year)+month+day+hour+minute+second#real
-        #data_name = "/home/amigos/s_opt/image/"
 
-        
+        stime = dt.utcnow()
+        dir_name = stime.strftime("/home/amigos/data/experiment/all_sky_shot/opt_%Y%m%d%H%M%S/")
         
         for _tbl in table:
             print("table",table)
@@ -252,58 +244,55 @@ class opt_point_controller(object):
             __dec = [_tbl[2]*3600.]
             __now = [now]
 
-            ret = self.calc.coordinate_calc(__ra, __dec, __now, 'fk5', 0, 0, 'hosei_opt.txt', 0.5, 980, 260, 0.07)
+            status = self.ctrl.read_status()
+            ret = self.calc.coordinate_calc(__ra, __dec, __now, 'fk5', 0, 0, 'hosei_opt.txt', lamda=0.5, press=status.Press, temp=status.OutTemp, humi=status.OutHumi/100)
             real_el = ret[1][0]/3600.
             print('#L161',ret)
             if real_el >= 30. and real_el < 79.5:
-                #temp_coord = SkyCoord(_tbl[1], _tbl[2], frame="fk5", unit="deg")
-                #temp_coord.location = nanten2
-                #temp_coord.obstime = Time(dt.utcnow())
-                #azel = temp_coord.altaz
-                #self.ctrl.onepoint_move(azel.az.deg, azel.alt.deg, "altaz", -5700, -6100, "altaz", lamda=0.5)
-                self.ctrl.onepoint_move(_tbl[1], _tbl[2], "fk5",hosei="hosei_opt.txt",lamda = 0.5, rotation = False)#lamda = 0.5 => 500
 
-                #stop moving antenna and dome tracking
+                """ moving... """
+                self.ctrl.onepoint_move(_tbl[1], _tbl[2],"fk5",hosei="hosei_opt.txt",lamda = 0.5, rotation = False)#lamda = 0.5 => 500
                 self.ctrl.antenna_tracking_check()
                 self.ctrl.dome_tracking_check()
-                
-                now = dt.now()
+
+                """ ccd oneshot """
+                __now = dt.utcnow()
+                data_name = __now.strftime("%Y%m%d%H%M%S")                
                 status = self.ctrl.read_status()
-                #n_star = self.calc_star_azel(_tbl[1], _tbl[2], _date)
-                ret = self.calc.coordinate_calc(__ra, __dec, __now, 'fk5', 0, 0, 'hosei_opt.txt', 2600, 5, 20, 0.07)
-                #__x = [_tbl[0]]
-                #__y = [_tbl[3]]
-                #__now = [dt.utcnow()]
-                print('###ret###',ret)
-                try:
-                    ccd.ccd_controller().all_sky_shot(_tbl[0], _tbl[3], ret[0][0]/3600., ret[1][0]/3600., data_name, status)
-                except Exception as e:
-                    print(e)
-                    self.ctrl.move_stop()
-                    time.sleep(3)
-                    sys.exit()
+                ret = self.calc.coordinate_calc(__ra, __dec, [__now], 'fk5', 0, 0, 'hosei_opt.txt', lamda=0.5, press=status.Press, temp=status.OutTemp, humi=status.OutHumi/100)                
+                self.ctrl.ccd_oneshot(data_name, dir_name)
+
+                self.ctrl.move_stop()
+
+                """analysis"""
+                #try:                    
+                xx,yy = ccd.ccd_analysis(data_name, dir_name)
+                ccd.save_status(xx, yy, _tbl[0], _tbl[3],  ret[0][0]/3600., ret[1][0]/3600., dir_name, data_name, status)
+                #except Exception as e:
+                #    print(e)
+                #    time.sleep(3)
+                #    sys.exit()
             else:
                 #out of range(El)
                 pass
-
-
+            
         self.ctrl.move_stop()
         time.sleep(3.)
 
         ###plot Qlook
         ###==========
-        optdata_dir = '/home/nfs/necopt-old/ccd-shot/data/'
         try:
             print('Analysis ...')
-            opt_analy.opt_plot([optdata_dir+data_name], savefig=True, figname=data_name, interactive=True)
+            opt_analy.opt_plot([dir_name], savefig=True, figname=dir_name.split("/")[-2], interactive=True)
         except Exception as e:
             print(e)
 
         try:
             import glob
-            date = dataname[:8]
-            file_list = glob.glob('{}{}*'.format(optdata_dir, date))
-            opt_analy.opt_plot(file_list, savefig=True, interactive=True)     
+            date = dir_name[:-11]
+            file_list = glob.glob('{}*'.format(date))
+            file_list2 = [i for i in file_list if "process.log" in os.listdir(i)]
+            opt_analy.opt_plot(file_list2, savefig=True, interactive=True)     
             pass
         except Exception as e:
             print(e)
