@@ -53,8 +53,8 @@ class antenna_device(object):
     """
 
     def move_azel(self, az_arcsec, el_arcsec, enc_az, enc_el, pid_param=None, m_bStop = 'FALSE'):
-        MOTOR_MAXSTEP = 300#original 1000
-        MOTOR_AZ_MAXRATE = 10000
+        MOTOR_MAXSTEP = 300#original 1000 [changed by shiotani for avoiding antenna servo error]
+        MOTOR_AZ_MAXRATE = 5000#original 10000 [changed by shiotani for avoiding antenna servo error]
         MOTOR_EL_MAXRATE = 10000
         rate_to_arcsec = (12/7)*(3600/10000)
         #self.set_pid_param(pid_param)
