@@ -1,4 +1,3 @@
-import datetime
 from astropy.time import Time
 import math
 import time
@@ -10,9 +9,8 @@ import os
 import rospy #debug all_sky_shot
 import sys
 sys.path.append('/home/amigos/ros/src/necst/scripts/device')
-import ROS_oneshot
-one = ROS_oneshot.oneshot()
-#from pyslalib import slalib
+from datetime import datetime as dt
+
 
 
 class ccd_controller(object):
@@ -36,103 +34,37 @@ class ccd_controller(object):
         self.print_msg('!!!!ERROR!!!!' + msg)
         return
     
-    def oneshot(self, dirname, filename, frame_no = 1, size=640*480*3, Bufferformat='IFIMG_COLOR_RGB24', StartMode = 'IFIMG_DMACAPTURE_START', framenum = 1):
-        """
-        # set buffer
-        self.img.set_format(frame_no, size, Bufferformat)
-        #start cap
-        self.img.start_cap(frame_no, StartMode)
-        # get status
-        status = self.img.get_status()
-        # get data
-        self.img.get_data(frame_no, framenum, size, dwDataFormat = 'IFIMG_COLOR_RGB24', dwXcoodinates = 0, dwYcoodinates = 0, dwXLength = 640, dwYLength = 480)
-        # save data
-        self.img.save(fiename, size*3, Bufferformat)
-        return status
-        """
-        
-        
-        f = open("/home/nfs/necopt-old/ccd-shot/ccd-shot-command.txt", "w")
-        f.write(str(dirname) + "/" + str(filename) + ".bmp")
-        f.close()
-        
-        return
-    
-    def save_status(self, x, y, number, magnitude, az_star, el_star, mjd, data_name, secofday, status):
-        #time.sleep(5)#for test
+    def save_status(self, x, y, number, magnitude, az_star, el_star, dir_name, data_name, status):
+        f = open(dir_name+"process.log", "a")#shiotani changed save path
 
-        #f = open("/home/amigos/data/experiment/opt/"+str(data_name)+"/process.log", "a")
-        #f = open("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/process.log", "a")
-        f = open("/home/amigos/data/experiment/all_sky_shot/"+str(data_name)+"/process.log", "a")#shiotani changed save path
-        #geo_status = [x1,x2,y1,y2] #for test
-        geo_status = [0,0,0,0]
-        geo_x = 0
-        geo_y = 0
-        geo_temp = [0, 0]
+        geo_x=geo_y=0
+        geo_status=geo_temp=[0,0,0,0]
+        
         
         #write papram
-        f.write(str(number)+" "+str(magnitude)+" "+str(mjd)+" "+str(secofday)+" "+str(status.Command_Az)+" "+str(status.Command_El)+" "\
+        f.write(str(number)+" "+str(magnitude)+" "+str(status.MJD)+" "+str(status.Secofday)+" "+str(status.Command_Az)+" "+str(status.Command_El)+" "\
         +str(status.Current_Az)+" "+str(status.Current_El)+" "+str(status.Current_Dome)+" "+str(x)+" "+str(y)+" "+str(status.OutTemp)+" "+str(status.Press)\
         +" "+str(status.OutHumi)+" "+str(az_star)+" "+str(el_star)+" "+str(geo_x)+" "+str(geo_y)+" "+str(geo_status[0])+" "+str(geo_status[1])\
-        +" "+str(geo_temp[0])+" "+str(geo_status[2])+" "+str(geo_status[3])+" "+str(geo_temp[1]))
-        f.write("\n")
+        +" "+str(geo_temp[0])+" "+str(geo_status[2])+" "+str(geo_status[3])+" "+str(geo_temp[1])+"\n")
         f.close()
         return
     
-    def all_sky_shot(self, number, magnitude, az_star, el_star, data_name, status):
+    def ccd_analysis(self, data_name, dir_name,):
         thr = 80 #threshold of brightness
         
-        #status = {"Command_Az":0,"Command_El":0,"Current_Az":0,"Current_El":0,"OutTemp":0,"Press":0,"OutHumi":0}
-        
-        date = datetime.datetime.today()
-        month = str("{0:02d}".format(date.month))
-        day = str("{0:02d}".format(date.day))
-        hour = str("{0:02d}".format(date.hour))
-        minute = str("{0:02d}".format(date.minute))
-        second = str("{0:02d}".format(date.second))
-        name = str(date.year)+month+day+hour+minute+second
-        
-        #oneshot
-        try:
-            one.oneshot(name, "/home/amigos/data/experiment/all_sky_shot/"+str(data_name) + '/', 'all_sky')#shiotani changed  save path
-            #one.oneshot(name, "/home/nfs/necopt-old/ccd-shot/data/"+str(data_name) + '/', 'all_sky')            
-            #self.oneshot(data_name,name)
-            self.error_count = 0
-        except Exception as e:
-            self.error_count += 1
-            if self.error_count > 3:
-                raise 
-            else:
-                pass
-        mjd = Time(date).mjd
-        secofday = date.hour*60*60 + date.minute*60 + date.second + date.microsecond*0.000001
-        
-        #load array
-        #path = os.getcwd()
-        #com = "mv "+str(path)+"/"+str(name)+".bmp /home/amigos/NECST/soft/data/"+str(data_name)+"/"+str(name)+".bmp"
-        #ret = commands.getoutput(com)
-        #print(ret)
+        print("wait for saving data...")
+        while not rospy.is_shutdown():
+            if os.path.exists(dir_name+data_name+".jpg") == True:
+                break
+            time.sleep(0.1)
 
-        while not rospy.is_shutdown():
-            if os.path.exists("/home/amigos/data/experiment/all_sky_shot/"+str(data_name)+"/"+name+".jpg") == True:
-                break
-            time.sleep(0.1)
-            print('L120')
-        '''
-        while not rospy.is_shutdown():
-            if os.path.exists("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/"+name+".jpg") == True:
-                break
-            time.sleep(0.1)
-        '''
-        time.sleep(5.)
-        #in_image = Image.open("/home/nfs/necopt-old/ccd-shot/data/"+str(data_name)+"/"+name+".jpg")
         ###triming
-        origin_image = Image.open("/home/amigos/data/experiment/all_sky_shot/"+str(data_name)+"/"+name+".jpg")#shiotani added
+        origin_image = Image.open(dir_name+data_name+".jpg")#shiotani added
         trim_image = origin_image.crop((2080.0, 1360.0, 2720.0, 1840.0))
-        trim_image.save("/home/amigos/data/experiment/all_sky_shot/"+str(data_name)+"/"+name+"_trim.jpg")
+        trim_image.save(dir_name+data_name+"_trim.jpg")
         ###triming end
 
-        in_image = Image.open("/home/amigos/data/experiment/all_sky_shot/"+str(data_name)+"/"+name+"_trim.jpg")#shiotani changed save path
+        in_image = Image.open(dir_name+data_name+"_trim.jpg")
         image = np.array(ImageOps.grayscale(in_image))
         ori_image = np.array(image)
         #"""
@@ -202,15 +134,9 @@ class ccd_controller(object):
         print(xx)
         print(yy)
         
-        self.save_status(xx, yy, number, magnitude, az_star, el_star, mjd, data_name, secofday, status)
+        #self.save_status(xx, yy, number, magnitude, az_star, el_star, mjd, data_name, secofday, status) #move to ROS_all_sky_shot.py
         return [xx, yy]#"""
         pass
-
-    
-    
-    
-    
-    
     
     #for tracking(test)
     def save_track_status(self, x, y, ra, dec, az_star, el_star, mjd, data_name, secofday, status):
@@ -260,13 +186,8 @@ class ccd_controller(object):
         
         name = time.strftime('%Y%m%d_%H%M%S')
         
-        #oneshot
-        #dirname = "onepoint_track_"+time.strftime("%Y%m%d")
         self.oneshot(data_name, name)
-        #date = datetime.datetime.today()
-        #ret = slalib.sla_cldj(date.year, date.month, date.day)
-        #mjd = ret[0]
-        date = datetime.datetime.now()
+        date = dt.utcnow()
         mjd = Time(date).mjd
         secofday = date.hour*60*60 + date.minute*60 + date.second + date.microsecond*0.000001
 
