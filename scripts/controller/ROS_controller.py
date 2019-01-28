@@ -749,7 +749,9 @@ class controller(object):
         
         print("ccd request start")
         pub.publish(msg)
-        print("ccd request end")
+        while not os.path.exists(dirname+filename+".jpg"):
+            time.sleep(0.01)
+        print("ccd shot complete")
 
         return
     
