@@ -42,6 +42,9 @@ class m4_controller(object):
         while not rospy.is_shutdown():
             if self.move_position:
                 dev.move(self.move_position)
+                while not self.move_position == self.position:
+                    dev.move(self.move_position)
+                    time.sleep(1)
                 self.move_position = ""
             else:
                 pass
@@ -72,7 +75,8 @@ class m4_controller(object):
         msg = String_necst()
         msg.from_node = node_name
         while not rospy.is_shutdown():
-            msg.data = dev.get_pos()
+            self.position = dev.get_pos()
+            msg.data = self.position
             msg.timestamp = time.time()
             self.pub.publish(msg)
             time.sleep(0.1)
