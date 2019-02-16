@@ -37,7 +37,7 @@ class azel_calc(object):
         rospy.loginfo(hosei)
         _az = np.radians(altaz.az.deg)
         _el = np.radians(altaz.alt.deg)
-        ret = self.coord.apply_kisa_test(_az, _el, hosei)
+        ret = self.coord.apply_kisa(_az, _el, hosei)
         target_az = altaz.az.arcsec+ret[0]
         target_el = altaz.alt.arcsec+ret[1]
         return target_az, target_el

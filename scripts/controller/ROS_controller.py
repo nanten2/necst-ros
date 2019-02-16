@@ -26,6 +26,7 @@ from necst.msg import String_necst
 from necst.msg import Int64_necst
 from necst.msg import Status_obs_msg
 from necst.msg import Status_onepoint_msg
+from necst.msg import oneshot_msg
 #from nascorx_xffts.msg import XFFTS_para_msg
 sys.path.append("/home/amigos/ros/src/necst/lib")
 import achilles
@@ -671,7 +672,7 @@ class controller(object):
         return
 
 # ===================
-# spectrometer
+# getting data
 # ===================
 #@logger
     #@deco_check    
@@ -731,7 +732,30 @@ class controller(object):
         self.pub_XFFTS.publish(msg)
         return
         
+    @logger
+    def ccd_oneshot(self, filename, dirname="/home/amigos/data/experiment/oneshot/"):
+        """shot request to CCD (ROS_camera.py)
+        Parameters
+        ----------
+        filename : save filename
+        dirname  : save directory
+        """        
+        msg = oneshot_msg()
+        msg.filename = filename
+        msg.dirname = dirname
+        msg.shot_mode = "oneshot"
+        pub = rospy.Publisher('oneshot', oneshot_msg, queue_size=1, latch=True)
+        time.sleep(0.1)
+        
+        print("ccd request start")
+        pub.publish(msg)
+        while not os.path.exists(dirname+filename+".jpg"):
+            time.sleep(0.01)
+        print("ccd shot complete")
 
+        return
+    
+    
     # ===================
     # status
     # ===================

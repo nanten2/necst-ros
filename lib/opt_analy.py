@@ -73,7 +73,7 @@ def opt_plot(dir_list, *, clip_sigma=(3.,3.), savefig=True, figname=None, intera
         _d[:,ind_dx]=(_d[:,ind_dx]-109)*1.18
         _d[:,ind_dy]=(_d[:,ind_dy]-210)*1.18
         _dx=(_d[:,ind_dx]*np.cos(np.radians(-1.76))-_d[:,ind_dy]*np.sin(np.radians(-1.76)))
-        _dy=(_d[:,inf_dx]*np.sin(np.radians(-1.76))+_d[:,ind_dy]*np.cos(np.radians(-1.76)))
+        _dy=(_d[:,ind_dx]*np.sin(np.radians(-1.76))+_d[:,ind_dy]*np.cos(np.radians(-1.76)))
         _d = _d[(abs(_dx -dx_avg) < dx_std * clip_sigma[0]) & (abs(_dy -dy_avg) < dy_std * clip_sigma[1])]
 
     axes = np.array([[ind_az, ind_dx, 'Az', 'dx'],

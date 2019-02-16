@@ -120,7 +120,7 @@ class coord_calc(object):
         del[15], de_radio[16], del_radio[17], cor_v[18], cor_p[19], g_radio[20], gg_radio[21], ggg_radio[22], gggg_radio[23])
         """
         kisa = self.read_kisa_file(hosei,24)
-        geo_kisa = self.read_kisa_file("hosei_opt_geomech.txt",10)
+        #geo_kisa = self.read_kisa_file("hosei_opt_geomech.txt",10)
         """
         #geo_kisa parameter
         (kai[0], omega[1], gxc[2], gyc[3], scx[4], scy[5], tx1[6], tx2[7], ty1[8], ty2[9])
