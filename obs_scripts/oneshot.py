@@ -8,11 +8,21 @@ sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 sys.path.append("/home/amigos/ros/src/necst/scripts/device")
 import ROS_controller
-import ROS_oneshot
-#import ccd
+from astropy.coordinates import get_body,EarthLocation, SkyCoord
+from datetime import datetime as dt
+from astropy.time import Time
+import astropy.units as u
+nanten2 = EarthLocation(lat=-22.9699511*u.deg, lon=-67.60308139*u.deg, height=4863.84*u.m)
+
 import signal
-#ccd = ccd.ccd_controller()
-one = ROS_oneshot.oneshot()
+def handler(num, flame):
+    ctrl.move_stop()
+    ctrl.obs_status(active=False)
+    print("!!ctrl + c!!")
+    print("Stop antenna")
+    sys.exit()
+signal.signal(signal.SIGINT, handler)
+
 
 # Info
 # ----
@@ -47,62 +57,37 @@ if args.name is not None: filename = args.name
 
 # Main
 # ====
-
-#timestamp = time.strftime('%Y%m%d_%H%M%S') #time.strftime("%Y%m%d_%H%M%S", time.gmtime())
-#timestamp = timestamp+memo
-star_list = []
 planet_list = {"MERCURY":1, "VENUS":2, "MARS":4, "JUPITER":5, "SATURN":6, "URANUS":7, "NEPTUNE":8, "MOON":10, "SUN":11}
-planet = 0
-
-target = []
-
-#read star list
 try:
     f = open("/home/amigos/ros/src/necst/lib/1st_star_list.txt")
 except:
     f = open("/home/necst/ros/src/necst/lib/1st_star_list.txt")
-line = f.readline()
-while line:
-    line = line.split()
-    star_list.append(line)
-    line = f.readline()
+star_list = f.readlines()
+planet = ""
+target = ""
 
-for i in range(len(star_list)):
-    if star_list[i][0].upper() == star.upper():
-        target.append(float(star_list[i][1]))
-        target.append(float(star_list[i][2]))
-
+for i in star_list:
+    name, ra, dec = i.split()
+    if name.upper() == star.upper():
+        target = [float(ra), float(dec)]
+    else:
+        pass
 if len(target) == 0:
     if star.upper() in planet_list:
-        #planet = planet_list[star.upper()]
         planet = star
         pass
     else:
         print('!!Can not find the name of star!!')
         sys.exit()
 
+# observation        
 ctrl = ROS_controller.controller()
 ctrl.obs_status(active=True, obsmode="Oneshot", obs_script="oneshot.py", obs_file="", target=star)
-
-def handler(num, flame):
-    ctrl.move_stop()
-    ctrl.obs_status(active=False)
-    print("!!ctrl + c!!")
-    print("Stop antenna")
-    sys.exit()
-
-
-signal.signal(signal.SIGINT, handler)
-
 ctrl.dome_track()
 ctrl.move_stop()
-from astropy.coordinates import get_body,EarthLocation, SkyCoord
-from datetime import datetime as dt
-from astropy.time import Time
-import astropy.units as u
-nanten2 = EarthLocation(lat=-22.9699511*u.deg, lon=-67.60308139*u.deg, height=4863.84*u.m)
+
+now = dt.utcnow()
 if planet:
-    now = dt.utcnow()
     cplanet = get_body(planet, Time(now))
     cplanet.location = nanten2
     altaz = cplanet.altaz
@@ -110,38 +95,24 @@ if planet:
     radec = azelcoord.fk5
 
     ctrl.onepoint_move(radec.ra.deg, radec.dec.deg, 'fk5', 0, 0, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)        
-    #ctrl.onepoint_move(radec.ra.deg, radec.dec.deg, 'fk5', 0, 0, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)    
-    #ctrl.onepoint_move(altaz.az.deg, altaz.alt.deg, 'altaz', -5500, -6600, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)
-    #ctrl.planet_move(planet, off_x=-5800, off_y=-6300, hosei = "hosei_opt.txt", lamda = 0.5)
     pass
 else:
-    now = dt.utcnow()
-    coo = SkyCoord(target[0],target[1], frame="fk5", unit="deg")
-    coo.location = nanten2
-    coo.obstime = Time(now)
-    altaz = coo.altaz
-    #ctrl.onepoint_move(altaz.az.deg, altaz.alt.deg, 'altaz', -5800, -6300, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)    
+    coord = SkyCoord(target[0],target[1], frame="fk5", unit="deg")
+    coord.location = nanten2
+    coord.obstime = Time(now)
+    altaz = coord.altaz
     ctrl.onepoint_move(target[0], target[1], 'fk5', 0, 0, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)
-    #ctrl.onepoint_move(target[0], target[1], "J2000",lamda = 500)
     pass
 
-b_az = 0
-ctrl.dome_tracking_check()#test
-ctrl.antenna_tracking_check()#test
+ctrl.dome_tracking_check()
+ctrl.antenna_tracking_check()
 
 if not filename:
-    filename = time.strftime("%H%M%S")
-dirname = "/home/amigos/data/experiment/oneshot/" + time.strftime("%Y%m%d") + "/"
-#dirname = time.strftime("%Y%m%d")
+    filename = now.strftime("%Y%m%d_%H%M%S_"+star)
+dirname = "/home/amigos/data/experiment/oneshot/" + now.strftime("%Y%m%d") + "/"
 
-if not os.path.exists(dirname):
-    os.makedirs(dirname)
-
-
-one.oneshot(filename, dirname, 'oneshot')
-#ccd.oneshot(dirname, filename)
+ctrl.ccd_oneshot(filename, dirname)
 print(dirname, filename)
-
 
 """ scan test
 for j in range(5):
@@ -154,27 +125,26 @@ for j in range(5):
         filename2 = filename + "_x"+str(i) +"_y"+str(j)
         ccd.oneshot(dirname, filename2)
 """
+
 while True:
     if os.path.exists(dirname + filename + '.jpg') == True:
         break
     time.sleep(0.01)
 print("###end###")
+
 ctrl.dome_track_end()
 ctrl.move_stop()
-time.sleep(1)
-ctrl.move_stop()
 
-'''
+
 ###show image
 try:
-    save_to = '/home/nfs/necopt-old/ccd-shot/data/'
     from PIL import Image
-    time.sleep(2)#wait for picture
-    i = Image.open(save_to + str(dirname)+'/'+str(filename)+'.bmp')#from ccd_old.py
+    i = Image.open(dirname+filename+".jpg")#from ccd_old.py
     i.show()
 except Exception as e:
     print(e)
-'''
+
+
 ctrl.obs_status(active=False)
 time.sleep(1.5)
 
