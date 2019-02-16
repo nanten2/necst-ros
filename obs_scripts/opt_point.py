@@ -265,13 +265,13 @@ class opt_point_controller(object):
                 self.ctrl.move_stop()
 
                 """analysis"""
-                #try:                    
-                xx,yy = ccd.ccd_analysis(data_name, dir_name)
-                ccd.save_status(xx, yy, _tbl[0], _tbl[3],  ret[0][0]/3600., ret[1][0]/3600., dir_name, data_name, status)
-                #except Exception as e:
-                #    print(e)
-                #    time.sleep(3)
-                #    sys.exit()
+                try:                    
+                    xx,yy = ccd.ccd_analysis(data_name, dir_name)
+                    ccd.save_status(xx, yy, _tbl[0], _tbl[3],  ret[0][0]/3600., ret[1][0]/3600., dir_name, data_name, status)
+                except Exception as e:
+                    print(e)
+                    time.sleep(3)
+                    sys.exit()
             else:
                 #out of range(El)
                 pass
