@@ -271,7 +271,7 @@ class opt_point_controller(object):
                 except Exception as e:
                     print(e)
                     time.sleep(3)
-                    sys.exit()
+                    #sys.exit()
             else:
                 #out of range(El)
                 pass
