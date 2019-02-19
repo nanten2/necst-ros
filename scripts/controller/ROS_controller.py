@@ -560,6 +560,28 @@ class controller(object):
         return
 
     @logger
+    def dome_OC_stop(self):
+        """Dome Open/Close stop"""
+        dome = Dome_msg()
+        dome.name = 'command'
+        dome.value = 'dome_OC_stop'
+        dome.from_node = self.node_name
+        dome.timestamp = time.time()
+        self.pub_dome.publish(dome)
+        return
+    
+    @logger
+    def memb_OC_stop(self):
+        """Memb Open/Close stop"""
+        dome = Dome_msg()
+        dome.name = 'command'
+        dome.value = 'memb_OC_stop'
+        dome.from_node = self.node_name
+        dome.timestamp = time.time()
+        self.pub_dome.publish(dome)
+        return
+    
+    @logger
     @deco_check    
     def dome_track(self):
         """Dome sync antenna_az"""

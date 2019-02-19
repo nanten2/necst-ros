@@ -5,6 +5,54 @@ import sys
 import pyinterface
 import math
 
+"""
+Dome --> pc
+Signal bit assignment table
+---------------------------
+
+01 : Dome ans action         0/1 = stop/move
+02 : Right-Door ans action   0/1 = stop/move
+03 : Right-Door ans openend  0/1 = not fully open/open
+04 : Right-Door ans closeend 0/1 = not fully closed/closed
+05 : Left-Door ans action    0/1 = stop/move
+06 : Left-Door ans openend   0/1 = not fully open/open
+07 : Left-Door ans closeend  0/1 = not fully closed/closed
+08 : Membrane ans action     0/1 = stop/move
+09 : Membrane ans openend    0/1 = not fully open/open 
+10 : Membrane ans closeend   0/1 = not fully closed/closed 
+11 : Remote ans L/R          0/1 = Remote/Local
+12 : Limit SW
+13 : Limit SW
+14 : Limit SW
+15 : Limit SW
+16 : Error1                  0/1 = Normal/Abnormal
+17 : Error2                  0/1 = Normal/Abnormal 
+18 : Error3                  0/1 = Normal/Abnormal
+19 : Error4                  0/1 = Normal/Abnormal 
+20 : Error5                  0/1 = Normal/Abnormal 
+21 : Error6                  0/1 = Normal/Abnormal 
+
+===============================================================
+
+pc --> Dome
+Signal bit assignment table
+---------------------------
+
+01 : Dome cmd L/R            0/1 = right/left
+02 : Dome cmd action         0/1 = off/on
+03,04 : Dome cmd speed       00:Low, 01:mid, 11:high
+05 : Dome cmd open/close     0/1 = close/open
+06 : Dome cmd action         0/1 = off/on
+07 : Membrane cmd open/close 0/1 = close/open
+08 : Membrane cmd action     0/1 = off/on
+09 : Right fan cmd action    0/1 = off/on
+10 : Left  fan cmd action    0/1 = off/on  
+11 : Emergency Stop          0/1 = off/on
+12 : ***empty***
+13 : Remote/Local            0/1 = Remote/Local
+
+"""
+
 class dome_device(object):
     stop = [0]
     error = []
@@ -80,16 +128,20 @@ class dome_device(object):
         self.dio.output_point(buff, 2)
         return
 
+    def dome_OC_stop(self):
+        self.dio.output_point([0], 6)
+        return
+
     def dome_open(self):
         ret = self.get_door_status()
         if ret[1] != "OPEN" and ret[3] != "OPEN":
             buff = [1, 1]
             self.dio.output_point(buff, 5)
-            while ret[1] != 'OPEN' and ret[3] != 'OPEN':
-                time.sleep(5)
+            time.sleep(5.)
+            while ret[0]=="DRIVE" or ret[2]=="DRIVE":
+                time.sleep(1)
                 ret = self.get_door_status()
-        buff = [0, 0]
-        self.dio.output_point(buff, 5)
+            self.dome_OC_stop()
         return
 
     def dome_close(self):
@@ -97,23 +149,27 @@ class dome_device(object):
         if ret[1] != 'CLOSE' and ret[3] != 'CLOSE':
             buff = [0, 1]
             self.dio.output_point(buff, 5)
-            while ret[1] != 'CLOSE' and ret[3] != 'CLOSE':
-                time.sleep(5)
+            time.sleep(5.)
+            while ret[0]=="DRIVE" or ret[2]=="DRIVE":
+                time.sleep(1)
                 ret = self.get_door_status()
-        buff = [0, 0]
-        self.dio.output_point(buff, 5)
+            self.dome_OC_stop()                       
         return
 
+    def memb_OC_stop(self):
+        self.dio.output_point([0,0], 7)        
+        return
+        
     def memb_open(self):
         ret = self.get_memb_status()
         if ret[1] != 'OPEN':
             buff = [1, 1]
             self.dio.output_point(buff, 7)
-            while ret[1] != 'OPEN':
-                time.sleep(5)
+            time.sleep(5.)
+            while ret[0]=="DRIVE":
+                time.sleep(1)
                 ret = self.get_memb_status()
-        buff = [0, 0]
-        self.dio.output_point(buff, 7)
+            self.memb_OC_stop()            
         return
 
     def memb_close(self):
@@ -121,22 +177,27 @@ class dome_device(object):
         if ret[1] != 'CLOSE':
             buff = [0, 1]
             self.dio.output_point(buff, 7)
-            while ret[1] != 'CLOSE':
-                time.sleep(5)
+            time.sleep(5.)
+            while ret[0]=="DRIVE":
+                time.sleep(1)
                 ret = self.get_memb_status()
-        buff = [0, 0]
-        self.dio.output_point(buff, 7)
+            self.memb_OC_stop()                        
         return
 
-    """
     def emergency_stop(self):
-        global stop
-        self.stop = [1]
-        #self.pos.dio.do_output(self.stop, 11, 1)
+        self.dio.output_point([1], 11)
         self.print_msg('!!EMERGENCY STOP!!')
         return
-    """
 
+    def RL_change(self,sw):# don't move check
+        if sw.upper() == "REMOTE":
+            self.dio.output_point([0], 13)
+        elif sw.upper() == "LOCAL":
+            self.dio.output_point([1], 13)
+        else:
+            pass
+        return
+        
     def dome_fan(self, fan):
         if fan == 'on':
             fan_bit = [1, 1]
@@ -175,31 +236,37 @@ class dome_device(object):
     
     def get_door_status(self):
         ret = self.dio.input_point(2, 6)
+
+        """ right dome """
         if ret[0] == 0:
             self.right_act = 'OFF'
         else:
             self.right_act = 'DRIVE'
-        
-        if ret[1] == 0:
-            if ret[2] == 0:
-                self.right_pos = 'MOVE'
-            else:
-                self.right_pos = 'CLOSE'
-        else:
+
+        if ret[1]==1 and ret[2]==0:
             self.right_pos = 'OPEN'
-        
+        elif ret[1]==0 and ret[2]==1:
+            self.right_pos = 'CLOSE'
+        elif ret[1]==0 and ret[2]==0:
+            self.right_pos = 'MIDLE'
+        else:
+            self.right_pos = "ERROR"
+
+        """ left dome """
         if ret[3] == 0:
             self.left_act = 'OFF'
         else:
             self.left_act = 'DRIVE'
         
-        if ret[4] == 0:
-            if ret[5] == 0:
-                self.left_pos = 'MOVE'
-            else:
-                self.left_pos = 'CLOSE'
-        else:
+        if ret[4]==1 and ret[5]==0:
             self.left_pos = 'OPEN'
+        elif ret[4]==0 and ret[5]==1:
+            self.left_pos = 'CLOSE'
+        elif ret[4]==0 and ret[5]==0:
+            self.left_pos = 'MIDLE'
+        else:
+            self.left_pos = "ERROR"
+            
         return [self.right_act, self.right_pos, self.left_act, self.left_pos]
 
     def get_memb_status(self):
@@ -209,13 +276,15 @@ class dome_device(object):
         else:
             self.memb_act = 'DRIVE'
         
-        if ret[1] == 0:
-            if ret[2] == 0:
-                self.memb_pos = 'MOVE'
-            else:
-                self.memb_pos = 'CLOSE'
-        else:
+        if ret[1]==1 and ret[2]==0:
             self.memb_pos = 'OPEN'
+        elif ret[1]==0 and ret[2]==1:
+            self.memb_pos = 'CLOSE'
+        elif ret[1]==0 and ret[2]==0:
+            self.memb_pos = 'MIDLE'
+        else:
+            self.memb_pos = 'ERROR'            
+
         return [self.memb_act, self.memb_pos]
     
     def get_remote_status(self):

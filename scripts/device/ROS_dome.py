@@ -19,6 +19,7 @@ node_name = "dome"
 import topic_status
 deco = topic_status.deco(node_name)
 
+
 class dome_controller(object):
     touchsensor_pos = [-391,-586,-780,-974,-1168,-1363,-1561,-1755,-1948,-2143, 0, -197]
     dome_encoffset = 10000
@@ -289,6 +290,12 @@ class dome_controller(object):
                 self.end_flag = True
                 print('!!!dome_stop!!!')
                 self.paralist.remove("dome_stop")
+            elif "dome_OC_stop" in self.paralist:
+                self.dome_OC_stop()
+                self.paralist.remove("dome_OC_stop")
+            elif "dome_OC_stop" in self.paralist:
+                self.memb_OC_stop()
+                self.paralist.remove("memb_OC_stop")
             elif "dome_track_end" in self.paralist:
                 self.end_flag = True
                 print("dome track end")
