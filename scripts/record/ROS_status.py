@@ -150,6 +150,8 @@ class status_main(object):
             self.param4['dome_status'] = 'MOVE'
         elif self.param4['right_pos'] == 'CLOSE' and self.param4['left_pos'] == 'CLOSE':
             self.param4['dome_status'] = 'CLOSE'
+        elif self.param4['right_pos'] == 'STOP' and self.param4['left_pos'] == 'STOP':
+            self.param4['dome_status'] = 'STOP'            
         else:#Need check
             self.param4['dome_status'] = 'ERROR'
         pass
