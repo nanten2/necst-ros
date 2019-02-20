@@ -61,7 +61,7 @@ def counter_reset(position):
     is_stop = not mtr.get_status(axis=1)['busy']
     
     if (position=='NAGOYA') & is_stop:
-        mtr.set_counter(0, axis=1)
+        mtr.clear_counter(axis=1)
         pass
     return
 
