@@ -10,6 +10,7 @@ sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 import opt_analy
 import ROS_controller
 import signal
+import shutil
 
 import sys
 import ccd_old
@@ -296,8 +297,12 @@ class opt_point_controller(object):
             pass
         except Exception as e:
             print(e)
+            pass
         ###==========
-            
+        
+        ###copy hosei file
+        shutil.copy('~/ros/src/necst/lib/hosei_opt.txt', dir_name)
+        
         print("OBSERVATION END")
         self.ctrl.obs_status(active=False)
         return
