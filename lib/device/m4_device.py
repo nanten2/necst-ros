@@ -14,11 +14,6 @@ mtr.set_limit_config('LOGIC', '+EL -EL', axis=1)
 def get_pos():
     print(mtr.read_counter())
     status = mtr.get_status()
-    #print(status)
-    """
-    if status["busy"] == False and status["limit"]["+EL"] == 1:
-        status["limit"]["-EL"] = 0
-    """
     if status["busy"] == True:
         position = 'MOVE'
     elif status["limit"]["+EL"] == 0: #status == 0x0004:
@@ -49,11 +44,13 @@ def move(position):
     print("set_motion")
     mtr.start_motion(mode="JOG")
     print("start_motion")
+    """
     if mtr.get_status()['busy'] == False:
         print("status busy")
         counter_reset(position)
     else:
         pass
+    """
     time.sleep(0.5)
     return
 
