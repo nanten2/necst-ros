@@ -139,8 +139,9 @@ ctrl.move_stop()
 ###show image
 try:
     from PIL import Image
-    i = Image.open(dirname+filename+".jpg")#from ccd_old.py
-    i.show()
+    im = Image.open(dirname+filename+".jpg")#from ccd_old.py
+    trim_im = im.crop((2080.0, 1360.0, 2720.0, 1840.0))
+    trim_im.show()
 except Exception as e:
     print(e)
 
