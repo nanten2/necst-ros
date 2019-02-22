@@ -123,7 +123,7 @@ else:
     sb2 = -1  
 
 
-datahome = '/home/amigos/data/test/'
+datahome = '/home/amigos/data/'
 timestamp = time.strftime('%Y%m%d_%H%M%S')
 dirname = timestamp
 savedir = os.path.join(datahome, name, dirname)
