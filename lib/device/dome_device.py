@@ -248,7 +248,10 @@ class dome_device(object):
         elif ret[1]==0 and ret[2]==1:
             self.right_pos = 'CLOSE'
         elif ret[1]==0 and ret[2]==0:
-            self.right_pos = 'MIDLE'
+            if ret[0]==0:
+                self.right_pos = 'STOP'
+            elif ret[0]==1:
+                self.right_pos = 'MOVE'
         else:
             self.right_pos = "ERROR"
 
@@ -263,7 +266,12 @@ class dome_device(object):
         elif ret[4]==0 and ret[5]==1:
             self.left_pos = 'CLOSE'
         elif ret[4]==0 and ret[5]==0:
-            self.left_pos = 'MIDLE'
+            if ret[3]==0:
+                self.left_pos = 'STOP'
+            elif ret[3]==1:
+                self.left_pos = 'MOVE'
+            else:
+                self.left_pos = "ERROR"
         else:
             self.left_pos = "ERROR"
             
@@ -281,7 +289,12 @@ class dome_device(object):
         elif ret[1]==0 and ret[2]==1:
             self.memb_pos = 'CLOSE'
         elif ret[1]==0 and ret[2]==0:
-            self.memb_pos = 'MIDLE'
+            if ret[0]==0:
+                self.memb_pos = 'STOP'
+            elif ret[0]==1:
+                self.memb_pos = 'MOVE'
+            else:
+                self.memb_pos = 'ERROR'
         else:
             self.memb_pos = 'ERROR'            
 
