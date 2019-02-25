@@ -44,6 +44,8 @@ p.add_argument('--star', type=str,
                help='Name of 1st magnitude star.(No space)')
 p.add_argument('--name', type=str,
                help='save file name')
+p.add_argument('--triming',action="store_true",
+               help='show a triming image')
 
 args = p.parse_args()
 
@@ -53,7 +55,6 @@ if args.star is None:
 else:
     star = args.star
 if args.name is not None: filename = args.name
-
 
 # Main
 # ====
@@ -138,10 +139,16 @@ ctrl.move_stop()
 
 ###show image
 try:
-    from PIL import Image
+    from PIL import Image, ImageDraw
     im = Image.open(dirname+filename+".jpg")#from ccd_old.py
-    trim_im = im.crop((2080.0, 1360.0, 2720.0, 1840.0))
-    trim_im.show()
+    if args.triming:
+        trim_im = im.crop((2080.0, 1360.0, 2720.0, 1840.0))
+        trim_im.show()
+    else:
+        small_im = im.resize((int(im.width/5),int(im.height/5))) #display size
+        draw = ImageDraw.Draw(small_im)        
+        draw.rectangle([(416,272), (544, 368)],outline="red") #triming range
+        small_im.show()
 except Exception as e:
     print(e)
 
