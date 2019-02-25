@@ -13,8 +13,8 @@ import signal
 import shutil
 
 import sys
-import ccd_old
-ccd = ccd_old.ccd_controller()
+import ccd
+ccd = ccd.ccd_controller()
 from astropy.coordinates import SkyCoord,EarthLocation
 from astropy.time import Time
 from datetime import datetime as dt
@@ -266,13 +266,12 @@ class opt_point_controller(object):
                 self.ctrl.move_stop()
 
                 """analysis"""
-                try:                    
-                    xx,yy = ccd.ccd_analysis(data_name, dir_name)
+                xx,yy = ccd.ccd_analysis(data_name, dir_name)
+                if isinstance(xx,str):
+                    print(xx, yy)
+                    time.sleep(3)# notify onserver
+                else:
                     ccd.save_status(xx, yy, _tbl[0], _tbl[3],  ret[0][0]/3600., ret[1][0]/3600., dir_name, data_name, status)
-                except Exception as e:
-                    print(e)
-                    time.sleep(3)
-                    #sys.exit()
             else:
                 #out of range(El)
                 pass
