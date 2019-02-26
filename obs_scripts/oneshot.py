@@ -110,7 +110,7 @@ ctrl.antenna_tracking_check()
 
 if not filename:
     filename = now.strftime("%Y%m%d_%H%M%S_"+star)
-dirname = "/home/amigos/data/experiment/oneshot/" + now.strftime("%Y%m%d") + "/"
+dirname = "/home/amigos/data/oneshot/" + now.strftime("%Y%m%d") + "/"
 
 ctrl.ccd_oneshot(filename, dirname)
 print(dirname, filename)
