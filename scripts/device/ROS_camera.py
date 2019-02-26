@@ -68,13 +68,13 @@ class cam_controller(object):
         return
 
     def remove_file(self): # no debug
-        filelist = os.listdir("/home/amigos/Pictures/capture/")
+        filelist = sorted(glob.glob("/home/amigos/Pictures/capture/*"), key=lambda f: os.stat(f).st_mtime)
         if len(filelist) > 100:
-            filelist.sort(key=os.path.getmtime)
             os.remove(filelist[0])
             print("delete file : ", filelist[0])
         else:
             pass
+        return
         
     
 if __name__ == '__main__':
