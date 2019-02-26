@@ -56,7 +56,7 @@ class Image(object):
             else:
                 pass
         print(self.dirname)
-        ret = subprocess.call(["cp", "/home/amigos/data/experiment/all_sky_shot/moon.jpg",self.dirname+self.filename])
+        ret = subprocess.call(["cp", "/home/amigos/ros/src/necst/simulator/device/1st.jpg",self.dirname+self.filename])
         print(ret)
         
         print("end shot")

@@ -6,16 +6,16 @@ import rospy
 import ROS_controller
 con = ROS_controller.controller()
 
-cc = input("Please input sleep time[s] :")
+tt = input("Please input sleep time[s] :")
 
 try:
-    cc = int(cc)
+    tt = int(tt)
 except:
     print("no integer...")
     sys.exit()
 
 while not rospy.is_shutdown():
     con.drive("on")
-    time.sleep(0.1)
+    time.sleep(tt)
     con.drive("off")
-    time.sleep(cc)
+    time.sleep(tt)
