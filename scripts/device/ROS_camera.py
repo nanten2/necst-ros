@@ -64,7 +64,18 @@ class cam_controller(object):
         pub.publish(bridge.cv2_to_imgmsg(img, 'bgr8'))
         print('publish picture')
         self.filename = ''
+        self.remove_file()
         return
+
+    def remove_file(self): # no debug
+        filelist = sorted(glob.glob("/home/amigos/Pictures/capture/*"), key=lambda f: os.stat(f).st_mtime)
+        if len(filelist) > 100:
+            os.remove(filelist[0])
+            print("delete file : ", filelist[0])
+        else:
+            pass
+        return
+        
     
 if __name__ == '__main__':
     cam = cam_controller()

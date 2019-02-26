@@ -13,8 +13,8 @@ import signal
 import shutil
 
 import sys
-import ccd_old
-ccd = ccd_old.ccd_controller()
+import ccd
+ccd = ccd.ccd_controller()
 from astropy.coordinates import SkyCoord,EarthLocation
 from astropy.time import Time
 from datetime import datetime as dt
@@ -56,6 +56,10 @@ class opt_point_controller(object):
         self.ctrl.move_stop()
         self.ctrl.dome_stop()
         self.ctrl.obs_status(active=False)
+        try:
+            shutil.copy('/home/amigos/ros/src/necst/lib/hosei_opt.txt', self.param_dir)
+        except Exception as e:
+            print(e)
         time.sleep(3.)
         sys.exit()
 
@@ -234,7 +238,9 @@ class opt_point_controller(object):
         self.ctrl.dome_track()
 
         stime = dt.utcnow()
-        dir_name = stime.strftime("/home/amigos/data/experiment/all_sky_shot/opt_%Y%m%d%H%M%S/")
+        photo_dir = stime.strftime("/home/amigos/data/all_sky_shot/photo/opt_%Y%m%d%H%M%S/normal/") # photo
+        param_dir = stime.strftime("/home/amigos/data/all_sky_shot/parameter/opt_%Y%m%d%H%M%S/") # hosei & process.log
+        self.param_dir = param_dir
         
         for _tbl in table:
             print("table",table)
@@ -261,18 +267,17 @@ class opt_point_controller(object):
                 data_name = __now.strftime("%Y%m%d%H%M%S")                
                 status = self.ctrl.read_status()
                 ret = self.calc.coordinate_calc(__ra, __dec, [__now], 'fk5', 0, 0, 'hosei_opt.txt', lamda=0.5, press=status.Press, temp=status.OutTemp, humi=status.OutHumi/100)                
-                self.ctrl.ccd_oneshot(data_name, dir_name)
+                self.ctrl.ccd_oneshot(data_name, photo_dir)
 
                 self.ctrl.move_stop()
 
                 """analysis"""
-                try:                    
-                    xx,yy = ccd.ccd_analysis(data_name, dir_name)
-                    ccd.save_status(xx, yy, _tbl[0], _tbl[3],  ret[0][0]/3600., ret[1][0]/3600., dir_name, data_name, status)
-                except Exception as e:
-                    print(e)
-                    time.sleep(3)
-                    #sys.exit()
+                xx,yy = ccd.ccd_analysis(data_name, photo_dir)
+                if isinstance(xx,str):
+                    print(xx, yy)
+                    time.sleep(3)# notify onserver
+                else:
+                    ccd.save_status(xx, yy, _tbl[0], _tbl[3],  ret[0][0]/3600., ret[1][0]/3600., param_dir, data_name, status)
             else:
                 #out of range(El)
                 pass
@@ -284,13 +289,13 @@ class opt_point_controller(object):
         ###==========
         try:
             print('Analysis ...')
-            opt_analy.opt_plot([dir_name], savefig=True, figname=dir_name.split("/")[-2], interactive=True)
+            opt_analy.opt_plot([param_dir], savefig=True, figname=param_dir.split("/")[-2], interactive=True)
         except Exception as e:
             print(e)
 
         try:
             import glob
-            date = dir_name[:-11]
+            date = param_dir[:-11]
             file_list = glob.glob('{}*'.format(date))
             file_list2 = [i for i in file_list if "process.log" in os.listdir(i)]
             opt_analy.opt_plot(file_list2, savefig=True, interactive=True)     
@@ -301,7 +306,9 @@ class opt_point_controller(object):
         ###==========
         
         ###copy hosei file
-        shutil.copy('/home/amigos/ros/src/necst/lib/hosei_opt.txt', dir_name)
+
+        shutil.copy('/home/amigos/ros/src/necst/lib/hosei_opt.txt', param_dir)
+
         
         print("OBSERVATION END")
         self.ctrl.obs_status(active=False)
