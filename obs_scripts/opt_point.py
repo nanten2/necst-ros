@@ -301,7 +301,7 @@ class opt_point_controller(object):
         ###==========
         
         ###copy hosei file
-        shutil.copy('~/ros/src/necst/lib/hosei_opt.txt', dir_name)
+        shutil.copy('/home/amigos/ros/src/necst/lib/hosei_opt.txt', dir_name)
         
         print("OBSERVATION END")
         self.ctrl.obs_status(active=False)
