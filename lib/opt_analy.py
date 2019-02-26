@@ -117,7 +117,10 @@ def opt_plot(dir_list, *, clip_sigma=(3.,3.), savefig=True, figname=None, intera
     if savefig == True:
         if figname == None:
             figname = 'plot_tmp.png'
-        fig.savefig(figname)
+        save_dir = "/home/amigos/data/all_sky_shot/plot/"
+        if not os.path.exist(save_dir):
+            os.makedirs(save_dir)
+        fig.savefig(save_dir+figname)
 
     if interactive == True:
         plt.show()
