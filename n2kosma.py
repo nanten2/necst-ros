@@ -17,10 +17,12 @@ import re
 from astropy.coordinates import SkyCoord
 import socket
 import logging
+from datetime import datetime
 
 #kosma_setfile directry test commit
 #======================
 setfile_dir = '/home/amigos/kosma_setfile/'
+pointing_paramfile = "/home/amigos/ros/src/necst/lib/hosei_230.txt"
 #=====================
 
 def emit_colored_ansi(fn):
@@ -544,14 +546,14 @@ class telescope(object):
         tracking_status = st.read_status()[10]['tracking']
         limit_check = self.limit_check()
         if tracking_status == True and self.limit_check() == False:
-            print("tracking_check ### True")
+            #print("tracking_check ### True")
             return True
         else:
             if not self.limit_check() == False:
-                print("tracking_check ### error")
+                #print("tracking_check ### error")
                 return "error"#error
             else:
-                print('tracking_check ### False')
+                #print('tracking_check ### False')
                 return False
 
     def wait_tracking(self, count=3):
@@ -680,7 +682,6 @@ class telescope(object):
         if duration != 0:
             self.log.info('duration != 0')
 
-        #self.log.info('true_angle_del',true_angle_del)
         self.log.info('true_angle_del {0}'.format(true_angle_del))
         if true_angle_del == 'Y':
             dcos_kosma = 1
@@ -695,19 +696,16 @@ class telescope(object):
 
         if start_time <= 0:
             self.log.info('start_time is backward')
-            #return
-        elif start_time >= 10000000:
+
+        if start_time >= 10000000:
             self.log.info('start_time is over 10000000 sec')
-            #return
             
         ###for start position(arg for con.otf_scan)
         rampt = 3
         start_x = -lam_vel*rampt-lam_vel/2.#[arcsec]
         start_y = -bet_vel*rampt-bet_vel/2.#[arcsec]
 
-
-        #self.log.info(start_x,start_y,'start_x','start_y',"###for check")#D
-        self.log.info("{0} {1} start_x, start_y ###for check".format(start_x,start_y))#D        
+        self.log.info("{0} {1} start_x, start_y ###for check".format(start_x,start_y))     
         
         ### To pre_otf position move_telescope
         on_coord = coord_sys_on.lower()
@@ -722,27 +720,24 @@ class telescope(object):
 
             self.log.info('coord_sys_on###'.format(coord_sys_on))
                 
-        ### 
+            
+        ### command antenna to tracking to pre otf position
             if coord_sys_on == 'EQUATORIAL':
-                con.onepoint_move(lam_on  ,bet_on , coord = on_coord, off_x = start_x + lam_del, off_y = start_y + bet_del, offcoord = coord_sys_del, dcos = dcos_kosma)
+                con.onepoint_move(lam_on  ,bet_on , coord = on_coord, off_x = start_x + lam_del, off_y = start_y + bet_del, offcoord = coord_sys_del, dcos = dcos_kosma, lamda = 500, hosei="hosei_230.txt")
                 self.log.info("{0} {1} {2} {3} {4} {5} {6}".format(lam_on,bet_on,on_coord, start_x + lam_del ,start_y+bet_del, coord_sys_del,dcos_kosma))
-                #sys.log.info(lam_on, bet_on, on_coord, start_x + lam_del ,start_y+bet_del, coord_sys_del, dcos_kosma)#D
             elif coord_sys_on == 'GALACTIC':
                 con.onepoint_move(lam_on ,bet_on ,coord = on_coord, off_x = start_x + lam_del, off_y = start_y + bet_del, offcoord = coord_sys_del, dcos = dcos_kosma)
                 self.log.info("{0} {1} {2} {3} {4} {5}".format(lam_on ,bet_on, start_x+lam_del, start_y+bet_del, coord_sys_del,dcos_kosma))                
-                #self.log.info(lam_on ,bet_on, start_x+lam_del, start_y+bet_del, coord_sys_del,dcos_kosma)#D
             elif coord_sys_on == 'HORIZONTAL':
-                #con.azel_move(lam_on*3600. + lam_del +start_x, bet_on*3600.+bet_del+start_y)
                 con.onepoint_move(lam_on + (lam_del+start_x)/3600., bet_on + (bet_del+start_y)/3600.)
                 self.log.info("{0} {1}".format(lam_on*3600. + lam_del , bet_on*3600.+bet_del))
-                #self.log.info(lam_on*3600. + lam_del , bet_on*3600.+bet_del)
             self.log.info('moving...')
-            time.sleep(3.5)
+            time.sleep(2)#waiting tracking (this will be deleted)
             ret_status = self.wait_tracking()
             if ret_status == 'error':
                 print('command error')
                 return
-            self.log.info('Pre_Otf_Position')###
+            self.log.info('Pre_Otf_Position')
             self.tel_on_track = 'Y'
             self.pre_otf_position_flag = 1
             #self.cookie_flag = 1
@@ -761,13 +756,9 @@ class telescope(object):
                 #lam_on = lam_on*3600 #[arcsec]
                 #bet_on = bet_on*3600 #[arcsec]
                 pass
-            from datetime import datetime
+
             utc = datetime.utcnow()
-            #_list = [utc.year, utc.month, utc.day, utc.hour, utc.minute, utc.second, utc.microsecond]
-            print(lam_on, bet_on, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, 0, time.time(), lam_del,bet_del, coord_sys_del,dcos_kosma, 'hosei_230.txt',int(lamda))
-            #start_on = con.otf_scan(lam_on, bet_on, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, 0, time.time(), off_x = lam_del, off_y = bet_del, offcoord = coord_sys_del, dcos = dcos_kosma, hosei = 'hosei_230.txt', lamda = int(lamda))
-            start_on = con.otf_scan(lam_on, bet_on, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, float(self.tel_value['obs_start_time'])-time.time(), time.time(), off_x = lam_del, off_y = bet_del, offcoord = coord_sys_del, dcos = dcos_kosma, hosei = 'hosei_230.txt', lamda = int(lamda))  
-            #self.log.info(lam_on, bet_on, dcos_kosma, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, 0, lamda, 'hosei_230.txt', on_coord,lam_del, bet_del,  coord_sys_del)
+            start_on = con.otf_scan(lam_on, bet_on, coord_sys_on, lam_vel, bet_vel, 1, duration, rampt, 3, time.time(),off_x = lam_del, off_y = bet_del, offcoord = coord_sys_del, dcos = dcos_kosma, hosei = 'hosei_230.txt', lamda = int(lamda))
             to_print = [lam_on, bet_on, dcos_kosma, coord_sys_on, lam_vel, bet_vel, 1, duration, 3, 0, lamda, 'hosei_230.txt', on_coord,lam_del, bet_del,  coord_sys_del]
             self.log.info(([str(ele) for ele in to_print]))
             self.log.info(start_on)
@@ -778,21 +769,18 @@ class telescope(object):
             time.sleep(duration+2.)
             self.log.info('otf 1 line end')
             self.tel_on_track = 'N'
-
-            ###antenna stop###
-            #con.tracking_end()#v1
-            con.move_stop()#v2
+            con.move_stop()#command antenna to stop
             
     def move_telescope(self):
+        ###stop tracking
+        con.move_stop()
+
+        ###kosma parameter
         self.pre_otf_position_flag = 0
         self.tel_pos_in_range = 'Y'
         self.tel_on_track = 'N'
         self.tel_supports_ephemeris = 'Y'
         self.tel_return_cookie = self.tel_value['obs_cookie']
-
-        ###stop tracking
-        #con.tracking_end()#v1
-        con.move_stop()
         
         ###parameter
         coord_on = self.tel_value['obs_coord_sys_on']
@@ -811,8 +799,8 @@ class telescope(object):
 
         coord_map_offsets = self.tel_value['obs_coord_sys_del']
         coord_off = self.tel_value['obs_coord_sys_off']
+        
         ###coordintate transform
-
         if coord_on.lower() == 'j2000':
             self.log.info('coord_on = j2000')
             if coord_off.lower() == 'j2000':
@@ -1087,15 +1075,85 @@ class telescope(object):
             self.Write_set_file_tel(data1)
             continue
 
+class dome_drive():
+    def __init__(self):
+        self.path_to_kosmafile = "/home/amigos/kosma_setfile/KOSMA_obs2dome_drive_test.set"
+        self.log = getLogger()
+        self.main_loop()
+
+    def read(self):
+        tmp = ReadKosmaFile("/home/amigos/kosma_setfile/KOSMA_obs2dome_drive_test.set")
+        return tmp
+
+    def write_status(self):
+        #writing status
+        pass
+
+    def main_loop(self):#tmp name
+        ###first
+        read_cont = self.read()
+        self.before_mod_time = read_cont["timestamp"]
+
+        while True:
+            read_contents = self.read()
+            if not read_contents["timestamp"] == self.before_mod_time:#update time が更新されたら
+                print("this is test comment")
+                status = st.read_status()
+                ###dome part
+                ###=========
+                if read_contents["obs_dome"] == "Y":#Y/N=dome open/close
+                    if not status[3]["dome_status"] == "OPEN":#check dome status
+                        con.dome_open()
+                    else:
+                        self.log.info("Dome is already opened")
+                else:#dome close
+                    if not status[3]["dome_status"] == "CLOSE":
+                        con.dome_close()
+                    else:
+                        self.log.info("Dome is already closed")
+                ###memb part
+                ###=========
+                if read_contents["obs_membrane"] == "Y":#Y/N=dome open/close
+                    if not status[3]["memb_pos"] == "OPEN":#check dome status   
+                        con.memb_open()
+                    else:
+                        self.log.info("membrane is already opened")
+                else:
+                    if not status[3]["memb_pos"] == "CLOSE":#check memb status
+                        con.memb_close()    
+                    else:
+                        self.log.info("membrane is already closed")
+                ###drive part
+                if read_contents["obs_antenna_drive"] == "Y":
+                    if not (status[5]["drive"] == 1 and status[5]["contactor"] == 1):
+                        con.drive("on")
+                    else:
+                        self.log.info("drive is already ON")
+                else:
+                    if not (status[5]["drive"] == 1 or status[5]["contactor"] == 1):
+                        con.drive('off')
+                    else:
+                        self.log.info("drive is already OFF")
+            self.before_mod_time = read_cont["timestamp"]
+            time.sleep(1)
+        
+
 if __name__ == '__main__':
     SetupLogging(log_level="info",logging_dir="/home/amigos/ros/src/necst/log",log_name="n2kosma.log")#for simulator
     initialize()
+    ###mirror&Hot
     thread_mirror_hot = threading.Thread(target = mirror)
     thread_mirror_hot.setDaemon(True)
     thread_mirror_hot.start()
+    ###chopper
     thread_chopper = threading.Thread(target = chopper)
     thread_chopper.setDaemon(True)
     thread_chopper.start()
+    ###dome test 20190416
+    thread_dome_drive = threading.Thread(target = dome_drive)
+    thread_dome_drive.setDaemon(True)
+    thread_dome_drive.start()
+    ###antenna
     telescope()
 
 
