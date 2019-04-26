@@ -1,13 +1,6 @@
 #! /usr/bin/env python3
 # coding:utf-8
 
-"""
-------------------------------------------------
-[History]
-2017/10/18 : kondo takashi
-2018/05/07 : kondo
-------------------------------------------------
-"""
 import os
 import sys
 import time
@@ -34,7 +27,7 @@ from necst.srv import ac240_srv
 from necst.srv import ac240_srvResponse
 from necst.srv import Bool_srv
 from necst.srv import Bool_srvResponse
-
+from std_msgs.msg import String
 class controller(object):
 
     task_flag = False
@@ -116,7 +109,8 @@ class controller(object):
         self.pub_queue = rospy.Publisher("queue_obs", Bool_necst, queue_size=1)
         self.pub_alert = rospy.Publisher("alert", String_necst, queue_size=1)
         self.service_ac240 = rospy.ServiceProxy("ac240", ac240_srv)
-        self.service_encoder = rospy.ServiceProxy("encoder_origin", Bool_srv)        
+        self.service_encoder = rospy.ServiceProxy("encoder_origin", Bool_srv)
+        self.pub_log = rospy.Publisher("logging_ctrl", String, queue_size=1)
         time.sleep(0.5)# authority regist time                
 
         """get authority"""
@@ -148,7 +142,7 @@ class controller(object):
     def logger(func):
         @functools.wraps(func)
         def ros_logger(self, *args, **kwargs):
-            rospy.loginfo((str(locals()['func']).split()[1].split('.')[1])+'#'+str(locals()['args']))
+            self.pub_log.publish("{}#{}#{}".format(func.__name__,args,kwargs))
             ret = func(self, *args, **kwargs)
             return ret
         return ros_logger
@@ -163,8 +157,7 @@ class controller(object):
         @functools.wraps(func)
         def wrapper(self, *args,**kwargs):
             #self.get_authority()
-            time.sleep(0.5)
-            if self.escape:
+            if self.escape:###need to fix
                 ret = func(self, *args,**kwargs)
             elif self.auth == self.node_name:
                 ret = func(self, *args,**kwargs)
@@ -221,6 +214,10 @@ class controller(object):
     @logger
     def check_my_node(self):
         return self.node_name
+    @logger
+    def logging_message(self, log_str):
+        pass
+        
 
 # ===================
 # antenna
@@ -274,9 +271,8 @@ class controller(object):
         self.command_time = time.time()
         self.pub_onepoint.publish(x, y, coord, "", off_x, off_y, offcoord, hosei, lamda, dcos, limit, rotation, self.node_name, self.command_time)
         return
-    
+    #@deco_check
     @logger
-    @deco_check
     def planet_move(self, planet, off_x=0, off_y=0, offcoord="altaz", hosei="hosei_230.txt", lamda=2600, dcos=0, limit=True, rotation=True):
         """ planet_move
         
@@ -876,7 +872,7 @@ class controller(object):
         
         self.pub_obsstatus.publish(msg)
         return
-    @logger
+
     @deco_check        
     def read_status(self):
         """read status
