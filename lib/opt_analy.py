@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
-
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 from scipy.optimize import curve_fit
-
 
 def process2forfit(dir):
         d = np.loadtxt(os.path.join(dir, 'process.log'))
@@ -13,7 +11,6 @@ def process2forfit(dir):
         result = data.T
         np.savetxt(os.path.join(dir, 'for_fit.log'), result, delimiter=' ')
         return
-
 
 def process_static(dir_list, *, clip_sigma=None, clip_const=None):
     ind_az = 14
@@ -59,7 +56,7 @@ def process_static(dir_list, *, clip_sigma=None, clip_const=None):
 
 
 def opt_plot(dir_list, *, clip_sigma=(3.,3.), savefig=True, figname=None, interactive=False):
-
+        
     ind_az = 14
     ind_el = 15
     ind_dx = 9
