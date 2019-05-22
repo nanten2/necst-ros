@@ -266,18 +266,21 @@ class opt_point_controller(object):
                 __now = dt.utcnow()
                 data_name = __now.strftime("%Y%m%d%H%M%S")                
                 status = self.ctrl.read_status()
-                ret = self.calc.coordinate_calc(__ra, __dec, [__now], 'fk5', 0, 0, 'hosei_opt.txt', lamda=0.5, press=status.Press, temp=status.OutTemp, humi=status.OutHumi/100)                
+                ret = self.calc.coordinate_calc(__ra, __dec, [__now], 'fk5', 0, 0, 'hosei_opt.txt', lamda=0.5, press=status.Press, temp=status.OutTemp, humi=status.OutHumi/100)
+                }
                 self.ctrl.ccd_oneshot(data_name, photo_dir)
 
                 self.ctrl.move_stop()
 
                 """analysis"""
-                xx,yy = ccd.ccd_analysis(data_name, photo_dir)
-                if isinstance(xx,str):
-                    print(xx, yy)
-                    time.sleep(3)# notify onserver
-                else:
-                    ccd.save_status(xx, yy, _tbl[0], _tbl[3],  ret[0][0]/3600., ret[1][0]/3600., param_dir, data_name, status)
+                try:
+                    xx,yy = ccd.ccd_analysis(data_name, photo_dir)
+                    if isinstance(xx,str):
+                        print(xx, yy)
+                    else:
+                        ccd.save_status(xx, yy, _tbl[0], _tbl[3],  ret[0][0]/3600., ret[1][0]/3600., param_dir, data_name, status)
+                except Exception as e:
+                    print(e)
             else:
                 #out of range(El)
                 pass
