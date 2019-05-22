@@ -272,12 +272,15 @@ class opt_point_controller(object):
                 self.ctrl.move_stop()
 
                 """analysis"""
-                xx,yy = ccd.ccd_analysis(data_name, photo_dir)
-                if isinstance(xx,str):
-                    print(xx, yy)
-                    time.sleep(3)# notify onserver
-                else:
-                    ccd.save_status(xx, yy, _tbl[0], _tbl[3],  ret[0][0]/3600., ret[1][0]/3600., param_dir, data_name, status)
+                try:
+                    xx,yy = ccd.ccd_analysis(data_name, photo_dir)
+                    if isinstance(xx,str):
+                        print(xx, yy)
+
+                    else:
+                        ccd.save_status(xx, yy, _tbl[0], _tbl[3],  ret[0][0]/3600., ret[1][0]/3600., param_dir, data_name, status)
+                except Exception as e:
+                    print(e)
             else:
                 #out of range(El)
                 pass
