@@ -1,25 +1,22 @@
 #!/usr/bin/env python3
-
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 from scipy.optimize import curve_fit
 
-
 def process2forfit(dir):
         d = np.loadtxt(os.path.join(dir, 'process.log'))
-        data = np.array([d[:,14],d[:,15],(d[:,10]-350)*0.9267,(d[:,9]-240)*0.8392,
+        data = np.array([d[:,14],d[:,15],(d[:,10]-320)*0.9267,(d[:,9]-240)*0.8392,
         d[:,16],d[:,17]])
         result = data.T
         np.savetxt(os.path.join(dir, 'for_fit.log'), result, delimiter=' ')
         return
 
-
 def process_static(dir_list, *, clip_sigma=None, clip_const=None):
     ind_az = 14
     ind_el = 15
-    ind_dx = 10
-    ind_dy = 9
+    ind_dx = 9
+    ind_dy = 10
 
     rawdata = np.concatenate([np.loadtxt(os.path.join(_dir, 'process.log')) for _dir in dir_list])
 
@@ -59,11 +56,11 @@ def process_static(dir_list, *, clip_sigma=None, clip_const=None):
 
 
 def opt_plot(dir_list, *, clip_sigma=(3.,3.), savefig=True, figname=None, interactive=False):
-
+        
     ind_az = 14
     ind_el = 15
-    ind_dx = 10
-    ind_dy = 9
+    ind_dx = 9
+    ind_dy = 10
 
     dx_avg, dy_avg, dx_std, dy_std, *_ = process_static(dir_list, clip_sigma=clip_sigma)
 
