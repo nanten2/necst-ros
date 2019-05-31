@@ -6,7 +6,7 @@ from scipy.optimize import curve_fit
 
 def process2forfit(dir):
         d = np.loadtxt(os.path.join(dir, 'process.log'))
-        data = np.array([d[:,14],d[:,15],(d[:,10]-320)*0.9267,(d[:,9]-240)*0.8392,
+        data = np.array([d[:,14],d[:,15],(d[:,10]-320)*1.18,(d[:,9]-240)*1.18,
         d[:,16],d[:,17]])
         result = data.T
         np.savetxt(os.path.join(dir, 'for_fit.log'), result, delimiter=' ')
