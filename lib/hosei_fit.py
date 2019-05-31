@@ -2,8 +2,6 @@
 
 # ## hosei_opt.txt を向上させると思われるヤツ
 
-# In[1]:
-
 import os
 import sys
 import glob
@@ -58,7 +56,6 @@ def hosei_point(param_dir):
 
 # ### 器差モデルの定義
 
-# In[7]:
 
     def func(kisa, az, el, dx, dy):
     
@@ -77,8 +74,6 @@ def hosei_point(param_dir):
 
 
 # ### フィッティング初期値の定義
-
-# In[8]:
 
 # initial params.
     kisa0 = [0.] * 24
@@ -107,7 +102,6 @@ def hosei_point(param_dir):
 
 # ### フィッティング実行実行
 
-# In[9]:
     az = [e for inner_list in az_list for e in inner_list]
     el = [e for inner_list in el_list for e in inner_list]
     dx = [e for inner_list in dx_list for e in inner_list]
@@ -118,7 +112,6 @@ def hosei_point(param_dir):
 
 # ### plot 用のモデルの定義
 
-# In[10]:
 
     def model_dx(az, el, *kisa):
         dx = kisa[2] * sin(d2r(kisa[3] - az)) * sin(d2r(el))     + kisa[4] * sin(d2r(el))     + kisa[0] * cos(d2r(el))     + kisa[1] 
@@ -167,8 +160,6 @@ def hosei_point(param_dir):
 
 # ### 残渣を 3D 上に plot
 
-# In[12]:
-
         new_dx_list = [numpy.array(dx) - model_dx(az, el, *kisa) 
                        for az, el, dx, dy in zip(az_list, el_list, dx_list, dy_list)]
         new_dy_list = [numpy.array(dy) - model_dy(az, el, *kisa) 
@@ -210,12 +201,8 @@ def hosei_point(param_dir):
 
 # ### モデルと測定データの差分
 
-# In[13]:
-
             plot.plot(az_list, el_list, new_dx_list, new_dy_list, param_dir, raw=False)
 
-
-# In[14]:
 
             old_kisa = [float(_kisa) for _kisa in open(hosei_path)]
             kisa
@@ -232,9 +219,6 @@ def hosei_point(param_dir):
 # kisa[15]：El 方向 の offset (arcsec.)<br>
 
 # ### 足せばいいやつ
-
-# In[15]:
-
 # エンコーダーオフセット
             new_kisa[0] = old_kisa[0] + kisa[0]
 
@@ -252,9 +236,6 @@ def hosei_point(param_dir):
 
 
 # ### 三角関数の足し算
-
-# In[16]:
-
 # Az 軸の倒れ
             A = abs(old_kisa[2] * cos(d2r(old_kisa[3])) + kisa[2] * cos(d2r(kisa[3])))
             B = abs(old_kisa[2] * sin(d2r(old_kisa[3])) + kisa[2] * sin(d2r(kisa[3])))
@@ -266,8 +247,6 @@ def hosei_point(param_dir):
 
 
 # ## 器差パラメーター まとめ
-
-# In[17]:
 
             index = [
                 'Enc. offset',
@@ -296,8 +275,6 @@ def hosei_point(param_dir):
             df['new'] = new
             df['diff'] = diff
             
-
-# In[18]:
             df
         
 
