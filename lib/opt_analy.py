@@ -20,8 +20,8 @@ def process_static(dir_list, *, clip_sigma=None, clip_const=None):
 
     rawdata = np.concatenate([np.loadtxt(os.path.join(_dir, 'process.log')) for _dir in dir_list])
 
-    rawdata[:,ind_dx]=(rawdata[:,ind_dx]-109)*1.18
-    rawdata[:,ind_dy]=(rawdata[:,ind_dy]-210)*1.18
+    rawdata[:,ind_dx]=(rawdata[:,ind_dx]-240)*1.18
+    rawdata[:,ind_dy]=(rawdata[:,ind_dy]-320)*1.18
 
     #rawdx_avg = np.average(rawdata[:,ind_dx])
     #rawdy_avg = np.average(rawdata[:,ind_dy])
@@ -67,8 +67,8 @@ def opt_plot(dir_list, *, clip_sigma=(3.,3.), savefig=True, figname=None, intera
     #files = multifiles(dirname)
     d_list = [np.loadtxt(os.path.join(_dir, 'process.log')) for _dir in dir_list]
     for _d in d_list:
-        _d[:,ind_dx]=(_d[:,ind_dx]-109)*1.18
-        _d[:,ind_dy]=(_d[:,ind_dy]-210)*1.18
+        _d[:,ind_dx]=(_d[:,ind_dx]-240)*1.18
+        _d[:,ind_dy]=(_d[:,ind_dy]-320)*1.18
         _dx=(_d[:,ind_dx]*np.cos(np.radians(-1.76))-_d[:,ind_dy]*np.sin(np.radians(-1.76)))
         _dy=(_d[:,ind_dx]*np.sin(np.radians(-1.76))+_d[:,ind_dy]*np.cos(np.radians(-1.76)))
         _d = _d[(abs(_dx -dx_avg) < dx_std * clip_sigma[0]) & (abs(_dy -dy_avg) < dy_std * clip_sigma[1])]
