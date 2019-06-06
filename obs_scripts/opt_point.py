@@ -23,7 +23,7 @@ sys.path.append('/home/amigos/ros/src/necst/lib')
 #import azel_calc
 import calc_coord
 nanten2 = EarthLocation(lat=-22.9699511*u.deg, lon=-67.60308139*u.deg, height=4863.84*u.m)
-
+import hosei_fit
 
 """ 
 Notes about opt_point.py
@@ -277,6 +277,10 @@ class opt_point_controller(object):
                     xx,yy = ccd.ccd_analysis(data_name, photo_dir)
                     if isinstance(xx,str):
                         print(xx, yy)
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9cd2e407b00c943867f71ab9fb9d58f9179bca77
                     else:
                         ccd.save_status(xx, yy, _tbl[0], _tbl[3],  ret[0][0]/3600., ret[1][0]/3600., param_dir, data_name, status)
                 except Exception as e:
@@ -292,7 +296,7 @@ class opt_point_controller(object):
         ###==========
         try:
             print('Analysis ...')
-            opt_analy.opt_plot([param_dir], savefig=True, figname=param_dir.split("/")[-2], interactive=True)
+            hosei_fit.hosei_point(param_dir)
         except Exception as e:
             print(e)
 
