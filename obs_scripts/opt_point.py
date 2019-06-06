@@ -23,6 +23,7 @@ sys.path.append('/home/amigos/ros/src/necst/lib')
 #import azel_calc
 import calc_coord
 nanten2 = EarthLocation(lat=-22.9699511*u.deg, lon=-67.60308139*u.deg, height=4863.84*u.m)
+
 import hosei_fit
 
 """ 
