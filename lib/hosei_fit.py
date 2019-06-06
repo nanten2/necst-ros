@@ -31,8 +31,8 @@ hosei_path = '/home/amigos/pointing/data/opt_data/opt_20190219/opt_2019021908593
 def hosei_point(param_dir):
     ind_az = 14
     ind_el = 15
-    ind_dx = 10
-    ind_dy = 9
+    ind_dx = 9
+    ind_dy = 10
     az_list, el_list, dx_list, dy_list = [], [], [], []
     for _ in param_dir:
         d = numpy.loadtxt(_ + '/process.log')
