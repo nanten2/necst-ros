@@ -65,7 +65,7 @@ def plot(az_list, el_list, dx_list, dy_list, file_list, raw=True):
         legend_loc = (1.1, 0.02)
 
     tbl = fig.add_subplot(3,2,6)
-    col_labels=['average','std dev',]
+    col_labels=['average [arcsec.]','std dev [arcsec.]',]
     row_labels=[' dx ',' dy ', ' unite ']
     tbl_vals=[["{:.2e}".format(dx_avg), "{:.2f}".format(dx_std)],
               ["{:.2e}".format(dy_avg), "{:.2f}".format(dy_std)],
