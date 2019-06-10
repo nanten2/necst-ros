@@ -277,10 +277,7 @@ class opt_point_controller(object):
                     xx,yy = ccd.ccd_analysis(data_name, photo_dir)
                     if isinstance(xx,str):
                         print(xx, yy)
-<<<<<<< HEAD
-=======
 
->>>>>>> 9cd2e407b00c943867f71ab9fb9d58f9179bca77
                     else:
                         ccd.save_status(xx, yy, _tbl[0], _tbl[3],  ret[0][0]/3600., ret[1][0]/3600., param_dir, data_name, status)
                 except Exception as e:
