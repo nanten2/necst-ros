@@ -1,0 +1,25 @@
+body {background-image:url("/static/img/bg.png");}
+
+#wrap {
+width:960px;
+margin:0px auto;
+}
+
+#sidenavi {
+float:left;
+width:198px;
+height:498px;
+margin:10px 10px 10px 0px;
+}
+
+#contents {
+float:left;
+width:748px;
+height:498px;
+margin:10px 0px 10px 0px;
+}
+
+footer {
+clear:both;
+}
+
