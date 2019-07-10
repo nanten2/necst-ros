@@ -24,9 +24,10 @@ class get_xffts_data():
     def getdata(self):
         return self.spec
 
-    def get_integdata(self, times):
+    def get_integdata(self, exposure):
         #paramter
-        #times = 10[times] -->1[sec]
+        #exposure [sec]
+        times = int(exposure/0.1)
         tmp = numpy.zeros((20,32768))
         b = 0
         count = 0
