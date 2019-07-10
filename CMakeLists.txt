@@ -84,6 +84,7 @@ add_message_files(
   String_list_msg.msg
   Float64_list_msg.msg
   Status_pid_msg.msg
+  xffts_flag_msg.msg
 )
 
 ## Generate services in the 'srv' folder
