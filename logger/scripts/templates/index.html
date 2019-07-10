@@ -1,0 +1,50 @@
+<!DOCTYPE HTML>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Cache-Control" content="no-cache"/>
+    <meta http-equiv="Expires" content="0"/>
+    <link rel="stylesheet" href="/static/style.css">
+    <title>Weather monitor</title>
+  </head>
+  <body>
+  <div id="wrap">
+    <header>
+      <h1>NANTEN2 Weather Monitor</h1>
+    </header>
+    <div id="sidenavi">
+      <h2>Latest</h2>
+      {% autoescape False %}
+      {{ in_html }}
+      {% endautoescape %}
+    </div>
+    <div id="contents">
+      <h2>24h weather</h2>
+          <table>
+      <tr>
+	<td>
+	  <img src="/static/weather/latest_wind_dir.jpg" width="400" height="300"></td>
+	<td><img src="/static/weather/latest_temp.jpg" width="400" height="300">
+	</td>
+      </tr>
+      <tr>
+	<td>
+	  <img src="/static/weather/latest_humi.jpg"  width="400" height="300">
+	</td>
+	<td>
+	  <img src="/static/weather/latest_windsp.jpg"  width="400" height="300">
+	</td>
+      </tr>
+    </table>
+    <table>
+      <tr>
+	<td>
+	  <img src="/static/weather/latest_press.jpg"  width="400" height="300">
+	</td>
+      </tr>
+    </table>
+    </div>
+  </div>
+</body>
+</html>
