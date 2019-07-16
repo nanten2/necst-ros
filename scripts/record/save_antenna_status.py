@@ -10,14 +10,14 @@ import threading
 
 class telescope_logger():
     def __init__(self):
-        self.path_to_db = "./test.db"
+        self.path_to_db = "./otf_20190715_3_antenna.db"
         self.regist_subscriber()
         ###parameter
         self.enc_az = 0
         self.enc_el = 0
         ###flag
         self.timestamp = 0
-        self.newdb_name = "test.db"
+        self.newdb_name = "./otf_20190715_3_antenna.db"
         self.before_dbname = ""
         self.config2()
         pass
@@ -34,7 +34,7 @@ class telescope_logger():
 
     def callback2(self, req):
         self.timestamp = req.timestamp
-        self.newdb_name = req.newdb_name
+        self.newdb_name = "antenna"+req.newdb_name
         self.obs_mode = req.obs_mode
         self.scan_num = req.scan_num
         
@@ -53,13 +53,14 @@ class telescope_logger():
         while not rospy.is_shutdown():
             ss = time.time()
             if not self.timestamp == 0:
-                self.n.write("encoder", "", [time.time(), self.enc_az, self.enc_el], auto_commit = True)
+                self.n.write("encoder", "", [time.time(), self.enc_az, self.enc_el, self.obs_mode, self.scan_num], auto_commit = True)
                 count += 1
                 print("save {}".format(count))
             else:
                 print("wait")
                 pass
-            time.sleep(0.1 - (time.time() - ss))
+            #time.sleep(0.1 - (time.time() - ss))#wait
+            time.sleep(0.05)
 
 if __name__ == "__main__":
     rospy.init_node("sas")
