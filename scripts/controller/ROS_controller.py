@@ -21,6 +21,7 @@ from necst.msg import Status_obs_msg
 from necst.msg import Status_onepoint_msg
 from necst.msg import oneshot_msg
 #from nascorx_xffts.msg import XFFTS_para_msg
+from necst.msg import xffts_flag_msg
 sys.path.append("/home/amigos/ros/src/necst/lib")
 import achilles
 from necst.srv import ac240_srv
@@ -111,6 +112,7 @@ class controller(object):
         self.service_ac240 = rospy.ServiceProxy("ac240", ac240_srv)
         self.service_encoder = rospy.ServiceProxy("encoder_origin", Bool_srv)
         self.pub_log = rospy.Publisher("logging_ctrl", String, queue_size=1)
+        self.pub_xffts = rospy.Publisher("XFFTS_DB_flag", xffts_flag_msg, queue_size = 1)
         time.sleep(0.5)# authority regist time                
 
         """get authority"""
@@ -944,3 +946,12 @@ class controller(object):
         else:
             print("clear_condition is ''.")
         return
+
+    def xffts_publish_flag(self, timestamp, db_name, scan_num, obs_mode):
+        xffts_flag = xffts_flag_msg()
+        xffts_flag.timestamp = timestamp
+        xffts_flag.newdb_name = db_name
+        xffts_flag.scan_num = scan_num
+        xffts_flag.obs_mode = obs_mode
+        self.pub_xffts.publish(xffts_flag)
+        pass
