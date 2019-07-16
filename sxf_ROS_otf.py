@@ -560,9 +560,15 @@ con.xffts_publish_flag(1, path_to_db, str(num), "HOT")
 time.sleep(integ_off)
 con.xffts_publish_flag(0, path_to_db, str(num), "HOT")
 
+con.move_hot('out')
 
+print('observation end')
+con.move_stop()
+con.dome_stop()
+
+'''
 temp = float(status.CabinTemp1)
-        
+  
 print('Temp: %.2f'%(temp))
 print('get spectrum...')
 d = con.oneshot_achilles(exposure=integ_off)
@@ -600,13 +606,7 @@ betdel_list.append(0)
 subscan_list.append(int(num)+1)
 lambda_list.append(obs['lambda_off'])
 beta_list.append(obs['beta_off'])
-
-
-con.move_hot('out')
-
-print('observation end')
-con.move_stop()
-con.dome_stop()
+'''
 
 
 """
