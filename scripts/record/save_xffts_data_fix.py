@@ -3,7 +3,7 @@ import rospy
 import pickle
 import sys
 sys.path.append("/home/amigos/git")
-import n2lites as n2lite
+import n2lite
 #from nascorx_xffts.msg import XFFTS_pm_msg
 #from nascorx_xffts.msg import XFFTS_temp_msg_du
 import time
@@ -84,7 +84,7 @@ class xffts_logger():
                 tmplist[i] = list(eval("req.SPEC_BE{}".format(i+1)))
             print("check : ",time.time()-start)
             self.queue.put(tmplist)
-            self.queue2.put([self.obs_mode, self.scan_num, req.timestamp])
+            self.queue2.put([self.obs_mode, self.scan_num, float(req.timestamp)])
             self.count1+=1
         else:
             pass
