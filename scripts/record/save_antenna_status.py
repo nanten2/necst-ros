@@ -2,7 +2,7 @@
 import rospy
 import sys
 sys.path.append("/home/amigos/git")
-import n2lites as n2lite
+import n2lite
 import time
 from necst.msg import Status_encoder_msg
 from necst.msg import xffts_flag_msg
