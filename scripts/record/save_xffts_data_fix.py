@@ -4,8 +4,6 @@ import pickle
 import sys
 sys.path.append("/home/amigos/git")
 import n2lite
-#from nascorx_xffts.msg import XFFTS_pm_msg
-#from nascorx_xffts.msg import XFFTS_temp_msg_du
 import time
 import threading
 import queue
@@ -28,9 +26,11 @@ class xffts_logger():
         self.newdb_name = ""
         self.before_dbname = ""
         self.status = 0#0(first)/1(queue>30)/2(stop save queue>0)/3(else)
-        ##param
+        ##initial param
         self.obs_mode = ""
         self.scan_num = ""
+        self.lamdel = 0
+        self.betdel = 0
         ###regist subscriber
         self.regist_subscriber()
         print("ready")
@@ -55,7 +55,7 @@ class xffts_logger():
             continue
         print("***NEW***", self.newdb_name)
         self.n = n2lite.xffts_logger("./{}".format(self.newdb_name))
-        self.n.make_table(self.table_name, {"timestamp":"float", "spec_array1":"blob", "spec_array2":"blob", "spec_array3":"blob", "spec_array4":"blob", "spec_array5":"blob", "spec_array6":"blob", "spec_array7":"blob", "spec_array8":"blob", "spec_array9":"blob", "spec_array10":"blob", "spec_array11":"blob", "spec_array12":"blob", "spec_array13":"blob", "spec_array14":"blob", "spec_array15":"blob", "spec_array16":"blob", "spec_array17":"blob", "spec_array18":"blob", "spec_array19":"blob", "spec_array20":"blob", "spec_array2":"blob", "obs_mode":"text", "scan_num":"text"})
+        self.n.make_table(self.table_name, {"timestamp":"float", "spec_array1":"blob", "spec_array2":"blob", "spec_array3":"blob", "spec_array4":"blob", "spec_array5":"blob", "spec_array6":"blob", "spec_array7":"blob", "spec_array8":"blob", "spec_array9":"blob", "spec_array10":"blob", "spec_array11":"blob", "spec_array12":"blob", "spec_array13":"blob", "spec_array14":"blob", "spec_array15":"blob", "spec_array16":"blob", "spec_array17":"blob", "spec_array18":"blob", "spec_array19":"blob", "spec_array20":"blob", "spec_array2":"blob", "obs_mode":"text", "scan_num":"text", "labdel":"float", "betdel":"float"})
         self.before_dbname = self.newdb_name
         print("new", self.newdb_name)###for debug
 
@@ -64,7 +64,8 @@ class xffts_logger():
         self.newdb_name = req.newdb_name
         self.obs_mode = req.obs_mode
         self.scan_num = req.scan_num
-        #print(req)
+        self.lamdel = req.lamdel
+        self.betdel = req.betdel
         
     def _output_status(self):
         print_str = f"DB path = {self.path_to_db}\n ***start logging***"
@@ -84,7 +85,7 @@ class xffts_logger():
                 tmplist[i] = list(eval("req.SPEC_BE{}".format(i+1)))
             print("check : ",time.time()-start)
             self.queue.put(tmplist)
-            self.queue2.put([self.obs_mode, self.scan_num, float(req.timestamp)])
+            self.queue2.put([self.obs_mode, self.scan_num, float(req.timestamp), self.lamdel, self.betdel])
             self.count1+=1
         else:
             pass
@@ -109,7 +110,7 @@ class xffts_logger():
                     tmp_b  = self.queue2.get()
                     #pickle.dumps()
                     tmp_a = list(map(pickle.dumps, tmp_a))
-                    tmp_list[i] = ((tmp_b[2], tmp_a[0], tmp_a[1], tmp_a[2], tmp_a[3], tmp_a[4], tmp_a[5], tmp_a[6], tmp_a[7], tmp_a[8], tmp_a[9], tmp_a[10], tmp_a[11], tmp_a[12], tmp_a[13], tmp_a[14], tmp_a[15], tmp_a[16], tmp_a[17], tmp_a[18], tmp_a[19], tmp_b[0], tmp_b[1]))
+                    tmp_list[i] = ((tmp_b[2], tmp_a[0], tmp_a[1], tmp_a[2], tmp_a[3], tmp_a[4], tmp_a[5], tmp_a[6], tmp_a[7], tmp_a[8], tmp_a[9], tmp_a[10], tmp_a[11], tmp_a[12], tmp_a[13], tmp_a[14], tmp_a[15], tmp_a[16], tmp_a[17], tmp_a[18], tmp_a[19], tmp_b[0], tmp_b[1], tmp_b[3], tmp_b[4]))
                     self.count+=1
                 #print("time check2###", time.time()-time1)
                 time2 = time.time()
@@ -129,7 +130,7 @@ class xffts_logger():
                     tmp_a = self.queue.get()
                     tmp_a = list(map(pickle.dumps, tmp_a))
                     tmp_b = self.queue2.get()
-                    tmp_list[i] = ((tmp_b[2], tmp_a[0], tmp_a[1], tmp_a[2], tmp_a[3], tmp_a[4], tmp_a[5], tmp_a[6], tmp_a[7], tmp_a[8], tmp_a[9], tmp_a[10], tmp_a[11], tmp_a[12], tmp_a[13], tmp_a[14], tmp_a[15], tmp_a[16], tmp_a[17], tmp_a[18], tmp_a[19], tmp_b[0], tmp_b[1]))
+                    tmp_list[i] = ((tmp_b[2], tmp_a[0], tmp_a[1], tmp_a[2], tmp_a[3], tmp_a[4], tmp_a[5], tmp_a[6], tmp_a[7], tmp_a[8], tmp_a[9], tmp_a[10], tmp_a[11], tmp_a[12], tmp_a[13], tmp_a[14], tmp_a[15], tmp_a[16], tmp_a[17], tmp_a[18], tmp_a[19], tmp_b[0], tmp_b[1], tmp_b[3], tmp_b[4]))
                     #tmp_list[i] = ((time.time(),pickle.dumps(self.queue.get()), tmp_b[0], tmp_b[1]))
                     self.count +=1
                 self.n.write_blob3(self.table_name, tmp_list, auto_commit = False)
