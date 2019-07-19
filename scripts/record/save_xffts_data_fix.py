@@ -110,7 +110,7 @@ class xffts_logger():
                     tmp_b  = self.queue2.get()
                     #pickle.dumps()
                     tmp_a = list(map(pickle.dumps, tmp_a))
-                    tmp_list[i] = ((tmp_b[2], tmp_a[0], tmp_a[1], tmp_a[2], tmp_a[3], tmp_a[4], tmp_a[5], tmp_a[6], tmp_a[7], tmp_a[8], tmp_a[9], tmp_a[10], tmp_a[11], tmp_a[12], tmp_a[13], tmp_a[14], tmp_a[15], tmp_a[16], tmp_a[17], tmp_a[18], tmp_a[19], tmp_b[0], tmp_b[1], tmp_b[2], tmp_b[3]))
+                    tmp_list[i] = ((tmp_b[2], tmp_a[0], tmp_a[1], tmp_a[2], tmp_a[3], tmp_a[4], tmp_a[5], tmp_a[6], tmp_a[7], tmp_a[8], tmp_a[9], tmp_a[10], tmp_a[11], tmp_a[12], tmp_a[13], tmp_a[14], tmp_a[15], tmp_a[16], tmp_a[17], tmp_a[18], tmp_a[19], tmp_b[0], tmp_b[1], tmp_b[3], tmp_b[4]))
                     self.count+=1
                 #print("time check2###", time.time()-time1)
                 time2 = time.time()
@@ -130,7 +130,7 @@ class xffts_logger():
                     tmp_a = self.queue.get()
                     tmp_a = list(map(pickle.dumps, tmp_a))
                     tmp_b = self.queue2.get()
-                    tmp_list[i] = ((tmp_b[2], tmp_a[0], tmp_a[1], tmp_a[2], tmp_a[3], tmp_a[4], tmp_a[5], tmp_a[6], tmp_a[7], tmp_a[8], tmp_a[9], tmp_a[10], tmp_a[11], tmp_a[12], tmp_a[13], tmp_a[14], tmp_a[15], tmp_a[16], tmp_a[17], tmp_a[18], tmp_a[19], tmp_b[0], tmp_b[1], tmp_b[2], tmp_b[3]))
+                    tmp_list[i] = ((tmp_b[2], tmp_a[0], tmp_a[1], tmp_a[2], tmp_a[3], tmp_a[4], tmp_a[5], tmp_a[6], tmp_a[7], tmp_a[8], tmp_a[9], tmp_a[10], tmp_a[11], tmp_a[12], tmp_a[13], tmp_a[14], tmp_a[15], tmp_a[16], tmp_a[17], tmp_a[18], tmp_a[19], tmp_b[0], tmp_b[1], tmp_b[3], tmp_b[4]))
                     #tmp_list[i] = ((time.time(),pickle.dumps(self.queue.get()), tmp_b[0], tmp_b[1]))
                     self.count +=1
                 self.n.write_blob3(self.table_name, tmp_list, auto_commit = False)
