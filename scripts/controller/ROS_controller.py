@@ -947,11 +947,13 @@ class controller(object):
             print("clear_condition is ''.")
         return
 
-    def xffts_publish_flag(self, timestamp, db_name, scan_num, obs_mode):
+    def xffts_publish_flag(self, timestamp, db_name, scan_num, obs_mode, lamdel, betdel):
         xffts_flag = xffts_flag_msg()
         xffts_flag.timestamp = timestamp
         xffts_flag.newdb_name = db_name
         xffts_flag.scan_num = scan_num
         xffts_flag.obs_mode = obs_mode
+        xffts_flag.lamdel = lamdel
+        xffts_flag.betdel = betdel
         self.pub_xffts.publish(xffts_flag)
         pass
