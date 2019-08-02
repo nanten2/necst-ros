@@ -78,6 +78,31 @@ class Read():
         return int(self.f_size/self.chunk)
 
     def __getitem__(self, x):
+        d_keys = ["timestamp",
+                  "array1",
+                  "array2",
+                  "array3",
+                  "array4",
+                  "array5",
+                  "array6",
+                  "array7",
+                  "array8",
+                  "array9",
+                  "array10",
+                  "array11",
+                  "array12",
+                  "array13",
+                  "array14",
+                  "array15",
+                  "array16",
+                  "array17",
+                  "array18",
+                  "array19",
+                  "array20",
+                  "obs_mode",
+                  "scan_num",
+                  "lamdel",
+                  "betdel"]
         if x > int(self.f_size/self.chunk):#need check...
             raise IndexError
         #self.f.seek(self.chunk * x)#mmap test
@@ -85,8 +110,11 @@ class Read():
         self.mm.seek(self.chunk*x)
         tmp = self.mm.read(self.chunk)
         #return self._arange_list(self.st.unpack(tmp))
-        return numpy.frombuffer(tmp, self.np_dtype)[0]
-
+        data = numpy.frombuffer(tmp, self.np_dtype)
+        data = list(data[0])
+        data[21] = data[21].decode().replace("\x00", "")
+        return dict(zip(d_keys,data))
+        
     def read_timestamp(self):
         return self._read_partly(8, 0, "d")
 
@@ -111,6 +139,7 @@ class Read():
             self.f.seek(self.chunk*i + offset)
             tmp.append(self.f.read(length))
         return [struct.unpack(dtype, i)[0] for i in tmp]
+        #return numpy.frombuffer(tmp, self.np_dtype)[0]
 
     def _arange_list(self,d):
         tp = list(d[1:32769])
@@ -119,18 +148,14 @@ class Read():
     def read_all(self):
         self.f.seek(0)#need?
         d = self.f.read()
-        f_size = os.path.getsize(self.path)
-        chunk = 8 + 32768*4 +4*4
-        tmp = [self.st.unpack(d[chunk*i:chunk*(i+1)]) for i in tqdm(range(int(f_size/chunk)))]
-        return list(map(_arange_list, tmp)) 
+        tmp = [self.st.unpack(d[chunk*i:chunk*(i+1)]) for i in tqdm(range(int(self.f_size/self.chunk)))]
+        return list(map(self._arange_list, tmp)) 
 
     def read_all2(self):
         self.mm.seek(0)
         d = self.mm.read()
-        f_size = os.path.getsize(self.path)
-        chunk = 8 + 32768*4 +4*4
-        tmp = [self.st.unpack(d[chunk*i:chunk*(i+1)]) for i in tqdm(range(int(f_size/chunk)))]
-        return list(map(_arange_list, tmp))
+        tmp = [self.st.unpack(d[chunk*i:chunk*(i+1)]) for i in tqdm(range(int(self.f_size/self.chunk)))]
+        return list(map(self._arange_list, tmp))
                             
 if __name__ == "__main__":
     path = "/home/amigos/ros/src/necst/scripts/record/hdd/test5.dat"
