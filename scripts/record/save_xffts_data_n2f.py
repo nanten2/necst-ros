@@ -70,8 +70,6 @@ class xffts_logger():
                 time.sleep(0.001)
                 print("save")#for debug will be deleted
                 self.c+=1#tmp2
-                time.sleep(0.4)
-            
 
     def pub_status(self):
         pub = rospy.Publisher("logger_status", String, queue_size = 1)
