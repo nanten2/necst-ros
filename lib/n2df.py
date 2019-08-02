@@ -91,10 +91,17 @@ class Read():
         return self._read_partly(8, 0, "d")
 
     def read_obs_mode(self):
-        return self._read_partly(4, 8 + 655360*4, "4s")
+        return list(map(lambda x : x.decode().replace("\x00", ""), self._read_partly(4, 8 + 655360*4, "4s")))
 
     def read_scan_num(self):
         return self._read_partly(4, 8 + 655360*4+4, "i")
+
+    def read_lamdel(self):
+        return self._read_partly(4, 8 + 655360*4+4+4, "i")
+
+    def read_betdel(self):
+        return self._read_partly(4, 8 + 655360*4+4+4+4, "i")
+        
 
     def _read_partly(self, length, offset, dtype):
         self.f.seek(0)
