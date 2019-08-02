@@ -128,8 +128,7 @@ class Read():
         return self._read_partly(4, 8 + 655360*4+4+4, "i")
 
     def read_betdel(self):
-        return self._read_partly(4, 8 + 655360*4+4+4+4, "i")
-        
+        return self._read_partly(4, 8 + 655360*4+4+4+4, "i")        
 
     def _read_partly(self, length, offset, dtype):
         self.f.seek(0)
@@ -154,7 +153,8 @@ class Read():
     def read_all2(self):
         self.mm.seek(0)
         d = self.mm.read()
-        tmp = [self.st.unpack(d[chunk*i:chunk*(i+1)]) for i in tqdm(range(int(self.f_size/self.chunk)))]
+        #tmp = [self.st.unpack(d[chunk*i:chunk*(i+1)]) for i in tqdm(range(int(self.f_size/self.chunk)))]
+        tmp = [numpy.frombuffer(d[chunk*i:chunk*(i+1)], self.np_dtype) for i in tqdm(range(int(self.f_size/self.chunk)))]
         return list(map(self._arange_list, tmp))
                             
 if __name__ == "__main__":
