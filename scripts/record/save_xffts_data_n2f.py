@@ -65,7 +65,6 @@ class xffts_logger():
                     break
                 ret = self.queue.get()
                 tmp_list = [float(ret[0]), [*ret[1]], str(self.obs_mode), int(self.scan_num), int(self.lamdel), int(self.betdel)]
-                print(numpy.shape(tmp_list[1]))
                 n.write(tmp_list)
                 time.sleep(0.001)
                 print("save")#for debug will be deleted
