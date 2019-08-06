@@ -12,7 +12,7 @@ description = 'Get OTF spectrum'
 # Config Parameters
 # =================
 #path_to_db = "/media/amigos/HD-LCU3/test/write_test/otf20190713.db"
-path_to_db = "./hdd/write_test/otf20190715_3.db"
+path_to_db = "./hdd/otf20190806_n31.n2df"
 #path_to = "/media/amigos/HD-LCU3/test/npy/"
 
 # Default parameters
@@ -225,42 +225,6 @@ print(scan_point)
 
 total_count = int(obs['N'])#total scan_line
 
-
-
-# Data aquisition
-# ---------------
-
-d1_list = []
-d2_list = []
-tdim6_list = []
-date_list = []
-tsys_list1 = []
-tsys_list2 = []
-thot_list = []
-tcold_list = []
-vframe_list = []
-vframe2_list = []
-lst_list = []
-az_list = []
-el_list = []
-tau_list = []
-hum_list = []
-tamb_list = []
-press_list = []
-windspee_list = []
-winddire_list = []
-sobsmode_list = []
-mjd_list = []
-secofday_list = []
-subref_list = []
-_2NDLO_list1 = []
-_2NDLO_list2 = []
-lamdel_list = []
-betdel_list = []
-subscan_list = []
-lambda_list = []
-beta_list = []
-
 print('Start experimentation')
 print('')
 
@@ -311,16 +275,7 @@ while rp_num < rp:
             print('get spectrum...')
             ###con.doppler_calc()
             print(cosydel)
-            dp2 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, 
-                               sx + num*gridx + total_count*dx, sy + num*gridy + total_count*dy, 
-                               dcos, cosydel, integ_off*2+rampt+(dt*scan_point), 
-                               obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 
-                               8038.000000000/1000., 9301.318999999/1000.)
-            dp1 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, 
-                               sx + num*gridx, sy + num*gridy, dcos, cosydel, 
-                               integ_off*2+rampt, obs['restfreq_1']/1000., obs['restfreq_2']/1000., 
-                               sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
-            
+
             #con.observation("start", integ_off)
             #time.sleep(integ_off)
 
@@ -331,58 +286,11 @@ while rp_num < rp:
             con.xffts_publish_flag(1, path_to_db, str(num), "HOT", 0, 0)
             time.sleep(integ_off)
             con.xffts_publish_flag(0, path_to_db, str(num), "OFF", 0, 0)
-            """
-            d1 = d['dfs1'][0]
-            d2 = d['dfs2'][0]
-            d1_list.append(d1)
-            d2_list.append(d2)
-            tdim6_list.append([16384,1,1])
-            tmp_time = status.Time
-            tmp2 = datetime.fromtimestamp(tmp_time)
-            tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
-            date_list.append(tmp3)            
-            thot_list.append(temp)
-            vframe_list.append(dp1[0])
-            vframe2_list.append(dp2[0]) 
-            lst_list.append(status.LST)
-            az_list.append(status.Current_Az)
-            el_list.append(status.Current_El)
-            tau_list.append(tau)
-            hum_list.append(status.OutHumi)
-            tamb_list.append(status.OutTemp)
-            press_list.append(status.Press)
-            windspee_list.append(status.WindSp)
-            winddire_list.append(status.WindDir)
-            sobsmode_list.append('HOT')
-            mjd_list.append(status.MJD)
-            secofday_list.append(status.Secofday)
-            subref_list.append(status.Current_M2)
             latest_hottime = time.time()
-            P_hot1 = numpy.sum(d1)
-            P_hot2 = numpy.sum(d2)
-            tsys_list1.append(0)
-            tsys_list2.append(0)
-            _2NDLO_list1.append(dp1[3]['sg21']*1000)
-            _2NDLO_list2.append(dp1[3]['sg22']*1000) 
-            lamdel_list.append(0)
-            betdel_list.append(0)
-            subscan_list.append(int(num)+1)
-            lambda_list.append(obs['lambda_off'])
-            beta_list.append(obs['beta_off'])
-            """
             pass
 
 
         else:
-            dp2 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, 
-                               sx + num*gridx + total_count*dx, sy + num*gridy + total_count*dy, 
-                               dcos, cosydel, integ_off+rampt+(dt*scan_point), 
-                               obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 
-                               8038.000000000/1000., 9301.318999999/1000.)
-            dp1 = dp.set_track(lambda_on, beta_on, vlsr, coordsys, 
-                               sx + num*gridx , sy + num*gridy, offset_dcos, cosydel, 
-                               integ_off+rampt, obs['restfreq_1']/1000., obs['restfreq_2']/1000., 
-                               sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)
             pass
         
         print('OFF')
@@ -394,9 +302,6 @@ while rp_num < rp:
             time.sleep(0.5)        
         con.obs_status(active=True, current_num=scan_point*num, current_position="OFF")    
         print('get spectrum...')
-        #con.observation("start", integ_off)# getting one_shot_data
-        #time.sleep(integ_off)
-
 
         status = con.read_status()
         temp = float(status.CabinTemp1)
@@ -404,46 +309,6 @@ while rp_num < rp:
         con.xffts_publish_flag(1, path_to_db, str(num), "OFF", 0, 0)
         time.sleep(integ_off)
         con.xffts_publish_flag(0, path_to_db, str(num), "OFF", 0, 0)
-        """
-        d1 = d['dfs1'][0]
-        d2 = d['dfs2'][0]
-        d1_list.append(d1)
-        d2_list.append(d2)
-        tdim6_list.append([16384,1,1])
-        tmp_time = status.Time
-        tmp2 = datetime.fromtimestamp(tmp_time)
-        tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
-        date_list.append(tmp3)        
-        thot_list.append(temp)
-        vframe_list.append(dp1[0]) 
-        vframe2_list.append(dp2[0]) 
-        lst_list.append(status.LST)
-        az_list.append(status.Current_Az)
-        el_list.append(status.Current_El)
-        tau_list.append(tau)
-        hum_list.append(status.OutHumi)
-        tamb_list.append(status.OutTemp)
-        press_list.append(status.Press)
-        windspee_list.append(status.WindSp)
-        winddire_list.append(status.WindDir)
-        sobsmode_list.append('OFF')
-        mjd_list.append(status.MJD)
-        secofday_list.append(status.Secofday)
-        subref_list.append(status.Current_M2)
-        P_sky1 = numpy.sum(d1)
-        P_sky2 = numpy.sum(d2)
-        tsys1 = temp/(P_hot1/P_sky1-1)
-        tsys2 = temp/(P_hot2/P_sky2-1)
-        tsys_list1.append(tsys1)
-        tsys_list2.append(tsys2)
-        _2NDLO_list1.append(dp1[3]['sg21']*1000)
-        _2NDLO_list2.append(dp1[3]['sg22']*1000) 
-        lamdel_list.append(0)#
-        betdel_list.append(0)#
-        subscan_list.append(int(num)+1)
-        lambda_list.append(obs['lambda_off'])
-        beta_list.append(obs['beta_off'])
-        """
         print('move ON')
         con.move_stop()
         ssx = (sx + num*gridx) - float(dx)/float(dt)*rampt-float(dx)/2.#rampの始まり
@@ -477,68 +342,13 @@ while rp_num < rp:
             time.sleep(0.001)
         con.xffts_publish_flag(0, path_to_db, str(num), "ON", 0, 0)
 
-        status = con.read_status()
-        temp = float(status.CabinTemp1)
-        tmp_time = status.Time
-        tmp2 = datetime.fromtimestamp(tmp_time)
-        tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")        
-        date = tmp3
-        lst = status.LST
-        az = status.Current_Az
-        el = status.Current_El
-        hum = status.OutHumi
-        tamb = status.OutTemp
-        press = status.Press
-        windspee = status.WindSp
-        winddire = status.WindDir
-        mjd = status.MJD
-        sec = status.Secofday
-        subref = status.Current_M2
-
         _on = 0
         while _on < scan_point:
             print(_on+1)
-            """
-            d1 = d['dfs1'][_on]
-            d2 = d['dfs2'][_on]
-            d1_list.append(d1)
-            d2_list.append(d2)
-            lamdel_on = round((sx + num*gridx) + dx*_on,0)
-            betdel_on = round((sy + num*gridy) + dy*_on,0)
-            tdim6_list.append([16384,1,1])
-            date_list.append(date)
-            thot_list.append(temp)
-            vframe_list.append(dp1[0]) 
-            vframe2_list.append(dp2[0]) 
-            lst_list.append(lst)
-            az_list.append(az)
-            el_list.append(el)
-            tau_list.append(tau)
-            hum_list.append(hum)
-            tamb_list.append(tamb)
-            press_list.append(press)
-            windspee_list.append(windspee)
-            winddire_list.append(winddire)
-            sobsmode_list.append('ON')
-            mjd_list.append(mjd)
-            secofday_list.append(sec)
-            subref_list.append(subref)
-            tsys_list1.append(tsys1)
-            tsys_list2.append(tsys2)
-            _2NDLO_list1.append(dp1[3]['sg21']*1000)
-            _2NDLO_list2.append(dp1[3]['sg22']*1000)
-            lamdel_list.append(lamdel_on)
-            betdel_list.append(betdel_on)
-            subscan_list.append(int(num)+1)
-            lambda_list.append(obs['lambda_on'])
-            beta_list.append(obs['beta_on'])
-            """
             _on += 1
-
 
         print('stop')
         con.move_stop()
-
         num += 1
         continue
 
@@ -564,276 +374,3 @@ con.move_hot('out')
 print('observation end')
 con.move_stop()
 con.dome_stop()
-
-'''
-temp = float(status.CabinTemp1)
-  
-print('Temp: %.2f'%(temp))
-print('get spectrum...')
-d = con.oneshot_achilles(exposure=integ_off)
-d1 = d['dfs1'][0]
-d2 = d['dfs2'][0]
-d1_list.append(d1)
-d2_list.append(d2)
-tdim6_list.append([16384,1,1])
-tmp_time = status.Time
-tmp2 = datetime.fromtimestamp(tmp_time)
-tmp3 = tmp2.strftime("%Y/%m/%d %H:%M:%S")
-date_list.append(tmp3)
-thot_list.append(temp)
-vframe_list.append(dp1[0])
-vframe2_list.append(dp2[0])
-lst_list.append(status.LST)
-az_list.append(status.Current_Az)
-el_list.append(status.Current_El)
-tau_list.append(tau)
-hum_list.append(status.OutHumi)
-tamb_list.append(status.OutTemp)
-press_list.append(status.Press)
-windspee_list.append(status.WindSp)
-winddire_list.append(status.WindDir)
-sobsmode_list.append('HOT')
-mjd_list.append(status.MJD)
-secofday_list.append(status.Secofday)
-subref_list.append(status.Current_M2)
-tsys_list1.append(0)
-tsys_list2.append(0)
-_2NDLO_list1.append(dp1[3]['sg21']*1000)
-_2NDLO_list2.append(dp1[3]['sg22']*1000)
-lamdel_list.append(0)
-betdel_list.append(0)
-subscan_list.append(int(num)+1)
-lambda_list.append(obs['lambda_off'])
-beta_list.append(obs['beta_off'])
-'''
-
-
-"""
-#Other_list_data
-if obs['lo1st_sb_1'] == 'U':
-    ul = 1
-else:
-    ul = -1
-imagfreq1 = obs['obsfreq_1'] - ul*obs['if1st_freq_1']*2  
-lofreq1 = obs['obsfreq_1'] - ul*obs['if1st_freq_1']*1
-
-if obs['lo1st_sb_1'] == 'U':
-    ul1_1 = +1
-else:
-    ul1_1 = -1
-if obs['lo2nd_sb_1'] == 'U':
-    ul1_2 = +1
-else:
-    ul1_2 = -1
-if obs['lo3rd_sb_1'] == 'U':
-    ul1_3 = +1
-else:
-    ul1_3 = -1
-ul1 = ul1_1 * ul1_2 * ul1_3
-cdelt1_1 = (-1)*ul1*0.079370340319607024 #[(km/s)/ch]
-#dv1 = (c*cdelt1_1)/obs['restfreq_1']
-crpix1_1 = 8191.5 - obs['vlsr']/cdelt1_1 - (500-obs['if3rd_freq_1'])/0.061038881767686015
-
-
-if obs['lo1st_sb_2'] == 'U':
-    ul = 1
-else:
-    ul = -1
-imagfreq2 = obs['obsfreq_2'] - ul*obs['if1st_freq_2']*2
-lofreq2 = obs['obsfreq_2'] - ul*obs['if1st_freq_2']*1
-
-if obs['lo1st_sb_2'] == 'U':
-    ul2_1 = +1
-else:
-    ul2_1 = -1
-if obs['lo2nd_sb_2'] == 'U':
-    ul2_2 = +1
-else:
-    ul2_2 = -1
-if obs['lo3rd_sb_2'] == 'U':
-    ul2_3 = +1
-else:
-    ul2_3 = -1
-ul2 = ul2_1 * ul2_2 * ul2_3
-cdelt1_2 = (-1)*ul2*0.0830267951512371 #[(km/s)/ch]                           
-#dv2 = (c*cdelt1_2)/obs['restfreq_2']
-crpix1_2 = 8191.5 - obs['vlsr']/cdelt1_2 - (500-obs['if3rd_freq_2'])/0.061038881767686015
-
-#d1list
-read1 = {
-    "OBJECT" : obs['object'],
-    "BANDWID" : 1000000000, #デバイスファイルに追加
-    "DATE-OBS" : date_list, 
-    "EXPOSURE" : obs['exposure'],
-    "TSYS" : tsys_list1,
-    "DATA" : d1_list,
-    "TDIM6" : tdim6_list, #デバイスファイルに追加
-    "TUNIT6" : 'counts', #デバイスファイルに追加
-    "CTYPE1" : 'km/s', #デバイスファイルに追加
-    "CRVAL1" : 0, #デバイスファイルに追加
-    "CRPIX1" : crpix1_1, #デバイスファイルに追加
-    "CDELT1" : cdelt1_1, #デバイスファイルに追加
-    "CTYPE2" : 'deg', #未使用
-    "CRVAL2" : lambda_list, 
-    "CTYPE3" : 'deg', #未使用
-    "CRVAL3" : beta_list,
-    "T_VLSR" : 0, #未使用
-    "OBSERVER" : obs['observer'],
-    "SCAN" : 1, #要確認
-    "OBSMODE" : obs['obsmode'],
-    "MOLECULE" : obs['molecule_1'],
-    "TRANSITI" : obs['transiti_1'],
-    "TEMPSCAL" : 'TA', #未使用
-    "FRONTEND" : 'nagoyaRX', #デバイスファイルに追加
-    "BACKEND" : 'nagoyaDFS', #デバイスファイルに追加
-    "THOT" : thot_list,
-    "TCOLD" : 0, #tcold_list
-    "FREQRES" : 0.06103515625, #デバイスファイルに追加[MHz]
-    "TIMESYS" : 'UTC', #要確認
-    "VELDEF" : 'RADI-LSR',
-    "VFRAME" : vframe_list,
-    "VFRAME2" : vframe2_list,
-    "OBSFREQ" : obs['restfreq_1'], #restfreq_1
-    "IMAGFREQ" : imagfreq1, #要計算
-    "LST" : lst_list,
-    "AZIMUTH" : az_list,
-    "ELEVATIO" : el_list,
-    "TAU" : tau_list,
-    "HUMIDITY" : hum_list,
-    "TAMBIENT" : tamb_list,
-    "PRESSURE" : press_list,
-    "WINDSPEE" : windspee_list,
-    "WINDDIRE" : winddire_list,
-    "BEAMEFF" : 1, #未使用
-    "RESTFREQ" : obs['restfreq_1'],
-    "SIG" : 'T', #未使用
-    "CAL" : 'F', #未使用
-    "SOBSMODE" : sobsmode_list,
-    "QUALITY" : 1, #未使用
-    "AOSLEN" : 0.04, #未使用
-    "LOFREQ" : lofreq1, #要計算
-    "SYNTH" : 8038.000000000,#要調査[MHz;IF1]2ndLO
-    "FREQSWAM" : 0,#要調査
-    "COORDSYS" : obs['coordsys'],
-    "COSYDEL" : obs['cosydel'],
-    "LAMDEL" : lamdel_list,#arcsec
-    "BETDEL" : betdel_list,#arcsec
-    "OTADEL" : obs['otadel'],
-    "OTFVLAM" : 0,#要検討
-    "OTFVBET" : 0,#要検討
-    "OTFSCANN" : obs['N'],
-    "OTFLEN" : obs['otflen'],
-    "SUBSCAN" : subscan_list,
-    "MJD" : mjd_list,
-    "SECOFDAY" : secofday_list,
-    "SIDEBAND" : obs['lo1st_sb_1'],
-    "_2NDSB" : obs['lo2nd_sb_1'],
-    "_3RDSB" : obs['lo3rd_sb_1'],
-    "_2NDLO" : _2NDLO_list1,#ドップラーシフト込み
-    "_3RDLO" : obs['lo3rd_freq_1'],
-    "SUBREF" : subref_list,
-    "LOCKSTAT" : 'F'#未使用
-    }
-
-
-#d2list                                                                        
-read2 = {
-    "OBJECT" : obs['object'],
-    "BANDWID" : 1000000000, #デバイスファイルに追加
-    "EXPOSURE" : obs['exposure'],
-    "DATE-OBS" : date_list, 
-    "TSYS" : tsys_list2,
-    "DATA" : d2_list,
-    "TDIM6" : tdim6_list, #デバイスファイルに追加
-    "TUNIT6" : 'counts', #デバイスファイルに追加
-    "CTYPE1" : 'km/s', #デバイスファイルに追加 
-    "CRVAL1" : 0, #デバイスファイルに追加
-    "CRPIX1" : crpix1_2, #デバイスファイルに追加
-    "CDELT1" : cdelt1_2, #デバイスファイルに追加
-    "CTYPE2" : 'deg', #未使用
-    "CRVAL2" : lambda_list,
-    "CTYPE3" : 'deg', #未使用
-    "CRVAL3" : beta_list,
-    "T_VLSR" : 0, #未使用
-    "OBSERVER" : obs['observer'],
-    "SCAN" : 1, #要確認
-    "OBSMODE" : obs['obsmode'],
-    "MOLECULE" : obs['molecule_2'],
-    "TRANSITI" : obs['transiti_2'],
-    "TEMPSCAL" : 'TA', #未使用
-    "FRONTEND" : 'nagoyaRX', #デバイスファイルに追加
-    "BACKEND" : 'nagoyaDFS', #デバイスファイルに追加                           
-    "THOT" : thot_list,
-    "TCOLD" : 0, #tcold_list                                                 
-    "FREQRES" : 0.06103515625, #デバイスファイルに追加[MHz]                
-    "TIMESYS" : 'UTC', #要確認                                                 
-    "VELDEF" : 'RADI-LSR',
-    "VFRAME" : vframe_list,
-    "VFRAME2" : vframe2_list,
-    "OBSFREQ" : obs['restfreq_2'],                                
-    "IMAGFREQ" : imagfreq2, #要計算                                            
-    "LST" : lst_list,
-    "AZIMUTH" : az_list,
-    "ELEVATIO" : el_list,
-    "TAU" : tau_list,
-    "HUMIDITY" : hum_list,
-    "TAMBIENT" : tamb_list,
-    "PRESSURE" : press_list,
-    "WINDSPEE" : windspee_list,
-    "WINDDIRE" : winddire_list,
-    "BEAMEFF" : 1, #未使用                                                     
-    "RESTFREQ" : obs['restfreq_2'],
-    "SIG" : 'T', #未使用                                                       
-    "CAL" : 'F', #未使用                                                       
-    "SOBSMODE" : sobsmode_list,
-    "QUALITY" : 1, #未使用                                                     
-    "AOSLEN" : 0.04, #未使用                                                   
-    "LOFREQ" : lofreq2, #要計算                                                
-    "SYNTH" : 9301.318999999,#要調査[MHz;IF2]2ndLO                             
-    "FREQSWAM" : 0,#要調査                                                     
-    "COORDSYS" : obs['coordsys'],
-    "COSYDEL" : obs['cosydel'],
-    "LAMDEL" : lamdel_list,#arcsec
-    "BETDEL" : betdel_list,#arcsec
-    "OTADEL" : obs['otadel'],
-    "OTFVLAM" : 0,#要検討
-    "OTFVBET" : 0,#要検討
-    "OTFSCANN" : obs['N'],
-    "OTFLEN" : obs['otflen'],
-    "SUBSCAN" : subscan_list,                                                  
-    "MJD" : mjd_list,
-    "SECOFDAY" : secofday_list,
-    "SIDEBAND" : obs['lo1st_sb_2'],
-    "_2NDSB" : obs['lo2nd_sb_2'],
-    "_3RDSB" : obs['lo3rd_sb_2'],
-    "_2NDLO" : _2NDLO_list2,#ドップラーシフト込み                           
-    "_3RDLO" : obs['lo3rd_freq_2'],
-    "SUBREF" : subref_list,
-    "LOCKSTAT" : 'F'#未使用                                                    
-    }
-
-con.move_stop()
-
-f1 = os.path.join(savedir,'n%s_%s_%s_otf_%s.fits'%(timestamp ,obs['molecule_1'],obs['transiti_1'].split('=')[1],obs['object']))
-f2 = os.path.join(savedir,'n%s_%s_%s_otf_%s.fits'%(timestamp ,obs['molecule_2'],obs['transiti_2'].split('=')[1],obs['object']))
-#numpy.save(f1+".npy",read1)
-#numpy.save(f2+".npy",read2)
-
-print('VFRAME1 : ',dp1[0])
-print('dp2 : ',dp2)
-
-sys.path.append("/home/amigos/ros/src/necst/lib/")
-import n2fits_write
-n2fits_write.write(read1,f1)
-n2fits_write.write(read2,f2)
-
-
-#shutil.copy("/home/amigos/NECST/soft/server/hosei_230.txt", savedir+"/hosei_copy")
-timestamp = time.strftime('%Y%m%d_%H%M%S')
-dirname = timestamp
-con.obs_status(active=False)
-
-import correct_fits
-correct_fits.calc(f1)
-correct_fits.calc(f2)
-"""
