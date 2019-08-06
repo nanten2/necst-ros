@@ -150,6 +150,7 @@ class data_server(object):
                 _d.append(d[16383])
                 _d.append((d[16383]+d[0])/2)
             '''
+            
         elif mode == 'OFF':
             d = data[self.ind_list_off[self.off_count-1]]
             for i in range(16383):
