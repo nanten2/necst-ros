@@ -2,14 +2,12 @@ import struct
 import time
 import numpy
 import os
-import gc
 import mmap
 from tqdm import tqdm
 
 class File():
     ###config
     header_size = 0#will be changed
-    #d_format = "d 32768f 4s i i i"
     d_format = "d 655360f 4s i i i"
     
     def __init__(self, path):
@@ -55,7 +53,7 @@ class Read():
                             ('array15', ('<f', 32768)),
                             ('array16', ('<f', 32768)),
                             ('array17', ('<f', 32768)),
-                            ('array18', ('<f', 32768)),                                                        
+                            ('array18', ('<f', 32768)),
                             ('array19', ('<f', 32768)),
                             ('array20', ('<f', 32768)),
                             ('obs_mode', 'S4'),
@@ -119,27 +117,47 @@ class Read():
         return self._read_partly(8, 0, "d")
 
     def read_obs_mode(self):
-        return list(map(lambda x : x.decode().replace("\x00", ""), self._read_partly(4, 8 + 655360*4, "4s")))
+        return list(map(lambda x : x.decode().replace("\x00", ""), self._read_partly(4, 8 + 655360*4, "S4")))
 
     def read_scan_num(self):
-        return self._read_partly(4, 8 + 655360*4+4, "i")
+        return self._read_partly(4, 8 + 655360*4+4, "<i")
 
     def read_lamdel(self):
-        return self._read_partly(4, 8 + 655360*4+4+4, "i")
+        return self._read_partly(4, 8 + 655360*4+4+4, "<i")
 
     def read_betdel(self):
-        return self._read_partly(4, 8 + 655360*4+4+4+4, "i")        
+        return self._read_partly(4, 8 + 655360*4+4+4+4, "<i")
+
+    def read_onearray(self, array_num):
+        offset = 32768*array_num
+        return self._read_partly(32768*4, 8+offset, ("<f", 32768))
 
     def _read_partly(self, length, offset, dtype):
-        self.f.seek(0)
-        tmp = []
-        f_size = os.path.getsize(self.path)
-        for i in tqdm(range(int(self.f_size/self.chunk))):
-            self.f.seek(self.chunk*i + offset)
-            tmp.append(self.f.read(length))
-        return [struct.unpack(dtype, i)[0] for i in tmp]
-        #return numpy.frombuffer(tmp, self.np_dtype)[0]
+        def _t(i):
+            self.mm.seek(self.chunk*i + offset)
+            return self.mm.read(length)
+        self.mm.seek(0)
+        loop = self.f_size/self.chunk
+        tmp = [_t(i) for i in tqdm(range(int(loop)))]
+        return [numpy.frombuffer(i, dtype)[0] for i in tmp]
 
+    def read_for_otf(self, array_num):
+        ###will be deleted?###
+        #array_num = 0~19
+        #array_num
+        self.mm.seek(0)
+        loop = self.f_size/self.chunk
+        array = []
+        scan = []
+        obs = []
+        for i in tqdm(range(int(loop))):
+            self.mm.seek(self.chunk * i)
+            tmp = self.mm.read(self.chunk)
+            array.append(tmp[8+array_num*32768:(array_num+1*32768)])
+            scan.append(tmp[8+655360:8+655360+4])
+            obs.append(tmp[8+655360+4:8+6550360+8])
+        return [numpy.frombuffer(i, ("<f", 32768)) for i in array],[numpy.frombuffer(i, "4S") for i in scan],    [numpy.frombuffer(i, "<i") for i in obs]
+            
     def _arange_list(self,d):
         tp = list(d[1:32769])
         return [d[0], tp, d[32769].decode().replace("\x00", ""), d[32770], d[32771], d[32772]]
@@ -153,8 +171,7 @@ class Read():
     def read_all2(self):
         self.mm.seek(0)
         d = self.mm.read()
-        #tmp = [self.st.unpack(d[chunk*i:chunk*(i+1)]) for i in tqdm(range(int(self.f_size/self.chunk)))]
-        tmp = [numpy.frombuffer(d[chunk*i:chunk*(i+1)], self.np_dtype) for i in tqdm(range(int(self.f_size/self.chunk)))]
+        tmp = [numpy.frombuffer(d[self.chunk*i:self.chunk*(i+1)], self.np_dtype) for i in tqdm(range(int(self.f_size/self.chunk)))]
         return list(map(self._arange_list, tmp))
                             
 if __name__ == "__main__":
