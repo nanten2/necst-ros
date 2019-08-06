@@ -165,7 +165,7 @@ class Read():
     def read_all(self):
         self.f.seek(0)#need?
         d = self.f.read()
-        tmp = [self.st.unpack(d[chunk*i:chunk*(i+1)]) for i in tqdm(range(int(self.f_size/self.chunk)))]
+        tmp = [self.st.unpack(d[self.chunk*i:self.chunk*(i+1)]) for i in tqdm(range(int(self.f_size/self.chunk)))]
         return list(map(self._arange_list, tmp)) 
 
     def read_all2(self):
