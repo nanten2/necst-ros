@@ -127,18 +127,17 @@ class data_server(object):
             _d.append((d[16383]+d[0])/2)
                 
         elif mode == 'HOT':
-            if self.hot_count <= len(self.ind_list_hot):
-                d = data[self.ind_list_hot[self.hot_count-1]]
-                for i in range(16383):
-                    dd = (d[i]+d[i+1])/2
-                    _d.append(d[i])
-                    _d.append(dd+whitenoise[i])
-                _d.append(d[16383])
-                _d.append((d[16383]+d[0])/2)
-                if self.hot_count == len(self.ind_list_hot):
-                    self.hot_count = 0
-                else:
-                    pass
+            d = data[self.ind_list_hot[self.hot_count-1]]
+            for i in range(16383):
+                dd = (d[i]+d[i+1])/2
+                _d.append(d[i])
+                _d.append(dd+whitenoise[i])
+            _d.append(d[16383])
+            _d.append((d[16383]+d[0])/2)
+            if self.hot_count == len(self.ind_list_hot):
+                self.hot_count = 0
+            else:
+                pass
             '''
             elif self.hot_count > len(self.ind_list_hot):
                 d = data[self.ind_list_hot[len(self.ind_list_hot)-(self.hot_count)]]
