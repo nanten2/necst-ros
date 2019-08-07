@@ -2,8 +2,8 @@
 
 #----
 import sys
-sys.path.append('/home/amigos/git')
-import n2lite
+sys.path.append('/home/amigos/ros/src/necst/lib')
+import n2df
 import numpy
 import matplotlib.pyplot as plt
 import pickle
@@ -122,8 +122,15 @@ def calc_integdata(IF, data_list, mode_list, lam, bet, scan_list, integ_mi, inte
 def analysis(file_name, integ_mi=5000, integ_ma=10000, object='moon'):
 # open file
 
-    n = n2lite.xffts_logger(file_name)
-    d = n.read('xffts')
+    n = n2df.Read(file_name)    
+    _n = n.read_all2()
+    d = []
+    for i in range(25):
+        _d = []
+        for j in range(len(_n)):
+            _d.append(_n[j][i])
+        d.append(_d)
+    
     
 # define axis / mask /planet
 
@@ -151,7 +158,7 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000, object='moon'):
         be_list = []
         tmp = numpy.zeros(32768)
         for i in range(len(d_)):
-            if subscan[i] == '1' and mode[i] == 'ON':
+            if subscan[i] == 1 and mode[i] == 'ON':
                 tmp += pickle.loads(d_[i])
                 if subscan[i+1] != subscan[i] or i == len(d_)-1 or _lam[i+1] != _lam[i]:
                     d_list.append(tmp)
@@ -162,7 +169,7 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000, object='moon'):
                     tmp = numpy.zeros(32768)
                 else:
                     pass
-            elif subscan[i] == '2' and mode[i] == 'ON':
+            elif subscan[i] == 2 and mode[i] == 'ON':
                 tmp += pickle.loads(d_[i])
                 if subscan[i+1] != subscan[i] or i == len(d_)-1 or _lam[i+1] != _lam[i]:
                     d_list.append(tmp)
@@ -173,7 +180,7 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000, object='moon'):
                     tmp = numpy.zeros(32768)
                 else:
                     pass
-            elif subscan[i] == '3' and mode[i] == 'ON':
+            elif subscan[i] == 3 and mode[i] == 'ON':
                 tmp += pickle.loads(d_[i])
                 if subscan[i+1] != subscan[i] or i == len(d_)-1 or _bet[i+1] != _bet[i]:
                     d_list.append(tmp)
@@ -184,7 +191,7 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000, object='moon'):
                     tmp = numpy.zeros(32768)
                 else:
                     pass
-            elif subscan[i] == '4' and mode[i] == 'ON':
+            elif subscan[i] == 4 and mode[i] == 'ON':
                 tmp += pickle.loads(d_[i])
                 if subscan[i+1] != subscan[i] or i == len(d_)-1 or _bet[i+1] != _bet[i]:
                     d_list.append(tmp)
@@ -202,7 +209,7 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000, object='moon'):
                     m_list.append('OFF')
                     la_list.append(0)
                     be_list.append(0)
-                    if subscan[i] == '1' or '2':
+                    if subscan[i] == 1 or 2:
                         s_list.append(1)
                     else:
                         s_list.append(2)
@@ -227,7 +234,7 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000, object='moon'):
                     m_list.append('HOT')
                     la_list.append(0)
                     be_list.append(0)
-                    if subscan[i] == '1' or '2':
+                    if subscan[i] == 1 or 2:
                         s_list.append(1)
                     else:
                         s_list.append(2)
@@ -238,7 +245,7 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000, object='moon'):
                         m_list.append('HOT')
                         la_list.append(0)
                         be_list.append(0)
-                        if subscan[i] == '1' or '2':
+                        if subscan[i] == 1 or 2:
                             s_list.append(1)
                         else:
                             s_list.append(2)
