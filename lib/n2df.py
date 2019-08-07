@@ -63,7 +63,7 @@ class Read():
     
     def __init__(self, path):
         self.path = path
-        self.d_format = "d 32768f 4s i i i"
+        self.d_format = "d 655360f 4s i i i"
         self.st = struct.Struct(self.d_format)
         ###file
         self.f = open(path, "r+b")
@@ -161,22 +161,21 @@ class Read():
     def _arange_list(self,d):
         tp = list(d[1:32769])
         return [d[0], tp, d[32769].decode().replace("\x00", ""), d[32770], d[32771], d[32772]]
-                                
-    def read_all(self):
-        self.f.seek(0)#need?
-        d = self.f.read()
-        tmp = [self.st.unpack(d[self.chunk*i:self.chunk*(i+1)]) for i in tqdm(range(int(self.f_size/self.chunk)))]
-        return list(map(self._arange_list, tmp)) 
 
-    def read_all2(self):
+
+    #def read_all(self):
+    #    self.f.seek(0)
+    #    d = self.f.read()
+    #    tmp = [self.st.unpack(d[self.chunk*i:self.chunk*(i+1)]) for i in tqdm(range(int(self.f_size/self.chunk)))]
+    #   return list(map(self._arange_list, tmp)) 
+
+    def read_all(self):
         self.mm.seek(0)
         d = self.mm.read()
-        tmp = [numpy.frombuffer(d[self.chunk*i:self.chunk*(i+1)], self.np_dtype) for i in tqdm(range(int(self.f_size/self.chunk)))]
-        return list(map(self._arange_list, tmp))
+        data = [numpy.frombuffer(d[self.chunk*i:self.chunk*(i+1)], self.np_dtype)[0] for i in tqdm(range(int(self.f_size/self.chunk)))]
+        return data
                             
 if __name__ == "__main__":
-    path = "/home/amigos/ros/src/necst/scripts/record/hdd/test5.dat"
-    ww = Read(path)
-    d = ww.read_all()
+    pass
 
             
