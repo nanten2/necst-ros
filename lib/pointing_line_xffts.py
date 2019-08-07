@@ -2,8 +2,8 @@
 
 #----
 import sys
-sys.path.append('/home/amigos/git')
-import n2lite
+sys.path.append('/home/amigos/ros/src/necst/lib')
+import n2df
 import numpy
 import matplotlib.pyplot as plt
 import pickle
@@ -112,7 +112,6 @@ def calc_integdata(IF, data_list, mode_list, lam, bet, scan_list, mi, ma, width,
     yscan_x = []
     yscan_y = []
 
-    print(len(lam))
     for i in range(len(xmask)):
         if xmask[i] == 1:
             xscan_Ta.append(rTaslist[i])
@@ -149,9 +148,15 @@ para_init = numpy.array([25000., 0.1, 0.0001])
 def analysis(file_name, mi=10000, ma=30000, width=1000, integ_mi=15500, integ_ma=17500, plot_mode="plot", savepath_filename='/home/amigos/latest_obs/pointing_line.png'):
 # open file
 
-    n = n2lite.xffts_logger(file_name)
-    d = n.read('xffts')
-    
+    n = n2df.Read(file_name)    
+    _n = n.read_all2()
+    d = []
+    for i in range(25):
+        _d = []
+        for j in range(len(_n)):
+            _d.append(_n[j][i])
+        d.append(_d)
+        
 # define axis 
     time = d[0]
     mode = d[21]
@@ -175,9 +180,9 @@ def analysis(file_name, mi=10000, ma=30000, width=1000, integ_mi=15500, integ_ma
         be_list = []
         tmp = numpy.zeros(32768)
         for i in range(len(d_)):
-            if subscan[i] == '1' and mode[i] == 'ON':
-                tmp += pickle.loads(d_[i])
-                if subscan[i+1] == '2' or mode[i+1] == 'OFF' or mode[i+1] == 'HOT':
+            if subscan[i] == 1 and mode[i] == 'ON':
+                tmp += d_[i]
+                if subscan[i+1] == 2 or mode[i+1] == 'OFF' or mode[i+1] == 'HOT':
                     d_list.append(tmp)
                     m_list.append('ON')
                     la_list.append(_lam[i])
@@ -186,9 +191,9 @@ def analysis(file_name, mi=10000, ma=30000, width=1000, integ_mi=15500, integ_ma
                     tmp = numpy.zeros(32768)
                 else:
                     pass
-            elif subscan[i] == '2' and mode[i] == 'ON':
-                tmp += pickle.loads(d_[i])
-                if subscan[i+1] == '1' or mode[i+1] == 'OFF' or mode[i+1] == 'HOT':
+            elif subscan[i] == 2 and mode[i] == 'ON':
+                tmp += d_[i]
+                if subscan[i+1] == 1 or mode[i+1] == 'OFF' or mode[i+1] == 'HOT':
                     d_list.append(tmp)
                     m_list.append('ON')
                     la_list.append(_lam[i])
@@ -198,13 +203,13 @@ def analysis(file_name, mi=10000, ma=30000, width=1000, integ_mi=15500, integ_ma
                 else:
                     pass
             elif mode[i] == 'OFF':
-                tmp += pickle.loads(d_[i])
+                tmp += d_[i]
                 if mode[i+1] == 'ON' or mode[i+1] == 'HOT':
                     d_list.append(tmp)
                     m_list.append('OFF')
                     la_list.append(0)
                     be_list.append(0)
-                    if subscan[i] == '1':
+                    if subscan[i] == 1:
                         s_list.append(1)
                     else:
                         s_list.append(2)
@@ -212,13 +217,13 @@ def analysis(file_name, mi=10000, ma=30000, width=1000, integ_mi=15500, integ_ma
                 else:
                     pass       
             elif mode[i] == 'HOT':
-                tmp += pickle.loads(d_[i])
+                tmp += d_[i]
                 if i == len(d_)-1:
                     d_list.append(tmp)
                     m_list.append('HOT')
                     la_list.append(0)
                     be_list.append(0)
-                    if subscan[i] == '1':
+                    if subscan[i] == 1:
                         s_list.append(1)
                     else:
                         s_list.append(2)
@@ -229,7 +234,7 @@ def analysis(file_name, mi=10000, ma=30000, width=1000, integ_mi=15500, integ_ma
                         m_list.append('HOT')
                         la_list.append(0)
                         be_list.append(0)
-                        if subscan[i] == '1':
+                        if subscan[i] == 1:
                             s_list.append(1)
                         else:
                             s_list.append(2)
