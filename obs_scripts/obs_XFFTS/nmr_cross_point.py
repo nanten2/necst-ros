@@ -19,7 +19,7 @@ tau = 0.0
 #integmax = 9000
 #plot_mode = 'plot'
 #save_path = '/home/amigos/data/result_png'
-path_to_db = './radio_pointing_9_20190722_2.db'
+path_to_db = './radio_pointing_9_20190807_1.dat'
 # Argument handler
 # ================
 
@@ -215,7 +215,7 @@ while num < n:
             con.xffts_publish_flag(1, path_to_db, str(num+1), "HOT", 0, 0)
             time.sleep(integ)
             con.xffts_publish_flag(0, path_to_db, str(num+1), "HOT", 0, 0)
-            
+            latest_hottime = time.time()
             pass
         
         
