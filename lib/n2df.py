@@ -159,9 +159,11 @@ class Read():
         return [numpy.frombuffer(i, ("<f", 32768)) for i in array],[numpy.frombuffer(i, "4S") for i in scan],    [numpy.frombuffer(i, "<i") for i in obs]
             
     def _arange_list(self,d):
-        tp = list(d[1:32769])
         return [d[0], tp, d[32769].decode().replace("\x00", ""), d[32770], d[32771], d[32772]]
 
+    def _decode(self, d):
+        d[21] = d[21].decode()
+        return d
 
     #def read_all(self):
     #    self.f.seek(0)
