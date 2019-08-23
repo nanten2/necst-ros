@@ -1,30 +1,43 @@
 #! /usr/bin/env python
 # coding:utf-8
+import os
+import shutil
+import numpy
+import log_weather
+from datetime import datetime, timedelta
+import sys
+import argparse
+import logger
+import time
+import read_obsfile
+import signal
+import ROS_controller
+import doppler_nanten
 
 # Configurations
 # ==============
-# Info
-# ----
-
-name = '_otf_2018'
+name = 'otf_2019'
 description = 'Get OTF spectrum'
-
-# Config Parameters
-# =================
-#path_to_db = "/media/amigos/HD-LCU3/test/write_test/otf20190713.db"
-path_to_db = "./hdd/otf20190806_n31.n2df"
-#path_to = "/media/amigos/HD-LCU3/test/npy/"
-
 # Default parameters
-# ------------------
+# ==================
 obsfile = ''
 tau = 0.0
 c = 299792458
 
+
+#setup logger
+#===========
+now = datetime.utcnow()
+log_path = '/home/amigos/log/{}.log'.format(now.strftime('%Y%m%d'))
+log = logger.setup_logger(__name__, filename=log_path)
+log.debug("finish setup logger")
+start_time = time.time()
+
+# Read Observation file
+# =====================
 # Argument handler
 # ================
-
-import argparse
+obsdir = '/home/amigos/necst-obsfiles/'
 
 p = argparse.ArgumentParser(description=description)
 p.add_argument('--obsfile', type=str,
@@ -34,32 +47,44 @@ p.add_argument('--tau', type=float,
 
 args = p.parse_args()
 
-if args.obsfile is not None: obsfile = args.obsfile
-if args.tau is not None: tau = args.tau
+if args.obsfile is not None:
+    obsfile = args.obsfile
+if args.tau is not None:
+    tau = args.tau
+try:
+    obs = read_obsfile.read(os.path.join(obsdir, obsfile))
+except Exception as e:
+    log.exception(e)
+    sys.exit()
 
+# Save file
+# =========
+datahome = '/home/amigos/data/'
+timestamp = time.strftime('%Y%m%d%H%M%S')
+dirname = 'n%s_%s_%s_otf_%s'%(timestamp ,obs['molecule_1'] ,obs['transiti_1'].split('=')[1],obs['object'])
+savedir = os.path.join(datahome, name, dirname)
+log.info('mkdir {savedir}'.format(**locals()))
+os.makedirs(savedir)
+
+dirname = "n{}_{}_{}_otf_{}".format(now.strftime('%Y%m%d%H%M%S'), obs['molecule_1'], obs['transiti_1'].split('=')[1], obs['object'])
+xffts_datapath = os.path.join(savedir, "xffts.ndf")
+
+log.debug("obsdir : {}".format(obsdir))
+log.debug("log_path : {}".format(log_path))
+log.debug("dirname : {}".format(dirname))
+log.debug("xffts : {}".format(xffts_datapath))
+    
 # Main
 # ====
-import os
-import shutil
-import time
-import numpy
-from datetime import datetime, timedelta
-
-#from astropy.time import Time # no mojule in python2
-import sys
-sys.path.append("/home/amigos/necst-obsfiles")
-sys.path.append("/home/amigos/ros/src/necst/lib")
-sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
-import doppler_nanten
 dp = doppler_nanten.doppler_nanten()
-import ROS_controller
 con = ROS_controller.controller()
 con.dome_track()
 con.move_stop()
-import signal
+con.pub_encdb_flag(True, os.path.join(savedir, "enc.db"))
+
 def handler(num, flame):
-    print("!!ctrl+C!!")
-    print("STOP MOVING")
+    log.warn("!!ctrl+C!!")
+    log.warn("STOP MOVING")
     con.move_stop()
     con.dome_stop()
     con.obs_status(active=False)
@@ -67,83 +92,20 @@ def handler(num, flame):
     sys.exit()
 signal.signal(signal.SIGINT, handler)
 
+#setup weather logger
+#====================
+print(savedir)
+print(os.path.join(savedir, "weather.csv"))
+logw = log_weather.Weather_log(os.path.join(savedir, "weather.csv"))
+logw.initialize()
+def save_weatherlog(scan_num, obs_mode):
+    d = con.read_status()
+    logw.write(time.time(), d.InTemp, d.OutTemp, d.InHumi, d.OutHumi, d.WindDir, d.WindSp, d.Press,
+               d.Rain, d.CabinTemp1, d.CabinTemp2, d.DomeTemp1, d.DomeTemp2, d.GenTemp1, d.GenTemp2, scan_num, obs_mode)
+    log.info("Saved weather log")
 
-# read obsfile
-obsdir = '/home/amigos/necst-obsfiles/'
-obs_items = open(obsdir+obsfile, 'r').read().split('\n')
-obs = {}
-for _item in obs_items:
-    print(_item)
-    if _item.startswith('script;'): break
-    _item = _item.split('#')[0]
-    _key, _value = _item.split('=', 1)
-    _key = _key.strip()
-    _value = _value.strip()
-    try:
-        obs[_key] = eval(_value)
-    except:
-        try:
-            obs[_key] = obs[_value]
-        except:
-            pass
-    if not _value.find('/') == -1 and _value.find('*') == -1:
-        _value1,_value2 = _value.split('/',1)
-        _value1 = _value1.strip()
-        _value2 = _value2.strip()
-        if isinstance(_value1,str):
-            try:
-                _value1 = float(_value1)
-            except:
-                pass
-        else:
-            pass
-        if isinstance(_value2,str):
-            try:
-                _value2 = float(_value2)
-            except:
-                pass
-        else:
-            pass
-        if isinstance(_value1,float) and isinstance(_value2,float):
-            obs[_key] = (float(_value1)*100)/(float(_value2)*100)
-        elif not isinstance(_value1,float) and not isinstance(_value2,float):
-            obs[_key] = (obs[_value1]*100)/(obs[_value2]*100)
-        elif isinstance(_value1,float):
-            obs[_key] = (float(_value1)*100)/(obs[_value2]*100)
-        elif isinstance(_value2,float):
-            obs[_key] = (obs[_value1]*100)/(float(_value2)*100)
-        else:
-            print('Error')
-    elif _value.find('/') == -1 and not _value.find('*') == -1:
-        _value1,_value2 = _value.split('*',1)
-        _value1 = _value1.strip()
-        _value2 = _value2.strip()
-        if isinstance(_value1,str):
-            try:
-                _value1 = float(_value1)
-            except:
-                pass
-        if isinstance(_value2,str):
-            try:
-                _value2 = float(_value2)
-            except:
-                pass
-        if isinstance(_value1,float) and isinstance(_value2,float):
-            obs[_key] = (float(_value1)*100)*(float(_value2)*100)/10000
-        elif not isinstance(_value1,float) and not isinstance(_value2,float):
-            obs[_key] = (obs[_value1]*100)*(obs[_value2]*100)/10000
-        elif isinstance(_value1,float):
-            obs[_key] = (float(_value1)*100)*(obs[_value2]*100)/10000
-        elif isinstance(_value2,float):
-            obs[_key] = (obs[_value1]*100)*(float(_value2)*100)/10000
-        else:
-            print('Error')
-    else:
-        pass
-
-    continue
 # param
-# ----------------------
+# =====
 lambda_on = obs['lambda_on']#on
 beta_on = obs['beta_on']#on
 lambda_off = obs['lambda_off']# off
@@ -160,19 +122,6 @@ betdel_off = obs['betdel_off']# offset_off
 cosydel = obs['cosydel'].lower()# offset_coord
 offset_dcos = obs['otadel_off']# offset_dcos
 vlsr = obs["vlsr"]
-
-
-# Save file
-# ----------------------
-
-datahome = '/home/amigos/data/'
-timestamp = time.strftime('%Y%m%d%H%M%S')
-dirname = 'n%s_%s_%s_otf_%s'%(timestamp ,obs['molecule_1'] ,obs['transiti_1'].split('=')[1],obs['object'])
-savedir = os.path.join(datahome, name, dirname)
-
-print('mkdir {savedir}'.format(**locals()))
-os.makedirs(savedir)
-
 
 # Scan Parameters
 # --------------- 
@@ -219,14 +168,13 @@ otflen = obs['otflen']/obs['exposure']
 scan_point = float(otflen) #scan_point for 1 line
 scan_point = int(scan_point)
 rampt = dt*obs['lamp_pixels']
-print(scan_point)
+log.info("scan point is {}".format(scan_point))
 #if scan_point > int(scan_point):
     #print("!!ERROR scan number!!")
 
 total_count = int(obs['N'])#total scan_line
 
-print('Start experimentation')
-print('')
+log.info('Start Observation')
 
 status = con.read_status()
 savetime = status.Time
@@ -245,36 +193,37 @@ if obs["scan_direction"] == 0:
 else:
     con.obs_status(True, obs["obsmode"], obsscript, obsfile, obs["object"], scan_point, total_count, gridx, dy, integ_off, integ_off, integ_on, "y")
 while rp_num < rp:
-    print('repeat : ',rp_num)
+    log.info('repeat : {}'.format(rp_num))
     num = 0
     while num < n: 
-        print('observation :'+str(num))
-        print('tracking start')
+        log.info('observation : {}'.format(num))
+        save_weatherlog(num, "")
+        log.info('tracking start')
         con.move_stop()
 
         con.onepoint_move(lambda_off, beta_off, coordsys,
                           off_x=lamdel_off, off_y=betdel_off, 
                           offcoord = cosydel,dcos=dcos)
 
-        print("check_track")
+        log.info("check_track")
         con.antenna_tracking_check()
         con.dome_tracking_check()
-        print('tracking OK')
+        log.info('tracking OK')
 
         _now = time.time()
         if _now > latest_hottime+60*obs['load_interval']:
-            print('R')
+            log.info('R')
             con.move_hot('in')
             status = con.read_status()
             while status.Current_Hot != "IN":
-                print("wait hot_move")
+                log.info("wait hot_move")
                 status = con.read_status()                
                 time.sleep(0.5)
             con.obs_status(active=True, current_num=scan_point*num, current_position="HOT")
         
             print('get spectrum...')
             ###con.doppler_calc()
-            print(cosydel)
+            log.info("cosydel {}".format(cosydel))
 
             #con.observation("start", integ_off)
             #time.sleep(integ_off)
@@ -283,9 +232,9 @@ while rp_num < rp:
             temp = float(status.CabinTemp1)
             #"""
             #d = con.oneshot_achilles(exposure=integ_off)
-            con.xffts_publish_flag(1, path_to_db, str(num), "HOT", 0, 0)
+            con.xffts_publish_flag(1, xffts_datapath, str(num), "HOT", 0, 0)
             time.sleep(integ_off)
-            con.xffts_publish_flag(0, path_to_db, str(num), "OFF", 0, 0)
+            con.xffts_publish_flag(0, xffts_datapath, str(num), "OFF", 0, 0)
             latest_hottime = time.time()
             pass
 
@@ -293,28 +242,28 @@ while rp_num < rp:
         else:
             pass
         
-        print('OFF')
+        log.info('OFF')
         con.move_hot('out')
         status = con.read_status()
         while status.Current_Hot != "OUT":
-            print("wait hot_move")
+            log.info("wait hot_move")
             status = con.read_status()                
             time.sleep(0.5)        
         con.obs_status(active=True, current_num=scan_point*num, current_position="OFF")    
-        print('get spectrum...')
+        log.info('get spectrum...')
 
         status = con.read_status()
         temp = float(status.CabinTemp1)
         #d = con.oneshot_achilles(exposure=integ_off)
-        con.xffts_publish_flag(1, path_to_db, str(num), "OFF", 0, 0)
+        con.xffts_publish_flag(1, xffts_datapath, str(num), "OFF", 0, 0)
         time.sleep(integ_off)
-        con.xffts_publish_flag(0, path_to_db, str(num), "OFF", 0, 0)
-        print('move ON')
+        con.xffts_publish_flag(0, xffts_datapath, str(num), "OFF", 0, 0)
+        log.info('move ON')
         con.move_stop()
         ssx = (sx + num*gridx) - float(dx)/float(dt)*rampt-float(dx)/2.#rampの始まり
         ssy = (sy + num*gridy) - float(dy)/float(dt)*rampt-float(dy)/2.#rampの始まり
 
-        print("ramp_start tracking")
+        log.info("ramp_start tracking")
         con.onepoint_move(lambda_on, beta_on, coordsys,
                           off_x = ssx, off_y = ssy,
                           offcoord = cosydel,
@@ -322,10 +271,10 @@ while rp_num < rp:
         con.antenna_tracking_check()
         con.dome_tracking_check()
         
-        print('reach ramp_start')#rampまで移動
+        log.info('reach ramp_start')#rampまで移動
 
-        print(' OTF scan_start!! ')
-        print('move ON')
+        log.info(' OTF scan_start!! ')
+        log.info('move ON')
         delay = 3.
         ctime = time.time()
         start_on = 40587 + (ctime+rampt+delay)/24./3600. # mjd
@@ -333,21 +282,21 @@ while rp_num < rp:
         con.obs_status(active=True, current_num=scan_point*num, current_position="ON")        
         con.otf_scan(lambda_on, beta_on, coordsys, dx, dy, dt, scan_point, rampt, delay=delay, current_time=ctime, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, limit=True)
 
-        print('getting_data...')
+        log.info('getting_data...')
         #d = con.oneshot_achilles(repeat = scan_point ,exposure = integ_on ,stime = start_on)
-        con.xffts_publish_flag(1, path_to_db, str(num), "ON", 0, 0)
-        print("start_on:",start_on)
+        con.xffts_publish_flag(1, xffts_datapath, str(num), "ON", 0, 0)
+        log.info("start_on : {}".format(start_on))
         while start_on + (obs['otflen']+rampt)/24./3600. > 40587 + time.time()/(24.*3600.):
             #while obs['otflen']/24./3600. > 40587 + time.time()/(24.*3600.):    
             time.sleep(0.001)
-        con.xffts_publish_flag(0, path_to_db, str(num), "ON", 0, 0)
+        con.xffts_publish_flag(0, xffts_datapath, str(num), "ON", 0, 0)
 
         _on = 0
         while _on < scan_point:
-            print(_on+1)
+            log.info("{}".format(_on+1))
             _on += 1
 
-        print('stop')
+        log.info('stop')
         con.move_stop()
         num += 1
         continue
@@ -355,22 +304,26 @@ while rp_num < rp:
     rp_num += 1
     continue
 
-print('R')#最初と最後をhotではさむ
+log.info('R')#最初と最後をhotではさむ
 con.move_hot('in')
 status = con.read_status()
 while status.Current_Hot != "IN":
-    print("wait hot_move")
+    log.info("wait hot_move")
     status = con.read_status()                
     time.sleep(0.5)
 con.obs_status(active=True, current_num=scan_point*num+1, current_position="HOT")
 
 #con.observation("start", integ_off)
-con.xffts_publish_flag(1, path_to_db, str(num), "HOT", 0, 0)
+con.xffts_publish_flag(1, xffts_datapath, str(num), "HOT", 0, 0)
 time.sleep(integ_off)
-con.xffts_publish_flag(0, path_to_db, str(num), "HOT", 0, 0)
+con.xffts_publish_flag(0, xffts_datapath, str(num), "HOT", 0, 0)
 
 con.move_hot('out')
 
-print('observation end')
+log.info('Observation End <observation time : {:.2f} [min]>'.format((time.time() - start_time)/60))
 con.move_stop()
 con.dome_stop()
+con.pub_encdb_flag(False, os.path.join(savedir, "enc.db"))
+
+# copy hosei file
+shutil.copy("/home/amigos/ros/src/necst/lib/hosei_230.txt", savedir)

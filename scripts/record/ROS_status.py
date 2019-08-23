@@ -261,7 +261,24 @@ class status_main(object):
                     drive = "off"
                 lst =int(lst_hh)*3600+int(lst_mm)*60+int(lst_ss)
                 try:
-                    self.pub.publish(Time=tv, Limit=self.param8["error_msg"], Current_Az=enc_az, Current_El=enc_el, Command_Az=command_az, Command_El=command_el, Deviation_Az=command_az-enc_az, Deviation_El=command_el-enc_el, Drive_ready_Az=drive, Drive_ready_El=drive, Authority=antenna_status, Current_Dome=dome_enc, Door_Dome=doom_door, Door_Membrane=memb_status, Door_Authority=remote_status, Current_M4=m4_position, Current_Hot=hot_position, Year=float(ntime.strftime("%Y")), Month=float(ntime.strftime("%m")), Day=float(ntime.strftime("%d")), Hour=float(ntime.strftime("%H")), Min=float(ntime.strftime("%M")), Sec=float(ntime.strftime("%S")), InTemp=self.param2["in_temp"], OutTemp=self.param2["out_temp"], InHumi=self.param2["in_humi"], OutHumi=self.param2["out_humi"], WindDir=self.param2["wind_dir"], WindSp=self.param2["wind_sp"], Press=self.param2["press"], Rain=self.param2["rain"], CabinTemp1= self.param2["cabin_temp1"], CabinTemp2= self.param2["cabin_temp2"], DomeTemp1=self.param2["dome_temp1"], DomeTemp2=self.param2["dome_temp2"], GenTemp1=self.param2["gen_temp1"], GenTemp2=self.param2["gen_temp2"], Current_M2=m2_position, MJD=mjd, LST=lst, Secofday=secofday, from_node=node_name, timestamp=time.time())
+                    self.pub.publish(Time=tv, Limit=self.param8["error_msg"], Current_Az=enc_az,
+                                     Current_El=enc_el, Command_Az=command_az, Command_El=command_el,
+                                     Deviation_Az=command_az-enc_az, Deviation_El=command_el-enc_el,
+                                     Drive_ready_Az=drive, Drive_ready_El=drive, Authority=antenna_status,
+                                     Current_Dome=dome_enc, Door_Dome=doom_door, Door_Membrane=memb_status,
+                                     Door_Authority=remote_status, Current_M4=m4_position,
+                                     Current_Hot=hot_position, Year=float(ntime.strftime("%Y")),
+                                     Month=float(ntime.strftime("%m")), Day=float(ntime.strftime("%d")),
+                                     Hour=float(ntime.strftime("%H")), Min=float(ntime.strftime("%M")),
+                                     Sec=float(ntime.strftime("%S")), InTemp=self.param2["in_temp"],
+                                     OutTemp=self.param2["out_temp"], InHumi=self.param2["in_humi"],
+                                     OutHumi=self.param2["out_humi"], WindDir=self.param2["wind_dir"],
+                                     WindSp=self.param2["wind_sp"], Press=self.param2["press"],
+                                     Rain=self.param2["rain"], CabinTemp1= self.param2["cabin_temp1"],
+                                     CabinTemp2= self.param2["cabin_temp2"], DomeTemp1=self.param2["dome_temp1"],
+                                     DomeTemp2=self.param2["dome_temp2"], GenTemp1=self.param2["gen_temp1"],
+                                     GenTemp2=self.param2["gen_temp2"], Current_M2=m2_position, MJD=mjd,
+                                     LST=lst, Secofday=secofday, from_node=node_name, timestamp=time.time())
                 except Exception as e:
                     print('error {0}'.format(e))
                     print("Propably not running launch.")
