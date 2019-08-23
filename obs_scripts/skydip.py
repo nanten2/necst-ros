@@ -57,22 +57,23 @@ opt = con.read_status()
 d_integ1 = []
 d_integ2 = []
 z = [80, 70, 60, 45, 30, 25, 20]
- 
+
+con.dome_track()
 for elevation in z:
     con.onepoint_move(30,elevation)
-    con.dome_track()
+    time.sleep(2)
     con.dome_tracking_check()
     print("dome track OK")
     con.antenna_tracking_check()
     print("antenna track OK")
+    con.move_stop()
     d = con.oneshot_achilles(repeat = 1, exposure = 1.0, stime = 1.0)
     d_dfs1 = d['dfs1']
     d_dfs2 = d['dfs2']
     d_integ_temp1 = sum(d_dfs1[0])
     d_integ_temp2 = sum(d_dfs2[0])
     d_integ1.append(d_integ_temp1)
-    d_integ2.append(d_integ_temp2)
-    time.sleep(1)    
+    d_integ2.append(d_integ_temp2)    
 
 #解析開始
 
