@@ -1,8 +1,9 @@
 import csv
+import pandas
 
-header_name = ["intemp", "outtemp", "inhumi", "outhumi", "winddir", "windsp",
+header_name = ["timestamp", "intemp", "outtemp", "inhumi", "outhumi", "winddir", "windsp",
                "press", "rain", "cabin_temp1", "cabin_temp2", "dome_temp1",
-               "dome_temp2", "gen_temp1", "gen_temp2"]
+               "dome_temp2", "gen_temp1", "gen_temp2", "scan_num", "obs_mode"]
 
 class Weather_log():
     def __init__(self, path):
@@ -14,16 +15,13 @@ class Weather_log():
             writer = csv.DictWriter(f, fieldnames=header_name)
             writer.writeheader()
 
-    def write(self, intemp, outtemp, inhumi, outhumi, winddir, windsp, press, rain,
-              cabin_temp1, cabin_temp2, dome_temp1, dome_temp2, gen_temp1, gen_temp2):
+    def write(self, timestamp, intemp, outtemp, inhumi, outhumi, winddir, windsp, press, rain,
+              cabin_temp1, cabin_temp2, dome_temp1, dome_temp2, gen_temp1, gen_temp2, scan_number="", obs_mode=""):
         with open(self.path, "a") as f:
             writer = csv.writer(f)
-            writer.writerow([intemp, outtemp, inhumi, outhumi, winddir, windsp,
+            writer.writerow([timestamp, intemp, outtemp, inhumi, outhumi, winddir, windsp,
                              press, rain, cabin_temp1, cabin_temp2, dome_temp1, dome_temp2,
-                             gen_temp1, gen_temp2])
+                             gen_temp1, gen_temp2, scan_number, obs_mode])
 
     def read(self):
-        with open(self.path, "r") as f:
-            row = csv.DictReader(f)
-            d = [i for i in row]
-        return d
+        return pandas.read_csv(self.path)

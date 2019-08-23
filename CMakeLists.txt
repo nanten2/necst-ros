@@ -85,6 +85,7 @@ add_message_files(
   Float64_list_msg.msg
   Status_pid_msg.msg
   xffts_flag_msg.msg
+  encdb_flag_msg.msg
 )
 
 ## Generate services in the 'srv' folder
