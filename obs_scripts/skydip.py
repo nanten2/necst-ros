@@ -57,10 +57,11 @@ opt = con.read_status()
 d_integ1 = []
 d_integ2 = []
 z = [80, 70, 60, 45, 30, 25, 20]
- 
+
+con.dome_track()
 for elevation in z:
     con.onepoint_move(30,elevation)
-    con.dome_track()
+    time.sleep(5)
     con.dome_tracking_check()
     print("dome track OK")
     con.antenna_tracking_check()
