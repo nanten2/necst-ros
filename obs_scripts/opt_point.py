@@ -297,6 +297,11 @@ class opt_point_controller(object):
             print(e)
 
         try:
+            opt_analy.opt_plot([param_dir], savefig=True, interactive=True)
+        except Exception as e:
+            print(e)
+            
+        try:
             import glob
             date = param_dir[:-11]
             file_list = glob.glob('{}*'.format(date))

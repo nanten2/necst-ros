@@ -26,18 +26,18 @@ r2d = numpy.rad2deg
 diag = numpy.diag
 sqrt = numpy.sqrt
 
-hosei_path = '/home/amigos/pointing/data/opt_data/opt_20190219/opt_20190219085938/hosei_opt.txt'
+hosei_path = '/home/amigos/ros/src/necst/lib/hosei_opt.txt'
 
 def hosei_point(param_dir):
     ind_az = 14
     ind_el = 15
-    ind_dx = 10
-    ind_dy = 9
+    ind_dx = 9
+    ind_dy = 10
     az_list, el_list, dx_list, dy_list = [], [], [], []
     for _ in param_dir:
         d = numpy.loadtxt(_ + '/process.log')
-        d[:,ind_dx]=(d[:,ind_dx]-320)*1.762
-        d[:,ind_dy]=(d[:,ind_dy]-240)*1.762
+        d[:,ind_dx]=(d[:,ind_dx]-320)*0.87*(-1)
+        d[:,ind_dy]=(d[:,ind_dy]-240)*0.87
         az_list.append(d[:,ind_az])
         el_list.append(d[:,ind_el])
         dx_list.append(d[:,ind_dx])
@@ -73,6 +73,7 @@ def hosei_point(param_dir):
         return sqrt(residual_dx ** 2 + residual_dy ** 2)
 
 
+    old_kisa = [float(_kisa) for _kisa in open(hosei_path)]
 # ### フィッティング初期値の定義
 
 # initial params.
@@ -85,14 +86,13 @@ def hosei_point(param_dir):
     kisa0[1] =  0.
 
 # Az 軸の倒れ 振幅 (arcsec.)
-    kisa0[2] =  40.
+    kisa0[2] =  0.
 
 # Az 軸の倒れ 位相 (deg.)
-    kisa0[3] = 90.
+    kisa0[3] = 0.
 
 # Az 軸と El 軸の非直行性 (arcsec.)
     kisa0[4] = 0.
-
 # 重力・大気差 1次・光学用 (const.)
     kisa0[11] = 0.
 
@@ -138,7 +138,7 @@ def hosei_point(param_dir):
     AZ, EL = numpy.meshgrid(_az, _el)
     _dx = model_dx(AZ, EL, *kisa)
     _dy = model_dy(AZ, EL, *kisa)
-
+    
     for az, el, dx, dy in zip(az_list, el_list, dx_list, dy_list):
         ax[0].scatter(az, el, dx, label='raw', c='steelblue')
         ax[1].scatter(az, el, dy, label='raw', c='steelblue')
@@ -164,6 +164,16 @@ def hosei_point(param_dir):
                        for az, el, dx, dy in zip(az_list, el_list, dx_list, dy_list)]
         new_dy_list = [numpy.array(dy) - model_dy(az, el, *kisa) 
                        for az, el, dx, dy in zip(az_list, el_list, dx_list, dy_list)]
+
+        term1_dx = [kisa[2] * sin(d2r(kisa[3] - az)) * sin(d2r(el))for az,el in zip(az_list,el_list)]
+        term1_dy = [- kisa[2] * cos(d2r(kisa[3] - az)) for az in zip(az_list)]
+
+        fig = plt.figure()
+        ax0 = fig.add_subplot(1,1,1)
+        ax0.plot(az_list,term1_dx)
+        plt.tight_layout()
+        plt.show()
+        
         
         nrow = 1
         ncol = 2
@@ -226,7 +236,7 @@ def hosei_point(param_dir):
             new_kisa[1] = old_kisa[1] + kisa[1]
 
 # Az 軸と El 軸の非直交性
-            new_kisa[3] = old_kisa[3] + kisa[3]
+            new_kisa[4] = old_kisa[4] + kisa[4]
 
 # 重力・大気差 1次・光学用
             new_kisa[11] = old_kisa[11] + kisa[11]
@@ -276,6 +286,8 @@ def hosei_point(param_dir):
             df['diff'] = diff
             
             df
+            print(new)
+            
         
 
 
