@@ -30,9 +30,7 @@ class tracking_check(object):
     before_x = -10
     before_y = -10
     same_azel_list_flag = False
-    debug_tc = 0
-    debug_daz = 0
-    debug_del = 0
+    track_falseflag = False
     
     def __init__(self):
         self.start_thread()
@@ -60,8 +58,18 @@ class tracking_check(object):
         self.enc_param['enc_el'] = req.enc_el
         return
 
-    def set_command(self, req):
+    def set_command1(self, req):
         self.command = req
+        self.track_falseflag = True
+        print("$")
+
+    def set_command2(self, req):
+        self.track_falseflag = True
+        print("$")
+        
+    def set_command3(self, req):
+        self.trackfalseflag = True
+        print("$")
 
     def set_list_param(self, req):
         # check new list
@@ -96,6 +104,10 @@ class tracking_check(object):
     def check_track(self):
         track_count = 0
         while not rospy.is_shutdown():
+            if self.track_falseflag:
+                self.tracking = False
+                time.sleep(4) # waiting until antenna moving
+                self.track_falseflag = False
             command_az = self.antenna_param['command_az']
             command_el = self.antenna_param['command_el']
 
@@ -155,5 +167,7 @@ if __name__ == '__main__':
     t = tracking_check()
     sub1 = rospy.Subscriber('status_antenna', Status_antenna_msg, t.set_ant_param)
     sub2 = rospy.Subscriber('status_encoder',Status_encoder_msg, t.set_enc_param)
-    sub3 = rospy.Subscriber('onepoint_command', Move_mode_msg, t.set_command, queue_size=1)
+    sub3 = rospy.Subscriber('onepoint_command', Move_mode_msg, t.set_command1, queue_size=1)
+    sub4 = rospy.Subscriber('linear_command', Move_mode_msg, t.set_command2, queue_size=1)
+    sub5 = rospy.Subscriber('planet_command', Move_mode_msg, t.set_command3, queue_size=1)
     rospy.spin()
