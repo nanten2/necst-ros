@@ -61,15 +61,12 @@ class tracking_check(object):
     def set_command1(self, req):
         self.command = req
         self.track_falseflag = True
-        print("$")
 
     def set_command2(self, req):
         self.track_falseflag = True
-        print("$")
         
     def set_command3(self, req):
-        self.trackfalseflag = True
-        print("$")
+        self.track_falseflag = True
 
     def set_list_param(self, req):
         # check new list
