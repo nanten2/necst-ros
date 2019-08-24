@@ -248,10 +248,11 @@ class controller(object):
         self.move_stop()
         if not switch:
             switch = str(input("drive change (on/off) : ")).lower()
+        switch = switch.lower()
         msg.data =  switch
         msg.from_node = self.node_name
         msg.timestamp = time.time()
-        if switch in ["on", "off", "ON", "OFF"]:
+        if switch in ["on", "off"]:
             self.pub_drive.publish(msg)
             self.pub_contactor.publish(msg)
             print("drive : ", switch, "!!")
@@ -411,7 +412,7 @@ class controller(object):
             print("Bad command...")
             print("Please 'start' or 'stop'.")
         return
-        
+   
 
     def _antenna_tracking(self, req):
         self.antenna_tracking_flag = req.data
