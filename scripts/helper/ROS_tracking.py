@@ -153,7 +153,9 @@ class tracking_check(object):
             if not flag == timestamp:
                 if not command.coord.lower() == "altaz":
                     flag = timestamp
-                time.sleep(3)#waiting antenna moving
+                    continue
+                else:
+                    time.sleep(3)#waiting antenna moving
                 if self.tracking:
                     pub.publish(False, __file__, time.time())
                     flag = timestamp
