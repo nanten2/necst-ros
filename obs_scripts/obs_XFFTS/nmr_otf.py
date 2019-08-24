@@ -28,9 +28,10 @@ c = 299792458
 #setup logger
 #===========
 now = datetime.utcnow()
-log_path = '/home/amigos/log/{}.log'.format(now.strftime('%Y%m%d'))
-log = logger.setup_logger(__name__, filename=log_path)
-log.debug("finish setup logger")
+log_path = '/home/amigos/log/{}.txt'.format(now.strftime('%Y%m%d'))
+logger = logger.logger(__name__, filename=log_path)
+log = logger.setup_logger()
+logger.obslog(sys.argv)
 start_time = time.time()
 
 # Read Observation file
@@ -65,6 +66,7 @@ dirname = 'n%s_%s_%s_otf_%s'%(timestamp ,obs['molecule_1'] ,obs['transiti_1'].sp
 savedir = os.path.join(datahome, name, dirname)
 log.info('mkdir {savedir}'.format(**locals()))
 os.makedirs(savedir)
+logger.obslog("savedir : {}".format(savedir), lv=1)
 
 dirname = "n{}_{}_{}_otf_{}".format(now.strftime('%Y%m%d%H%M%S'), obs['molecule_1'], obs['transiti_1'].split('=')[1], obs['object'])
 xffts_datapath = os.path.join(savedir, "xffts.ndf")
@@ -73,7 +75,12 @@ log.debug("obsdir : {}".format(obsdir))
 log.debug("log_path : {}".format(log_path))
 log.debug("dirname : {}".format(dirname))
 log.debug("xffts : {}".format(xffts_datapath))
-    
+
+# copy hosei & obsfiles
+# =====================
+shutil.copy("/home/amigos/ros/src/necst/lib/hosei_230.txt", savedir)
+shutil.copy(os.path.join(obsdir, obsfile), savedir)
+
 # Main
 # ====
 dp = doppler_nanten.doppler_nanten()
@@ -88,6 +95,9 @@ def handler(num, flame):
     con.move_stop()
     con.dome_stop()
     con.obs_status(active=False)
+    con.pub_encdb_flag(False, os.path.join(savedir, "enc.db"))
+    con.xffts_publish_flag(0, xffts_datapath, str(num), "XXX", 0, 0)
+    logger.obslog("STOP OBSERVATION", lv=1)
     time.sleep(1.)
     sys.exit()
 signal.signal(signal.SIGINT, handler)
@@ -320,10 +330,10 @@ con.xffts_publish_flag(0, xffts_datapath, str(num), "HOT", 0, 0)
 
 con.move_hot('out')
 
-log.info('Observation End <observation time : {:.2f} [min]>'.format((time.time() - start_time)/60))
+logger.obslog('Observation End : observation time : {:.2f} [min]'.format((time.time() - start_time)/60), lv=1)
+log.info('Observation End : observation time : {:.2f} [min]'.format((time.time() - start_time)/60))
 con.move_stop()
 con.dome_stop()
 con.pub_encdb_flag(False, os.path.join(savedir, "enc.db"))
 
-# copy hosei file
-shutil.copy("/home/amigos/ros/src/necst/lib/hosei_230.txt", savedir)
+
