@@ -174,7 +174,7 @@ class controller(object):
             else:
                 ret = ""
                 #rospy.logwarn("This node don't have authority...")
-                self.log.logwarn("This node don't have authority...")
+                self.log.warn("This node don't have authority...")
                 print("current authority : ", self.auth)
                 pass
             return ret

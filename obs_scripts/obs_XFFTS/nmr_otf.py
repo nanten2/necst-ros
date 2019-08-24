@@ -75,7 +75,12 @@ log.debug("obsdir : {}".format(obsdir))
 log.debug("log_path : {}".format(log_path))
 log.debug("dirname : {}".format(dirname))
 log.debug("xffts : {}".format(xffts_datapath))
-    
+
+# copy hosei & obsfiles
+# =====================
+shutil.copy("/home/amigos/ros/src/necst/lib/hosei_230.txt", savedir)
+shutil.copy(os.path.join(obsdir, obsfile), savedir)
+
 # Main
 # ====
 dp = doppler_nanten.doppler_nanten()
@@ -325,9 +330,9 @@ con.xffts_publish_flag(0, xffts_datapath, str(num), "HOT", 0, 0)
 con.move_hot('out')
 
 logger.obslog('Observation End : observation time : {:.2f} [min]'.format((time.time() - start_time)/60), lv=1)
+log.info('Observation End : observation time : {:.2f} [min]'.format((time.time() - start_time)/60))
 con.move_stop()
 con.dome_stop()
 con.pub_encdb_flag(False, os.path.join(savedir, "enc.db"))
 
-# copy hosei file
-shutil.copy("/home/amigos/ros/src/necst/lib/hosei_230.txt", savedir)
+
