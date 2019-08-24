@@ -19,17 +19,7 @@ class tracking_check(object):
         'command_az' : 200,
         'command_el' : 200
         }
-    coordinate_param = ""
     tracking = False
-    coord_flag = False
-    command_flag = False
-    same_coord_flag = False
-    receive_flag1 = False
-    
-    list_coord = ''
-    before_x = -10
-    before_y = -10
-    same_azel_list_flag = False
     track_falseflag = False
     
     def __init__(self):
@@ -68,42 +58,12 @@ class tracking_check(object):
     def set_command3(self, req):
         self.track_falseflag = True
 
-    def set_list_param(self, req):
-        # check new list
-        tmp_list = self.coordinate_param        
-        try:
-            tmp_list.x_list = [round(i,1) for i in tmp_list.x_list]
-            tmp_list.y_list = [round(i,1) for i in tmp_list.y_list]           
-            tmp_list.time_list = []
-            tmp_list.timestamp = 0.0
-        except:
-            print("First receive !!")
-        tmp_req = req
-        tmp_req.x_list = [round(i,1) for i in tmp_req.x_list]
-        tmp_req.y_list = [round(i,1) for i in tmp_req.y_list]           
-        tmp_req.timestamp = 0.0
-        tmp_req.time_list = []
-
-        # parameter change
-        if tmp_list == tmp_req:
-            rospy.logerr("same command !!")
-            if tmp_req.coord == "altaz":
-                self.same_coord_flag = True
-            else:
-                self.same_coord_flag = False
-        else:
-            self.same_coord_flag = False
-        self.coordinate_param = req
-        self.coord_flag = True
-        self.receive_flag1 = True
-        return
-
     def check_track(self):
         track_count = 0
         while not rospy.is_shutdown():
             if self.track_falseflag:
                 self.tracking = False
-                time.sleep(4) # waiting until antenna moving
+                time.sleep(2) # waiting until antenna moving
                 self.track_falseflag = False
             command_az = self.antenna_param['command_az']
             command_el = self.antenna_param['command_el']
@@ -153,7 +113,9 @@ class tracking_check(object):
             if not flag == timestamp:
                 if not command.coord.lower() == "altaz":
                     flag = timestamp
-                time.sleep(3)#waiting antenna moving
+                    continue
+                else:
+                    time.sleep(3)#waiting antenna moving
                 if self.tracking:
                     pub.publish(False, __file__, time.time())
                     flag = timestamp
