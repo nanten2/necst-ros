@@ -28,7 +28,7 @@ c = 299792458
 #setup logger
 #===========
 now = datetime.utcnow()
-log_path = '/home/amigos/log/{}.log'.format(now.strftime('%Y%m%d'))
+log_path = '/home/amigos/log/{}.txt'.format(now.strftime('%Y%m%d'))
 logger = logger.logger(__name__, filename=log_path)
 log = logger.setup_logger()
 logger.obslog(sys.argv)

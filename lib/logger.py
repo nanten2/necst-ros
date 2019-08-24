@@ -50,13 +50,14 @@ class logger():
 
     def obslog(self, log, filename="obs.log", lv=0):
         now = datetime.utcnow()
+        str_t = now.strftime("%Y-%m-%d %H:%M:%S")
         if isinstance(log, list):
             log = " ".join(log)
-        f = open(os.path.join(self.savedir, filename), "a")
+        f = open(os.path.join(self.savedir, "{}_obs.log".format(now.strftime("%Y%m%d"))), "a")
         if lv == 0:
-            f.write("- [{}] {}".format(now.strftime("%Y-%m-%d %H:%M:%S"), log) + "\n")
+            f.write("- [{}] {}".format(str_t, log) + "\n")
         if lv == 1:
-            f.write("    - [{}] {}".format(now.strftime("%Y-%m-%d %H:%M:%S"), log) + "\n")
+            f.write("    - [{}] {}".format(str_t, log) + "\n")
         f.close()
 
 if __name__ == "__main__":
