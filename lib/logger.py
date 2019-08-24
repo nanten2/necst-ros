@@ -53,7 +53,7 @@ class logger():
         str_t = now.strftime("%Y-%m-%d %H:%M:%S")
         if isinstance(log, list):
             log = " ".join(log)
-        f = open(os.path.join(self.savedir, "{}_obs.log".format(now.strftime("%Y%m%d"))), "a")
+        f = open(os.path.join(self.savedir, "{}_obs.txt".format(now.strftime("%Y%m%d"))), "a")
         if lv == 0:
             f.write("- [{}] {}".format(str_t, log) + "\n")
         if lv == 1:

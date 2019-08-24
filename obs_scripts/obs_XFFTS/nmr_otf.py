@@ -97,6 +97,7 @@ def handler(num, flame):
     con.obs_status(active=False)
     con.pub_encdb_flag(False, os.path.join(savedir, "enc.db"))
     con.xffts_publish_flag(0, xffts_datapath, str(num), "XXX", 0, 0)
+    logger.obslog("STOP OBSERVATION", lv=1)
     time.sleep(1.)
     sys.exit()
 signal.signal(signal.SIGINT, handler)
