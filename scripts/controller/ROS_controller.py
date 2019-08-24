@@ -9,6 +9,8 @@ import functools
 from datetime import datetime as dt
 import rospy
 import rosnode
+import logger
+from datetime import datetime
 from necst.msg import Move_mode_msg
 from necst.msg import Otf_mode_msg
 from necst.msg import Dome_msg
@@ -104,7 +106,6 @@ class controller(object):
         self.pub_hot = rospy.Publisher("hot", String_necst, queue_size = 1)
         self.pub_m2 = rospy.Publisher("m2", Int64_necst, queue_size=1)
         self.pub_achilles = rospy.Publisher("achilles", Achilles_msg, queue_size=1)
-        #self.pub_XFFTS = rospy.Publisher("XFFTS_parameter", XFFTS_para_msg, queue_size=1)
         self.pub_regist = rospy.Publisher("authority_regist", String_necst, queue_size=1)
         self.pub_obsstatus = rospy.Publisher("obs_status", Status_obs_msg, queue_size=1)
         self.pub_onestatus = rospy.Publisher("one_status", Status_onepoint_msg, queue_size=1)        
@@ -115,7 +116,12 @@ class controller(object):
         self.pub_log = rospy.Publisher("logging_ctrl", String, queue_size=1)
         self.pub_xffts = rospy.Publisher("XFFTS_DB_flag", xffts_flag_msg, queue_size = 1)
         self.pub_encdb = rospy.Publisher("encoder_DB_flag", encdb_flag_msg, queue_size = 1)
-        time.sleep(0.5)# authority regist time                
+        time.sleep(0.5)# authority regist time
+
+        now = datetime.utcnow()
+        log_path = '/home/amigos/log/{}.log'.format(now.strftime('%Y%m%d'))
+        self.logger = logger.logger(__name__, filename=log_path)
+        self.log = self.logger.setup_logger()
 
         """get authority"""
         if not self.escape:
@@ -124,8 +130,7 @@ class controller(object):
         """finish action"""
         atexit.register(self._release)
 
-        time.sleep(1.)# authority regist time        
-        
+        time.sleep(1.)# authority regist time
         return
     
 # ===================
@@ -146,7 +151,8 @@ class controller(object):
     def logger(func):
         @functools.wraps(func)
         def ros_logger(self, *args, **kwargs):
-            self.pub_log.publish("{}#{}#{}".format(func.__name__,args,kwargs))
+            self.pub_log.publish("{}#{}#{}".format(func.__name__, args, kwargs))
+            self.log.debug("{}#{}#{}".format(func.__name__, args, kwargs))
             ret = func(self, *args, **kwargs)
             return ret
         return ros_logger
@@ -167,7 +173,8 @@ class controller(object):
                 ret = func(self, *args,**kwargs)
             else:
                 ret = ""
-                rospy.logwarn("This node don't have authority...")
+                #rospy.logwarn("This node don't have authority...")
+                self.log.logwarn("This node don't have authority...")
                 print("current authority : ", self.auth)
                 pass
             return ret
@@ -249,7 +256,8 @@ class controller(object):
             self.pub_contactor.publish(msg)
             print("drive : ", switch, "!!")
         else:
-            rospy.logwarn("!!bad command!!")
+            #rospy.logwarn("!!bad command!!")
+            self.log.warn("!!bad command!!")
             pass
         return
     
@@ -347,7 +355,7 @@ class controller(object):
         lamda    : observation wavelength [um] (default ; 2600)
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
         """
-        rospy.loginfo("start OTF scan!!")
+        self.log.info("start OTF scan!!")
 
         self.pub_otf.publish(x, y, coord, dx, dy, dt, num, rampt,
                              delay, off_x, off_y, offcoord,
@@ -380,7 +388,7 @@ class controller(object):
         movetime : azel_list length [s] (otf_mode = 0.01)
         limit    : soft limit [az:-240~240, el:30~80] (True:limit_on, False:limit_off)
         """
-        rospy.loginfo("start OTF scan!!")
+        self.log.info("start OTF scan!!")
         self.pub_planet_scan.publish(0, 0, planet, dx, dy, dt, num, rampt,
                              delay, off_x, off_y, offcoord,
                              dcos, hosei, lamda, limit, self.node_name,
@@ -413,7 +421,7 @@ class controller(object):
     @logger
     def antenna_tracking_check(self):
         """antenna_tracking_check"""
-        rospy.loginfo(" tracking now... \n")
+        self.log.info(" tracking now...")
         time.sleep(2.)
         while not self.antenna_tracking_flag:# or (int(self.command_time) != self.antenna_tracking_time):
             time.sleep(0.01)
@@ -591,7 +599,7 @@ class controller(object):
     @deco_check    
     def dome_tracking_check(self):
         """dome tracking check"""
-        print(" dome_tracking now... \n")
+        self.log.info(" dome_tracking now...")
         while not self.dome_tracking_flag:
             time.sleep(0.01)
             pass
