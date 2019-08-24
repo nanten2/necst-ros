@@ -436,7 +436,7 @@ class controller(object):
     
     @logger
     def move_stop(self):
-        print("move_stop")
+        self.log.info("move_stop")
         self.pub_stop.publish(True, self.node_name, time.time())
         time.sleep(0.2)
         return
