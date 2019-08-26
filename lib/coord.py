@@ -218,11 +218,11 @@ class coord_calc(object):
         
         # reference from src/coord/correct.h 
         # line 242, 248
-        dx = kisa[2]*math.sin(kisa[3]-az)*math.sin(el)+kisa[4]*math.sin(el)+kisa[0]*math.cos(el)+kisa[1]+kisa[5]*math.cos(2*(kisa[3]-az))*math.sin(el)\
+        dx = kisa[2]*math.sin(kisa[3]-az)*math.sin(el)+kisa[4]*math.sin(el)+kisa[0]*math.cos(el)+kisa[1]+kisa[5]*math.sin(2*(kisa[6]-az))*math.sin(el)\
             +kisa[16]+kisa[18]*math.cos(el+kisa[19])
         delta[0] = -dx # arcsec
         
-        dy = -kisa[7]*math.cos(kisa[8]-az)-kisa[9]*math.sin(2*(kisa[10]-az))+kisa[15]+kisa[11]*el_d+kisa[12]*el_d*el_d+kisa[13]*el_d*el_d*el_d+kisa[14]*el_d*el_d*el_d*el_d\
+        dy = -kisa[7]*math.cos(kisa[8]-az)-kisa[9]*math.cos(2*(kisa[10]-az))+kisa[15]+kisa[11]*el_d+kisa[12]*el_d*el_d+kisa[13]*el_d*el_d*el_d+kisa[14]*el_d*el_d*el_d*el_d\
             +kisa[17]-kisa[18]*math.sin(el+kisa[19])+kisa[20]*el_d+kisa[21]*el_d*el_d+kisa[22]*el_d*el_d*el_d+kisa[23]*el_d*el_d*el_d*el_d
         delta[1] = -dy # arcsec
         if(math.fabs(math.cos(el))>0.001):
