@@ -20,10 +20,10 @@ from astropy.time import Time
 from datetime import datetime as dt
 import astropy.units as u
 sys.path.append('/home/amigos/ros/src/necst/lib')
-#import azel_calc
 import calc_coord
 nanten2 = EarthLocation(lat=-22.9699511*u.deg, lon=-67.60308139*u.deg, height=4863.84*u.m)
 import hosei_fit
+import logger
 
 """ 
 Notes about opt_point.py
@@ -56,6 +56,7 @@ class opt_point_controller(object):
         self.ctrl.move_stop()
         self.ctrl.dome_stop()
         self.ctrl.obs_status(active=False)
+        self.logger.obslog("STOP OBSERVATION", lv=1)
         try:
             shutil.copy('/home/amigos/ros/src/necst/lib/hosei_opt.txt', self.param_dir)
         except Exception as e:
@@ -231,6 +232,15 @@ class opt_point_controller(object):
         return target_list
     
     def start_observation(self, sort = 'az'):
+        #setup logger
+        #===========
+        now = datetime.datetime.utcnow()
+        log_path = '/home/amigos/log/{}.txt'.format(now.strftime('%Y%m%d'))
+        self.logger = logger.logger(__name__, filename=log_path)
+        log = self.logger.setup_logger()
+        self.logger.obslog(sys.argv)
+        start_time = time.time()
+        
         signal.signal(signal.SIGINT, self.handler)
         table = self.create_table(sort = sort)
         print("#################",table)
@@ -240,6 +250,8 @@ class opt_point_controller(object):
         stime = dt.utcnow()
         photo_dir = stime.strftime("/home/amigos/data/all_sky_shot/photo/opt_%Y%m%d%H%M%S/normal/") # photo
         param_dir = stime.strftime("/home/amigos/data/all_sky_shot/parameter/opt_%Y%m%d%H%M%S/") # hosei & process.log
+        self.logger.obslog("photo_dir : {}".format(photo_dir), lv=1)
+        self.logger.obslog("param_dir : {}".format(param_dir), lv=1)
         self.param_dir = param_dir
         
         for _tbl in table:
@@ -318,7 +330,7 @@ class opt_point_controller(object):
         shutil.copy('/home/amigos/ros/src/necst/lib/hosei_opt.txt', param_dir)
 
         
-        print("OBSERVATION END")
+        self.logger.obslog("OBSERVATION END : observation time : {:.2f} [min]".format((time.time() - start_time)/60))
         self.ctrl.obs_status(active=False)
         return
     
