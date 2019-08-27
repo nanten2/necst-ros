@@ -52,7 +52,7 @@ def save_file():
             f.write(str(dio))
             f.write("\n")
             f.close()
-            time.sleep(1.)
+        time.sleep(1.)
     return
 
 if __name__ == "__main__":
