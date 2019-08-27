@@ -1,0 +1,9 @@
+<!--this launch file is for ondo-tori(tr7nw) in D container-->
+<launch>
+<node pkg="ondo" name="tr7nw" type="tr7nw_pub.py" required="true">
+<remap from="tr7nw" to="outer_ondotori" />
+<param name="~host" value="172.20.0.90" />
+<param name="~serial_number" value="52181d26" />
+<param name="~rate" value="1" />
+</node>
+</launch>
