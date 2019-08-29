@@ -42,7 +42,7 @@ import time
 import numpy
 import matplotlib.pyplot as plt
 import datetime
-plt.rcParams['font.size'] = 9
+plt.rcParams['font.size'] = 12
 
 import sys
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
@@ -212,5 +212,12 @@ for i in range(4):
     ax10.text(0.05, 0.9, 'Tsys = %.1f'%(tsys3_av), transform=ax10.transAxes)
     ax11.text(0.05, 0.9, 'Tsys = %.1f'%(tsys4_av), transform=ax11.transAxes)
 
-    fig.suptitle('%s : %s,  integ = %.2f'%(name, timestamp, integ))
+    ax[0,0].grid(True)
+    ax[0,1].grid(True)
+    ax[1,0].grid(True)
+    ax[1,1].grid(True)
+    
+    plt.tight_layout()
+    fig.suptitle('%s : %s - %s/4,  integ = %.2f'%(name, timestamp, i+1, integ))
+    fig.savefig(os.path.join(savedir, '{}_{}_{}.png'.format(name, timestamp, i)))
     plt.show()
