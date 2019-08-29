@@ -152,7 +152,7 @@ for i in range(4):
     d3_list = data_list[2 + i*4]
     d4_list = data_list[3 + i*4]
 
-    d1_list[0] += 1000000
+    d1_list[0] += 100000#for debug
 
     tsys1 = tsys(d1_list[0], d1_list[1], cabin_temp)
     tsys2 = tsys(d2_list[0], d2_list[1], cabin_temp)
