@@ -82,6 +82,8 @@ else:
 
 d1_list = []
 d2_list = []
+d3_list = []
+d4_list = []
 
 print('Start experimentation')
 
@@ -116,9 +118,11 @@ d2 = d['dfs2'][0]
 d1_list.append(d1)
 d2_list.append(d2)    
 """
-datalist = []
 data = d.oneshot(integ,1,time.time()+1)[2][0]
-datalist.append(data)
+d1_list.append(data[0])
+d2_list.append(data[1])
+d3_list.append(data[2])
+d4_list.append(data[3])
 
 print('SKY')
 con.move_hot('out')
@@ -148,7 +152,10 @@ d1_list.append(d1)
 d2_list.append(d2)    
 """
 data = d.oneshot(integ,1,time.time()+1)[2][0]
-datalist.append(data)
+d1_list.append(data[0])
+d2_list.append(data[1])
+d3_list.append(data[2])
+d4_list.append(data[3])
 
 con.move_hot('in')
 
@@ -165,79 +172,63 @@ numpy.savetxt(os.path.join(savedir, '%s_temp.txt'%(name)), [cabin_temp])
 """
 
 def tsys(dhot, dsky, thot):
-    #dhot = numpy.array(dhot)
-    #dsky = numpy.array(dsky)
-    print("#################")
-    print(dhot)
-    print(dsky)
+    dhot = numpy.array(dhot)
+    dsky = numpy.array(dsky)
+    #print("#################")
+    #print(dhot)
+    #print(dsky)
     y = dhot / dsky
     tsys = thot / (y - 1.)
     return tsys
-"""
-print(numpy.shape(datalist[0]))
-tsys_ = tsys(numpy.array(datalist[0][0])+500000, numpy.array(datalist[1][0]), 300)
-import matplotlib.pyplot as plt
-plt.plot(tsys_)
-plt.show()
-"""
-datalist[0][0] = numpy.array(datalist[0][0]+100000)
-tsys1 = tsys(datalist[0][0], datalist[1][0], cabin_temp)
-tsys2 = tsys(datalist[0][1], datalist[1][1], cabin_temp)
 
-#d1_av = numpy.mean(d1_list[:,500:-500], axis=1)
-#d2_av = numpy.mean(d2_list[:,500:-500], axis=1)
-#tsys1_av = tsys(d1_av[0], d1_av[1], cabin_temp)
-#tsys2_av = tsys(d2_av[0], d2_av[1], cabin_temp)
-d1_av = 0
-d2_av = 1
-tsys1_av = 2
-tsys2_av = 3
+#memo
+#datalist[0-1]#hot or sky
+#datalist[*][0-20] : IF1-20 32768ch
 
-x = numpy.linspace(0, 1000, len(datalist[0][0]))
+d1_list = numpy.array(d1_list)
+d2_list = numpy.array(d2_list)
+d3_list = numpy.array(d3_list)
+d4_list = numpy.array(d4_list)
 
-x = numpy.linspace(0, 1000, len(datalist[0][0]))
+d1_list[0] += 1000000
 
-#fig = matplotlib.pyplot.figure(figsize=(14, 10))
+tsys1 = tsys(d1_list[0], d1_list[1], cabin_temp)
+tsys2 = tsys(d2_list[0], d2_list[1], cabin_temp)
+tsys3 = tsys(d3_list[0], d3_list[1], cabin_temp)
+tsys4 = tsys(d4_list[0], d4_list[1], cabin_temp)
+
+d1_av = numpy.mean(d1_list[:,500:-500], axis=1)
+d2_av = numpy.mean(d2_list[:,500:-500], axis=1)
+d3_av = numpy.mean(d3_list[:,500:-500], axis=1)
+d4_av = numpy.mean(d4_list[:,500:-500], axis=1)
+
+tsys1_av = tsys(d1_av[0], d1_av[1], cabin_temp)
+tsys2_av = tsys(d2_av[0], d2_av[1], cabin_temp)
+tsys3_av = tsys(d3_av[0], d3_av[1], cabin_temp)
+tsys4_av = tsys(d4_av[0], d4_av[1], cabin_temp)
+
+x = numpy.linspace(0, 2000, len(d1_list[0]))#XFFTS bw = 0-2000MHz
+
 fig, ax = plt.subplots(2, 2, figsize = (14,10))
 
+ax[0,0].plot(x, d1_list[0], 'r-')
+ax[0,1].plot(x, d2_list[0], 'r-')
+ax[1,0].plot(x, d3_list[0], 'r-')
+ax[1,1].plot(x, d4_list[0], 'r-')
 
-#ax11 = fig.add_subplot(211)
-#ax12 = fig.add_subplot(212)
-#ax21 = fig.add_subplot(221)
-#ax22 = fig.add_subplot(222)
-
-#ax11 = ax11.twinx()
-#ax12 = ax12.twinx()
-#ax21 = ax21.twinx()
-#ax22 = ax22.twinx()
-
-ax[0,0].plot(x, datalist[0][0], 'r-')
 ax00 = ax[0,0].twinx()
 ax00.plot(x, tsys1, ".")
-ax[0,1].plot(x, datalist[0][0], 'r-')
 ax01 = ax[0,1].twinx()
-ax01.plot(x, tsys1, ".")
-ax[1,0].plot(x, datalist[0][0], 'r-')
+ax01.plot(x, tsys2, ".")
 ax10 = ax[1,0].twinx()
-ax10.plot(x, tsys1, ".")
-ax[1,1].plot(x, datalist[0][0], 'r-')
+ax10.plot(x, tsys3, ".")
 ax11 = ax[1,1].twinx()
-ax11.plot(x, tsys1, ".")
-
-
-
-#ax[0,0].plot(x, [6,2,6,4], 'b-')
-#ax[0,1].plot(x, [1,1,1,1], 'b-')
-#ax[1,0].plot(x, [5,6,6,6], 'b-')
-#ax[1,1].plot(x, [2,5,3,8], 'b-')
-
-
+ax11.plot(x, tsys4, ".")
 
 ax[0,0].set_yscale('log')
 ax[0,1].set_yscale('log')
 ax[1,0].set_yscale('log')
 ax[1,1].set_yscale('log')
-
 
 ax[0,0].set_xlabel('Freq (MHz)')
 ax[0,1].set_xlabel('Freq (MHz)')
@@ -254,5 +245,10 @@ ax01.set_ylabel('Tsys [K]')
 ax10.set_ylabel('Tsys [K]')
 ax11.set_ylabel('Tsys [K]')
 
-plt.tight_layout()
+ax00.text(0.05, 0.9, 'Tsys = %.1f'%(tsys1_av), transform=ax00.transAxes)
+ax01.text(0.05, 0.9, 'Tsys = %.1f'%(tsys2_av), transform=ax01.transAxes)
+ax10.text(0.05, 0.9, 'Tsys = %.1f'%(tsys3_av), transform=ax10.transAxes)
+ax11.text(0.05, 0.9, 'Tsys = %.1f'%(tsys4_av), transform=ax11.transAxes)
+
+fig.suptitle('%s : %s,  integ = %.2f'%(name, timestamp, integ))
 plt.show()
