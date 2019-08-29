@@ -110,14 +110,6 @@ while True:
 print('cabin_temp: %.2f'%(cabin_temp))
 
 print('get spectrum...')
-"""
-d = con.oneshot_achilles(exposure=integ)
-#d = {"dfs1":[[100]*16384,0], "dfs2":[[200]*16384,0]}
-d1 = d['dfs1'][0]
-d2 = d['dfs2'][0]
-d1_list.append(d1)
-d2_list.append(d2)    
-"""
 data = d.oneshot(integ,1,time.time()+1)[2][0]
 d1_list.append(data[0])
 d2_list.append(data[1])
@@ -143,14 +135,6 @@ while True:
 
 
 print('get spectrum...')
-"""
-d = con.oneshot_achilles(exposure=integ)
-#d = {"dfs1":[[10]*16384,0], "dfs2":[[20]*16384,0]}
-d1 = d['dfs1'][0]
-d2 = d['dfs2'][0]
-d1_list.append(d1)
-d2_list.append(d2)    
-"""
 data = d.oneshot(integ,1,time.time()+1)[2][0]
 d1_list.append(data[0])
 d2_list.append(data[1])
@@ -159,24 +143,7 @@ d4_list.append(data[3])
 
 con.move_hot('in')
 
-"""
-d1_list = numpy.array(d1_list)
-d2_list = numpy.array(d2_list)
-"""
-
-"""
-print('save...')
-numpy.save(os.path.join(savedir, '%s_dfs01.npy'%(name)), d1_list)
-numpy.save(os.path.join(savedir, '%s_dfs02.npy'%(name)), d2_list)
-numpy.savetxt(os.path.join(savedir, '%s_temp.txt'%(name)), [cabin_temp])
-"""
-
 def tsys(dhot, dsky, thot):
-    dhot = numpy.array(dhot)
-    dsky = numpy.array(dsky)
-    #print("#################")
-    #print(dhot)
-    #print(dsky)
     y = dhot / dsky
     tsys = thot / (y - 1.)
     return tsys
