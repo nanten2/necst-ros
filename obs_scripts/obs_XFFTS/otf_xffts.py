@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # coding:utf-8
+
 import os
 import shutil
 import numpy
@@ -18,6 +19,7 @@ import doppler_nanten
 # ==============
 name = 'otf_2019'
 description = 'Get OTF spectrum'
+
 # Default parameters
 # ==================
 obsfile = ''
