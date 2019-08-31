@@ -13,6 +13,7 @@ import logger
 import sys
 import read_obsfile
 import shutil
+import log_weather
 
 # Configurations
 # ==============
@@ -110,6 +111,16 @@ def handler(num, flame):
 
 signal.signal(signal.SIGINT, handler)
 
+#setup weather logger
+#====================
+logw = log_weather.Weather_log(os.path.join(savedir, "weather.csv"))
+logw.initialize()
+def save_weatherlog(scan_num, obs_mode):
+    d = con.read_status()
+    logw.write(time.time(), d.InTemp, d.OutTemp, d.InHumi, d.OutHumi, d.WindDir, d.WindSp, d.Press,
+               d.Rain, d.CabinTemp1, d.CabinTemp2, d.DomeTemp1, d.DomeTemp2, d.GenTemp1, d.GenTemp2, scan_num, obs_mode)
+    log.info("Saved weather log")
+
 
 # Use obs_file
 # ------------------
@@ -172,10 +183,9 @@ con.obs_status(active=True, obsmode=obs["obsmode"], obs_script=__file__, obs_fil
                num_seq=obs["nSeq"], exposure_hot=obs["exposure_off"], exposure_off=obs["exposure_off"], exposure_on=obs["exposure"])
 while num < n:
     log.info('observation :'+str(num+1) + "\n")
-
+    save_weatherlog(num, "")
     con.onepoint_move(lambda_off, beta_off, coordsys, off_x=lamdel_off,
                       off_y=betdel_off, offcoord=cosydel, dcos=dcos)
-
     con.antenna_tracking_check()
     con.dome_tracking_check()
     log.info('tracking OK')
