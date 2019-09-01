@@ -15,9 +15,23 @@ from datetime import datetime
 sys.path.append("/home/amigos/ros/src/nascorx_xffts")
 import data_client
 
+# Info
+description = 'Get R-Sky data.'
 
-#parameter
-exposure = 1.0
+# Defalut Parameter
+exposure = 1.0 #[sec]
+
+# Argument handler
+# ================
+import argparse
+
+p = argparse.ArgumentParser(description=description)
+p.add_argument('--integ', type=float,
+                              help='Integration time (sec). default=%.1f'%(exposure))
+
+args = p.parse_args()
+
+if args.integ is not None: exposure = args.integ
 
 # Setup logging
 now = datetime.utcnow()
