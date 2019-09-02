@@ -42,7 +42,12 @@ log_path = '/home/amigos/log/{}.log'.format(now.strftime('%Y%m%d'))
 logger = logger.logger(__name__, filename=log_path)
 log = logger.setup_logger()
 
+# data path
+data_dir = "/home/amigos/data/skydip_xffts/{}".format(now.strftime("%Y%m%d%H%M%S"))
+if not os.path.exists(data_dir):
+    os.makedirs(data_dir)
 
+# main
 con = ROS_controller.controller()
 d = data_client.data_client()
 
@@ -65,32 +70,26 @@ while not opt.Current_Hot == 'IN':
     time.sleep(1)
     con.move_hot('IN')
 
-d_hot_integ1 = []
-d_hot_integ2 = []
+for i in range(16):
+    exec("d_hot_integ{} = []".format(i+1))
+    exec("d_integ{} = []".format(i+1))
+    exec("d_hot_sky{} = []".format(i+1))
+    
 #/SPEC_PMでtotal powerを受け取る場合スプリアスが考慮されない
 #d_hot_raw = con.oneshot_achilles(repeat = 1, exposure = 1.0, stime = 1.0)
 data = d.oneshot(exposure, 1 ,time.time()+1)[2][0]
-d_hot_integ1_tmp = np.sum(data[0])
-d_hot_integ2_tmp = np.sum(data[1])
-d_hot_integ1.append(d_hot_integ1_tmp)
-d_hot_integ2.append(d_hot_integ2_tmp)
-#d_hot_integ1_temp = sum(d_hot_dfs1[0])
-#d_hot_integ2_temp = sum(d_hot_dfs2[0])
-#d_hot_integ1.append(d_hot_integ1_temp)
-#d_hot_integ2.append(d_hot_integ1_temp)
+for i in range(16):
+    exec("d_hot_integ{}_tmp = np.sum(data[{}])".format(i+1, i))
+    exec("d_hot_integ{}.append(d_hot_integ{}_tmp)".format(i+1, i+1))
 
 while not opt.Current_Hot == 'OUT':
     opt = con.read_status()
     time.sleep(1)
     con.move_hot('OUT')
 
-
 opt = con.read_status()
 
-
 #skydip測定の開始
-d_integ1 = []
-d_integ2 = []
 z = [80, 70, 60, 45, 30, 25, 20]
 
 con.dome_track()
@@ -104,36 +103,21 @@ for elevation in z:
     log.info("antenna track OK")
     con.move_stop()
     data = d.oneshot(exposure, 1 ,time.time()+1)[2][0]
-    d_hot_integ1_tmp = np.sum(data[0])
-    d_hot_integ2_tmp = np.sum(data[1])
-    d_integ1.append(d_hot_integ1_tmp)
-    d_integ2.append(d_hot_integ2_tmp)
-    #d = con.oneshot_achilles(repeat = 1, exposure = 1.0, stime = 1.0)
-    #d_dfs1 = d['dfs1']
-    #d_dfs2 = d['dfs2']
-    #d_integ_temp1 = sum(d_dfs1[0])
-    #d_integ_temp2 = sum(d_dfs2[0])
-    #d_integ1.append(d_integ_temp1)
-    #d_integ2.append(d_integ_temp2)    
+    for i in range(16):
+        exec("d_hot_integ{}_tmp = np.sum(data[{}])".format(i+1, i))
+        exec("d_integ{}.append(d_hot_integ{}_tmp)".format(i+1, i+1))
 
 #解析開始
-
 #log(p_hot-p_sky)のlistの作成
-d_hot_sky1 = []
-d_hot_sky2 = []
 
-for i in range(len(d_integ1)):
-    d_temp = d_hot_integ1[0]*5-d_integ1[i]
-    d_temp2 = math.log(d_temp)
-    d_hot_sky1 = d_hot_sky1 + [d_temp2]
+for i in range(16):
+    for j in range(len(d_integ1)):
+        d_temp = eval("d_hot_integ{}[0]*5-d_integ{}[j]".format(i+1, i+1))
+        d_temp2 = math.log(d_temp)
+        exec("d_hot_sky{} = d_hot_sky{} + [d_temp2]".format(i+1, i+1))
 
-for i in range(len(d_integ2)):
-    d_temp = d_hot_integ2[0]*5-d_integ2[i]
-    d_temp2 = math.log(d_temp)
-    d_hot_sky2 = d_hot_sky2 + [d_temp2]
-
-#seczの計算
-
+        
+# seczの計算
 secz = []
 for i in range(len(z)):
     secz_temp = (z[i]/180)*math.pi
@@ -142,32 +126,32 @@ for i in range(len(z)):
 print(d_hot_sky1)
 print(d_hot_sky2)
 #plot
+for i in range(6):
+    fig, (axL, axR) = plt.subplots(ncols = 2, figsize = (10,4))
 
-fig, (axL, axR) = plt.subplots(ncols = 2, figsize = (10,4))
+    #fitting
+    fit_array1 = np.polyfit(secz, eval("d_hot_sky{}".format(1+i*2)),1)
+    fit_array2 = np.polyfit(secz, eval("d_hot_sky{}".format(2+i*2)),1)
+    
+    axL.plot(secz, np.poly1d(fit_array1)(secz), label="dfs1")
+    axL.plot(secz, eval("d_hot_sky{}".format(1+i*2)), 'o')
+    axL.set_title('IF{}'.format(1+i*2))
+    axL.set_xlabel('secz')
+    axL.set_ylabel('Power')
 
-#fitting
-fit_array1 = np.polyfit(secz, d_hot_sky1,1)
-fit_array2 = np.polyfit(secz, d_hot_sky2,1)
+    axR.plot(secz, np.poly1d(fit_array2)(secz), label="dfs1")
+    axR.plot(secz, eval("d_hot_sky{}".format(2+i*2)), 'o')
+    axR.set_title('IF{}'.format(2+i*2))
+    axR.set_xlabel('secz')
+    axR.set_ylabel('Power')
 
+    axR.text(0.1, 0.1, 'tau = {:.4f}'.format(fit_array1[0]), transform = axL.transAxes)
+    axR.text(1.4, 0.1, 'tau = {:.4f}'.format(fit_array2[0]) , transform = axL.transAxes)
 
-axL.plot(secz, np.poly1d(fit_array1)(secz), label="dfs1")
-axL.plot(secz, d_hot_sky1, 'o')
-axL.set_title('dfs1')
-axL.set_xlabel('secz')
-axL.set_ylabel('Power')
-
-axR.plot(secz, np.poly1d(fit_array2)(secz), label="dfs1")
-axR.plot(secz, d_hot_sky2, 'o')
-axR.set_title('dfs2')
-axR.set_xlabel('secz')
-axR.set_ylabel('Power')
-
-axR.text(0.1, 0.1, 'tau = {:.4f}'.format(fit_array1[0]), transform = axL.transAxes)
-axR.text(1.4, 0.1, 'tau = {:.4f}'.format(fit_array2[0]) , transform = axL.transAxes)
-
-axL.grid()
-axR.grid()
-plt.tight_layout()
-plt.show()
+    axL.grid()
+    axR.grid()
+    plt.tight_layout()
+    plt.savefig(os.path.join(data_dir, "IF{}_{}.png".format(1+2*i, 2+2*i)))
+    plt.show()
 
 log.info("Observation END")
