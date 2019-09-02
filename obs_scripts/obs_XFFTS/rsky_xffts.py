@@ -60,7 +60,7 @@ if memo != '':
 else:
     pass
 day = time.strftime("%Y%m%d")
-savedir = "/home/amigos/data/experiment/rsky/"+day+"/"
+savedir = "/home/amigos/data/rsky/"+day+"/"
 if not os.path.exists(savedir):
     os.makedirs(savedir)
 else:
