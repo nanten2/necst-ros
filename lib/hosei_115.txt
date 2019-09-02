@@ -1,0 +1,8 @@
+Beam1Corv, 0
+Beam1Corp, 0
+Beam2Corv, 0
+Beam2Corp, 0
+Beam3Corv, 0
+Beam3Corp, 0
+Beam4Corv, 0
+Beam4Corp, 0
