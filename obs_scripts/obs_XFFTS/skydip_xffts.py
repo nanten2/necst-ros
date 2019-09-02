@@ -112,7 +112,7 @@ for elevation in z:
 
 for i in range(16):
     for j in range(len(d_integ1)):
-        d_temp = eval("d_hot_integ{}[0]*5-d_integ{}[j]".format(i+1, i+1))
+        d_temp = eval("d_hot_integ{}[0]-d_integ{}[j]".format(i+1, i+1))
         d_temp2 = math.log(d_temp)
         exec("d_hot_sky{} = d_hot_sky{} + [d_temp2]".format(i+1, i+1))
 
