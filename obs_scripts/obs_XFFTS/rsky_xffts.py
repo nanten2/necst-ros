@@ -152,8 +152,6 @@ for i in range(4):
     d3_list = data_list[2 + i*4]
     d4_list = data_list[3 + i*4]
 
-    d1_list[0] += 100000#for debug
-
     tsys1 = tsys(d1_list[0], d1_list[1], cabin_temp)
     tsys2 = tsys(d2_list[0], d2_list[1], cabin_temp)
     tsys3 = tsys(d3_list[0], d3_list[1], cabin_temp)
@@ -173,19 +171,33 @@ for i in range(4):
     
     fig, ax = plt.subplots(2, 2, figsize = (14,10))
 
-    ax[0,0].plot(x, d1_list[0], 'r-')
-    ax[0,1].plot(x, d2_list[0], 'r-')
-    ax[1,0].plot(x, d3_list[0], 'r-')
-    ax[1,1].plot(x, d4_list[0], 'r-')
+    ax[0,0].plot(x, d1_list[0], 'r-', label="HOT")
+    ax[0,1].plot(x, d2_list[0], 'r-', label="HOT")
+    ax[1,0].plot(x, d3_list[0], 'r-', label="HOT")
+    ax[1,1].plot(x, d4_list[0], 'r-', label="HOT")
+
+    ax[0,0].plot(x, d1_list[0], 'b-', label="SKY")
+    ax[0,1].plot(x, d2_list[0], 'b-', label="SKY")
+    ax[1,0].plot(x, d3_list[0], 'b-', label="SKY")
+    ax[1,1].plot(x, d4_list[0], 'b-', label="SKY")
 
     ax00 = ax[0,0].twinx()
-    ax00.plot(x, tsys1, ".")
+    ax00.plot(x, tsys1, "g.", label="Tsys")
     ax01 = ax[0,1].twinx()
-    ax01.plot(x, tsys2, ".")
+    ax01.plot(x, tsys2, "g.", label="Tsys")
     ax10 = ax[1,0].twinx()
-    ax10.plot(x, tsys3, ".")
+    ax10.plot(x, tsys3, "g.", label="Tsys")
     ax11 = ax[1,1].twinx()
-    ax11.plot(x, tsys4, ".")
+    ax11.plot(x, tsys4, "g.", label="Tsys")
+
+    ax[0,0].legend()
+    ax[0,1].legend()
+    ax[1,0].legend()
+    ax[1,1].legend()
+    ax00.legend()
+    ax01.legend()
+    ax10.legend()
+    ax11.legend()
 
     ax[0,0].set_yscale('log')
     ax[0,1].set_yscale('log')
