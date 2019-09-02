@@ -8,7 +8,8 @@ from tqdm import tqdm
 class File():
     ###config
     header_size = 0#will be changed
-    d_format = "d 655360f 4s i i i"
+    #d_format = "d 655360f 4s i i i"#20IF
+    d_format = "d 524292f 4s i i i"#16IF
     
     def __init__(self, path):
         self.f = open(path, "ab")
@@ -52,10 +53,10 @@ class Read():
                             ('array14', ('<f', 32768)),
                             ('array15', ('<f', 32768)),
                             ('array16', ('<f', 32768)),
-                            ('array17', ('<f', 32768)),
-                            ('array18', ('<f', 32768)),
-                            ('array19', ('<f', 32768)),
-                            ('array20', ('<f', 32768)),
+                            ('array17', ('<f', 1)),
+                            ('array18', ('<f', 1)),
+                            ('array19', ('<f', 1)),
+                            ('array20', ('<f', 1)),
                             ('obs_mode', 'S4'),
                             ('a', '<i'),
                             ('b', '<i'),
@@ -63,11 +64,12 @@ class Read():
     
     def __init__(self, path):
         self.path = path
-        self.d_format = "d 655360f 4s i i i"
+        #self.d_format = "d 655360f 4s i i i"
+        self.d_format = "d 524292f 4s i i i"
         self.st = struct.Struct(self.d_format)
         ###file
         self.f = open(path, "r+b")
-        self.chunk = 8 + 655360*4 +4*4
+        self.chunk = 8 + 524292*4 +4*4
         self.f_size = os.path.getsize(self.path)
         ###mmap test
         self.mm = mmap.mmap(self.f.fileno(), 0)
@@ -120,13 +122,13 @@ class Read():
         return list(map(lambda x : x.decode().replace("\x00", ""), self._read_partly(4, 8 + 655360*4, "S4")))
 
     def read_scan_num(self):
-        return self._read_partly(4, 8 + 655360*4+4, "<i")
+        return self._read_partly(4, 8 + 524292*4+4, "<i")
 
     def read_lamdel(self):
-        return self._read_partly(4, 8 + 655360*4+4+4, "<i")
+        return self._read_partly(4, 8 + 524292*4+4+4, "<i")
 
     def read_betdel(self):
-        return self._read_partly(4, 8 + 655360*4+4+4+4, "<i")
+        return self._read_partly(4, 8 + 524292*4+4+4+4, "<i")
 
     def read_onearray(self, array_num):
         offset = 32768*array_num
@@ -159,11 +161,9 @@ class Read():
         return [numpy.frombuffer(i, ("<f", 32768)) for i in array],[numpy.frombuffer(i, "4S") for i in scan],    [numpy.frombuffer(i, "<i") for i in obs]
             
     def _arange_list(self,d):
+        tp = list(d[1:32769])
         return [d[0], tp, d[32769].decode().replace("\x00", ""), d[32770], d[32771], d[32772]]
 
-    def _decode(self, d):
-        d[21] = d[21].decode()
-        return d
 
     #def read_all(self):
     #    self.f.seek(0)
