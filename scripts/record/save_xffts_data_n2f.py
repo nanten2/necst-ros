@@ -73,7 +73,9 @@ class xffts_logger():
     def pub_status(self):
         pub = rospy.Publisher("logger_status", String, queue_size = 1)
         while not rospy.is_shutdown():
-            pub.publish("{} // {}".format(self.queue.qsize(), self.c))#tmp2
+            f = open("./n2f_status.txt", "w")
+            f.write("qsize : {}\ncount : {}\nbpath : {}".format(self.queue.qsize(), self.c, self.path))
+            #pub.publish("qsize : {}#count : {}#dbpath : {}".format(self.queue.qsize(), self.c, self.path))#tmp2
             time.sleep(1)
 
 if __name__ == "__main__":
