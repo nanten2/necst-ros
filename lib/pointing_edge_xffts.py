@@ -123,7 +123,7 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000, object='moon'):
 # open file
 
     n = n2df.Read(file_name)    
-    _n = n.read_all2()
+    _n = n.read_all()
     d = []
     for i in range(25):
         _d = []
