@@ -19,7 +19,7 @@ tau = 0.0
 #integmax = 9000
 #plot_mode = 'plot'
 #save_path = '/home/amigos/data/result_png'
-path_to_db = './radio_pointing_9_20190807_1.dat'
+
 # Argument handler
 # ================
 
@@ -59,6 +59,7 @@ import time
 import signal
 import numpy
 import doppler_nanten
+import log_weather
 
 dp = doppler_nanten.doppler_nanten()
 
@@ -134,10 +135,21 @@ datahome = '/home/amigos/data/'
 timestamp = time.strftime('%Y%m%d%H%M%S')
 dirname = 'n%s_%s_%s_cross_%s_pointing'%(timestamp ,obs['molecule_1'] ,obs['transiti_1'].split('=')[1],obs['object'])
 savedir = os.path.join(datahome, name, dirname)
-
+path_to_db = os.path.join(savedir, './radio_pointing_9_20190807_1.dat')
 print('mkdir {savedir}'.format(**locals()))
 os.makedirs(savedir)
 
+#setup weather logger
+#====================
+print(savedir)
+print(os.path.join(savedir, "weather.csv"))
+logw = log_weather.Weather_log(os.path.join(savedir, "weather.csv"))
+logw.initialize()
+def save_weatherlog(scan_num, obs_mode):
+    d = con.read_status()
+    logw.write(time.time(), d.InTemp, d.OutTemp, d.InHumi, d.OutHumi,
+               d.WindDir, d.WindSp, d.Press, d.Rain, d.CabinTemp1, d.CabinTemp2,
+               d.DomeTemp1, d.DomeTemp2, d.GenTemp1, d.GenTemp2, scan_num, obs_mode)
 
 print('Start pointing')
 print('')
@@ -160,6 +172,7 @@ con.obs_status(active=True, obsmode=obs["obsmode"],obs_script=__file__, obs_file
 while num < n:
     p_n = 0
     while p_n < point_n:
+        save_weatherlog(num, p_n)
         ra = obs['lambda_on']
         dec = obs['beta_on']
         off_x = 0
