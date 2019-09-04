@@ -136,6 +136,7 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000, object='moon'):
 
     time = d[0]
     mode = d[21]
+    mode = list(map(lambda x:x.decode() ,mode))
     subscan = d[22]
     _lam = d[23]
     _bet = d[24]

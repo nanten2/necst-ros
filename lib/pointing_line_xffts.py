@@ -145,11 +145,11 @@ def calc_integdata(IF, data_list, mode_list, lam, bet, scan_list, mi, ma, width,
 para_init = numpy.array([25000., 0.1, 0.0001])
 
     #-----
-def analysis(file_name, mi=10000, ma=30000, width=1000, integ_mi=15500, integ_ma=17500, plot_mode="plot", savepath_filename='/home/amigos/latest_obs/pointing_line.png'):
+def analysis(file_name, mi=10000, ma=30000, width=1000, integ_mi=15500, integ_ma=17500, plot=True, savefig=True, savepath_filename='/home/amigos/latest_obs/pointing_line.png'):
 # open file
 
     n = n2df.Read(file_name)    
-    _n = n.read_all2()
+    _n = n.read_all()
     d = []
     for i in range(25):
         _d = []
@@ -160,6 +160,7 @@ def analysis(file_name, mi=10000, ma=30000, width=1000, integ_mi=15500, integ_ma
 # define axis 
     time = d[0]
     mode = d[21]
+    mode = list(map(lambda x:x.decode() ,mode))
     subscan = d[22]
     _lam = d[23]
     _bet = d[24]
@@ -241,13 +242,14 @@ def analysis(file_name, mi=10000, ma=30000, width=1000, integ_mi=15500, integ_ma
                         tmp = numpy.zeros(32768)
                     else:
                         pass
-            
+            else:
+                print("check")
         data_list.append(d_list)
         mode_list.append(m_list)
         lam.append(la_list)
         bet.append(be_list)
         scan_list.append(s_list)
-
+    
     ret1 = calc_integdata(1, data_list, mode_list, lam, bet, scan_list, mi, ma, width, integ_mi, integ_ma)
 
     xscan_integ = ret1[0]
@@ -447,10 +449,10 @@ def analysis(file_name, mi=10000, ma=30000, width=1000, integ_mi=15500, integ_ma
         [a.grid() for a in axlist]
 
     finally:
-        if plot_mode == 'plot':
-            plt.show()
-        elif plot_mode == 'savefig':
+        if savefig:
             plt.savefig(savepath_filename)
+        if plot:
+            plt.show()
         else:
             pass
     return
