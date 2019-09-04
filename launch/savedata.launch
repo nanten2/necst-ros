@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="necst" name="xffts_logger" type=save_xffts_data_n2f.py"/>
+  <node pkg="necst" name="encoder_logger" type="save_antenna_status.py"/>
+</launch>
