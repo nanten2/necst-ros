@@ -160,7 +160,8 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000, object='moon'):
         tmp = numpy.zeros(32768)
         for i in range(len(d_)):
             if subscan[i] == 1 and mode[i] == 'ON':
-                tmp += pickle.loads(d_[i])
+                #tmp += pickle.loads(d_[i])
+                tmp += d_[i]
                 if subscan[i+1] != subscan[i] or i == len(d_)-1 or _lam[i+1] != _lam[i]:
                     d_list.append(tmp)
                     m_list.append('ON')
@@ -171,7 +172,8 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000, object='moon'):
                 else:
                     pass
             elif subscan[i] == 2 and mode[i] == 'ON':
-                tmp += pickle.loads(d_[i])
+                #tmp += pickle.loads(d_[i])
+                tmp += d_[i]
                 if subscan[i+1] != subscan[i] or i == len(d_)-1 or _lam[i+1] != _lam[i]:
                     d_list.append(tmp)
                     m_list.append('ON')
@@ -182,7 +184,8 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000, object='moon'):
                 else:
                     pass
             elif subscan[i] == 3 and mode[i] == 'ON':
-                tmp += pickle.loads(d_[i])
+                #tmp += pickle.loads(d_[i])
+                tmp += d_[i]
                 if subscan[i+1] != subscan[i] or i == len(d_)-1 or _bet[i+1] != _bet[i]:
                     d_list.append(tmp)
                     m_list.append('ON')
@@ -193,7 +196,8 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000, object='moon'):
                 else:
                     pass
             elif subscan[i] == 4 and mode[i] == 'ON':
-                tmp += pickle.loads(d_[i])
+                #tmp += pickle.loads(d_[i])
+                tmp += d_[i]
                 if subscan[i+1] != subscan[i] or i == len(d_)-1 or _bet[i+1] != _bet[i]:
                     d_list.append(tmp)
                     m_list.append('ON')
@@ -204,7 +208,8 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000, object='moon'):
                 else:
                     pass
             elif mode[i] == 'OFF':
-                tmp += pickle.loads(d_[i])
+                #tmp += pickle.loads(d_[i])
+                tmp += d_[i]
                 if i == len(d_)-1:
                     d_list.append(tmp)
                     m_list.append('OFF')
@@ -229,7 +234,8 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000, object='moon'):
                     else:
                         pass
             elif mode[i] == 'HOT':
-                tmp += pickle.loads(d_[i])
+                #tmp += pickle.loads(d_[i])
+                tmp += d_[i]
                 if i == len(d_)-1:
                     d_list.append(tmp)
                     m_list.append('HOT')
@@ -274,7 +280,7 @@ def analysis(file_name, integ_mi=5000, integ_ma=10000, object='moon'):
     
     ax = fig.add_subplot(1,1,1, aspect = 1)
     
-    im = ax.scatter(xscan_x, xscan_y, c = xscan_Ta, vmin = 0, vmax = 280)
+    im = ax.scatter(xscan_x, xscan_y, c = xscan_Ta, vmin = 0, vmax = 280, cmap="plasma")
     ax.scatter(yscan_x, yscan_y, c = yscan_Ta, vmin = 0, vmax = 280)
     
     fig.colorbar(im)
