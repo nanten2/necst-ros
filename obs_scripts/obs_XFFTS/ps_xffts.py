@@ -103,6 +103,7 @@ con.move_stop()
 def handler(num, flame):
     print("!!ctrl+C!!")
     print("STOP MOVING")
+    con.pub_encdb_flag(False, os.path.join(savedir, "enc.db"))
     con.move_stop()
     con.dome_stop()
     con.obs_status(active=False)
@@ -173,7 +174,7 @@ log.info('mkdir {savedir}'.format(**locals()))
 os.makedirs(savedir)
 
 log.info('Start experimentation')
-
+con.pub_encdb_flag(True, os.path.join(savedir, "enc.db"))
 savetime = con.read_status().Time
 num = 0
 n = int(obs['nSeq'])
@@ -635,3 +636,4 @@ crpix1_2 = 8191.5 - obs['vlsr']/cdelt1_2 - \
 # timestamp = time.strftime('%Y%m%d_%H%M%S')
 # dirname = timestamp
 con.obs_status(active=False)
+con.pub_encdb_flag(False, os.path.join(savedir, "enc.db"))
