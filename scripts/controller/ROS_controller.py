@@ -956,6 +956,7 @@ class controller(object):
             print("clear_condition is ''.")
         return
 
+    @logger
     def pub_encdb_flag(self, boolflag, dbname):
         encflag = encdb_flag_msg()
         encflag.data = boolflag
@@ -963,6 +964,7 @@ class controller(object):
         encflag.timestamp = time.time()
         self.pub_encdb.publish(encflag)        
 
+    @logger
     def xffts_publish_flag(self, timestamp, db_name, scan_num, obs_mode, lamdel, betdel):
         xffts_flag = xffts_flag_msg()
         xffts_flag.timestamp = timestamp
