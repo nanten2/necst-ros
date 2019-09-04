@@ -965,7 +965,7 @@ class controller(object):
         self.pub_encdb.publish(encflag)        
 
     @logger
-    def xffts_publish_flag(self, timestamp, db_name, scan_num, obs_mode, lamdel, betdel):
+    def xffts_publish_flag(self, timestamp, db_name, scan_num="x", obs_mode="x", lamdel=0, betdel=0):
         xffts_flag = xffts_flag_msg()
         xffts_flag.timestamp = timestamp
         xffts_flag.newdb_name = db_name
