@@ -332,5 +332,5 @@ con.dome_stop()
 
 import pointing_edge_xffts
 #t = time.time()
-pointing_edge_xffts.analysis('/home/amigos/ros/src/necst/scripts/record/edge_20190719_2.db', integ_mi=integmin, integ_ma=integmax) 
+pointing_edge_xffts.analysis(path_to_db, integ_mi=integmin, integ_ma=integmax) 
 #print(time.time() - t)
