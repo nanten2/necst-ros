@@ -18,7 +18,6 @@ tau = 0.0
 planet = ''
 integmin = 5000
 integmax = 10000
-path_to_db = './edge_20190719_2.db'
 
 # Argument handler
 # ================
@@ -166,6 +165,7 @@ savedir = os.path.join(datahome, name, dirname)
 
 print('mkdir {savedir}'.format(**locals()))
 os.makedirs(savedir)
+path_to_db = os.path.join(savedir, 'edge.ndf')
 
 print('Start experimentation')
 print('')
