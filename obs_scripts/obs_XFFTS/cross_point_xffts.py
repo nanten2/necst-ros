@@ -312,6 +312,8 @@ print('observation end')
 con.move_stop()
 con.dome_stop()
 
+shutil.copy("/home/amigos/ros/src/necst/lib/hosei_230.txt", savedir+"/hosei_copy")
+con.obs_status(active=False)
 
 import pointing_line_xffts
 pointing_line_xffts.analysis(path_to_db, 5000, 25000, 500, 8000, 9000, savepath_filename=os.path.join(savedir, "pointing.png"))
