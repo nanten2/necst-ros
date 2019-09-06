@@ -135,7 +135,7 @@ datahome = '/home/amigos/data/'
 timestamp = time.strftime('%Y%m%d%H%M%S')
 dirname = 'n%s_%s_%s_cross_%s_pointing'%(timestamp ,obs['molecule_1'] ,obs['transiti_1'].split('=')[1],obs['object'])
 savedir = os.path.join(datahome, name, dirname)
-path_to_db = os.path.join(savedir, './radio_pointing_9_20190807_1.dat')
+path_to_db = os.path.join(savedir, 'cross.ndf')
 print('mkdir {savedir}'.format(**locals()))
 os.makedirs(savedir)
 
