@@ -4,7 +4,7 @@ import glob
 key_word = '20181114'
 ###
 
-dir_list = glob.glob('./*{}*pointing'.format(key_word))
+dir_list = glob.glob('/home/amigos/data/ps_edge_pointing/*{}*pointing'.format(key_word))
 print(dir_list)
 
 ###pointing line
