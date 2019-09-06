@@ -4,7 +4,7 @@ import glob
 key_word = '20181114'
 ###
 
-dir_list = glob.glob('/home/amigos/data/radio_pointing_9/radio_pointing_9_*{}*'.format(key_word))
+dir_list = glob.glob('/home/amigos/data/radio_pointing_9/*{}*pointing'.format(key_word))
 print(dir_list)
 
 #----
