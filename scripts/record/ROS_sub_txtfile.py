@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import rospy
 from necst.msg import textfile_msg
 
