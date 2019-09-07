@@ -972,7 +972,7 @@ class controller(object):
         xffts_flag = xffts_flag_msg()
         xffts_flag.timestamp = timestamp
         xffts_flag.newdb_name = db_name
-        xffts_flag.scan_num = scan_num
+        xffts_flag.scan_num = str(scan_num)
         xffts_flag.obs_mode = obs_mode
         xffts_flag.lamdel = lamdel
         xffts_flag.betdel = betdel
