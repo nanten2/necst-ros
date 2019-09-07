@@ -25,6 +25,7 @@ from necst.msg import oneshot_msg
 #from nascorx_xffts.msg import XFFTS_para_msg
 from necst.msg import xffts_flag_msg
 from necst.msg import encdb_flag_msg
+from necst.msg import textfile_msg
 sys.path.append("/home/amigos/ros/src/necst/lib")
 import achilles
 from necst.srv import ac240_srv
@@ -32,6 +33,7 @@ from necst.srv import ac240_srvResponse
 from necst.srv import Bool_srv
 from necst.srv import Bool_srvResponse
 from std_msgs.msg import String
+
 class controller(object):
 
     task_flag = False
@@ -111,6 +113,7 @@ class controller(object):
         self.pub_onestatus = rospy.Publisher("one_status", Status_onepoint_msg, queue_size=1)        
         self.pub_queue = rospy.Publisher("queue_obs", Bool_necst, queue_size=1)
         self.pub_alert = rospy.Publisher("alert", String_necst, queue_size=1)
+        self.pub_txt = rospy.Publisher("text1", textfile_msg, queue_size=10)
         self.service_ac240 = rospy.ServiceProxy("ac240", ac240_srv)
         self.service_encoder = rospy.ServiceProxy("encoder_origin", Bool_srv)
         self.pub_log = rospy.Publisher("logging_ctrl", String, queue_size=1)
@@ -975,3 +978,9 @@ class controller(object):
         xffts_flag.betdel = betdel
         self.pub_xffts.publish(xffts_flag)
         pass
+
+    def pub_txtfile(self, path, savepath):
+        s = textfile_msg()
+        s.data = path
+        s.path = savepath
+        self.pub_txt.publish(s)
