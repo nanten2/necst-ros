@@ -2,4 +2,5 @@
   <node pkg="necst" name="xffts_logger" type="save_xffts_data_n2f.py" output='screen'/>
   <node pkg="necst" name="encoder_logger" type="save_antenna_status.py" output='screen'/>
   <node pkg="necst" name="save_file" type="ROS_sub_txtfile.py" output='screen'/>
+  <node pkg="necst" name="weather_logger" type="save_weatherlog.py" output='screen'/>
 </launch>
