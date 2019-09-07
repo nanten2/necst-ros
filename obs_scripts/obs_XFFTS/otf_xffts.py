@@ -78,11 +78,6 @@ log.debug("log_path : {}".format(log_path))
 log.debug("dirname : {}".format(dirname))
 log.debug("xffts : {}".format(xffts_datapath))
 
-# copy hosei & obsfiles
-# =====================
-shutil.copy("/home/amigos/ros/src/necst/lib/hosei_230.txt", savedir)
-shutil.copy(os.path.join(obsdir, obsfile), savedir)
-
 # Main
 # ====
 dp = doppler_nanten.doppler_nanten()
@@ -90,6 +85,13 @@ con = ROS_controller.controller()
 con.dome_track()
 con.move_stop()
 con.pub_encdb_flag(True, os.path.join(savedir, "enc.db"))
+
+# copy hosei & obsfiles
+# =====================
+#shutil.copy("/home/amigos/ros/src/necst/lib/hosei_230.txt", savedir)
+#shutil.copy(os.path.join(obsdir, obsfile), savedir)
+con.pub_txtfile("/home/amigos/ros/src/necst/lib/hosei_230.txt", os.path.join(savedir, "hosei_230.txt"))
+con.pub_txtfile(os.path.join(obsdir, obsfile), os.path.join(savedir, obsfile))   
 
 def handler(num, flame):
     log.warn("!!ctrl+C!!")
@@ -103,18 +105,6 @@ def handler(num, flame):
     time.sleep(1.)
     sys.exit()
 signal.signal(signal.SIGINT, handler)
-
-#setup weather logger
-#====================
-#print(savedir)
-#print(os.path.join(savedir, "weather.csv"))
-#logw = log_weather.Weather_log(os.path.join(savedir, "weather.csv"))
-#logw.initialize()
-#def save_weatherlog(scan_num, obs_mode):
-#    d = con.read_status()
-#    logw.write(time.time(), d.InTemp, d.OutTemp, d.InHumi, d.OutHumi, d.WindDir, d.WindSp, d.Press,
-#               d.Rain, d.CabinTemp1, d.CabinTemp2, d.DomeTemp1, d.DomeTemp2, d.#GenTemp1, d.GenTemp2, scan_num, obs_mode)
-#    log.info("Saved weather log")
 
 # param
 # =====
@@ -204,12 +194,12 @@ if obs["scan_direction"] == 0:
     con.obs_status(True, obs["obsmode"], obsscript, obsfile, obs["object"], scan_point, total_count, dx, gridy, integ_off, integ_off, integ_on, "x")
 else:
     con.obs_status(True, obs["obsmode"], obsscript, obsfile, obs["object"], scan_point, total_count, gridx, dy, integ_off, integ_off, integ_on, "y")
+
 while rp_num < rp:
     log.info('repeat : {}'.format(rp_num))
     num = 0
     while num < n: 
         log.info('observation : {}'.format(num))
-        #save_weatherlog(num, "")
         log.info('tracking start')
         con.move_stop()
 

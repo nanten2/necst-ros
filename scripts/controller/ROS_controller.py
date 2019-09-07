@@ -113,7 +113,7 @@ class controller(object):
         self.pub_onestatus = rospy.Publisher("one_status", Status_onepoint_msg, queue_size=1)        
         self.pub_queue = rospy.Publisher("queue_obs", Bool_necst, queue_size=1)
         self.pub_alert = rospy.Publisher("alert", String_necst, queue_size=1)
-        self.pub_txt = rospy.Publisher("text1", textfile_msg, queue_size=1)
+        self.pub_txt = rospy.Publisher("text1", textfile_msg, queue_size=10)
         self.service_ac240 = rospy.ServiceProxy("ac240", ac240_srv)
         self.service_encoder = rospy.ServiceProxy("encoder_origin", Bool_srv)
         self.pub_log = rospy.Publisher("logging_ctrl", String, queue_size=1)

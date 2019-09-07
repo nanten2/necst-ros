@@ -16,7 +16,7 @@ def callback(req):
     pub.publish(s)
 
 pub = rospy.Publisher("text2", textfile_msg, queue_size=10)
-sub = rospy.Subscriber("text1", textfile_msg, callback, queue_size=1)
+sub = rospy.Subscriber("text1", textfile_msg, callback, queue_size=10)
 s = textfile_msg()
 
 rospy.spin()
