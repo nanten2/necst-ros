@@ -5,6 +5,7 @@ from necst.msg import textfile_msg
 rospy.init_node("savetxt")
 
 def callback(req):
+    print("sub")#debug 
     f = open(req.path, "w")
     f.write(req.data)
     f.close()
