@@ -119,7 +119,7 @@ class Read():
         return self._read_partly(8, 0, "d")
 
     def read_obs_mode(self):
-        return list(map(lambda x : x.decode().replace("\x00", ""), self._read_partly(4, 8 + 655360*4, "S4")))
+        return list(map(lambda x : x.decode().replace("\x00", ""), self._read_partly(4, 8 + 524292*4, "S4")))
 
     def read_scan_num(self):
         return self._read_partly(4, 8 + 524292*4+4, "<i")

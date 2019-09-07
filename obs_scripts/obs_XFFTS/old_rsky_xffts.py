@@ -65,7 +65,7 @@ if not os.path.exists(savedir):
     os.makedirs(savedir)
 else:
     pass
-savepath = os.path.join(savedir, "xffts.ndf")
+
 
 # Data aquisition
 # ---------------
@@ -105,12 +105,9 @@ while True:
 print('cabin_temp: %.2f'%(cabin_temp))
 
 print('get spectrum...')
-#data_list = []
-#data = d.oneshot(integ,1,time.time()+1)[2][0]
-#data_list.append(data)
-con.xffts_publish_flag(1, savepath, obs_mode="HOT")
-time.sleep(integ)
-con.xffts_publish_flag(0, savepath, obs_mode="HOT")
+data_list = []
+data = d.oneshot(integ,1,time.time()+1)[2][0]
+data_list.append(data)
 
 print('SKY')
 con.move_hot('out')
@@ -131,11 +128,9 @@ while True:
 
 
 print('get spectrum...')
-#data = d.oneshot(integ,1,time.time()+1)[2][0]
-#data_list.append(data)
-con.xffts_publish_flag(1, savepath, obs_mode="SKY")
-time.sleep(integ)
-con.xffts_publish_flag(0, savepath, obs_mode="SKY")
+data = d.oneshot(integ,1,time.time()+1)[2][0]
+data_list.append(data)
+
 
 con.move_hot('in')
 
@@ -144,8 +139,6 @@ def tsys(dhot, dsky, thot):
     tsys = thot / (y - 1.)
     return tsys
 
-
-sys.exit()
 #memo
 #datalist[0-1]#hot or sky
 #datalist[*][0-20] : IF1-20 32768ch
