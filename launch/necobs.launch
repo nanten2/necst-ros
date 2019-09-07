@@ -22,4 +22,5 @@
   <node pkg="necst" name="save_dio2" type="ROS_save_dio.py" args="antenna_dio"/>
   <node pkg="necst" name="save_dio3" type="ROS_save_dio.py" args="encoder_dio"/>
   <node pkg="necst" name="save_dio4" type="ROS_save_dio.py" args="encoder_z_dio"/>
+  <node pkg="necst" name="pubtxt" type="ROS_pub_txtfile.py"/>
 </launch>
