@@ -131,7 +131,7 @@ class Read():
         return self._read_partly(4, 8 + 524292*4+4+4+4, "<i")
 
     def read_onearray(self, array_num):
-        offset = 32768*array_num
+        offset = 32768*array_num*4
         return self._read_partly(32768*4, 8+offset, ("<f", 32768))
 
     def _read_partly(self, length, offset, dtype):
