@@ -225,9 +225,9 @@ while num < n:
             
             print('get spectrum...')
             dp1 = dp.set_track(obs['lambda_on'], obs['beta_on'], obs['vlsr'], obs['coordsys'], 0, 0, offset_dcos, obs['coordsys'], integ*2+integ, obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)#obs['cosydel']非対応
-            con.xffts_publish_flag(1, path_to_db, str(num+1), "HOT", 0, 0)
+            con.xffts_publish_flag(path_to_db, str(num+1), "HOT", 0, 0)
             time.sleep(integ)
-            con.xffts_publish_flag(0, path_to_db, str(num+1), "HOT", 0, 0)
+            con.xffts_publish_flag("", str(num+1), "HOT", 0, 0)
             latest_hottime = time.time()
             pass
         
@@ -255,9 +255,9 @@ while num < n:
             dp1 = dp.set_track(obs['lambda_on'], obs['beta_on'], obs['vlsr'], obs['coordsys'], 0, 0, offset_dcos, obs['coordsys'], integ+integ, obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)#obs['cosydel']非対応
         status = con.read_status()
         temp = float(status.CabinTemp1)# + 273.15
-        con.xffts_publish_flag(1, path_to_db, str(num+1), "OFF", 0, 0)
+        con.xffts_publish_flag(path_to_db, str(num+1), "OFF", 0, 0)
         time.sleep(integ)
-        con.xffts_publish_flag(0, path_to_db, str(num+1), "OFF", 0, 0)
+        con.xffts_publish_flag("", str(num+1), "OFF", 0, 0)
         
         print('move ON')
         con.move_stop()
@@ -274,9 +274,9 @@ while num < n:
         print('get spectrum...')
         status = con.read_status()
         temp = float(status.CabinTemp1)# + 273.15
-        con.xffts_publish_flag(1, path_to_db, str(num+1), "ON", off_x, off_y)
+        con.xffts_publish_flag(path_to_db, str(num+1), "ON", off_x, off_y)
         time.sleep(integ)
-        con.xffts_publish_flag(0, path_to_db, str(num+1), "ON", off_x, off_y)
+        con.xffts_publish_flag("", str(num+1), "ON", off_x, off_y)
         
         print('stop')
         con.move_stop()
@@ -302,9 +302,9 @@ print('Temp: %.2f'%(temp))
 
 print('get spectrum...')
 dp1 = dp.set_track(obs['lambda_on'], obs['beta_on'], obs['vlsr'], obs['coordsys'], 0, 0, offset_dcos, obs['coordsys'], integ*2+integ, obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)#obs['cosydel']非対応
-con.xffts_publish_flag(1, path_to_db, str(num), "HOT", 0, 0)
+con.xffts_publish_flag(path_to_db, str(num), "HOT", 0, 0)
 time.sleep(integ)
-con.xffts_publish_flag(0, path_to_db, str(num), "HOT", 0, 0)
+con.xffts_publish_flag("", str(num), "HOT", 0, 0)
 
 con.move_hot('out')
 

@@ -274,7 +274,7 @@ while num < n:
     dp1 = 0
     status = con.read_status()
     con.xffts_publish_flag(path_to_db, str(subscan), "HOT", 0, 0)
-    d = con.oneshot_achiless(exposure=integ_off)
+    d = con.oneshot_achilles(exposure=integ_off)
     con.xffts_publish_flag("", str(subscan), "HOT", 0, 0)
     d1 = d['dfs1'][0]
     d2 = d['dfs2'][0]
@@ -323,7 +323,7 @@ while num < n:
     status = con.read_status()
     temp = float(status.CabinTemp1)# + 273.15
     con.xffts_publish_flag(path_to_db, str(subscan), "OFF", 0, 0)
-    con.oneshot_achiless(exposure=integ_off)
+    con.oneshot_achilles(exposure=integ_off)
     con.xffts_publish_flag("", str(subscan), "OFF", 0, 0)
     d1 = d['dfs1'][0]
     d2 = d['dfs2'][0]
@@ -394,7 +394,7 @@ while num < n:
         status = con.read_status()
         temp = float(status.CabinTemp1)# + 273.15
         con.xffts_publish_flag(path_to_db, str(subscan), "ON", off_x, off_y)
-        con.oneshot_achiless(exposure=integ_off)
+        con.oneshot_achilles(exposure=integ_off)
         con.xffts_publish_flag("", str(subscan), "ON", off_x, off_y)
         d1 = d['dfs1'][0]
         d2 = d['dfs2'][0]
@@ -451,7 +451,7 @@ temp = float(status.CabinTemp1)# + 273.15
 print('Temp: %.2f'%(temp))
 print('get spectrum...')
 con.xffts_publish_flag(path_to_db, str(subscan), "HOT", 0, 0)
-con.oneshot_achiless(exposure=integ_off)
+con.oneshot_achilles(exposure=integ_off)
 con.xffts_publish_flag("", str(subscan), "HOT", 0, 0)
 d1 = d['dfs1'][0]
 d2 = d['dfs2'][0]
