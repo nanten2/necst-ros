@@ -102,9 +102,9 @@ while True:
 print('cabin_temp: %.2f'%(cabin_temp))
 
 print('get spectrum...')
-con.xffts_publish_flag(1, savepath, obs_mode="HOT")
+con.xffts_publish_flag(savepath, obs_mode="HOT")
 time.sleep(integ)
-con.xffts_publish_flag(0, savepath, obs_mode="HOT")
+con.xffts_publish_flag("", obs_mode="HOT")
 
 print('SKY')
 con.move_hot('out')
@@ -125,9 +125,9 @@ while True:
 
 
 print('get spectrum...')
-con.xffts_publish_flag(1, savepath, obs_mode="SKY")
+con.xffts_publish_flag(savepath, obs_mode="SKY")
 time.sleep(integ)
-con.xffts_publish_flag(0, savepath, obs_mode="SKY")
+con.xffts_publish_flag("", obs_mode="SKY")
 
 con.move_hot('in')
 con.pub_analyexec(savedir, "rsky")
