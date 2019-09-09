@@ -10,6 +10,7 @@ from datetime import datetime as dt
 import rospy
 import rosnode
 import logger
+import nasco_controller
 from datetime import datetime
 from necst.msg import Move_mode_msg
 from necst.msg import Otf_mode_msg
@@ -134,6 +135,8 @@ class controller(object):
         atexit.register(self._release)
 
         time.sleep(1.)# authority regist time
+
+        self.nc = nasco_controller.controller(node=False)
         return
     
 # ===================
@@ -660,6 +663,17 @@ class controller(object):
         status.from_node = self.node_name
         status.timestamp = time.time()        
         self.pub_m2.publish(status)
+        return
+
+    @logger
+    @deco_check
+    def move_chopper(self, pulse=250):
+        """
+        The Chopper rotates 90(360) degrees when the pulse setting
+        is 250(1000).
+        Chopper's in/out switches at 90 degrees.
+        """
+        self.nc.slider0.set_step("u", pulse)
         return
 
 # ===================
