@@ -10,7 +10,6 @@ from datetime import datetime as dt
 import rospy
 import rosnode
 import logger
-import nasco_controller
 from datetime import datetime
 from necst.msg import Move_mode_msg
 from necst.msg import Otf_mode_msg
@@ -28,7 +27,9 @@ from necst.msg import xffts_flag_msg
 from necst.msg import encdb_flag_msg
 from necst.msg import textfile_msg
 sys.path.append("/home/amigos/ros/src/necst/lib")
+sys.path.append("/home/amigos/ros/src/nasco_system/scripts")
 import achilles
+import nasco_controller
 from necst.srv import ac240_srv
 from necst.srv import ac240_srvResponse
 from necst.srv import Bool_srv
