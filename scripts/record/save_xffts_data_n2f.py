@@ -48,7 +48,7 @@ class xffts_logger():
             tmp_list = []
             for i in range(20):
                 tmp_list += list(eval("req.SPEC_BE{}".format(i+1)))
-            self.queue.put([req.timestamp, tmp_list])
+            self.queue.put([req.timestamp, tmp_list, str(self.obs_mode), int(self.scan_num), int(self.lamdel), int(self.betdel)])
         else:
             pass
 
@@ -58,7 +58,7 @@ class xffts_logger():
                 time.sleep(0.01)
                 continue
             ret = self.queue.get()
-            tmp_list = [float(ret[0]), [*ret[1]], str(self.obs_mode), int(self.scan_num), int(self.lamdel), int(self.betdel)]
+            tmp_list = [float(ret[0]), [*ret[1]], ret[2], ret[3], ret[4], ret[5]]
             self.n.write(tmp_list)
             time.sleep(0.001)
             print("save")#for debug will be deleted            
