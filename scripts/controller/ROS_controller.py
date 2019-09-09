@@ -26,6 +26,7 @@ from necst.msg import oneshot_msg
 from necst.msg import xffts_flag_msg
 from necst.msg import encdb_flag_msg
 from necst.msg import textfile_msg
+from necst.msg import analy_msg
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/nasco_system/scripts")
 import achilles
@@ -116,6 +117,7 @@ class controller(object):
         self.pub_queue = rospy.Publisher("queue_obs", Bool_necst, queue_size=1)
         self.pub_alert = rospy.Publisher("alert", String_necst, queue_size=1)
         self.pub_txt = rospy.Publisher("text1", textfile_msg, queue_size=10)
+        self.pub_analy = rospy.Publisher("auto_analy", analy_msg, queue_size=10)
         self.service_ac240 = rospy.ServiceProxy("ac240", ac240_srv)
         self.service_encoder = rospy.ServiceProxy("encoder_origin", Bool_srv)
         self.pub_log = rospy.Publisher("logging_ctrl", String, queue_size=1)
@@ -999,3 +1001,9 @@ class controller(object):
         s.data = path
         s.path = savepath
         self.pub_txt.publish(s)
+
+    def pub_analyexec(self, data_path, analy_type):
+        s = analy_msg()
+        s.data_path = data_path
+        s.analy_type = analy_type
+        self.pub_analy.publish(s)
