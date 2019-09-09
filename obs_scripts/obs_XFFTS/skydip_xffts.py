@@ -70,9 +70,9 @@ while not opt.Current_Hot == 'IN':
 
 #/SPEC_PMでtotal powerを受け取る場合スプリアスが考慮されない
 #d_hot_raw = con.oneshot_achilles(repeat = 1, exposure = 1.0, stime = 1.0)
-con.xffts_publish_flag(1, savepath, obs_mode="HOT")
+con.xffts_publish_flag(savepath, obs_mode="HOT")
 time.sleep(exposure)
-con.xffts_publish_flag(0, savepath, obs_mode="HOT")
+con.xffts_publish_flag("", obs_mode="HOT")
 
 while not opt.Current_Hot == 'OUT':
     opt = con.read_status()
@@ -94,6 +94,8 @@ for elevation in z:
     con.antenna_tracking_check()
     log.info("antenna track OK")
     con.move_stop()
-    con.xffts_publish_flag(1, savepath, obs_mode="SKY", scan_num=elevation)
+    con.xffts_publish_flag(savepath, obs_mode="SKY", scan_num=elevation)
     time.sleep(exposure)
-    con.xffts_publish_flag(0, savepath, obs_mode="SKY", scan_num=elevation)
+    con.xffts_publish_flag("", obs_mode="SKY", scan_num=elevation)
+
+con.pub_analyexec(data_dir, "skydip")

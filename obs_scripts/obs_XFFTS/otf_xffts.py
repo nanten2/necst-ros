@@ -100,7 +100,7 @@ def handler(num, flame):
     con.dome_stop()
     con.obs_status(active=False)
     con.pub_encdb_flag(False, os.path.join(savedir, "enc.db"))
-    con.xffts_publish_flag(0, xffts_datapath, str(num), "XXX", 0, 0)
+    con.xffts_publish_flag("", str(num), "XXX", 0, 0)
     logger.obslog("STOP OBSERVATION", lv=1)
     time.sleep(1.)
     sys.exit()
@@ -234,9 +234,9 @@ while rp_num < rp:
             temp = float(status.CabinTemp1)
             #"""
             #d = con.oneshot_achilles(exposure=integ_off)
-            con.xffts_publish_flag(1, xffts_datapath, str(num), "HOT", 0, 0)
+            con.xffts_publish_flag(xffts_datapath, str(num), "HOT", 0, 0)
             time.sleep(integ_off)
-            con.xffts_publish_flag(0, xffts_datapath, str(num), "OFF", 0, 0)
+            con.xffts_publish_flag("", str(num), "OFF", 0, 0)
             latest_hottime = time.time()
             pass
 
@@ -257,9 +257,9 @@ while rp_num < rp:
         status = con.read_status()
         temp = float(status.CabinTemp1)
         #d = con.oneshot_achilles(exposure=integ_off)
-        con.xffts_publish_flag(1, xffts_datapath, str(num), "OFF", 0, 0)
+        con.xffts_publish_flag(xffts_datapath, str(num), "OFF", 0, 0)
         time.sleep(integ_off)
-        con.xffts_publish_flag(0, xffts_datapath, str(num), "OFF", 0, 0)
+        con.xffts_publish_flag("", str(num), "OFF", 0, 0)
         log.info('move ON')
         con.move_stop()
         ssx = (sx + num*gridx) - float(dx)/float(dt)*rampt-float(dx)/2.#rampの始まり
@@ -286,12 +286,12 @@ while rp_num < rp:
 
         log.info('getting_data...')
         #d = con.oneshot_achilles(repeat = scan_point ,exposure = integ_on ,stime = start_on)
-        con.xffts_publish_flag(1, xffts_datapath, str(num), "ON", 0, 0)
+        con.xffts_publish_flag(xffts_datapath, str(num), "ON", 0, 0)
         log.info("start_on : {}".format(start_on))
         while start_on + (obs['otflen']+rampt)/24./3600. > 40587 + time.time()/(24.*3600.):
             #while obs['otflen']/24./3600. > 40587 + time.time()/(24.*3600.):    
             time.sleep(0.001)
-        con.xffts_publish_flag(0, xffts_datapath, str(num), "ON", 0, 0)
+        con.xffts_publish_flag("", str(num), "ON", 0, 0)
 
         _on = 0
         while _on < scan_point:
@@ -316,9 +316,9 @@ while status.Current_Hot != "IN":
 con.obs_status(active=True, current_num=scan_point*num+1, current_position="HOT")
 
 #con.observation("start", integ_off)
-con.xffts_publish_flag(1, xffts_datapath, str(num), "HOT", 0, 0)
+con.xffts_publish_flag(xffts_datapath, str(num), "HOT", 0, 0)
 time.sleep(integ_off)
-con.xffts_publish_flag(0, xffts_datapath, str(num), "HOT", 0, 0)
+con.xffts_publish_flag("", str(num), "HOT", 0, 0)
 
 con.move_hot('out')
 
