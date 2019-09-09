@@ -243,9 +243,9 @@ while num < n:
     print('get spectrum...')
     dp1 = 0
     status = con.read_status()
-    con.xffts_publish_flag(1, path_to_db, str(subscan), "HOT", 0, 0)
+    con.xffts_publish_flag(path_to_db, str(subscan), "HOT", 0, 0)
     time.sleep(integ_off)
-    con.xffts_publish_flag(0, path_to_db, str(subscan), "HOT", 0, 0)
+    con.xffts_publish_flag("", str(subscan), "HOT", 0, 0)
     pass
 
     print('OFF')
@@ -259,9 +259,9 @@ while num < n:
     con.obs_status(active=True, current_num=num*obs["N"], current_position="OFF")
     status = con.read_status()
     temp = float(status.CabinTemp1)# + 273.15
-    con.xffts_publish_flag(1, path_to_db, str(subscan), "OFF", 0, 0)
+    con.xffts_publish_flag(path_to_db, str(subscan), "OFF", 0, 0)
     time.sleep(integ_off)
-    con.xffts_publish_flag(0, path_to_db, str(subscan), "OFF", 0, 0)
+    con.xffts_publish_flag("", str(subscan), "OFF", 0, 0)
 
     lp = 0
     while lp < line_point:
@@ -297,9 +297,9 @@ while num < n:
         print('get spectrum...')
         status = con.read_status()
         temp = float(status.CabinTemp1)# + 273.15
-        con.xffts_publish_flag(1, path_to_db, str(subscan), "ON", off_x, off_y)
+        con.xffts_publish_flag(path_to_db, str(subscan), "ON", off_x, off_y)
         time.sleep(integ_off)
-        con.xffts_publish_flag(0, path_to_db, str(subscan), "ON", off_x, off_y)
+        con.xffts_publish_flag("", str(subscan), "ON", off_x, off_y)
     
         print('stop')
         con.move_stop()
@@ -321,9 +321,9 @@ temp = float(status.CabinTemp1)# + 273.15
         
 print('Temp: %.2f'%(temp))
 print('get spectrum...')
-con.xffts_publish_flag(1, path_to_db, str(subscan), "HOT", 0, 0)
+con.xffts_publish_flag(path_to_db, str(subscan), "HOT", 0, 0)
 time.sleep(integ_off)
-con.xffts_publish_flag(0, path_to_db, str(subscan), "HOT", 0, 0)
+con.xffts_publish_flag("", str(subscan), "HOT", 0, 0)
 
 con.move_hot('out')
 print('observation end')

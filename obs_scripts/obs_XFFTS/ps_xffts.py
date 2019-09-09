@@ -213,9 +213,9 @@ while num < n:
         status = con.read_status()
         temp = float(status.CabinTemp1)  # + 273.15
         #d = con.oneshot_achilles(exposure=integ_off)# AC240
-        con.xffts_publish_flag(1, xffts_datapath, str(num), "HOT", 0, 0)#OFF? HOT?
+        con.xffts_publish_flag(xffts_datapath, str(num), "HOT", 0, 0)#OFF? HOT?
         time.sleep(integ_off)
-        con.xffts_publish_flag(0, xffts_datapath, str(num), "HOT", 0, 0)#OFF? HOT?
+        con.xffts_publish_flag("", str(num), "HOT", 0, 0)#OFF? HOT?
         #d1 = d['dfs1'][0]
         #d2 = d['dfs2'][0]
         #d1_list.append(d1)
@@ -271,9 +271,9 @@ while num < n:
     status = con.read_status()
     temp = float(status.CabinTemp1)  # + 273.15
     #d = con.oneshot_achilles(exposure=integ_off)
-    con.xffts_publish_flag(1, xffts_datapath, str(num), "OFF", 0, 0)#OFF
+    con.xffts_publish_flag(xffts_datapath, str(num), "OFF", 0, 0)#OFF
     time.sleep(integ_off)
-    con.xffts_publish_flag(0, xffts_datapath, str(num), "OFF", 0, 0)#OFF
+    con.xffts_publish_flag("", str(num), "OFF", 0, 0)#OFF
     #d = {'dfs1': [[1]*16384,1], 'dfs2': [[10]*16384,11]}
     # d1 = d['dfs1'][0]
     # d2 = d['dfs2'][0]
@@ -322,9 +322,9 @@ while num < n:
     status = con.read_status()
     temp = float(status.CabinTemp1)  # + 273.15
     #d = con.oneshot_achilles(exposure=integ_on)
-    con.xffts_publish_flag(1, xffts_datapath, str(num), "ON", 0, 0)
+    con.xffts_publish_flag(xffts_datapath, str(num), "ON", 0, 0)
     time.sleep(integ_on)
-    con.xffts_publish_flag(0, xffts_datapath, str(num), "ON", 0, 0)
+    con.xffts_publish_flag("", str(num), "ON", 0, 0)
     # d1 = d['dfs1'][0]
     # d2 = d['dfs2'][0]
     # d1_list.append(d1)
@@ -374,9 +374,9 @@ temp = float(status.CabinTemp1)  # + 273.15
 print('Temp: %.2f' % (temp))
 print('get spectrum...')
 #d = con.oneshot_achilles(exposure=integ_off)
-con.xffts_publish_flag(1, xffts_datapath, str(num), "HOT", 0, 0)
+con.xffts_publish_flag(xffts_datapath, str(num), "HOT", 0, 0)
 time.sleep(integ_off)
-con.xffts_publish_flag(0, xffts_datapath, str(num), "HOT", 0, 0)
+con.xffts_publish_flag("", str(num), "HOT", 0, 0)
 # d1 = d['dfs1'][0]
 # d2 = d['dfs2'][0]
 # d1_list.append(d1)
