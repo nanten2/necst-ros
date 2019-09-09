@@ -130,8 +130,4 @@ time.sleep(integ)
 con.xffts_publish_flag(0, savepath, obs_mode="SKY")
 
 con.move_hot('in')
-
-def tsys(dhot, dsky, thot):
-    y = dhot / dsky
-    tsys = thot / (y - 1.)
-    return tsys
+con.pub_analyexec(savedir, "rsky")

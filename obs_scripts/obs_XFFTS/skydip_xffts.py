@@ -97,3 +97,5 @@ for elevation in z:
     con.xffts_publish_flag(1, savepath, obs_mode="SKY", scan_num=elevation)
     time.sleep(exposure)
     con.xffts_publish_flag(0, savepath, obs_mode="SKY", scan_num=elevation)
+
+con.pub_analyexec(data_dir, "skydip")
