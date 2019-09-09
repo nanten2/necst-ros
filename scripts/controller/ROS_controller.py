@@ -27,7 +27,9 @@ from necst.msg import xffts_flag_msg
 from necst.msg import encdb_flag_msg
 from necst.msg import textfile_msg
 sys.path.append("/home/amigos/ros/src/necst/lib")
+sys.path.append("/home/amigos/ros/src/nasco_system/scripts")
 import achilles
+import nasco_controller
 from necst.srv import ac240_srv
 from necst.srv import ac240_srvResponse
 from necst.srv import Bool_srv
@@ -134,6 +136,8 @@ class controller(object):
         atexit.register(self._release)
 
         time.sleep(1.)# authority regist time
+
+        self.nc = nasco_controller.controller(node=False)
         return
     
 # ===================
@@ -660,6 +664,17 @@ class controller(object):
         status.from_node = self.node_name
         status.timestamp = time.time()        
         self.pub_m2.publish(status)
+        return
+
+    @logger
+    @deco_check
+    def move_chopper(self, pulse=250):
+        """
+        The Chopper rotates 90(360) degrees when the pulse setting
+        is 250(1000).
+        Chopper's in/out switches at 90 degrees.
+        """
+        self.nc.slider0.set_step("u", pulse)
         return
 
 # ===================
