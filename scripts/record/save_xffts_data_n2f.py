@@ -12,20 +12,16 @@ from necst.msg import xffts_flag_msg
 
 class xffts_logger():
     def __init__(self):
-        self.path_to = ""
         self.queue = queue.Queue()
         ###register subscriber
         self.sub1 = rospy.Subscriber("XFFTS_SPEC", XFFTS_msg, self.save_to_queue, queue_size = 1000)
         self.sub2 = rospy.Subscriber("XFFTS_DB_flag", xffts_flag_msg, self.update_flag, queue_size = 1)
-        ###ctrl flag
-        self.timestamp = 0
         ###parameter
         self.obs_mode = ""
         self.scan_num = 0
         self.lamdel = 0
         self.betdel = 0
         ###path
-        self.previous_path = "#"
         self.path = ""
         pass
 
@@ -35,7 +31,6 @@ class xffts_logger():
             if hasattr(self, "n"):
                 self.n.close()
             self.n = n2df.File(req.newdb_name)
-        self.timestamp = req.timestamp
         self.obs_mode = req.obs_mode
         self.scan_num = req.scan_num
         self.lamdel = req.lamdel
@@ -66,9 +61,8 @@ class xffts_logger():
     def pub_status(self):
         pub = rospy.Publisher("logger_status", String, queue_size = 1)
         while not rospy.is_shutdown():
-            print(self.path, self.previous_path, self.queue.qsize())
-            #pub.publish("qsize : {}#count : {}#dbpath : {}".format(self.queue.qsize(), self.c, self.path))#tmp2
-            time.sleep(0.1)
+            pub.publish("qsize : {}#count : {}#datapath : {}".format(self.queue.qsize(), self.c, self.path))#
+            time.sleep(0.5)
 
 if __name__ == "__main__":
     rospy.init_node("xffts_logger")
