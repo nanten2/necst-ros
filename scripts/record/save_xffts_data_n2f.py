@@ -59,9 +59,9 @@ class xffts_logger():
             print("save")#for debug will be deleted            
             
     def pub_status(self):
-        pub = rospy.Publisher("logger_status", String, queue_size = 1)
+        pub = rospy.Publisher("xffts_logger_status", String, queue_size = 1)
         while not rospy.is_shutdown():
-            pub.publish("qsize : {}#count : {}#datapath : {}".format(self.queue.qsize(), self.c, self.path))#
+            pub.publish("qsize : {}, datapath : {}".format(self.queue.qsize(), self.path))#
             time.sleep(0.5)
 
 if __name__ == "__main__":
