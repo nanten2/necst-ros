@@ -63,7 +63,7 @@ class tracking_check(object):
         while not rospy.is_shutdown():
             if self.track_falseflag:
                 self.tracking = False
-                time.sleep(2) # waiting until antenna moving
+                time.sleep(3) # waiting until antenna moving
                 self.track_falseflag = False
             command_az = self.antenna_param['command_az']
             command_el = self.antenna_param['command_el']

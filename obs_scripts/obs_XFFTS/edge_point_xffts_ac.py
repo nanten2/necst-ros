@@ -707,6 +707,7 @@ n2fits_write.write(read2,f2)
 shutil.copy("/home/amigos/ros/src/necst/lib/hosei_230.txt", savedir+"/hosei_copy")
 con.obs_status(active=False)
 
+con.pub_analyexec(savedir, "edge")
 import pointing_edge_xffts
 #t = time.time()
 pointing_moon_edge.analysis(f1, integ_mi=integmin, integ_ma=integmax)
