@@ -333,6 +333,7 @@ con.dome_stop()
 shutil.copy("/home/amigos/ros/src/necst/lib/hosei_230.txt", savedir+"/hosei_copy")
 con.obs_status(active=False)
 
+con.pub_analyexec(savedir, "edge")
 import pointing_edge_xffts
 #t = time.time()
 pointing_edge_xffts.analysis(path_to_db, integ_mi=integmin, integ_ma=integmax) 

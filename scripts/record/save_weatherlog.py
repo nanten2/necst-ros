@@ -38,7 +38,7 @@ class weather_logger():
     def callback(self, req):
         self.scan_number = req.scan_num
         self.obs_mode = req.obs_mode
-        if req.timestamp == 0:
+        if req.newdb_name == "":
             return
         if not self.save_path == os.path.join(os.path.dirname(req.newdb_name), "weather.csv"):
             self.save_path = os.path.join(os.path.dirname(req.newdb_name), "weather.csv")
