@@ -1,5 +1,4 @@
-string newdb_name
 string obs_mode
-string scan_num
-float64 lamdel
-float64 betdel
+float32 scan_num
+float32 lamdel
+float32 betdel
