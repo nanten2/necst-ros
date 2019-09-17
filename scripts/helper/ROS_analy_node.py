@@ -13,9 +13,11 @@ rospy.init_node("analy")
 py_path = "/home/amigos/git/analy_n2data/note_py"
 nb_path = "/home/amigos/git/analy_n2data/notebook"
 
-analy_type = {"rsky": ["rsky.py", "rsky.ipynb"],
+analy_type = {"rsky": ["new_rsky.py", "new_rsky.ipynb"],
               "skydip": ["skydip.py", "skydip.ipynb"],
-              "edge": ["pointing_edge_xffts.py", "pointing_edge_xffts.ipynb"]}
+              "edge": ["pointing_edge_xffts.py", "pointing_edge_xffts.ipynb"],
+              "ps": ["Position_Switch.py", "Position_Switch.ipynb"]}
+
 
 status_analy = ""
 
