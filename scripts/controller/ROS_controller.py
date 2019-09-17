@@ -123,6 +123,7 @@ class controller(object):
         self.pub_log = rospy.Publisher("logging_ctrl", String, queue_size=1)
         self.pub_xffts = rospy.Publisher("XFFTS_DB_flag", xffts_flag_msg, queue_size = 1)
         self.pub_encdb = rospy.Publisher("encoder_DB_flag", encdb_flag_msg, queue_size = 1)
+        self.logger_flag = rospy.Publisher("logger_path", String, queue_size=1)
         time.sleep(0.5)# authority regist time
 
         now = datetime.utcnow()
@@ -670,12 +671,19 @@ class controller(object):
 
     @logger
     @deco_check
-    def move_chopper(self, pulse=250):
+    def move_chopper(self, mode):
         """
         The Chopper rotates 90(360) degrees when the pulse setting
         is 250(1000).
         Chopper's in/out switches at 90 degrees.
         """
+        if mode.lower() == "in":
+            pulse = 0
+        elif mode.lower() == "out":
+            pulse = 250
+        else:
+            self.log.error("{} is not valid. Chopper mode is only 'in' or 'out'.".format(mode))
+            return
         self.nc.slider0.set_step("u", pulse)
         return
 
@@ -985,10 +993,9 @@ class controller(object):
         self.pub_encdb.publish(encflag)        
 
     @logger
-    def xffts_publish_flag(self, db_name, scan_num="0", obs_mode="x", lamdel=0, betdel=0):
+    def xffts_publish_flag(self, obs_mode="Non", scan_num=0, lamdel=0, betdel=0):
         xffts_flag = xffts_flag_msg()
-        xffts_flag.newdb_name = db_name
-        xffts_flag.scan_num = str(scan_num)
+        xffts_flag.scan_num = scan_num
         xffts_flag.obs_mode = obs_mode
         xffts_flag.lamdel = lamdel
         xffts_flag.betdel = betdel
@@ -1001,8 +1008,15 @@ class controller(object):
         s.path = savepath
         self.pub_txt.publish(s)
 
+    @logger
     def pub_analyexec(self, data_path, analy_type):
         s = analy_msg()
         s.data_path = data_path
         s.analy_type = analy_type
         self.pub_analy.publish(s)
+
+    @logger
+    def pub_loggerflag(self, data_path):
+        s = String()
+        s.data = data_path
+        self.logger_flag.publish(s)
