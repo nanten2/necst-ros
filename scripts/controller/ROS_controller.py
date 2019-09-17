@@ -671,12 +671,19 @@ class controller(object):
 
     @logger
     @deco_check
-    def move_chopper(self, pulse=250):
+    def move_chopper(self, mode):
         """
         The Chopper rotates 90(360) degrees when the pulse setting
         is 250(1000).
         Chopper's in/out switches at 90 degrees.
         """
+        if mode.lower() == "in":
+            pulse = 0
+        elif mode.lower() == "out":
+            pulse = 250
+        else:
+            self.log.error("{} is not valid. Chopper mode is only 'in' or 'out'.".format(mode))
+            return
         self.nc.slider0.set_step("u", pulse)
         return
 
