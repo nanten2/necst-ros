@@ -16,11 +16,34 @@ description = 'Get R-Sky data.'
 integ = 1
 memo = ''
 
-on_ra = 83
-on_dec = -5
+# object parameters
+# =================
+# M42
+on_ra = 83.8221
+on_dec = -05.3911
+off_ra = on_ra+1.5
+off_dec = on_dec
 
-off_ra = 82
-off_dec = -6
+# # W51 IRS 2
+# #ICRS coord. (ep=J2000) :19 23 40.05 +14 31 07.1 
+# on_ra = 290.958
+# on_dec = 14.1
+# off_ra = on_ra+1.5
+# off_dec = on_dec
+
+# # W 49 -- Star forming region
+# #ICRS coord. (ep=J2000) :19 10 19.6 +09 07 42
+# on_ra = 287.581
+# on_dec = 9.128
+# off_ra = on_ra+1.5
+# off_dec = on_dec
+
+# # W43 SNR G030.8-00.0 -- SuperNova Remnant
+# #ICRS coord. (ep=J2000) :18 47 32.4 -01 56 31
+# on_ra = 281.885
+# on_dec = -1.942
+# off_ra = on_ra+1.5
+# off_dec = on_dec
 
 
 # Argument handler
