@@ -16,6 +16,12 @@ description = 'Get R-Sky data.'
 integ = 1
 memo = ''
 
+on_ra = 83
+on_dec = -5
+
+off_ra = 82
+off_dec = -6
+
 
 # Argument handler
 # ================
@@ -58,7 +64,7 @@ if memo != '':
 else:
     pass
 #savedir = "/home/amigos/data/rsky/"+timestamp+"/"
-savedir = "/home/amigos/hdd/observation/rsky/"+timestamp
+savedir = "/home/amigos/hdd/observation/simple_ps/"+timestamp
 if not os.path.exists(savedir):
     os.makedirs(savedir)
 else:
@@ -69,6 +75,8 @@ savepath = os.path.join(savedir, "xffts.ndf")
 # ---------------
 
 con = ROS_controller.controller()
+con.dome_track()
+
 status = con.read_status()
 cabin_temp = status.CabinTemp1
 if cabin_temp < 10.: # if no data
@@ -80,8 +88,8 @@ else:
 
 print('Start experimentation')
 
-print('')
-
+# HOT
+# ===
 print('R')
 #con.move_hot('in')
 con.move_chopper("in")
@@ -90,52 +98,41 @@ time.sleep(3)# Temporarily
 status = con.read_status()
 hot_status = status.Current_Hot
 print('hot_status ### ', hot_status)
-# while True:
-#     status = con.read_status()
-#     hot_status = status.Current_Hot
-#     print('hot_status ### ',hot_status)
-#     if not hot_status == 'IN':
-#         time.sleep(0.5)
-#         continue
-#     else:
-#         break
-
 print('cabin_temp: %.2f'%(cabin_temp))
-
 print('get spectrum...')
 con.pub_loggerflag(savedir)
 con.xffts_publish_flag(obs_mode="HOT")
 time.sleep(integ)
-#con.pub_loggerflag("")
 con.xffts_publish_flag()
 
 print('SKY')
-#con.move_hot('out')
 con.move_chopper("out")
 time.sleep(3)# Temporarily
 
 status = con.read_status()
 hot_status = status.Current_Hot
-
 print('hot_status ### ', hot_status)
 
-# while True:
-#     status = con.read_status()
-#     hot_status = status.Current_Hot
-#     if not hot_status == 'OUT':
-#         time.sleep(0.5)
-#         continue
-#     else:
-#         break
-
-
+# ON
+# ===
 print('get spectrum...')
-con.xffts_publish_flag(obs_mode="SKY")
+con.onepoint_move(on_ra, on_dec, "fk5")
+con.antenna_tracking_check()
+con.dome_tracking_check()
+con.xffts_publish_flag(obs_mode="ON")
 time.sleep(integ)
 con.xffts_publish_flag()
 
+# OFF
+# ===
+con.onepoint_move(off_ra, off_dec, "fk5")
+con.antenna_tracking_check()
+con.dome_tracking_check()
+con.xffts_publish_flag(obs_mode="OFF")
+time.sleep(integ)
+con.xffts_publish_flag()
 
-#con.move_hot('in')
+con.move_stop()
 con.pub_loggerflag("")
-con.pub_analyexec(savedir, "rsky")
-
+#con.pub_analyexec(savedir, "rsky")
+time.sleep(2)
