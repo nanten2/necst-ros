@@ -18,18 +18,24 @@ memo = ''
 
 # object parameters
 # =================
+# test
+#on_ra = 160
+#on_dec = -3
+#off_ra = on_ra+2
+#off_dec = on_dec
+
 # M42
-on_ra = 83.8221
-on_dec = -05.3911
-off_ra = on_ra+1.5
-off_dec = on_dec
+#on_ra = 83.8221
+#on_dec = -05.3911
+#off_ra = on_ra+1.5
+#off_dec = on_dec
 
 # # W51 IRS 2
 # #ICRS coord. (ep=J2000) :19 23 40.05 +14 31 07.1 
-# on_ra = 290.958
-# on_dec = 14.1
-# off_ra = on_ra+1.5
-# off_dec = on_dec
+on_ra = 290.958
+on_dec = 14.1
+off_ra = on_ra+1.5
+off_dec = on_dec
 
 # # W 49 -- Star forming region
 # #ICRS coord. (ep=J2000) :19 10 19.6 +09 07 42
@@ -87,7 +93,7 @@ if memo != '':
 else:
     pass
 #savedir = "/home/amigos/data/rsky/"+timestamp+"/"
-savedir = "/home/amigos/hdd/observation/simple_ps/"+timestamp
+savedir = "/home/amigos/hdd/data/observation/simple_ps/"+timestamp
 if not os.path.exists(savedir):
     os.makedirs(savedir)
 else:
@@ -157,5 +163,5 @@ con.xffts_publish_flag()
 
 con.move_stop()
 con.pub_loggerflag("")
-#con.pub_analyexec(savedir, "rsky")
+con.pub_analyexec(savedir, "simple_ps")
 time.sleep(2)
