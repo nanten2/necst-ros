@@ -58,7 +58,7 @@ if memo != '':
 else:
     pass
 #savedir = "/home/amigos/data/rsky/"+timestamp+"/"
-savedir = "/home/amigos/hdd/observation/rsky/"+timestamp
+savedir = "/home/amigos/hdd/data/observation/rsky/"+timestamp
 if not os.path.exists(savedir):
     os.makedirs(savedir)
 else:
