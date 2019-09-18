@@ -58,9 +58,10 @@ if memo != '':
 else:
     pass
 #savedir = "/home/amigos/data/rsky/"+timestamp+"/"
-savedir = "/home/amigos/hdd/data/observation/rsky/"+timestamp
-if not os.path.exists(savedir):
-    os.makedirs(savedir)
+savedir = "./observation/rsky/"+timestamp
+savedir2 = "/home/amigos/hdd/data/observation/rsky/"+timestamp
+if not os.path.exists(savedir2):
+    os.makedirs(savedir2)
 else:
     pass
 savepath = os.path.join(savedir, "xffts.ndf")
@@ -137,5 +138,5 @@ con.xffts_publish_flag()
 
 #con.move_hot('in')
 con.pub_loggerflag("")
-con.pub_analyexec(savedir, "rsky")
+con.pub_analyexec(savedir2, "rsky")
 
