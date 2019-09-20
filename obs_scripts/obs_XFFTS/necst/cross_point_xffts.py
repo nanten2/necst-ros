@@ -134,7 +134,7 @@ signal.signal(signal.SIGINT, handler)
 datahome = '/home/amigos/data/'
 timestamp = time.strftime('%Y%m%d%H%M%S')
 dirname = 'n%s_%s_%s_cross_%s_pointing'%(timestamp ,obs['molecule_1'] ,obs['transiti_1'].split('=')[1],obs['object'])
-savedir = os.path.join(datahome, name, dirname)
+savedir = os.path.join("./", name, dirname)
 path_to_db = os.path.join(savedir, 'cross.ndf')
 print('mkdir {savedir}'.format(**locals()))
 os.makedirs(savedir)
@@ -258,7 +258,7 @@ while num < n:
             dp1 = dp.set_track(obs['lambda_on'], obs['beta_on'], obs['vlsr'], obs['coordsys'], 0, 0, offset_dcos, obs['coordsys'], integ+integ, obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)#obs['cosydel']非対応
         status = con.read_status()
         temp = float(status.CabinTemp1)# + 273.15
-        con.xffts_publish_flag(scan_num=num + 1, obs_mode="OFF")
+        con.xffts_publish_flag(scan_num=num + 1, obs_mode="OFF", lamdel=off_x, betdel=off_y)
         time.sleep(integ)
         con.xffts_publish_flag()
         
