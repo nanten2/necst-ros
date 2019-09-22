@@ -234,20 +234,24 @@ if direction == 0:
     dy = 0
     gridx = 0
     gridy = obs['grid']#[arcsec]
-    con.obs_status(active=True, obsmode=obs["obsmode"], obs_script=obsscript, obs_file=obsfile, target=obs["object"], num_on=scan_point, num_seq=total_count, xgrid=dx, ygrid=gridy, exposure_hot=integ_off, exposure_off=integ_off, exposure_on=integ_on, scan_direction="x")    
+    #con.obs_status(active=True, obsmode=obs["obsmode"], obs_script=obsscript, obs_file=obsfile, target=obs["object"], num_on=scan_point, num_seq=total_count, xgrid=dx, ygrid=gridy, exposure_hot=integ_off, exposure_off=integ_off, exposure_on=integ_on, scan_direction="x")    
 elif direction ==1:
     dx = 0
     dy = float(obs['otfvel'])*float(obs['exposure'])#[arcsec]
     gridx = obs['grid']#[arcsec]
     gridy = 0
-    con.obs_status(True, obs["obsmode"], obs["object"], scan_point, total_count, gridx, dy, integ_off, integ_off, integ_on, "y")    
+    #con.obs_status(True, obs["obsmode"], obs["object"], scan_point, total_count, gridx, dy, integ_off, integ_off, integ_on, "y")    
 else:
     con.move_stop()
     print('Error:direction')
     sys.exit()
 
 
-    
+### shiotani added
+lamdel_off = obs['lamdel_off']# offset_off
+betdel_off = obs['betdel_off']# offset_off
+cosydel = obs['cosydel'].lower()# offset_coord
+#dcos = obs['otadel_off']# offset_dcos
 
 # Data aquisition
 # ---------------
@@ -313,7 +317,8 @@ while rp_num < rp:
             pass
             #con.galactic_move(offx, offy,off_x=obs['lamdel_off'], off_y=obs['betdel_off'], offcoord = obs['cosydel'])
         elif coord_sys == 'PLANET':
-            con.planet_move(planet, off_x = ssx, off_y = ssy, offcoord = obs['cosydel'])
+            #con.planet_move(planet, off_x = ssx, off_y = ssy, offcoord = obs['cosydel'])
+            con.planet_move(planet, off_x=lamdel_off, off_y=betdel_off, offcoord = cosydel, dcos=offset_dcos)
         print('moving...')
 
         con.antenna_tracking_check()
@@ -322,8 +327,10 @@ while rp_num < rp:
         _now = time.time()
         if _now > latest_hottime+60*obs['load_interval']:
             print('R')
-            con.move_hot('in')
-            con.obs_status(active=True, current_num=scan_point*num, current_position="HOT")            
+            #con.move_hot('in')
+            con.move_chopper("in")
+            time.sleep(3)
+            #con.obs_status(active=True, current_num=scan_point*num, current_position="HOT")            
         
             temp = float(con.read_status().CabinTemp1)
         
@@ -377,8 +384,10 @@ while rp_num < rp:
             pass
 
         print('OFF')
-        con.move_hot('out')
-        con.obs_status(active=True, current_num=scan_point*num, current_position="OFF")        
+        #con.move_hot('out')
+        con.move_chopper("out")
+        time.sleep(3)
+        #con.obs_status(active=True, current_num=scan_point*num, current_position="OFF")        
         print('get spectrum...')
         status = con.read_status()
         temp = float(status.CabinTemp1)
@@ -438,7 +447,7 @@ while rp_num < rp:
 
             print(' OTF scan_start!! ')
             print('move ON')
-            con.obs_status(active=True, current_num=scan_point*num, current_position="ON")
+            #con.obs_status(active=True, current_num=scan_point*num, current_position="ON")
             delay = 3
             ctime = time.time()
             start_on = Time(datetime.fromtimestamp(delay+ctime)).mjd
@@ -521,8 +530,10 @@ while rp_num < rp:
     continue
 
 print('R')#最初と最後をhotではさむ
-con.move_hot('in')
-con.obs_status(active=True, current_num=scan_point*num, current_position="HOT")
+#con.move_hot('in')
+con.move_chopeer("in")
+time.sleep(3)
+#con.obs_status(active=True, current_num=scan_point*num, current_position="HOT")
 
 status = con.read_status()
 temp = float(status.CabinTemp1)
@@ -562,7 +573,9 @@ con.xffts_publish_flag()
 # lamdel_list.append(0)
 # betdel_list.append(0)
 # subscan_list.append(int(num)+1)
-con.move_hot('out')
+#con.move_hot('out')
+con.move_chopper("out")
+time.sleep(3)
 
 print('observation end')
 con.move_stop()
@@ -785,5 +798,5 @@ con.move_stop()
 
 # #shutil.copy("/home/amigos/NECST/soft/server/hosei_230.txt", savedir+"/hosei_copy")
 
-con.obs_status(active=False)
+#con.obs_status(active=False)
 con.pub_loggerflag("")
