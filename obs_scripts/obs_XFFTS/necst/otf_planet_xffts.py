@@ -531,7 +531,7 @@ while rp_num < rp:
 
 print('R')#最初と最後をhotではさむ
 #con.move_hot('in')
-con.move_chopeer("in")
+con.move_chopper("in")
 time.sleep(3)
 #con.obs_status(active=True, current_num=scan_point*num, current_position="HOT")
 
