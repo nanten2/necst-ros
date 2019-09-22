@@ -800,3 +800,4 @@ con.move_stop()
 
 #con.obs_status(active=False)
 con.pub_loggerflag("")
+time.sleep(2)
