@@ -56,7 +56,8 @@ class worldcoord(object):
                 end_y = command.off_y + command.dy * (command.num - 0.5)
                 print(start_x, end_x, command.x)
 
-                if not command.planet.lower() in self.planet_list:
+                #if not command.planet.lower() in self.planet_list:
+                if not command.coord_sys.lower() in self.planet_list:
                     self.pub_obs_stop.publish("planet name is false...", node_name, time.time())
                     rospy.logerr("planet name is false...")
                     continue
@@ -64,7 +65,9 @@ class worldcoord(object):
                     pass
                 
                 time_list = [command.timestamp+command.delay, command.timestamp+command.delay+total_t]
-                target_list = get_body(command.planet.lower(), Time(time_list))#gcrs
+                time_list = [dt.utcfromtimestamp(i) for i in time_list]
+                print(time_list)
+                target_list = get_body(command.coord_sys.lower(), Time(time_list))#gcrs
                 target_list.location = nanten2
                 altaz_list = target_list.altaz
                 if not all((0.<i<90. for i in altaz_list.alt.deg)):
@@ -76,20 +79,24 @@ class worldcoord(object):
                 ret_start = calc_offset.calc_offset(altaz_list.az.deg, altaz_list.alt.deg,
                                               "altaz",
                                               start_x, start_y, "altaz",
-                                              command.dcos, time_list)
+                                                    command.dcos, time_list)
                 ret_end = calc_offset.calc_offset(altaz_list.az.deg, altaz_list.alt.deg,
                                               "altaz",
                                               end_x, end_y, "altaz",
-                                              command.dcos, time_list)                
-                
-                msg.x_list = [ret_start[0], ret_end[1]]
-                msg.y_list = [ret_start[0], ret_end[1]]
+                                                  command.dcos, time_list)
+                print("altazlist", altaz_list.az.deg, altaz_list.alt.deg)
+                print("retstart", ret_start)
+                print("retend", ret_end)
+                #msg.x_list = [ret_start[0], ret_end[1]]
+                msg.x_list = [ret_start[0][0], ret_end[0][1]]
+                #msg.y_list = [ret_start[0], ret_end[1]]
+                msg.y_list = [ret_start[1][0], ret_end[1][1]]
                 print("x_list", msg.x_list)
                 print("y_list", msg.y_list)
                 current_time = time.time()
-
                 msg.time_list = [command.timestamp+command.delay, command.timestamp+command.delay+total_t]
-                msg.coord = command.coord_sys
+                #msg.coord = command.coord_sys
+                msg.coord = "planet"
                 msg.off_az = 0
                 msg.off_el = 0
                 msg.hosei = command.hosei
