@@ -102,6 +102,8 @@ def handler(num, flame):
     con.obs_status(active=False)
     con.pub_encdb_flag(False, "")
     con.xffts_publish_flag(obs_mode="", scan_nun=num)
+    con.pub_loggerflag("")
+    time.sleep(2)
     logger.obslog("STOP OBSERVATION", lv=1)
     time.sleep(1.)
     sys.exit()
