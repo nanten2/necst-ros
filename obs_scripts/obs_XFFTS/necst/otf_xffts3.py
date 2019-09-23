@@ -62,7 +62,7 @@ except Exception as e:
 
 # Save file
 # =========
-datahome = '/home/amigos/hdd/data/otf/'
+datahome = './observation/otf'
 timestamp = time.strftime('%Y%m%d%H%M%S')
 dirname = 'n%s_%s_%s_otf_%s'%(timestamp ,obs['molecule_1'] ,obs['transiti_1'].split('=')[1],obs['object'])
 savedir = os.path.join(datahome, name, dirname)
@@ -216,12 +216,15 @@ while rp_num < rp:
         _now = time.time()
         if _now > latest_hottime+60*obs['load_interval']:
             log.info('R')
-            con.move_hot('in')
-            status = con.read_status()
-            while status.Current_Hot != "IN":
-                log.info("wait hot_move")
-                status = con.read_status()                
-                time.sleep(0.5)
+            
+            #con.move_hot('in')
+            con.move_chopper("in")
+            time.sleep(3)
+            # status = con.read_status()
+            # while status.Current_Hot != "IN":
+            #     log.info("wait hot_move")
+            #     status = con.read_status()                
+            #     time.sleep(0.5)
             con.obs_status(active=True, current_num=scan_point*num, current_position="HOT")
         
             print('get spectrum...')
@@ -246,12 +249,14 @@ while rp_num < rp:
             pass
         
         log.info('OFF')
-        con.move_hot('out')
-        status = con.read_status()
-        while status.Current_Hot != "OUT":
-            log.info("wait hot_move")
-            status = con.read_status()                
-            time.sleep(0.5)        
+        #con.move_hot('out')
+        con.move_chopper("out")
+        time.sleep(3)
+        # status = con.read_status()
+        # while status.Current_Hot != "OUT":
+        #     log.info("wait hot_move")
+        #     status = con.read_status()                
+        #     time.sleep(0.5)        
         con.obs_status(active=True, current_num=scan_point*num, current_position="OFF")    
         log.info('get spectrum...')
 
@@ -308,12 +313,14 @@ while rp_num < rp:
     continue
 
 log.info('R')#最初と最後をhotではさむ
-con.move_hot('in')
-status = con.read_status()
-while status.Current_Hot != "IN":
-    log.info("wait hot_move")
-    status = con.read_status()                
-    time.sleep(0.5)
+#con.move_hot('in')
+con.move_chopper("in")
+time.sleep(3)
+# status = con.read_status()
+# while status.Current_Hot != "IN":
+#     log.info("wait hot_move")
+#     status = con.read_status()                
+#     time.sleep(0.5)
 con.obs_status(active=True, current_num=scan_point*num+1, current_position="HOT")
 
 #con.observation("start", integ_off)
@@ -321,7 +328,9 @@ con.xffts_publish_flag(scan_num=num, obs_mode="HOT")
 time.sleep(integ_off)
 con.xffts_publish_flag(scan_num=num, obs_mode="")
 
-con.move_hot('out')
+#con.move_hot('out')
+con.move_chopper("out")
+time.sleep(3)
 
 logger.obslog('Observation End : observation time : {:.2f} [min]'.format((time.time() - start_time)/60), lv=1)
 log.info('Observation End : observation time : {:.2f} [min]'.format((time.time() - start_time)/60))
