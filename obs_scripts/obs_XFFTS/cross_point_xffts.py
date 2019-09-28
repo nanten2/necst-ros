@@ -210,12 +210,16 @@ while num < n:
         _now = time.time()
         if _now > latest_hottime+60*obs['load_interval']:
             print('R')
-            con.move_hot('in')
+            #con.move_hot('in')
+            con.move_chopper("in")
+            time.sleep(3)
+            """
             status = con.read_status()
             while status.Current_Hot != "IN":
                 print("wait hot_move...")
                 status = con.read_status()
                 time.sleep(0.5)                
+            """
             con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="HOT")        
 
             status =  con.read_status()
@@ -233,12 +237,16 @@ while num < n:
         
         
         print('OFF')
-        con.move_hot('out')
+        #con.move_hot('out')
+        con.move_chopper("out")
+        time.sleep(3)
         status = con.read_status()
+        """
         while status.Current_Hot != "OUT":
             print("wait hot_move...")
             status = con.read_status()
             time.sleep(0.5)            
+        """
         con.onepoint_move(offx, offy, obs['coordsys'],off_x=obs["offset_Az"], off_y=obs["offset_El"],dcos=1)
         con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="OFF")
         
@@ -287,12 +295,16 @@ while num < n:
 
 # hot->off->on->off->...->on->hot
 print('R')
-con.move_hot('in')
+#con.move_hot('in')
+con.move_chopper("in")
+time.sleep(3)
 status = con.read_status()
+"""
 while status.Current_Hot != "IN":
     print("wait hot_move...")
     status = con.read_status()
     time.sleep(0.5)    
+"""
 con.obs_status(active=True, current_num=num*obs["N"]+p_n, current_position="HOT") 
 
 status =  con.read_status()
@@ -306,7 +318,9 @@ con.xffts_publish_flag(path_to_db, str(num), "HOT", 0, 0)
 time.sleep(integ)
 con.xffts_publish_flag("", str(num), "HOT", 0, 0)
 
-con.move_hot('out')
+#con.move_hot('out')
+con.move_chopper("out")
+time.sleep(3)
 
 print('observation end')
 con.move_stop()
