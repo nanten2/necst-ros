@@ -105,9 +105,9 @@ con.pub_loggerflag(savedir)
 def handler(num, flame):
     print("!!ctrl+C!!")
     print("STOP MOVING")
-    con.pub_encdb_flag(False, os.path.join(savedir, "enc.db"))
     con.move_stop()
     con.dome_stop()
+    con.pub_loggerflag("")
     con.obs_status(active=False)
     sys.exit()
 
