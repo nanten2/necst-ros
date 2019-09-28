@@ -164,7 +164,7 @@ planet_number = {1:'mercury', 2:'venus', 4:'mars', 5:'jupiter', 6:'saturn', 7:'u
 dirname = 'n%s_%s_%s_crossedge_%s_pointing'%(timestamp ,obs['molecule_1'] ,obs['transiti_1'].split('=')[1],planet_number[planet])
 savedir = os.path.join(datahome, name, dirname)
 
-
+'''
 d1_list = []
 d2_list = []
 tdim6_list = []
@@ -192,7 +192,7 @@ _2NDLO_list2 = []
 subscan_list = []
 lamdel_list = []
 betdel_list = []
-
+'''
 
 print('mkdir {savedir}'.format(**locals()))
 os.makedirs(savedir)
@@ -264,13 +264,8 @@ while num < n:
     
     _now = time.time()
     #if _now > latest_hottime+60*obs['load_interval']:
-    print('R')
-    con.move_hot('in')
-    status = con.read_status()
-    while status.Current_Hot != "IN":
-        print("wait hot_move...")
-        status = con.read_status()        
-        time.sleep(0.5)
+    con.move_chopper('in')
+    time.sleep(3)
             
     temp = float(con.read_status().CabinTemp1)# + 273.15
         
@@ -279,8 +274,9 @@ while num < n:
     dp1 = 0
     status = con.read_status()
     con.xffts_publish_flag(scan_num=subscan, obs_mode="HOT", lamdel=0, betdel=0)
-    d = con.oneshot_achilles(exposure=integ_off)
+    time.sleep(integ_on)
     con.xffts_publish_flag(scan_num=subscan)
+    '''
     d1 = d['dfs1'][0]
     d2 = d['dfs2'][0]
     d1_list.append(d1)
@@ -315,21 +311,18 @@ while num < n:
     betdel_list.append(0)
     subscan_list.append(subscan)
     pass
-
+    '''
     print('OFF')
-    con.move_hot('out')
-    status = con.read_status()
-    while status.Current_Hot != "OUT":
-        print("wait hot_move...")
-        status = con.read_status()        
-        time.sleep(0.5)    
+    con.move_chopper('out')
+    time.sleep(3)
     print('get spectrum...')
     con.obs_status(active=True, current_num=num*obs["N"], current_position="OFF")
     status = con.read_status()
     temp = float(status.CabinTemp1)# + 273.15
     con.xffts_publish_flag(scan_num=subscan, obs_mode="OFF", lamdel=0, betdel=0)
-    con.oneshot_achilles(exposure=integ_off)
+    time.sleep(integ_off)
     con.xffts_publish_flag(scan_num=subscan)
+    '''
     d1 = d['dfs1'][0]
     d2 = d['dfs2'][0]
     d1_list.append(d1)
@@ -363,6 +356,7 @@ while num < n:
     lamdel_list.append(0)
     betdel_list.append(0)
     subscan_list.append(subscan)
+    '''
     
     lp = 0
     while lp < line_point:
@@ -399,8 +393,9 @@ while num < n:
         status = con.read_status()
         temp = float(status.CabinTemp1)# + 273.15
         con.xffts_publish_flag(scan_num=subscan, obs_mode="ON", lamdel=off_x, betdel=off_y)
-        con.oneshot_achilles(exposure=integ_off)
+        time.sleep(integ_on)
         con.xffts_publish_flag(scan_num=subscan)
+        '''
         d1 = d['dfs1'][0]
         d2 = d['dfs2'][0]
         d1_list.append(d1)
@@ -434,6 +429,7 @@ while num < n:
         lamdel_list.append(0)
         betdel_list.append(0)
         subscan_list.append(subscan)
+        '''
         
         print('stop')
         con.move_stop()
@@ -443,12 +439,8 @@ while num < n:
     continue
 
 print('R')#??????hot????
-con.move_hot('in')
-status = con.read_status()
-while status.Current_Hot != "IN":
-    print("wait hot_move...")
-    status = con.read_status()        
-    time.sleep(0.5)
+con.move_chopper('in')
+time.sleep(3)
 con.obs_status(active=True, current_num=num*obs["N"], current_position="HOT")
 status = con.read_status()
 temp = float(status.CabinTemp1)# + 273.15
@@ -456,8 +448,9 @@ temp = float(status.CabinTemp1)# + 273.15
 print('Temp: %.2f'%(temp))
 print('get spectrum...')
 con.xffts_publish_flag(scan_num=subscan, obs_mode="HOT", lamdel=0, betdel=0)
-con.oneshot_achilles(exposure=integ_off)
+time.sleep(integ_on)
 con.xffts_publish_flag(scan_num=subscan)
+'''
 d1 = d['dfs1'][0]
 d2 = d['dfs2'][0]
 d1_list.append(d1)
@@ -491,8 +484,9 @@ _2NDLO_list2.append(dp1)#dp1[3]['sg22']*1000)
 lamdel_list.append(0)
 betdel_list.append(0)
 subscan_list.append(subscan)
+'''
 
-con.move_hot('out')
+con.move_chopper('out')
 print('observation end')
 con.move_stop()
 con.dome_stop()
@@ -548,6 +542,7 @@ crpix1_2 = 8191.5 - obs['vlsr']/cdelt1_2 - (500-obs['if3rd_freq_2'])/0.061038881
 
 #planet_number = {1:'mercury', 2:'venus', 4:'mars', 5:'jupiter', 6:'saturn', 7:'uranus', 8:'neptune', 9:'pluto', 10:'moon', 11:'sun'}
 #d1list
+'''
 read1 = {
     "OBJECT" : planet_number[planet],
     "BANDWID" : 1000000000, #???????????
@@ -708,7 +703,7 @@ f2 = os.path.join(savedir,'n%s_%s_%s_crossedge_%s_pointing.fits'%(timestamp ,obs
 import n2fits_write
 n2fits_write.write(read1,f1)
 n2fits_write.write(read2,f2)
-
+'''
 shutil.copy("/home/amigos/ros/src/necst/lib/hosei_230.txt", savedir+"/hosei_copy")
 con.obs_status(active=False)
 
@@ -719,6 +714,6 @@ con.pub_loggerflag("")
 con.pub_analyexec(savedir, "edge")
 import pointing_edge_xffts
 #t = time.time()
-pointing_moon_edge.analysis(f1, integ_mi=integmin, integ_ma=integmax)
+#pointing_moon_edge.analysis(f1, integ_mi=integmin, integ_ma=integmax)
 #pointing_edge_xffts.analysis(path_to_db, integ_mi=integmin, integ_ma=integmax) 
 #print(time.time() - t)
