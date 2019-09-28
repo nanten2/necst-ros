@@ -100,7 +100,6 @@ def handler(num, flame):
     con.move_stop()
     con.dome_stop()
     con.obs_status(active=False)
-    con.pub_encdb_flag(False, "")
     con.xffts_publish_flag(obs_mode="", scan_nun=num)
     con.pub_loggerflag("")
     time.sleep(2)
