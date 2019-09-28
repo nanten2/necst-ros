@@ -61,6 +61,7 @@ def handler(num, flame):
     print("STOP MOVING")
     con.move_stop()
     con.dome_stop()
+    con.pub_loggerflag("")
     con.obs_status(active=False)
     sys.exit()
 signal.signal(signal.SIGINT, handler)
