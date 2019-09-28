@@ -46,8 +46,19 @@ import sys
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 sys.path.append("/home/amigos/ros/src/nascorx_xffts/")
 import ROS_controller
-import data_client
-d = data_client.data_client()
+
+import signal
+def handler(num, flame):
+    print("!!ctrl+C!!")
+    print("STOP MOVING")
+    con.move_stop()
+    con.dome_stop()
+    con.pub_loggerflag("")
+    con.obs_status(active=False)
+    sys.exit()
+signal.signal(signal.SIGINT, handler)
+                                
+con = ROS_controller.controller()
 
 # Initial configurations
 # ----------------------
@@ -69,7 +80,6 @@ savepath = os.path.join(savedir, "xffts.ndf")
 # Data aquisition
 # ---------------
 
-con = ROS_controller.controller()
 status = con.read_status()
 cabin_temp = status.CabinTemp1
 if cabin_temp < 10.: # if no data
