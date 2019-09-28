@@ -121,6 +121,7 @@ con.dome_track()
 def handler(num, flame):
     con.move_stop()
     con.dome_stop()
+    con.pub_loggerflag("")
     print("!!ctrl + c!!")
     print("Stop antenna")
     con.obs_status(active=False)
