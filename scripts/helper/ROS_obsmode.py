@@ -21,7 +21,7 @@ while not rospy.is_shutdown():
         time.sleep(0.1)
         continue
     d.scan_num = data.scan_num
-    d.obs_mode = "{:3s}".format(data.obs_mode)
+    d.obs_mode = "{:10s}".format(data.obs_mode)
     d.lamdel = data.lamdel
     d.betdel = data.betdel
     pub.publish(d)
