@@ -13,7 +13,7 @@ description = 'Get R-Sky data.'
 # Default parameters
 # ------------------
 
-integ = 1
+integ = 10
 memo = ''
 
 # object parameters
@@ -51,6 +51,11 @@ off_dec = on_dec
 # off_ra = on_ra+1.5
 # off_dec = on_dec
 
+# M17
+on_ra = 15.01
+on_dec = -0.68
+off_ra = 15.1
+off_dec = -0.8
 
 # Argument handler
 # ================
@@ -146,7 +151,7 @@ print('hot_status ### ', hot_status)
 # ON
 # ===
 print('get spectrum...')
-con.onepoint_move(on_ra, on_dec, "fk5")
+con.onepoint_move(on_ra, on_dec, "galactic")
 con.antenna_tracking_check()
 con.dome_tracking_check()
 con.xffts_publish_flag(obs_mode="ON")
@@ -155,7 +160,7 @@ con.xffts_publish_flag()
 
 # OFF
 # ===
-con.onepoint_move(off_ra, off_dec, "fk5")
+con.onepoint_move(off_ra, off_dec, "galactic")
 con.antenna_tracking_check()
 con.dome_tracking_check()
 con.xffts_publish_flag(obs_mode="OFF")
