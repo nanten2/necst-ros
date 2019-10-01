@@ -291,7 +291,10 @@ print('')
 
 savetime = con.read_status().Time
 
+
 ###Logging Start
+con.xffts_publish_flag()
+time.sleep(0.1)#will be deleted
 con.pub_loggerflag(savedir)
 
 num = 0
