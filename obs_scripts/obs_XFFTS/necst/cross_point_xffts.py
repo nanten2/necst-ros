@@ -117,6 +117,7 @@ else:
 import ROS_controller
 con = ROS_controller.controller()
 con.dome_track()
+con.xffts_publish_flag()
 
 def handler(num, flame):
     con.move_stop()
@@ -231,7 +232,7 @@ while num < n:
             
             print('get spectrum...')
             dp1 = dp.set_track(obs['lambda_on'], obs['beta_on'], obs['vlsr'], obs['coordsys'], 0, 0, offset_dcos, obs['coordsys'], integ*2+integ, obs['restfreq_1']/1000., obs['restfreq_2']/1000., sb1, sb2, 8038.000000000/1000., 9301.318999999/1000.)#obs['cosydel']非対応
-            con.xffts_publish_flag(scan_num=num + 1, obs_mode="HOT")
+            con.xffts_publish_flag(scan_num=num + 1, obs_mode="HOT", lamdel=off_x, betdel=off_y)
             time.sleep(integ)
             con.xffts_publish_flag()
             latest_hottime = time.time()
