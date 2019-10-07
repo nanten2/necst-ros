@@ -27,6 +27,7 @@ from necst.msg import xffts_flag_msg
 from necst.msg import encdb_flag_msg
 from necst.msg import textfile_msg
 from necst.msg import analy_msg
+from necst.msg import Center_beam_num_msg
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/nasco_system/scripts")
 import achilles
@@ -125,6 +126,7 @@ class controller(object):
         self.pub_encdb = rospy.Publisher("encoder_DB_flag", encdb_flag_msg, queue_size = 1)
         self.logger_flag = rospy.Publisher("logger_path", String, queue_size=1)
         time.sleep(0.5)# authority regist time
+        self.pub_beam("center_beam_num", Center_beam_num_msg, queue_size=1)
 
         now = datetime.utcnow()
         log_path = '/home/amigos/log/{}.log'.format(now.strftime('%Y%m%d'))
@@ -450,6 +452,11 @@ class controller(object):
         self.log.info("move_stop")
         self.pub_stop.publish(True, self.node_name, time.time())
         time.sleep(0.2)
+        return
+
+    def beam_center(self, center=1):
+        self.pub_beam.publish(center)
+        time.sleep(0.1)
         return
 
 # ===================
