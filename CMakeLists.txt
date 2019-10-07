@@ -88,6 +88,8 @@ add_message_files(
   encdb_flag_msg.msg
   textfile_msg.msg
   analy_msg.msg
+  Center_beam_num_msg.msg
+  Center_beam_position_msg.msg
 )
 
 ## Generate services in the 'srv' folder
