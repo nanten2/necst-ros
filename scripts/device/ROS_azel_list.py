@@ -24,6 +24,8 @@ class azel_list(object):
     press = 0
     out_temp = 0
     out_humi = 0
+    ddx = 0
+    ddy = 0
     param = ""
     stop_flag = False
     old_list = ""
@@ -34,7 +36,7 @@ class azel_list(object):
         rospy.Subscriber("wc_list", List_coord_msg, self._receive_list, queue_size=1)
         rospy.Subscriber("status_weather", Status_weather_msg, self._receive_weather, queue_size=1)
         rospy.Subscriber("move_stop", Bool_necst, self._stop, queue_size=1)
-        
+        rospy.Subscriber("center_beam_position", Center_beam_position_msg, self._receive_beam, queue_size=1)
         self.pub = rospy.Publisher("list_azel", List_coord_msg, queue_size=1000)
         #self.stop = rospy.Publisher("move_stop", Bool_necst, queue_size=1)
         self.obs_stop = rospy.Publisher("obs_stop", String_necst, queue_size=1)
@@ -54,6 +56,11 @@ class azel_list(object):
         if req.out_humi > 1:
             req.out_humi = req.out_humi/100.
         self.out_humi = req.out_humi
+        return
+
+    def _receive_beam(self,req):
+        self.ddx = req.ddx
+        self.ddy = req.ddy
         return
     
     def _receive_list(self, req):
@@ -127,8 +134,8 @@ class azel_list(object):
                     dy = len_y/(len_t*10)#[arcsec/100ms]
                     dt = 0.1
 
-                    x_list2 = [param.x_list[loop] + dx*(i+check*10) for i in range(10)]
-                    y_list2 = [param.y_list[loop] + dy*(i+check*10) for i in range(10)]
+                    x_list2 = [param.x_list[loop] + dx*(i+check*10) - self.ddx for i in range(10)]
+                    y_list2 = [param.y_list[loop] + dy*(i+check*10) - self.ddy for i in range(10)]
                     time_list2 = [param.time_list[loop]+dt*(i+check*10) for i in range(10)]
                     loop_count = 0
                     check_count = 1
@@ -166,8 +173,8 @@ class azel_list(object):
                     dy = len_y/(len_t*10)#[arcsec/100ms]
                     dt = 0.1
                 
-                    x_list2 = [param.x_list[0] + dx*(i+loop*10) for i in range(10)]
-                    y_list2 = [param.y_list[0] + dy*(i+loop*10) for i in range(10)]
+                    x_list2 = [param.x_list[0] + dx*(i+loop*10) - self.ddx for i in range(10)]
+                    y_list2 = [param.y_list[0] + dy*(i+loop*10) - self.ddy for i in range(10)]
                     time_list2 = [param.time_list[0]+dt*(i+loop*10) for i in range(10)]
                     loop += 1
                     
