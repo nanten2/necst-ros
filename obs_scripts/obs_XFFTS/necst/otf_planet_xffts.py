@@ -31,13 +31,17 @@ p.add_argument('--tau', type=float,
                help='tau. default=%.1f'%(tau))
 p.add_argument('--planet', type=str,
                help='planet_name or planet_number')
+p.add_argument('--beam', type=float,
+               help='center_beam number')
 
 args = p.parse_args()
 
 if args.obsfile is not None: obsfile = args.obsfile
 if args.tau is not None: tau = args.tau
 if args.planet is not None: planet = args.planet
+if args.beam is not None: beam = args.beam
 print(planet)
+print('beam_center:'+ beam)
 
 # Main
 # ====
@@ -54,6 +58,7 @@ dp = doppler_nanten.doppler_nanten()
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 import ROS_controller
 con = ROS_controller.controller()
+con.beam_center(center=beam)
 con.dome_track()
 import signal
 def handler(num, flame):
