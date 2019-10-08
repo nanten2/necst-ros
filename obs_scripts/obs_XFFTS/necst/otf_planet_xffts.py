@@ -18,6 +18,7 @@ obsfile = ''
 tau = 0.0
 c = 299792458
 planet = ''
+beam = 1
 
 # Argument handler
 # ================

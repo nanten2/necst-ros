@@ -14,6 +14,7 @@ import sys
 sys.path.append("/home/amigos/ros/src/necst/lib/")
 sys.path.append("/home/necst/ros/src/necst/lib/")
 import calc_coord
+import beam_calc
 
 
 node_name = "azel_list"
@@ -24,8 +25,7 @@ class azel_list(object):
     press = 0
     out_temp = 0
     out_humi = 0
-    ddx = 0
-    ddy = 0
+    center = 1
     param = ""
     stop_flag = False
     old_list = ""
@@ -36,7 +36,7 @@ class azel_list(object):
         rospy.Subscriber("wc_list", List_coord_msg, self._receive_list, queue_size=1)
         rospy.Subscriber("status_weather", Status_weather_msg, self._receive_weather, queue_size=1)
         rospy.Subscriber("move_stop", Bool_necst, self._stop, queue_size=1)
-        rospy.Subscriber("center_beam_position", Center_beam_position_msg, self._receive_beam, queue_size=1)
+        rospy.Subscriber("center_beam_num", Center_beam_num_msg, self._receive_beam, queue_size=1)
         self.pub = rospy.Publisher("list_azel", List_coord_msg, queue_size=1000)
         #self.stop = rospy.Publisher("move_stop", Bool_necst, queue_size=1)
         self.obs_stop = rospy.Publisher("obs_stop", String_necst, queue_size=1)
@@ -59,8 +59,7 @@ class azel_list(object):
         return
 
     def _receive_beam(self,req):
-        self.ddx = req.ddx
-        self.ddy = req.ddy
+        self.center = req.center_beam
         return
     
     def _receive_list(self, req):
@@ -87,7 +86,7 @@ class azel_list(object):
 
     def curve2_fit(self, x, a, b):
         return a*x**2+b*x+self.p0
-    '''    
+    '''
 
     def create_azel_list(self):
         msg = List_coord_msg()
@@ -192,10 +191,13 @@ class azel_list(object):
                     astro_time = Time(time_list3)
 
 
-                    ret = self.calc.coordinate_calc(x_list2, y_list2, astro_time,
+                    ret_ = self.calc.coordinate_calc(x_list2, y_list2, astro_time,
                                                     param.coord, param.off_az, param.off_el, 
                                                     param.hosei, param.lamda, self.press,
                                                     self.out_temp, self.out_humi, param.limit, param.rotation)
+                    
+                    ret = beam_calc.calc(self.center, ret_[0], ret_[1])
+                    
                     if param.rotation:
                         ret[0] = self.negative_change(ret[0])
 
