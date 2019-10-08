@@ -125,8 +125,9 @@ class controller(object):
         self.pub_xffts = rospy.Publisher("XFFTS_DB_flag", xffts_flag_msg, queue_size = 1)
         self.pub_encdb = rospy.Publisher("encoder_DB_flag", encdb_flag_msg, queue_size = 1)
         self.logger_flag = rospy.Publisher("logger_path", String, queue_size=1)
+        self.pub_beam = rospy.Publisher("center_beam_num", Center_beam_num_msg, queue_size=1)
         time.sleep(0.5)# authority regist time
-        self.pub_beam("center_beam_num", Center_beam_num_msg, queue_size=1)
+        
 
         now = datetime.utcnow()
         log_path = '/home/amigos/log/{}.log'.format(now.strftime('%Y%m%d'))
