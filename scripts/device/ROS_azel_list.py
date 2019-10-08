@@ -45,6 +45,7 @@ class azel_list(object):
         self.msg = Bool_necst()
         self.msg.from_node = node_name
         self.calc = calc_coord.azel_calc()
+        self.beam_calc = beam_calc.beam_calc()
         pass
 
     def _receive_weather(self, req):
@@ -197,7 +198,7 @@ class azel_list(object):
                                                     param.hosei, param.lamda, self.press,
                                                     self.out_temp, self.out_humi, param.limit, param.rotation)
                     
-                    ret = beam_calc.calc(self.center, ret_[0], ret_[1])
+                    ret = self.beam_calc.calc(self.center, ret_[0], ret_[1])
                     
                     if param.rotation:
                         ret[0] = self.negative_change(ret[0])
