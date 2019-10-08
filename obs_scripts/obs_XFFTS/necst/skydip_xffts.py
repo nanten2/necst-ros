@@ -59,6 +59,7 @@ def handler(num, flame):
     con.move_stop()
     log.warn("!!Ctrl + C!!")
     log.warn("Stop anntena")
+    con.pub_loggerflag("")
     con.obs_status(active = False)
     sys.exit()
 
@@ -68,21 +69,16 @@ opt = con.read_status()
 
 #HOT点の観測
 log.info("observation : HOT")
-while not opt.Current_Hot == 'IN':
-    opt = con.read_status()
-    time.sleep(1)
-    con.move_hot('IN')
+con.move_chopper("in")
+time.sleep(3)
 
-#/SPEC_PMでtotal powerを受け取る場合スプリアスが考慮されない
 #d_hot_raw = con.oneshot_achilles(repeat = 1, exposure = 1.0, stime = 1.0)
 con.xffts_publish_flag(obs_mode="HOT", scan_num=99)
 time.sleep(exposure)
 con.xffts_publish_flag(obs_mode="")
 
-while not opt.Current_Hot == 'OUT':
-    opt = con.read_status()
-    time.sleep(1)
-    con.move_hot('OUT')
+con.move_chopper("out")
+time.sleep(3)
 
 opt = con.read_status()
 
@@ -107,5 +103,6 @@ for elevation in z:
 ### Logging End
 ### ===========
 con.pub_loggerflag("")
+time.sleep(1)
 con.pub_analyexec(data_dir, "skydip")
 
