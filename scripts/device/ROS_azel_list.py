@@ -134,8 +134,8 @@ class azel_list(object):
                     dy = len_y/(len_t*10)#[arcsec/100ms]
                     dt = 0.1
 
-                    x_list2 = [param.x_list[loop] + dx*(i+check*10) - self.ddx for i in range(10)]
-                    y_list2 = [param.y_list[loop] + dy*(i+check*10) - self.ddy for i in range(10)]
+                    x_list2 = [param.x_list[loop] + dx*(i+check*10)  for i in range(10)]
+                    y_list2 = [param.y_list[loop] + dy*(i+check*10)  for i in range(10)]
                     time_list2 = [param.time_list[loop]+dt*(i+check*10) for i in range(10)]
                     loop_count = 0
                     check_count = 1
@@ -173,8 +173,8 @@ class azel_list(object):
                     dy = len_y/(len_t*10)#[arcsec/100ms]
                     dt = 0.1
                 
-                    x_list2 = [param.x_list[0] + dx*(i+loop*10) - self.ddx for i in range(10)]
-                    y_list2 = [param.y_list[0] + dy*(i+loop*10) - self.ddy for i in range(10)]
+                    x_list2 = [param.x_list[0] + dx*(i+loop*10) for i in range(10)]
+                    y_list2 = [param.y_list[0] + dy*(i+loop*10) for i in range(10)]
                     time_list2 = [param.time_list[0]+dt*(i+loop*10) for i in range(10)]
                     loop += 1
                     
