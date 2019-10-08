@@ -7,7 +7,7 @@ class beam_calc(object):
     def __init__(self):
         pass
 
-    def calc(self, center=1, az, el):
+    def calc(self, center, az, el):
         if center == 1:
             ddx = 0
             ddy = 0
@@ -30,7 +30,7 @@ class beam_calc(object):
 
         return ddx,ddy
 
-    def calc_list(self, center=1, x_list, y_list):
+    def calc_list(self, center, x_list, y_list):
         _x_list = []
         _y_list = []
         for i in range(len(x_list)):
