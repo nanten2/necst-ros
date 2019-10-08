@@ -5,6 +5,7 @@ from necst.msg import List_coord_msg
 from necst.msg import Status_weather_msg
 from necst.msg import Bool_necst
 from necst.msg import String_necst
+from necst.msg import Center_beam_num_msg
 
 from datetime import datetime
 from astropy.time import Time
