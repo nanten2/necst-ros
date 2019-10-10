@@ -73,6 +73,7 @@ def handler(num, flame):
     print("STOP MOVING")
     con.move_stop()
     con.dome_stop()
+    con.pub_loggerflag("")
     try:
         status = con.read_status()
         print(start_m2.Current_M2 - status.Current_M2)
@@ -149,13 +150,17 @@ else:
     sb2 = -1  
 
 
-datahome = '/home/amigos/data/'
+datahome = './observation/'
 timestamp = time.strftime('%Y%m%d_%H%M%S')
 dirname = timestamp
 savedir = os.path.join(datahome, name, dirname)
 
 print('mkdir {savedir}'.format(**locals()))
-os.makedirs(savedir)
+#os.makedirs(savedir)
+
+### start Logging
+start_m2 = con.read_status()#for authority error will be deleted
+con.pub_loggerflag(savedir)
 
 
 d1_list = []
@@ -692,3 +697,5 @@ con.dome_stop()
 # timestamp = time.strftime('%Y%m%d_%H%M%S')
 # dirname = timestamp
 con.obs_status(active=False)
+con.pub_loggerflag("")
+time.sleep(1)
