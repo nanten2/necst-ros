@@ -158,11 +158,6 @@ savedir = os.path.join(datahome, name, dirname)
 print('mkdir {savedir}'.format(**locals()))
 #os.makedirs(savedir)
 
-### start Logging
-start_m2 = con.read_status()#for authority error will be deleted
-con.pub_loggerflag(savedir)
-
-
 d1_list = []
 d2_list = []
 tdim6_list = []
@@ -193,6 +188,10 @@ print('Start experimentation')
 print('')
 
 savetime = con.read_status().Time
+### start Logging
+start_m2 = con.read_status()#for authority error will be deleted
+con.pub_loggerflag(savedir)
+
 num = 0
 n = int(obs['nSeq'])
 latest_hottime = 0
@@ -226,7 +225,7 @@ while num < n:
     
     print('observation :'+str(num+1) + "\n")
         
-    con.planet_move(planet, off_x=1200,off_y=1200,dcos=1)
+    con.planet_move(planet, off_x=3600,off_y=3600,dcos=1)
 
     con.antenna_tracking_check()
     con.dome_tracking_check()
@@ -314,10 +313,10 @@ while num < n:
     con.obs_status(active=True, current_num=num, current_position="OFF")
     print('get spectrum...')
     #con.observation("start", integ_off)# getting one_shot_data
-    con.xffts_publish_flag(scan_num=num, obs_mode="OFF")
+    status = con.read_status()
+    con.xffts_publish_flag(scan_num=num, obs_mode="OFF", lamdel=status.Current_M2)
     time.sleep(integ_off)
     con.xffts_publish_flag()
-    status = con.read_status()
     # temp = float(status.CabinTemp1)# + 273.15
     # d = con.oneshot_achilles(exposure=integ_off)
     # #d = {'dfs1': [[1]*16384,1], 'dfs2': [[10]*16384,11]}
@@ -368,7 +367,9 @@ while num < n:
     status = con.read_status()
     temp = float(status.CabinTemp1)# + 273.15
     #d = con.oneshot_achilles(exposure=integ_on)
-    con.xffts_publish_flag(scan_num=num, obs_mode="ON")
+    con.xffts_publish_flag(scan_num=num, obs_mode="ON", lamdel=status.Current_M2)
+    time.sleep(integ_on)
+    con.xffts_publish_flag()
     # #d = {'dfs1': [[1]*16384,1], 'dfs2': [[10]*16384,11]}
     # d1 = d['dfs1'][0]
     # d2 = d['dfs2'][0]
