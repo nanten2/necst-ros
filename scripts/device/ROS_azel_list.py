@@ -5,7 +5,7 @@ from necst.msg import List_coord_msg
 from necst.msg import Status_weather_msg
 from necst.msg import Bool_necst
 from necst.msg import String_necst
-from necst.msg import Center_beam_num_msg
+#from necst.msg import Center_beam_num_msg
 
 from datetime import datetime
 from astropy.time import Time
@@ -37,7 +37,7 @@ class azel_list(object):
         rospy.Subscriber("wc_list", List_coord_msg, self._receive_list, queue_size=1)
         rospy.Subscriber("status_weather", Status_weather_msg, self._receive_weather, queue_size=1)
         rospy.Subscriber("move_stop", Bool_necst, self._stop, queue_size=1)
-        rospy.Subscriber("center_beam_num", Center_beam_num_msg, self._receive_beam, queue_size=1)
+        #rospy.Subscriber("center_beam_num", Center_beam_num_msg, self._receive_beam, queue_size=1)
         self.pub = rospy.Publisher("list_azel", List_coord_msg, queue_size=1000)
         #self.stop = rospy.Publisher("move_stop", Bool_necst, queue_size=1)
         self.obs_stop = rospy.Publisher("obs_stop", String_necst, queue_size=1)
@@ -193,12 +193,12 @@ class azel_list(object):
                     astro_time = Time(time_list3)
 
 
-                    ret_ = self.calc.coordinate_calc(x_list2, y_list2, astro_time,
+                    ret = self.calc.coordinate_calc(x_list2, y_list2, astro_time,
                                                     param.coord, param.off_az, param.off_el, 
                                                     param.hosei, param.lamda, self.press,
                                                     self.out_temp, self.out_humi, param.limit, param.rotation)
                     
-                    ret = self.beam_calc.calc(self.center, ret_[0], ret_[1])
+                    #ret = self.beam_calc.calc(self.center, ret_[0], ret_[1])
                     
                     if param.rotation:
                         ret[0] = self.negative_change(ret[0])

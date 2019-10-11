@@ -42,7 +42,7 @@ if args.tau is not None: tau = args.tau
 if args.planet is not None: planet = args.planet
 if args.beam is not None: beam = args.beam
 print(planet)
-print('beam_center:'+ beam)
+#print('beam_center: {}beam)
 
 # Main
 # ====
@@ -59,7 +59,7 @@ dp = doppler_nanten.doppler_nanten()
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 import ROS_controller
 con = ROS_controller.controller()
-con.beam_center(center=beam)
+#con.beam_center(center=beam)
 con.dome_track()
 import signal
 def handler(num, flame):
