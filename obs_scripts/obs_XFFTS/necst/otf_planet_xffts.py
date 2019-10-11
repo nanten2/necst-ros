@@ -42,7 +42,7 @@ if args.tau is not None: tau = args.tau
 if args.planet is not None: planet = args.planet
 if args.beam is not None: beam = args.beam
 print(planet)
-print('beam_center:'+ beam)
+print('beam_center:'+ str(beam))
 
 # Main
 # ====
