@@ -43,7 +43,7 @@ class beam_calc(object):
         _y_list = []
         for i in range(len(x_list)):
             ret = self.calc(center, x_list[i], y_list[i])
-            x = x_list[i] - ret[0]
+            x = x_list[i] - ret[0] / np.cos(np.deg2rag(y_list[i]))
             y = y_list[i] - ret[1]
             _x_list.append(x)
             _y_list.append(y)
