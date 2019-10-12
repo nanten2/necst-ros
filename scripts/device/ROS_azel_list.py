@@ -62,6 +62,7 @@ class azel_list(object):
 
     def _receive_beam(self,req):
         self.center = req.center_beam
+        print('beam_center:' + str(self.center))
         return
     
     def _receive_list(self, req):
@@ -198,7 +199,7 @@ class azel_list(object):
                                                     param.hosei, param.lamda, self.press,
                                                     self.out_temp, self.out_humi, param.limit, param.rotation)
                     
-                    ret = self.beam_calc.calc(self.center, ret_[0], ret_[1])
+                    ret = self.beam_calc.calc_list(self.center, ret_[0], ret_[1])
                     
                     if param.rotation:
                         ret[0] = self.negative_change(ret[0])
@@ -290,4 +291,3 @@ if __name__ == "__main__":
     rospy.init_node(node_name)
     azel = azel_list()
     azel.create_azel_list()
-
