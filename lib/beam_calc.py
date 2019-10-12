@@ -7,9 +7,9 @@ class beam_calc(object):
     def __init__(self):
         pass
 
-    def calc_model(self,*param):
+    def calc_model(self, el, *param):
         r, theta ,d = param
-        result = r * np.sin(np.deg2rad((el / 3600) + theta)) + d
+        result = r * np.sin(np.deg2rad((np.array(el) / 3600) + theta)) + d
         return result
     
     def calc(self, center, az, el):
@@ -43,7 +43,7 @@ class beam_calc(object):
         _y_list = []
         for i in range(len(x_list)):
             ret = self.calc(center, x_list[i], y_list[i])
-            x = x_list[i] - ret[0] / np.cos(np.deg2rag(y_list[i]))
+            x = x_list[i] - ret[0] / np.cos(np.deg2rad(y_list[i]/3600))
             y = y_list[i] - ret[1]
             _x_list.append(x)
             _y_list.append(y)
