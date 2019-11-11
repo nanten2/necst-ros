@@ -61,7 +61,7 @@ class worldcoord(object):
                 time_list = [command.timestamp+command.delay, command.timestamp+command.delay+total_t]
                 time_list = [dt.utcfromtimestamp(i) for i in time_list]
 
-                ###中心座標の計算
+                ###中心座標Altazの計算
                 press = self.weather_data.press
                 temp = self.weather_data.out_temp
                 humi = self.weather_data.out_humi/100
