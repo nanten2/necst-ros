@@ -163,7 +163,7 @@ print('hot_status ### ', hot_status)
 # ON
 # ===
 print('get spectrum...')
-con.planet_move('moon', off_x=0, off_y=0, offcoord = 'altaz', dcos=0)
+con.planet_move('sun', off_x=0, off_y=0, offcoord = 'altaz', dcos=0)
 con.antenna_tracking_check()
 con.dome_tracking_check()
 con.xffts_publish_flag(obs_mode="ON")
@@ -172,7 +172,7 @@ con.xffts_publish_flag()
 
 # OFF
 # ===
-con.planet_move('moon', off_x=3600.0, off_y=0.0, offcoord = 'altaz', dcos=0)
+con.planet_move('sun', off_x=3600.0, off_y=0.0, offcoord = 'altaz', dcos=0)
 con.antenna_tracking_check()
 con.dome_tracking_check()
 con.xffts_publish_flag(obs_mode="OFF")
