@@ -41,11 +41,22 @@ import os
 import time
 import numpy
 import datetime
+import logger
 
 import sys
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 sys.path.append("/home/amigos/ros/src/nascorx_xffts/")
 import ROS_controller
+
+
+#setup logger
+#===========
+now = datetime.datetime.utcnow()
+log_path = '/home/amigos/log/{}.txt'.format(now.strftime('%Y%m%d'))
+logger = logger.logger(__name__, filename=log_path)
+log = logger.setup_logger()
+logger.obslog(sys.argv)
+start_time = time.time()
 
 import signal
 def handler(num, flame):
@@ -54,6 +65,8 @@ def handler(num, flame):
     con.move_stop()
     con.dome_stop()
     con.pub_loggerflag("")
+    time.sleep(1)#?
+    logger.obslog("STOP OBSERVATION", lv=1)
     con.obs_status(active=False)
     sys.exit()
 signal.signal(signal.SIGINT, handler)
@@ -101,16 +114,6 @@ time.sleep(3)# Temporarily
 status = con.read_status()
 hot_status = status.Current_Hot
 print('hot_status ### ', hot_status)
-# while True:
-#     status = con.read_status()
-#     hot_status = status.Current_Hot
-#     print('hot_status ### ',hot_status)
-#     if not hot_status == 'IN':
-#         time.sleep(0.5)
-#         continue
-#     else:
-#         break
-
 print('cabin_temp: %.2f'%(cabin_temp))
 
 print('get spectrum...')
@@ -130,21 +133,13 @@ hot_status = status.Current_Hot
 
 print('hot_status ### ', hot_status)
 
-# while True:
-#     status = con.read_status()
-#     hot_status = status.Current_Hot
-#     if not hot_status == 'OUT':
-#         time.sleep(0.5)
-#         continue
-#     else:
-#         break
-
-
 print('get spectrum...')
 con.xffts_publish_flag(obs_mode="SKY")
 time.sleep(integ)
 con.xffts_publish_flag()
 
+logger.obslog('Observation End : observation time : {:.2f} [min]'.format((time.time() - start_time)/60), lv=1)
+log.info('Observation End : observation time : {:.2f} [min]'.format((time.time() - start_time)/60))
 
 #con.move_hot('in')
 con.pub_loggerflag("")
