@@ -101,16 +101,6 @@ time.sleep(3)# Temporarily
 status = con.read_status()
 hot_status = status.Current_Hot
 print('hot_status ### ', hot_status)
-# while True:
-#     status = con.read_status()
-#     hot_status = status.Current_Hot
-#     print('hot_status ### ',hot_status)
-#     if not hot_status == 'IN':
-#         time.sleep(0.5)
-#         continue
-#     else:
-#         break
-
 print('cabin_temp: %.2f'%(cabin_temp))
 
 print('get spectrum...')
@@ -129,16 +119,6 @@ status = con.read_status()
 hot_status = status.Current_Hot
 
 print('hot_status ### ', hot_status)
-
-# while True:
-#     status = con.read_status()
-#     hot_status = status.Current_Hot
-#     if not hot_status == 'OUT':
-#         time.sleep(0.5)
-#         continue
-#     else:
-#         break
-
 
 print('get spectrum...')
 con.xffts_publish_flag(obs_mode="SKY")
