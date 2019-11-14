@@ -59,7 +59,17 @@ import time
 import signal
 import numpy
 import doppler_nanten
-import log_weather
+import log_weather#will be deleted
+import logger
+
+#setup logger
+#===========
+now = datetime.utcnow()
+log_path = '/home/amigos/log/{}.txt'.format(now.strftime('%Y%m%d'))
+logger = logger.logger(__name__, filename=log_path)
+log = logger.setup_logger()
+logger.obslog(sys.argv)
+start_time = time.time()
 
 dp = doppler_nanten.doppler_nanten()
 
@@ -125,6 +135,8 @@ def handler(num, flame):
     con.pub_loggerflag("")
     print("!!ctrl + c!!")
     print("Stop antenna")
+    time.sleep(1)
+    logger.obslog("STOP OBSERVATION", lv=1)
     con.obs_status(active=False)
     sys.exit()
 
@@ -328,9 +340,13 @@ con.dome_stop()
 ### Logging End
 ### =============
 con.pub_loggerflag("")
+logger.obslog('Observation End : observation time : {:.2f\
+} [min]'.format((time.time() - start_time)/60), lv=1)
+log.info('Observation End : observation time : {:.2f} [mi\
+n]'.format((time.time() - start_time)/60))
 
-shutil.copy("/home/amigos/ros/src/necst/lib/hosei_230.txt", savedir+"/hosei_copy")
-con.obs_status(active=False)
+#shutil.copy("/home/amigos/ros/src/necst/lib/hosei_230.txt", savedir+"/hosei_copy")
+#con.obs_status(active=False)
 
-import pointing_line_xffts
-pointing_line_xffts.analysis(path_to_db, 5000, 25000, 500, 8000, 9000, savepath_filename=os.path.join(savedir, "pointing.png"))
+#import pointing_line_xffts
+#pointing_line_xffts.analysis(path_to_db, 5000, 25000, 500, 8000, 9000, savepath_filename=os.path.join(savedir, "pointing.png"))

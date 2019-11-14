@@ -61,7 +61,7 @@ class worldcoord(object):
                 time_list = [command.timestamp+command.delay, command.timestamp+command.delay+total_t]
                 time_list = [dt.utcfromtimestamp(i) for i in time_list]
 
-                ###中心座標の計算
+                ###中心座標Altazの計算
                 press = self.weather_data.press
                 temp = self.weather_data.out_temp
                 humi = self.weather_data.out_humi/100
@@ -80,8 +80,13 @@ class worldcoord(object):
                 else:
                     pass
                 """
+                #start_x = -800
+                #end_x = 800
+                #start_y = 300
+                #end_y = 300
+                print("RET", ret)#for check
                 msg.x_list = [ret[0][0] + start_x, ret[0][1] + end_x]
-                msg.y_list = [ret[1][0] + start_x, ret[1][1] + end_y]
+                msg.y_list = [ret[1][0] + command.off_y, ret[1][1] + command.off_y]
                 print("x_list", msg.x_list)
                 print("y_list", msg.y_list)
                 current_time = time.time()
