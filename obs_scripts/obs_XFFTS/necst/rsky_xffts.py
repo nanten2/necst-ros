@@ -41,11 +41,22 @@ import os
 import time
 import numpy
 import datetime
+import logger
 
 import sys
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 sys.path.append("/home/amigos/ros/src/nascorx_xffts/")
 import ROS_controller
+
+
+#setup logger
+#===========
+now = datetime.datetime.utcnow()
+log_path = '/home/amigos/log/{}.txt'.format(now.strftime('%Y%m%d'))
+logger = logger.logger(__name__, filename=log_path)
+log = logger.setup_logger()
+logger.obslog(sys.argv)
+start_time = time.time()
 
 import signal
 def handler(num, flame):
@@ -54,6 +65,8 @@ def handler(num, flame):
     con.move_stop()
     con.dome_stop()
     con.pub_loggerflag("")
+    time.sleep(1)#?
+    logger.obslog("STOP OBSERVATION", lv=1)
     con.obs_status(active=False)
     sys.exit()
 signal.signal(signal.SIGINT, handler)
@@ -125,6 +138,8 @@ con.xffts_publish_flag(obs_mode="SKY")
 time.sleep(integ)
 con.xffts_publish_flag()
 
+logger.obslog('Observation End : observation time : {:.2f} [min]'.format((time.time() - start_time)/60), lv=1)
+log.info('Observation End : observation time : {:.2f} [min]'.format((time.time() - start_time)/60))
 
 #con.move_hot('in')
 con.pub_loggerflag("")
