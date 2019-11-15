@@ -4,7 +4,6 @@
 import os
 import shutil
 import numpy
-import log_weather
 from datetime import datetime, timedelta
 import sys
 import argparse
@@ -89,8 +88,6 @@ con.pub_encdb_flag(True, os.path.join(savedir, "enc.dat"))
 
 # copy hosei & obsfiles
 # =====================
-#shutil.copy("/home/amigos/ros/src/necst/lib/hosei_230.txt", savedir)
-#shutil.copy(os.path.join(obsdir, obsfile), savedir)
 con.pub_txtfile("/home/amigos/ros/src/necst/lib/hosei_230.txt", os.path.join(savedir, "hosei_230.txt"))
 con.pub_txtfile(os.path.join(obsdir, obsfile), os.path.join(savedir, obsfile))   
 
@@ -173,8 +170,6 @@ scan_point = float(otflen) #scan_point for 1 line
 scan_point = int(scan_point)
 rampt = dt*obs['lamp_pixels']
 log.info("scan point is {}".format(scan_point))
-#if scan_point > int(scan_point):
-    #print("!!ERROR scan number!!")
 
 total_count = int(obs['N'])#total scan_line
 
@@ -217,28 +212,15 @@ while rp_num < rp:
         _now = time.time()
         if _now > latest_hottime+60*obs['load_interval']:
             log.info('R')
-            
-            #con.move_hot('in')
             con.move_chopper("in")
             time.sleep(3)
-            # status = con.read_status()
-            # while status.Current_Hot != "IN":
-            #     log.info("wait hot_move")
-            #     status = con.read_status()                
-            #     time.sleep(0.5)
             con.obs_status(active=True, current_num=scan_point*num, current_position="HOT")
         
             print('get spectrum...')
-            ###con.doppler_calc()
             log.info("cosydel {}".format(cosydel))
-
-            #con.observation("start", integ_off)
-            #time.sleep(integ_off)
 
             status = con.read_status()
             temp = float(status.CabinTemp1)
-            #"""
-            #d = con.oneshot_achilles(exposure=integ_off)
             con.xffts_publish_flag(scan_num=num, obs_mode="HOT")
             time.sleep(integ_off)
             con.xffts_publish_flag(scan_num=num, obs_mode="")
@@ -250,20 +232,13 @@ while rp_num < rp:
             pass
         
         log.info('OFF')
-        #con.move_hot('out')
         con.move_chopper("out")
         time.sleep(3)
-        # status = con.read_status()
-        # while status.Current_Hot != "OUT":
-        #     log.info("wait hot_move")
-        #     status = con.read_status()                
-        #     time.sleep(0.5)        
         con.obs_status(active=True, current_num=scan_point*num, current_position="OFF")    
         log.info('get spectrum...')
 
         status = con.read_status()
         temp = float(status.CabinTemp1)
-        #d = con.oneshot_achilles(exposure=integ_off)
         con.xffts_publish_flag(scan_num=num, obs_mode="OFF")
         time.sleep(integ_off)
         con.xffts_publish_flag(scan_num=num, obs_mode="")
@@ -287,13 +262,14 @@ while rp_num < rp:
         delay = 3.
         ctime = time.time()
         start_on = 40587 + (ctime+rampt+delay)/24./3600. # mjd
-        #print(start_on)
         con.obs_status(active=True, current_num=scan_point*num, current_position="ON")        
         #con.horizontal_scan(lambda_on, beta_on, coordsys, dx, dy, dt, scan_point, rampt, delay=delay, current_time=ctime, off_x = sx + num*gridx, off_y = sy + num*gridy, offcoord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, limit=True)
-        con.horizontal_scan(lambda_on, beta_on, coordsys, dx, dy, dt, scan_point, rampt, delay=delay, current_time=ctime, off_x = 0, off_y = ssy, offcoord = cosydel, dcos=dcos, hosei='hosei_230.txt', lamda=lamda, limit=True)#o-->ssy
-
+        con.horizontal_scan(lambda_on, beta_on, coordsys, dx, dy,
+                            dt, scan_point, rampt, delay=delay,
+                            current_time=ctime, off_x = sx+num*gridx, off_y = sy+num*gridy,
+                            offcoord = cosydel, dcos=dcos,
+                            hosei='hosei_230.txt', lamda=lamda, limit=True)
         log.info('getting_data...')
-        #d = con.oneshot_achilles(repeat = scan_point ,exposure = integ_on ,stime = start_on)
         con.xffts_publish_flag(scan_num=num, obs_mode="ON")
         log.info("start_on : {}".format(start_on))
         while start_on + (obs['otflen']+rampt)/24./3600. > 40587 + time.time()/(24.*3600.):
@@ -318,19 +294,12 @@ log.info('R')#最初と最後をhotではさむ
 #con.move_hot('in')
 con.move_chopper("in")
 time.sleep(3)
-# status = con.read_status()
-# while status.Current_Hot != "IN":
-#     log.info("wait hot_move")
-#     status = con.read_status()                
-#     time.sleep(0.5)
 con.obs_status(active=True, current_num=scan_point*num+1, current_position="HOT")
 
-#con.observation("start", integ_off)
 con.xffts_publish_flag(scan_num=num, obs_mode="HOT")
 time.sleep(integ_off)
 con.xffts_publish_flag(scan_num=num, obs_mode="")
 
-#con.move_hot('out')
 con.move_chopper("out")
 time.sleep(3)
 

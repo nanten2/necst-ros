@@ -16,7 +16,6 @@ sys.path.append("/home/amigos/ros/src/necst/lib/")
 sys.path.append("/home/amigos/ros/src/necst/lib/")
 import calc_coord
 import calc_offset
-import numpy#for debug
 
 node_name = "worldcoordinate_otf_planet"
 
@@ -67,9 +66,6 @@ class worldcoord(object):
                 humi = self.weather_data.out_humi/100
                 lamda = 2600
                 ret = self.calc.coordinate_calc([command.x*3600, command.x*3600], [command.y*3600, command.y*3600], time_list, "j2000", 0, 0, "hosei_230.txt", lamda, press, temp, humi)
-                print("debug")
-                print(numpy.array(ret)/3600)
-
                 
                 ### softlimit
                 """
@@ -80,18 +76,12 @@ class worldcoord(object):
                 else:
                     pass
                 """
-                #start_x = -800
-                #end_x = 800
-                #start_y = 300
-                #end_y = 300
-                print("RET", ret)#for check
+
+                #publish --> azel_list.py
                 msg.x_list = [ret[0][0] + start_x, ret[0][1] + end_x]
                 msg.y_list = [ret[1][0] + command.off_y, ret[1][1] + command.off_y]
-                print("x_list", msg.x_list)
-                print("y_list", msg.y_list)
                 current_time = time.time()
                 msg.time_list = [command.timestamp+command.delay, command.timestamp+command.delay+total_t]
-                #msg.coord = command.coord_sys
                 msg.coord = "horizontal"
                 msg.off_az = 0
                 msg.off_el = 0
@@ -101,7 +91,6 @@ class worldcoord(object):
                 msg.timestamp = current_time
                 self.pub.publish(msg)
                 print(msg)
-                print("publish status!!\n")
                 print("end_create_list\n")
             else:
                 pass
