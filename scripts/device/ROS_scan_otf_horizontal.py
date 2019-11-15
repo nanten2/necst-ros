@@ -16,7 +16,6 @@ sys.path.append("/home/amigos/ros/src/necst/lib/")
 sys.path.append("/home/amigos/ros/src/necst/lib/")
 import calc_coord
 import calc_offset
-import numpy#for debug
 
 node_name = "worldcoordinate_otf_planet"
 
@@ -81,8 +80,6 @@ class worldcoord(object):
                 #publish --> azel_list.py
                 msg.x_list = [ret[0][0] + start_x, ret[0][1] + end_x]
                 msg.y_list = [ret[1][0] + command.off_y, ret[1][1] + command.off_y]
-                print("x_list", msg.x_list)
-                print("y_list", msg.y_list)
                 current_time = time.time()
                 msg.time_list = [command.timestamp+command.delay, command.timestamp+command.delay+total_t]
                 msg.coord = "horizontal"
@@ -94,7 +91,6 @@ class worldcoord(object):
                 msg.timestamp = current_time
                 self.pub.publish(msg)
                 print(msg)
-                print("publish status!!\n")
                 print("end_create_list\n")
             else:
                 pass
