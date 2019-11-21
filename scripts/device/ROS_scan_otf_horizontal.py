@@ -58,8 +58,14 @@ class worldcoord(object):
                 end_x = command.off_x + command.dx * (command.num - 0.5)
                 end_y = command.off_y + command.dy * (command.num - 0.5)
                 time_list = [command.timestamp+command.delay, command.timestamp+command.delay+total_t]
+                f = open("offset.txt", "a")
+                print("***TEST***")
+                f.write("{}#{}#{}#{}#{}#{}\n".format(start_x, end_x, start_y, end_y, time_list[0], time_list[1]))
+                print(start_x, end_x)
+                print(start_y, end_y)
+                print(time_list)
+                f.close()
                 time_list = [dt.utcfromtimestamp(i) for i in time_list]
-
                 ###中心座標Altazの計算
                 press = self.weather_data.press
                 temp = self.weather_data.out_temp

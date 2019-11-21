@@ -69,7 +69,7 @@ log.info('mkdir {savedir}'.format(**locals()))
 os.makedirs(savedir)
 logger.obslog("savedir : {}".format(savedir), lv=1)
 
-dirname = "n{}_{}_{}_otf_{}".format(now.strftime('%Y%m%d%H%M%S'), obs['molecule_1'], obs['transiti_1'].split('=')[1], obs['object'])
+dirname = "n{}_{}_{}_horizontalotf_{}".format(now.strftime('%Y%m%d%H%M%S'), obs['molecule_1'], obs['transiti_1'].split('=')[1], obs['object'])
 xffts_datapath = os.path.join(savedir, "xffts.ndf")
 
 log.debug("obsdir : {}".format(obsdir))
