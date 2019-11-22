@@ -26,12 +26,27 @@ class beam_calc(object):
         rospy.Subscriber('status_encoder', Status_encoder_msg, self.callback1, queue_size=1)
         rospy.Subscriber('center_beam_num', Center_beam_num_msg, self.callback2, queue_size=1)
         self.pub = rospy.Publisher('center_beam_position', Center_beam_position_msg, queue_size=1)
+        ###Model
+        self.beam3az = -296.25
+        self.beam3el = 301.31
+        self.beam3aztheta = 92.81
+        self.beam3eltheta = -2.25
+
+        self.beam4az = -300.30
+        self.beam4el = -356.60
+        self.beam4aztheta = -5.40
+        self.beam4eltheta = 83.08 
+
+        self.beam5az = 387.92
+        self.beam5el = -341.73
+        self.beam5aztheta = 98.15
+        self.beam5eltheta = 2.32
         pass
 
     def callback1(self, req):
         self.enc_az = req.enc_az
         self.enc_el = req.enc_el
-        self.enc_time = req.enc_time
+        self.enc_time = req.timestamp
         return
 
     def callback2(self, req):
@@ -50,8 +65,10 @@ class beam_calc(object):
                 ddy = 60*5.35*(np.cos(np.radians(-self.enc_el)))
                 
             elif self.center_beam == 3:
-                ddx = - 60*5.35*(np.cos(np.radians(-self.enc_el)))
-                ddy = - 60*5.35*(np.sin(np.radians(-self.enc_el)))
+                ddx = self.beam3az*(np.sin(np.radians(self.enc_el + self.beam3aztheta)))
+                ddy = self.beam3el*(np.sin(np.radians(self.enc_el + self.beam3eltheta)))
+                #ddx = - 60*5.35*(np.cos(np.radians(-self.enc_el)))
+                #ddy = - 60*5.35*(np.sin(np.radians(-self.enc_el)))
                 
             elif self.center_beam == 4:
                 ddx = - 60*5.35*(-np.sin(np.radians(-self.enc_el)))
