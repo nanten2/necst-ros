@@ -4,6 +4,7 @@ import rospy
 from necst.msg import Otf_mode_msg
 from necst.msg import List_coord_msg
 from necst.msg import String_necst
+from necst.msg import Status_weather_msg
 import time
 import threading
 import sys
@@ -25,13 +26,18 @@ class worldcoord(object):
 
     def __init__(self):
         self.sub = rospy.Subscriber("planet_otf", Otf_mode_msg, self.note_command, queue_size=1)
+        self.sub = rospy.Subscriber("status_weather", Status_weather_msg, self.callback, queue_size=1)
         self.pub = rospy.Publisher("wc_list", List_coord_msg, queue_size=1)
         self.pub_obs_stop = rospy.Publisher("obs_stop", String_necst, queue_size=1)
         self.thread_start = threading.Thread(target=self.create_list)
         pass
 
+    def callback(self, req):
+        self.weather_data = req
+        return
+
     def note_command(self,req):
-        print(req)
+        #print(req)
         self.command = req
         print(self.command)
         return
@@ -49,13 +55,18 @@ class worldcoord(object):
                 #                              command.off_x, command.off_y, command.offcoord,
                 #                              command.dcos)
 
-                start_x = command.off_x-float(command.dx)/2.-float(command.dx)/float(command.dt)*command.rampt
-                start_y = command.off_y-float(command.dy)/2.-float(command.dy)/float(command.dt)*command.rampt
+                start_x = command.off_x#-float(command.dx)/2.-float(command.dx)/float(command.dt)*command.rampt
+                print(command.off_x, command.dx, command.dt, command.rampt)
+                start_y = command.off_y#-float(command.dy)/2.-float(command.dy)/float(command.dt)*command.rampt
                 total_t = command.rampt + command.dt * command.num
-                end_x = command.off_x + command.dx * (command.num - 0.5)
-                end_y = command.off_y + command.dy * (command.num - 0.5)
-                print(start_x, end_x, command.x)
+                end_x = command.off_x + command.dx * (command.num - 0.5) + float(command.dx)/2.+ float(command.dx)/float(command.dt)*command.rampt
+                end_y = command.off_y + command.dy * (command.num - 0.5) + float(command.dy)/2.+ float(command.dy)/float(command.dt)*command.rampt
+                print("sx", start_x)
+                print("sy", start_y)
+                print("ex", end_x)
+                print("ey", end_y)
 
+                #end_x+=300
                 #if not command.planet.lower() in self.planet_list:
                 if not command.coord_sys.lower() in self.planet_list:
                     self.pub_obs_stop.publish("planet name is false...", node_name, time.time())
@@ -66,10 +77,17 @@ class worldcoord(object):
                 
                 time_list = [command.timestamp+command.delay, command.timestamp+command.delay+total_t]
                 time_list = [dt.utcfromtimestamp(i) for i in time_list]
-                print(time_list)
+                print("time list", time_list)
                 target_list = get_body(command.coord_sys.lower(), Time(time_list))#gcrs
                 target_list.location = nanten2
-                altaz_list = target_list.altaz
+                press = self.weather_data.press
+                temp = self.weather_data.out_temp#K?C?
+                humi = self.weather_data.out_humi/100
+                lamda = 2600
+                altaz_list = target_list.transform_to(AltAz(obstime=time_list,
+                                                            pressure=press*u.hPa, obswl=lamda*u.um,
+                                                            temperature=temp*u.deg_C, relative_humidity=humi))
+                #altaz_list = target_list.altaz
                 if not all((0.<i<90. for i in altaz_list.alt.deg)):
                     self.pub_obs_stop.publish("This planet is not rizing...", node_name, time.time())
                     rospy.logerr("This planet is not rizing...")
@@ -84,13 +102,14 @@ class worldcoord(object):
                                               "altaz",
                                               end_x, end_y, "altaz",
                                                   command.dcos, time_list)
-                print("altazlist", altaz_list.az.deg, altaz_list.alt.deg)
+                #print("altazlist", altaz_list.az.deg, altaz_list.alt.deg)
                 print("retstart", ret_start)
-                print("retend", ret_end)
+                #print("retend", ret_end)
                 #msg.x_list = [ret_start[0], ret_end[1]]
                 msg.x_list = [ret_start[0][0], ret_end[0][1]]
                 #msg.y_list = [ret_start[0], ret_end[1]]
                 msg.y_list = [ret_start[1][0], ret_end[1][1]]
+                print(ret_start)
                 print("x_list", msg.x_list)
                 print("y_list", msg.y_list)
                 current_time = time.time()
@@ -104,7 +123,7 @@ class worldcoord(object):
                 msg.limit = command.limit
                 msg.timestamp = current_time
                 self.pub.publish(msg)
-                print(msg)
+                #print(msg)
                 print("publish status!!\n")
                 print("end_create_list\n")
             else:
