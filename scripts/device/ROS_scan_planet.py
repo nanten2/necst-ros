@@ -4,6 +4,7 @@ import rospy
 from necst.msg import Move_mode_msg
 from necst.msg import List_coord_msg
 from necst.msg import String_necst
+from necst.msg import Status_weather_msg
 import time
 import threading
 import sys
@@ -25,11 +26,16 @@ class worldcoord(object):
     
     def __init__(self):
         self.sub = rospy.Subscriber("planet_command", Move_mode_msg, self.note_command, queue_size=1)
+        self.sub = rospy.Subscriber("status_weather", Status_weather_msg, self.callback, queue_size=1)
         self.pub = rospy.Publisher("wc_list", List_coord_msg, queue_size=1)
         self.pub_obs_stop = rospy.Publisher("obs_stop", String_necst, queue_size=1)
         self.thread_start = threading.Thread(target=self.create_list)
         self.start_time = time.time()
         pass
+
+    def callback(self, req):
+        self.weather_data = req
+        return
 
     def note_command(self,req):
         if self.start_time > req.timestamp:
@@ -66,7 +72,14 @@ class worldcoord(object):
             target_list = get_body(command.planet.lower(), Time(time_list))#gcrs
             #print(target_list)
             target_list.location = nanten2
-            altaz_list = target_list.altaz
+            #altaz_list = target_list.altaz#BUG
+            press = self.weather_data.press
+            temp = self.weather_data.out_temp#K?C?
+            humi = self.weather_data.out_humi/100
+            lamda = 2600
+            altaz_list = target_list.transform_to(AltAz(obstime=time_list,
+                                                        pressure=press*u.hPa, obswl=lamda*u.um,
+                                                        temperature=temp*u.deg_C, relative_humidity=humi))
             if not all((0.<i<90. for i in altaz_list.alt.deg)):
                 self.pub_obs_stop.publish("This planet is not rizing...", node_name, time.time())                
                 rospy.logerr("This planet is not rizing...")
