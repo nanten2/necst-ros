@@ -74,7 +74,7 @@ class worldcoord(object):
             target_list.location = nanten2
             #altaz_list = target_list.altaz#BUG
             press = self.weather_data.press
-            temp = self.weather_data.out_temp#K?C?
+            temp = self.weather_data.out_temp-273#K?C?
             humi = self.weather_data.out_humi/100
             lamda = 2600
             altaz_list = target_list.transform_to(AltAz(obstime=time_list,

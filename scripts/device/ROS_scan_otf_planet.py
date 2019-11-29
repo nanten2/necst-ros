@@ -76,12 +76,16 @@ class worldcoord(object):
                     pass
                 
                 time_list = [command.timestamp+command.delay, command.timestamp+command.delay+total_t]
+                f = open("planet_offset.txt", "a")
+                print("***TEST***")
+                f.write("{}#{}#{}#{}#{}#{}\n".format(start_x, end_x, start_y, end_y, time_list[0], time_list[1]))
+                f.close()
                 time_list = [dt.utcfromtimestamp(i) for i in time_list]
                 print("time list", time_list)
                 target_list = get_body(command.coord_sys.lower(), Time(time_list))#gcrs
                 target_list.location = nanten2
                 press = self.weather_data.press
-                temp = self.weather_data.out_temp#K?C?
+                temp = self.weather_data.out_temp-273#K?C?
                 humi = self.weather_data.out_humi/100
                 lamda = 2600
                 altaz_list = target_list.transform_to(AltAz(obstime=time_list,
