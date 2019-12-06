@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="necst" name="subtxt" type="ROS_sub_txtfile.py"/>
+  <node pkg="necst" name="wclist" type="ROS_save_wclist.py"/>  
+</launch>
