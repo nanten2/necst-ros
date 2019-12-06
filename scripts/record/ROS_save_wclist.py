@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import rospy
 import os
 from necst.msg import List_coord_msg
