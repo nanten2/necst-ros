@@ -79,7 +79,7 @@ def handler(num, flame):
         print(start_m2.Current_M2 - status.Current_M2)
         dist = round(start_m2.Current_M2 - status.Current_M2,3)
         print(dist)
-        con.move_m2(dist*1000)
+        con.move_m2(dist*10)
         print("*** m2 move : ", dist, " [um] ***")
         print("m2 move start position")
     except:
@@ -198,7 +198,7 @@ latest_hottime = 0
 start_m2 = con.read_status()
 
 print("moving m2...")
-dist = -400*int(n/2)
+dist = -20*int(n/2)#check
 con.move_m2(dist)
 print("*** m2 move : ",  dist, " [ um ] ***")
 now = con.read_status()
@@ -214,11 +214,11 @@ while num < n:
     if num == 0:
         dist = 0
     else:
-        dist = 400
+        dist = 20#100#400check
     con.move_m2(dist)
     print("*** m2 move : ",  dist, " [ um ] ***")
     now = con.read_status()
-    while abs(now.Current_M2 - (start_m2.Current_M2 +(-400*int(n/2))/1000 + dist*num/1000)) > 0.03:
+    while abs(now.Current_M2 - (start_m2.Current_M2 +(-20*int(n/2))/1000 + dist*num/1000)) > 0.03:#check
         print("moving m2...")
         time.sleep(0.1)
         now = con.read_status()        
@@ -407,7 +407,7 @@ while num < n:
     continue
 
 print("moving m2...")
-dist = -400*int(n/2)
+dist = -20*int(n/2)
 con.move_m2(dist)
 print("*** m2 move : ", dist,  " [um] ***")
 now = con.read_status()
