@@ -41,10 +41,10 @@ logger = logger.logger(__name__, filename=log_path)
 log = logger.setup_logger()
 
 # data path
-data_dir = "./data/skydip_xffts/{}".format(now.strftime("%Y%m%d%H%M%S"))
+data_dir = "./observation/skydip_xffts/{}".format(now.strftime("%Y%m%d%H%M%S"))
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
-#savepath = os.path.join(data_dir, "skydip.ndf")
+savepath = os.path.join(data_dir, "skydip.ndf")
 
 # main
 con = ROS_controller.controller()
