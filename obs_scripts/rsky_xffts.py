@@ -93,14 +93,14 @@ savepath = os.path.join(savedir, "xffts.ndf")
 # Data aquisition
 # ---------------
 
-status = con.read_status()
-cabin_temp = status.CabinTemp1
-if cabin_temp < 10.: # if no data
-    cabin_temp = 300
-    print("No data from weather")
-    print("temporary T=300[K]")
-else:
-    pass
+#status = con.read_status()
+#cabin_temp = status.CabinTemp1
+#if cabin_temp < 10.: # if no data
+#    cabin_temp = 300
+#    print("No data from weather")
+#    print("temporary T=300[K]")
+#else:
+#    pass
 
 print('Start experimentation')
 
@@ -114,7 +114,7 @@ time.sleep(3)# Temporarily
 status = con.read_status()
 hot_status = status.Current_Hot
 print('hot_status ### ', hot_status)
-print('cabin_temp: %.2f'%(cabin_temp))
+#print('cabin_temp: %.2f'%(cabin_temp))
 
 print('get spectrum...')
 con.pub_loggerflag(savedir)

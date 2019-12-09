@@ -242,7 +242,7 @@ while rp_num < rp:
             con.xffts_publish_flag(scan_num=num, obs_mode="HOT")
             time.sleep(integ_off)
             con.xffts_publish_flag(scan_num=num, obs_mode="")
-            latest_hottime = time.time()
+            #latest_hottime = time.time()
             pass
 
 
@@ -267,6 +267,7 @@ while rp_num < rp:
             con.xffts_publish_flag(scan_num=num, obs_mode="OFF")
             time.sleep(integ_off)
             con.xffts_publish_flag(scan_num=num, obs_mode="")
+            latest_hottime = time.time() 
         else:
             pass
         log.info('move ON')
