@@ -208,6 +208,7 @@ while rp_num < rp:
         con.onepoint_move(lambda_off, beta_off, coordsys,
                           off_x=lamdel_off, off_y=betdel_off, 
                           offcoord = cosydel,dcos=dcos)
+        con.dome_track()
 
         log.info("check_track")
         con.antenna_tracking_check()
@@ -280,6 +281,8 @@ while rp_num < rp:
                           off_x = ssx, off_y = ssy,
                           offcoord = cosydel,
                           dcos = dcos)
+        con.dome_track()#temp
+        
         con.antenna_tracking_check()
         con.dome_tracking_check()
         
