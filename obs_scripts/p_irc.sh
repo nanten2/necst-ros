@@ -1,5 +1,5 @@
 #!/bin/bash
-path="~/ros/src/necst/obs_scripts"
+path="/home/amigos/ros/src/necst/obs_scripts"
 maxtimes=20
 if [ $maxtimes -lt $1 ] ; then
     echo "Too much repeat times(>20)"
