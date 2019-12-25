@@ -14,7 +14,7 @@ py_path = "/home/amigos/git/analy_n2data/note_py"
 nb_path = "/home/amigos/git/analy_n2data/notebook"
 
 analy_type = {"rsky": ["rsky.py", "rsky.ipynb"],
-              "skydip": ["skydip.py", "skydip.ipynb"],
+              "skydip": ["analy_skydip.py", "skydip.ipynb"],
               "edge": ["pointing_edge_xffts.py", "pointing_edge_xffts.ipynb"],
               "ps": ["Position_Switch.py", "Position_Switch.ipynb"],
               "simple_ps":["simple_ps.py", "simple_ps.ipynb"]}
