@@ -104,5 +104,5 @@ for elevation in z:
 ### ===========
 con.pub_loggerflag("")
 time.sleep(1)
-#con.pub_analyexec(data_dir, "skydip")
+con.pub_analyexec(data_dir, "skydip")
 
