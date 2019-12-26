@@ -104,5 +104,5 @@ for elevation in z:
 ### ===========
 con.pub_loggerflag("")
 time.sleep(1)
-con.pub_analyexec(data_dir, "skydip")
+con.pub_analyexec("/home/amigos/hdd/data/observation/skydip_xffts/{}".format(now.strftime("%Y%m%d%H%M%S")), "skydip")
 
