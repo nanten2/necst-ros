@@ -42,6 +42,7 @@ log = logger.setup_logger()
 
 # data path
 data_dir = "./observation/skydip_xffts/{}".format(now.strftime("%Y%m%d%H%M%S"))
+data_dir2 = '/home/amigos/hdd/data/observation/skydip/{}'.format(now.strftime("%Y%m%d%H%M%S"))
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
 savepath = os.path.join(data_dir, "skydip.ndf")
