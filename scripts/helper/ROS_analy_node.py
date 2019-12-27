@@ -14,7 +14,7 @@ py_path = "/home/amigos/git/analy_n2data/note_py"
 nb_path = "/home/amigos/git/analy_n2data/notebook"
 
 analy_type = {"rsky": ["rsky.py", "rsky.ipynb"],
-              "skydip": ["analy_skydip.py", "skydip.ipynb"],
+              "skydip": ["data2tau.py", "skydip.ipynb"],
               "edge": ["pointing_edge_xffts.py", "pointing_edge_xffts.ipynb"],
               "ps": ["Position_Switch.py", "Position_Switch.ipynb"],
               "simple_ps":["simple_ps.py", "simple_ps.ipynb"]}
@@ -32,6 +32,7 @@ def callback(req):
         script_path = os.path.join(py_path, analy_type[req.analy_type][0])
     status_analy = req
     subprocess.run(['ipython', script_path, req.data_path])
+    print(['ipython', script_path, req.data_path])    
     result_path = req.data_path.replace("data", "analysis")
     if not os.path.exists(result_path):
         os.makedirs(result_path, exist_ok=True)
