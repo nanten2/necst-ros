@@ -4,9 +4,22 @@ import matplotlib.pyplot as plt
 import os
 from scipy.optimize import curve_fit
 
+"""
+pixel scale = 0.87
+Calculated by Kengo Tachihara(2019/06/07)
+
+original(before 06/07)
+pixel scale = 1.18 (Calculated by ?)
+
+###
+Az => -Azに実験的に変更中
+###
+last update 2019/06/08 Kazuki Shiotani
+"""
+
 def process2forfit(dir):
         d = np.loadtxt(os.path.join(dir, 'process.log'))
-        data = np.array([d[:,14],d[:,15],(d[:,10]-320)*1.18,(d[:,9]-240)*1.18,
+        data = np.array([d[:,14],d[:,15],(d[:,9]-320)*0.87*(-1),(d[:,10]-240)*0.87,
         d[:,16],d[:,17]])
         result = data.T
         np.savetxt(os.path.join(dir, 'for_fit.log'), result, delimiter=' ')
@@ -19,9 +32,9 @@ def process_static(dir_list, *, clip_sigma=None, clip_const=None):
     ind_dy = 10
 
     rawdata = np.concatenate([np.loadtxt(os.path.join(_dir, 'process.log')) for _dir in dir_list])
-
-    rawdata[:,ind_dx]=(rawdata[:,ind_dx]-240)*1.18
-    rawdata[:,ind_dy]=(rawdata[:,ind_dy]-320)*1.18
+    
+    rawdata[:,ind_dx]=(rawdata[:,ind_dx]-320)*0.87*-1#tmp
+    rawdata[:,ind_dy]=(rawdata[:,ind_dy]-240)*0.87
 
     #rawdx_avg = np.average(rawdata[:,ind_dx])
     #rawdy_avg = np.average(rawdata[:,ind_dy])
@@ -67,8 +80,8 @@ def opt_plot(dir_list, *, clip_sigma=(3.,3.), savefig=True, figname=None, intera
     #files = multifiles(dirname)
     d_list = [np.loadtxt(os.path.join(_dir, 'process.log')) for _dir in dir_list]
     for _d in d_list:
-        _d[:,ind_dx]=(_d[:,ind_dx]-240)*1.18
-        _d[:,ind_dy]=(_d[:,ind_dy]-320)*1.18
+        _d[:,ind_dx]=(_d[:,ind_dx]-320)*0.87*-1#tmp shiotani added
+        _d[:,ind_dy]=(_d[:,ind_dy]-240)*0.87
         _dx=(_d[:,ind_dx]*np.cos(np.radians(-1.76))-_d[:,ind_dy]*np.sin(np.radians(-1.76)))
         _dy=(_d[:,ind_dx]*np.sin(np.radians(-1.76))+_d[:,ind_dy]*np.cos(np.radians(-1.76)))
         _d = _d[(abs(_dx -dx_avg) < dx_std * clip_sigma[0]) & (abs(_dy -dy_avg) < dy_std * clip_sigma[1])]
@@ -115,7 +128,7 @@ def opt_plot(dir_list, *, clip_sigma=(3.,3.), savefig=True, figname=None, intera
         if figname == None:
             figname = 'plot_tmp.png'
         save_dir = "/home/amigos/data/all_sky_shot/plot/"
-        if not os.path.exist(save_dir):
+        if not os.path.exists(save_dir):
             os.makedirs(save_dir)
         fig.savefig(save_dir+figname)
 
@@ -127,6 +140,15 @@ def opt_plot(dir_list, *, clip_sigma=(3.,3.), savefig=True, figname=None, intera
 
 def fdx(altaz, dAz, de, chi, omega, eps):
     Az, El = altaz
+    El = np.deg2rad(El)
+    dx = chi * np.sin(np.deg2rad(omega - Az)) * np.sin(El) + eps * np.sin(El) + dAz * np.cos(El) + de
+    return dx
+
+def tmp_fdx(altaz, chi, omega):#tmp shiotani added
+    Az, El = altaz
+    eps = -10.22529500930741
+    de = 395.7753401514424
+    dAz = 5297.17279678134
     El = np.deg2rad(El)
     dx = chi * np.sin(np.deg2rad(omega - Az)) * np.sin(El) + eps * np.sin(El) + dAz * np.cos(El) + de
     return dx
@@ -152,7 +174,7 @@ def opt_fit(dir_list, *, hosei_path='hosei_opt.txt', output_dir=None, savefig=Tr
     dx_avg, dy_avg, dx_std, dy_std, *_= process_static(dir_list, clip_sigma=(3.,3.))
     d_list_noclip = [np.loadtxt(os.path.dirname(_dir + '/')+'/for_fit.log') for _dir in dir_list]
     d_list = [_d[(abs(_d[:,ind_dx] -dx_avg) < dx_std * 3.) & (abs(_d[:,ind_dy] -dy_avg) < dy_std * 3.)] for _d in d_list_noclip]
-
+    #観測に使用したhosei txtを読み込み、初期値にする
     hosei = np.loadtxt(hosei_path)
     dAz = hosei[0]
     de = hosei[1]
@@ -167,12 +189,14 @@ def opt_fit(dir_list, *, hosei_path='hosei_opt.txt', output_dir=None, savefig=Tr
     back_list = [_d[:,(ind_dx, ind_dy)] +  np.array([fdx(_d[:,(ind_az, ind_el)].T, dAz, de, chi_x, omega_x, eps), fdy(_d[:,(ind_az, ind_el)].T, dEl, chi_y, omega_y, g1)]).T for _d in d_list]
     back = np.concatenate(back_list)
 
+    #fitting
+    #p0が初期期値
     p_opt_dx, coval_dx = curve_fit(fdx, np.concatenate(d_list)[:,(ind_az,ind_el)].T, back[:,0], p0=np.array([dAz, de, chi_x, omega_x, eps]))
     p_opt_dy, coval_dy = curve_fit(fdy, np.concatenate(d_list)[:,(ind_az,ind_el)].T, back[:,1], p0=np.array([dEl, chi_y, omega_y, g1]))
-
-    dAz_n, de_n, chi_xn, omega_xn, eps_n = p_opt_dx
+    print(p_opt_dx)
+    dAz_n, de_n, chi_xn, omega_xn, eps_n = p_opt_dx#original
     dEl_n, chi_yn, omega_yn, g1_n = p_opt_dy
-
+    
     res_list = [_b - np.array([fdx(_d[:,(ind_az, ind_el)].T, dAz_n, de_n, chi_xn, omega_xn, eps_n), fdy(_d[:,(ind_az, ind_el)].T, dEl_n, chi_yn, omega_yn, g1_n)]).T for _b, _d in zip(back_list, d_list)]
     res = np.concatenate(res_list)
     res_dx_avg, res_dy_avg = np.average(res, axis=0)
@@ -237,7 +261,7 @@ def opt_fit(dir_list, *, hosei_path='hosei_opt.txt', output_dir=None, savefig=Tr
     f.write("number of stars :\t{}\n".format(',\t'.join([str(len(_d)) for _d in d_list])))
     f.write("number of cliped stars :\t{}\n".format(',\t'.join([str(len(_dc) - len(_d)) for _dc, _d in zip(d_list_noclip, d_list)])))
     f.write("total number of stars : \t{}\n".format(sum([(len(_d)) for _d in d_list])))
-    f.write("parameter, new value, previous value, delta, uncertainty")
+    f.write("parameter, previous, new_value, delta, uncertainty")
     f.write('\n'.join(hosei_print) + '\n')
     f.close()
 
@@ -256,8 +280,10 @@ if __name__ == '__main__':
     import sys
 
     args = sys.argv
-    processing = args[1]
-    dir_list = args[2:]
+    #processing = arg[1]
+    processing = "a"
+    dir_list = args[1:]
+    hosei_to_path = input("観測した補正ファイル(hosei_opt.txt)へのパスをいれてください: ")
 
     if processing == 'p':
         opt_plot(dir_list,savefig=True, interactive=False)
@@ -269,9 +295,11 @@ if __name__ == '__main__':
         [process2forfit(_dir) for _d in dir_list]
 
     elif processing == 'a':
-        opt_plot(dir_list,savefig=True, interactive=False)
+        opt_plot(dir_list,savefig=True, interactive=True)
         [process2forfit(_d) for _d in dir_list]
-        opt_fit(dir_list)
-
+        opt_fit(dir_list, hosei_path = hosei_to_path)
+        print("fitting result.txt が結果")
+        print("residual.pngが残渣")
     else:
         print("Assign 'plot' or 'fit' or 'convert' or 'all'")
+        
