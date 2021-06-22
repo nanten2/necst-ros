@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "necst-ros"
+version = "1.0.1"
+description = "NEw Control System for Telescope"
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+astropy = "^4.1"
+matplotlib = "^3.3"
+n_const = "^0.3"
+numpy = "^1.19"
+# nasco_system = { git="https://github.com/ogawa-ros/nasco_system.git", branch="master" }
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+black = "^20.8b"
+flake8 = "^3.8"
+sphinx = "^3.3"
+pydata-sphinx-theme = "^0.4"
+m2r2 = "^0.2"
+ipykernel = "^5.3"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
