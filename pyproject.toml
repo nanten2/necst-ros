@@ -2,7 +2,7 @@
 name = "necst-ros"
 version = "1.0.1"
 description = "NEw Control System for Telescope"
-authors = ["NANTEN2 Software Team <nanten2alab@gmail.com>"]
+authors = ["NANTEN2 Software Team"]
 
 [tool.poetry.dependencies]
 python = "^3.6"
