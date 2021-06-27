@@ -69,7 +69,7 @@ else
         echo -e "\033[46;1m=========================================\033[0m"
     else
         echo -e "\033[46;1m=========================================\033[0m"
-	echo -e "\033[46;1m= poetry failed to resolve dependencies =\033[0m"
+        echo -e "\033[46;1m= poetry failed to resolve dependencies =\033[0m"
         echo -e "\033[46;1m=========================================\033[0m"
     fi
 fi
