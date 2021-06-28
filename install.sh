@@ -10,7 +10,7 @@ rc_path="$HOME/.${array[-1]}rc"
 if ! type poetry > /dev/null 2>&1
 then
     # Install poetry
-    echo "Installing poetry"
+    echo -e "\033[46mInstalling poetry\033[0m"
     curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 -
 
     # Set path to poetry command if not done
