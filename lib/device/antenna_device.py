@@ -291,7 +291,7 @@ class antenna_device:
         if pid_param is not None:
             self.set_pid_param(pid_param)
 
-        if m_bStop == "False":
+        if m_bStop == "FALSE":
             stop = False
         elif m_bStop == "TRUE":
             stop = True
