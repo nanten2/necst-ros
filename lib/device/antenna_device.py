@@ -187,7 +187,7 @@ class AntennaDevice:
             "enc_coord_last": self.enc_coord[Last] * 3600,
             "t_now": self.time[Now],
             "t_last": self.time[Last],
-        }  # All angle units parameters are in arcsec.
+        }  # All angle-related parameters are in arcsec.
 
     def calc_pid(self) -> float:
         error_derivative = (self.error[Now] - self.error[Last]) / self.dt
@@ -349,7 +349,7 @@ def calc_pid(
     calculator._update("cmd_coord", target_arcsec / 3600)
     calculator._update("enc_coord", encoder_arcsec / 3600)
     calculator._update("error", (target_arcsec - encoder_arcsec) / 3600)
-    calculator._update("error_integ", ihensa)
+    calculator._update("error_integ", ihensa / 3600)
 
     speed = calculator.calc_pid()
 
