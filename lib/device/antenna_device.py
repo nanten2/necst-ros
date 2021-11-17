@@ -90,6 +90,7 @@ class AntennaDevice:
 
         """
         self.driver.command(int(rate), self.azel)
+        self._update("cmd_speed", int(rate) / self.SPEED2RATE)
 
     def _update(self, param_name: str, new_value: Any) -> None:
         parameter = getattr(self, param_name)
@@ -165,7 +166,6 @@ class AntennaDevice:
 
         # Calculate and validate drive speed.
         speed = self.calc_pid()
-        self._update("cmd_speed", speed)
         speed = self._clip(
             speed, -1 * self.MAX_SPEED, self.MAX_SPEED
         )  # Limit the speed.
@@ -174,12 +174,11 @@ class AntennaDevice:
         speed = self._clip(
             speed, current_speed - max_diff, current_speed + max_diff
         )  # Limit the acceleration.
-        self.cmd_speed[Now] = speed
 
         if stop:
             self.command(0)
         else:
-            self.command(int(self.cmd_speed[Now] * self.SPEED2RATE))
+            self.command(int(speed * self.SPEED2RATE))
 
         return {
             "speed": self.cmd_speed[Now] * 3600,
