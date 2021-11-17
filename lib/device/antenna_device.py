@@ -55,8 +55,8 @@ class AntennaDevice:
         azel: str,
         *,  # Positional arguments are not allowed hereafter.
         pid_param: Tuple[float, float, float] = None,
-        max_speed: int = None,
-        max_acceleration: int = None,
+        max_speed: float = None,
+        max_acceleration: float = None,
         **kwargs,
     ) -> "AntennaDevice":
         """Initialize `AntennaDevice` class with properly configured parameters.
@@ -64,6 +64,7 @@ class AntennaDevice:
         Examples
         --------
         >>> AntennaDevice.with_configuration("az", pid_param=[2.2, 0, 0])
+
         """
         inst = cls(azel, **kwargs)
         if pid_param is not None:
@@ -78,13 +79,15 @@ class AntennaDevice:
         self.command(0)
 
     def command(self, rate: int) -> None:
-        """
+        """Send rate command to DIO.
+
         Parameters
         ----------
         rate
             Command to servo motor, which follows the formula
             $command[rpm] = 1500rpm * (rate / 100)%$ hence $0 <= rate <= 10000$. 1500rpm
             is the max speed of the motor installed on the NANTEN2.
+
         """
         self.driver.command(int(rate), self.azel)
 
@@ -118,6 +121,7 @@ class AntennaDevice:
         unit: str = "arcsec",
     ) -> Dict[str, float]:
         """
+
         Parameters
         ----------
         cmd_coord
@@ -125,6 +129,8 @@ class AntennaDevice:
         enc_coord
             In arcsec.
         stop
+            If True, the telescope won't move
+
         """
         if unit.lower() == "arcsec":
             # Convert to deg.
