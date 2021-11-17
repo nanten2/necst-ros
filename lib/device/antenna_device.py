@@ -5,7 +5,7 @@ from typing import Any, Dict, Tuple
 
 import pyinterface
 
-# Indeces for 2-lists.
+# Indices for 2-lists.
 Last = 0
 Now = 1
 
