@@ -46,8 +46,8 @@ class AntennaDevice:
         self.enc_coord = [None, None]
         self.error = [None, None]
         self.error_integ = [None, None]
-        # `error_integ` has no need to be keep `Last` value. Just compatibility issue
-        # with other parameters.
+        # There's no need for `error_integ` to keep `Last` value. It's kept just for
+        # compatibility with other parameters.
 
     @classmethod
     def with_configuration(
