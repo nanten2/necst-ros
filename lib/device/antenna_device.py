@@ -24,7 +24,7 @@ class AntennaDevice:
     -----
     - The NANTEN2 telescope is powered by servomotors.
     - This class should be integrated with ROS, instead of returning numerous parameters
-    in `pid` method.
+    in `drive` method.
     """
 
     K_p: float = 2.2
