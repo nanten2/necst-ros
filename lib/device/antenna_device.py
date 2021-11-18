@@ -17,7 +17,8 @@ class AntennaDevice:
     ----------
     azel
         "Az" or "el", case insensitive.
-    board_name
+    board_model
+        Model number of Interface DIO board.
     rsw_id
 
     Notes
@@ -45,9 +46,9 @@ class AntennaDevice:
     # *2. 5250 is the gear ratio for the NANTEN2 antenna drive.
     # *3. 1500rpm is max speed of the motor installed on the NANTEN2.
 
-    def __init__(self, azel: str, board_name: int = 2724, rsw_id: int = 0) -> None:
-        self.driver = AntennaDriver(board_name, rsw_id)
-        self.azel = azel
+    def __init__(self, azel: str, board_model: int = 2724, rsw_id: int = 0) -> None:
+        self.driver = AntennaDriver(board_model, rsw_id)
+        self.azel = azel.lower()
 
         self.cmd_speed = [None, None]
         self.time = [None, None]
