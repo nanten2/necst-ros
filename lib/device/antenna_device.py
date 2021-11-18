@@ -34,7 +34,16 @@ class AntennaDevice:
     MAX_SPEED: int = 2  # deg/s
     MAX_ACCELERATION: int = 2  # deg/s^2
 
-    SPEED2RATE = (7 / 12) * 10000  # Unit of speed is deg/s. Ref. N2-7395
+    SPEED2RATE = (7 / 12) * 10000  # Speed [deg/s] to servomotor rate.
+    # 5250r of motor corresponds to 1r of antenna.
+    # 1500rpm of motor corresponds to 1500/5250rpm = 2/7rpm = 12/7[deg/s] of antenna.
+    # Command (we call it 'rate') for the servomotor is ratio of motor speed you desire
+    # to the motor's max speed in permyriad.
+    # So an instruction of 0.3deg/s drive of antenna will be (7/12)*0.3*10000.
+    # Here (7/12)*10000 is the conversion factor.
+    # *1. Unit 'r' is rotation.
+    # *2. 5250 is the gear ratio for the NANTEN2 antenna drive.
+    # *3. 1500rpm is max speed of the motor installed on the NANTEN2.
 
     def __init__(self, azel: str, board_name: int = 2724, rsw_id: int = 0) -> None:
         self.driver = AntennaDriver(board_name, rsw_id)
@@ -85,14 +94,15 @@ class AntennaDevice:
         ----------
         rate
             Command to servo motor, which follows the formula
-            $command[rpm] = 1500rpm * (rate / 100)%$ hence $0 <= rate <= 10000$. 1500rpm
-            is the max speed of the motor installed on the NANTEN2.
+            $command[rpm] = 1500rpm * (rate / 100)\\%$ hence $0 <= rate <= 10000$.
+            1500rpm is the max speed of the motor installed on the NANTEN2.
 
         """
         self.driver.command(int(rate), self.azel)
         self._update("cmd_speed", int(rate) / self.SPEED2RATE)
 
     def _update(self, param_name: str, new_value: Any) -> None:
+        """Drop old parameters, then assign new parameters."""
         parameter = getattr(self, param_name)
         parameter = parameter[1:]
         parameter.append(new_value)
@@ -100,13 +110,16 @@ class AntennaDevice:
 
     @staticmethod
     def _clip(value: float, minimum: float, maximum: float) -> float:
+        """Limit the `value` to the range [`minimum`, `maximum`]."""
         return min(max(minimum, value), maximum)
 
     @property
     def dt(self) -> float:
+        """Time interval of PID calculation."""
         return self.time[Now] - self.time[Last]
 
     def initialize(self, cmd_coord: float, enc_coord: float) -> None:
+        """Set initial parameters."""
         self._update("cmd_speed", 0)
         self._update("time", time.time())
         self._update("cmd_coord", cmd_coord)
@@ -121,7 +134,7 @@ class AntennaDevice:
         stop: bool = False,
         unit: str = "arcsec",
     ) -> Dict[str, float]:
-        """
+        """Calculates valid drive speed.
 
         Parameters
         ----------
@@ -130,7 +143,7 @@ class AntennaDevice:
         enc_coord
             In arcsec.
         stop
-            If True, the telescope won't move
+            If True, the telescope won't move.
 
         """
         if unit.lower() == "arcsec":
@@ -195,6 +208,7 @@ class AntennaDevice:
         }  # All angle-related parameters are in arcsec.
 
     def calc_pid(self) -> float:
+        """PID feedback calculator."""
         error_derivative = (self.error[Now] - self.error[Last]) / self.dt
 
         # Speed of the move of commanded coordinate. This includes sidereal motion, scan
@@ -220,6 +234,14 @@ class AntennaDevice:
         return speed
 
     def emergency_stop(self) -> None:
+        """Stop the antenna immediately.
+
+        Notes
+        -----
+        This method isn't recommended to use. The instruction of sudden stop can harm
+        the system.
+
+        """
         for _ in range(5):
             self.command(0)
             time.sleep(0.05)
