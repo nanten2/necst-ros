@@ -40,8 +40,8 @@ class AntennaDevice:
     # 1500rpm of motor corresponds to 1500/5250rpm = 2/7rpm = 12/7[deg/s] of antenna.
     # Command (we call it 'rate') for the servomotor is ratio of motor speed you desire
     # to the motor's max speed in permyriad.
-    # So an instruction of 0.3deg/s drive of antenna will be (7/12)*0.3*10000.
-    # Here (7/12)*10000 is the conversion factor.
+    # So the rate corresponds to 0.3deg/s drive of antenna will be (7/12)*0.3*10000.
+    # Here (7/12)*10000 is the conversion factor `SPEED2RATE`.
     # *1. Unit 'r' is rotation.
     # *2. 5250 is the gear ratio for the NANTEN2 antenna drive.
     # *3. 1500rpm is max speed of the motor installed on the NANTEN2.
@@ -144,7 +144,7 @@ class AntennaDevice:
         enc_coord
             In arcsec.
         stop
-            If True, the telescope won't move.
+            If `True`, the telescope won't move.
 
         """
         if unit.lower() == "arcsec":
@@ -165,7 +165,7 @@ class AntennaDevice:
         # will never be satisfied, so this functionality is safely placed here without
         # any conditional context like `if azel == "az":`.
         # The value range of `enc_coord` is -270deg ~ 0deg ~ +270deg. The origin of the
-        # following magic number 40 is unknown.
+        # following magic number `40` is unknown.
         magic = 40
         if (enc_coord > magic) and (cmd_coord + 360 < (180 + magic)):
             cmd_coord += 360
@@ -319,9 +319,6 @@ class antenna_device:
         elif m_bStop == "TRUE":
             stop = True
 
-        self.t_past = self._az.time[Last]  # Overwritten soon after.
-        # May slightly different from `self._el.time[Last]`.
-
         ret_az = self._az.drive(az_arcsec, enc_az, stop=stop, unit="arcsec")
         ret_el = self._el.drive(el_arcsec, enc_el, stop=stop, unit="arcsec")
 
@@ -334,13 +331,10 @@ class antenna_device:
         self.ihensa = [self._az.error_integ[Now], self._el.error_integ[Now]]
         self.t_past = self.t_now
 
-        self.az_rate_d = ret_az["speed"]
-        self.el_rate_d = ret_el["speed"]
-
-        self.command_az_speed = int(self.az_rate_d)
-        self.az_rate_d = self.command_az_speed
-        self.command_el_speed = int(self.el_rate_d)
-        self.el_rate_d = self.command_el_speed  # Cannot understand what's done here.
+        self.az_rate_d = int(ret_az["speed"])
+        self.el_rate_d = int(ret_el["speed"])
+        self.command_az_speed = self.az_rate_d
+        self.command_el_speed = self.el_rate_d  # Cannot understand what's done here.
 
         return list(ret_az.values())[:-2] + list(ret_el.values())
 
