@@ -182,6 +182,8 @@ class AntennaDevice:
         elif (enc_coord < -1 * magic) and (cmd_coord - 360 > -1 * (180 + magic)):
             cmd_coord -= 360
 
+        current_speed = self.cmd_speed[Now]
+
         self._update("time", time.time())
         self._update("cmd_coord", cmd_coord)
         self._update("enc_coord", enc_coord)
@@ -194,7 +196,7 @@ class AntennaDevice:
             speed, -1 * self.MAX_SPEED, self.MAX_SPEED
         )  # Limit the speed.
         max_diff = self.MAX_ACCELERATION * self.dt
-        current_speed = (self.enc_coord[Last] - self.enc_coord[Now]) / self.dt
+        # Encoder readings cannot be used, because of the lack of stability.
         speed = self._clip(
             speed, current_speed - max_diff, current_speed + max_diff
         )  # Limit the acceleration.
