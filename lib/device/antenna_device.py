@@ -26,6 +26,7 @@ class AntennaDevice:
     - The NANTEN2 telescope is powered by servomotors.
     - This class should be integrated with ROS, instead of returning numerous parameters
     in `drive` method.
+
     """
 
     K_p: float = 2.2
@@ -240,7 +241,7 @@ class AntennaDevice:
         Notes
         -----
         This method isn't recommended to use. The instruction of sudden stop can harm
-        the system.
+        the devices.
 
         """
         for _ in range(5):
@@ -250,16 +251,18 @@ class AntennaDevice:
 
 
 class AntennaDriver:
-    def __init__(self, board_name: int, rsw_id: int) -> None:
+    def __init__(self, board_model: int, rsw_id: int) -> None:
         """
+
         Parameters
         ----------
-        board_name
-            Name? of Interface board.
+        board_model
+            Model of Interface DIO board.
         rsw_id
             Rotary SWitch ID.
+
         """
-        self.dio = pyinterface.open(board_name, rsw_id)
+        self.dio = pyinterface.open(board_model, rsw_id)
         self.dio.initialize()
 
     def command(self, value: int, azel: str) -> None:
@@ -356,6 +359,13 @@ def calc_pid(
     i_coeff: float,
     d_coeff: float,
 ) -> Tuple[float, ...]:
+    """PID calculation.
+
+    ..deprecated:: v2.1.0
+        This function will be removed in v4.0.0, because of implementation structure
+        issue. Please use `AntennaDevice.calc_pid`.
+
+    """
     calculator = AntennaDevice.with_configuration(
         "az", pid_param=[p_coeff, i_coeff, d_coeff]
     )  # No difference if `"el"` is passed.
