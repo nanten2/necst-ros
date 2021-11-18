@@ -47,8 +47,16 @@ class AntennaDevice:
     # *2. 5250 is the gear ratio for the NANTEN2 antenna drive.
     # *3. 1500rpm is max speed of the motor installed on the NANTEN2.
 
-    def __init__(self, azel: str, board_model: int = 2724, rsw_id: int = 0) -> None:
-        self.driver = AntennaDriver(board_model, rsw_id)
+    def __init__(
+        self,
+        azel: str,
+        board_model: int = 2724,
+        rsw_id: int = 0,
+        simulator: bool = False,
+    ) -> None:
+        self.simulator = simulator
+        if not simulator:
+            self.driver = AntennaDriver(board_model, rsw_id)
         self.azel = azel.lower()
 
         self.cmd_speed = [None, None]
@@ -100,7 +108,8 @@ class AntennaDevice:
             1500rpm is the max speed of the motor installed on the NANTEN2.
 
         """
-        self.driver.command(int(rate), self.azel)
+        if not self.simulator:
+            self.driver.command(int(rate), self.azel)
         self._update("cmd_speed", int(rate) / self.SPEED2RATE)
 
     def _update(self, param_name: str, new_value: Any) -> None:
@@ -292,7 +301,7 @@ class antenna_device:
     d_coeff = [0, 0]
     dir_name = ""
 
-    def __init__(self) -> None:
+    def __init__(self, simulator: bool = False) -> None:
         self._az = AntennaDevice("az")
         self._el = AntennaDevice("el")
         self.dio = self._az.device.dio  # No difference if `self._el` is used.
