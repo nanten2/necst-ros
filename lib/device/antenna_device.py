@@ -304,7 +304,8 @@ class antenna_device:
     def __init__(self, simulator: bool = False) -> None:
         self._az = AntennaDevice("az", simulator=simulator)
         self._el = AntennaDevice("el", simulator=simulator)
-        self.dio = self._az.device.dio  # No difference if `self._el` is used.
+        if not simulator:
+            self.dio = self._az.device.dio  # No difference if `self._el` is used.
 
     def init_speed(self) -> None:
         self._az.init_speed()
