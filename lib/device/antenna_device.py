@@ -10,6 +10,8 @@ import pyinterface
 Last = -2
 Now = -1
 
+DefaultTwoList = [np.nan, np.nan]
+
 
 class AntennaDevice:
     """Controller of telescope antenna drive.
@@ -42,11 +44,15 @@ class AntennaDevice:
     # 1500rpm of motor corresponds to 1500/5250rpm = 2/7rpm = 12/7[deg/s] of antenna.
     # Command (we call it 'rate') for the servomotor is ratio of motor speed you desire
     # to the motor's max speed in permyriad.
-    # So the rate corresponds to 0.3deg/s drive of antenna will be (7/12)*0.3*10000.
+    # e.g.) The rate corresponds to 0.3deg/s drive of antenna will be (7/12)*0.3*10000.
     # Here (7/12)*10000 is the conversion factor `SPEED2RATE`.
-    # *1. Unit 'r' is rotation.
-    # *2. 5250 is the gear ratio for the NANTEN2 antenna drive.
-    # *3. 1500rpm is max speed of the motor installed on the NANTEN2.
+    # *1: Unit 'r' is rotation.
+    # *2: 5250 is the gear ratio for the NANTEN2 antenna drive.
+    # *3: 1500rpm is max speed of the servomotor installed on the NANTEN2.
+
+    ERROR_INTEG_COUNT = 50  # Keep 50 data for error integration.
+    # Time interval of error integral varies according to PID calculation frequency.
+    # This may cause optimal PID parameters to change according to the frequency.
 
     def __init__(
         self,
@@ -60,13 +66,8 @@ class AntennaDevice:
             self.driver = AntennaDriver(board_model, rsw_id)
         self.azel = azel.lower()
 
-        self.cmd_speed = [np.nan, np.nan]
-        self.time = [np.nan, np.nan] * 25  # Keep 50 histories for error integral.
-        self.cmd_coord = [np.nan, np.nan]
-        self.enc_coord = [np.nan, np.nan]
-        self.error = [np.nan, np.nan] * 25  # Keep 50 histories for error integral.
-        # Time interval of error integral varies according to PID calculation frequency.
-        # This may cause optimal PID parameters to change according to the frequency.
+        # Initialize parameters.
+        self.initialize()
 
     @classmethod
     def with_configuration(
@@ -103,8 +104,8 @@ class AntennaDevice:
         Parameters
         ----------
         rate
-            Command to servo motor, which follows the formula
-            $command[rpm] = 1500rpm * (rate / 100)\\%$ hence $0 <= rate <= 10000$.
+            Command to servomotor, which follows the formula
+            $command[rpm] = 1500rpm * (rate / 100)\\%$ hence $0 <= |rate| <= 10000$.
             1500rpm is the max speed of the motor installed on the NANTEN2.
 
         """
@@ -137,13 +138,25 @@ class AntennaDevice:
         error_integ = np.nansum(error_interpolated * dt)
         return error_integ
 
-    def initialize(self, cmd_coord: float, enc_coord: float) -> None:
+    def initialize_parameters(
+        self, cmd_coord: float, enc_coord: float, reset: bool = False
+    ) -> None:
         """Set initial parameters."""
+        if reset:
+            self.initialize()
+
         self._update(self.cmd_speed, 0)
         self._update(self.time, time.time())
         self._update(self.cmd_coord, cmd_coord)
         self._update(self.enc_coord, enc_coord)
         self._update(self.error, 0)
+
+    def initialize(self) -> None:
+        self.cmd_speed = DefaultTwoList
+        self.time = DefaultTwoList * int(self.ERROR_INTEG_COUNT / 2)
+        self.cmd_coord = DefaultTwoList
+        self.enc_coord = DefaultTwoList
+        self.error = DefaultTwoList * int(self.ERROR_INTEG_COUNT / 2)
 
     def drive(
         self,
@@ -172,7 +185,7 @@ class AntennaDevice:
             raise ValueError("Unit other than 'deg' or 'arcsec' isn't supported.")
 
         if np.isnan(self.time[Now]):
-            self.initialize(cmd_coord, enc_coord)  # Set default values.
+            self.initialize_parameters(cmd_coord, enc_coord)  # Set default values.
             # This will give too small `self.dt` later, but that won't propose any
             # problem, since `current_speed` goes to 0, and too large D-term 1) will be
             # ignored in `self.calc_pid` and also 2) the contribution from that term
@@ -228,24 +241,24 @@ class AntennaDevice:
 
     def calc_pid(self) -> float:
         """PID feedback calculator."""
-        error_derivative = (self.error[Now] - self.error[Last]) / self.dt
-        error_integral = self.error_integ
-
         # Speed of the move of commanded coordinate. This includes sidereal motion, scan
         # speed, and other non-static component of commanded value.
         target_speed = (self.cmd_coord[Now] - self.cmd_coord[Last]) / self.dt
 
         # When sudden change of commanded coordinate is detected, ignore erroneous terms
         # since the change may indicate non-continuous drive.
+        error_derivative = (self.error[Now] - self.error[Last]) / self.dt
         threshold = 2.5 / self.dt  # 2.5deg/s
         if abs(error_derivative) > threshold:
-            error_integral = 0
+            self.initialize_parameters(
+                self.cmd_coord[Now], self.enc_coord[Now], reset=True
+            )
             error_derivative = 0
 
         speed = (
             target_speed
             + self.K_p * self.error[Now]
-            + self.K_i * error_integral
+            + self.K_i * self.error_integ
             + self.K_d * error_derivative
         )
         return speed
@@ -287,7 +300,8 @@ class AntennaDriver:
         elif azel.lower() == "el":
             target = "OUT17_32"
 
-        cmd = bin(value)[2:].zfill(16)[::-1]  # [::-1] for little endian.
+        bitnum = 16
+        cmd = bin(value)[2:].zfill(bitnum)[::-1]  # [::-1] for little endian.
         cmd = [int(char) for char in cmd]
         self.dio.output_word(target, cmd)
 
