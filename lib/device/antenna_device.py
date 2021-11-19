@@ -110,7 +110,7 @@ class AntennaDevice:
         """
         if not self.simulator:
             self.driver.command(int(rate), self.azel)
-        self._update("cmd_speed", int(rate) / self.SPEED2RATE)
+        self._update(self.cmd_speed, int(rate) / self.SPEED2RATE)
 
     @staticmethod
     def _update(param: List[Any], new_value: Any) -> None:
@@ -139,11 +139,11 @@ class AntennaDevice:
 
     def initialize(self, cmd_coord: float, enc_coord: float) -> None:
         """Set initial parameters."""
-        self._update("cmd_speed", 0)
-        self._update("time", time.time())
-        self._update("cmd_coord", cmd_coord)
-        self._update("enc_coord", enc_coord)
-        self._update("error", 0)
+        self._update(self.cmd_speed, 0)
+        self._update(self.time, time.time())
+        self._update(self.cmd_coord, cmd_coord)
+        self._update(self.enc_coord, enc_coord)
+        self._update(self.error, 0)
 
     def drive(
         self,
@@ -191,10 +191,10 @@ class AntennaDevice:
 
         current_speed = self.cmd_speed[Now]
 
-        self._update("time", time.time())
-        self._update("cmd_coord", cmd_coord)
-        self._update("enc_coord", enc_coord)
-        self._update("error", cmd_coord - enc_coord)
+        self._update(self.time, time.time())
+        self._update(self.cmd_coord, cmd_coord)
+        self._update(self.enc_coord, enc_coord)
+        self._update(self.error, cmd_coord - enc_coord)
 
         # Calculate and validate drive speed.
         speed = self.calc_pid()
@@ -262,7 +262,7 @@ class AntennaDevice:
         for _ in range(5):
             self.command(0)
             time.sleep(0.05)
-            self._update("cmd_speed", 0)
+            self._update(self.cmd_speed, 0)
 
 
 class AntennaDriver:
@@ -387,17 +387,17 @@ def calc_pid(
     )  # No difference if `"el"` is passed.
 
     # Set `Last` parameters.
-    calculator._update("time", t_past)
-    calculator._update("cmd_coord", pre_arcsec / 3600)
-    calculator._update("enc_coord", enc_before / 3600)
-    calculator._update("error", pre_hensa / 3600)
+    calculator._update(calculator.time, t_past)
+    calculator._update(calculator.cmd_coord, pre_arcsec / 3600)
+    calculator._update(calculator.enc_coord, enc_before / 3600)
+    calculator._update(calculator.error, pre_hensa / 3600)
 
     # Set `Now` parameters.
-    calculator._update("time", t_now)
-    calculator._update("cmd_coord", target_arcsec / 3600)
-    calculator._update("enc_coord", encoder_arcsec / 3600)
-    calculator._update("error", (target_arcsec - encoder_arcsec) / 3600)
-    calculator._update("error_integ", ihensa / 3600)
+    calculator._update(calculator.time, t_now)
+    calculator._update(calculator.cmd_coord, target_arcsec / 3600)
+    calculator._update(calculator.enc_coord, encoder_arcsec / 3600)
+    calculator._update(calculator.error, (target_arcsec - encoder_arcsec) / 3600)
+    calculator._update(calculator.error_integ, ihensa / 3600)
 
     speed = calculator.calc_pid()
 
