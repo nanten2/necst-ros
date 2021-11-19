@@ -29,9 +29,9 @@ class AntennaDevice:
 
     """
 
-    K_p: float = 2.2
-    K_i: float = 0
-    K_d: float = 0
+    K_p: float = 1.0
+    K_i: float = 0.5
+    K_d: float = 0.3
 
     MAX_SPEED: int = 2  # deg/s
     MAX_ACCELERATION: int = 2  # deg/s^2
