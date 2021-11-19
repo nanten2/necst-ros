@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
 import time
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, List, Tuple
 
+import numpy as np
 import pyinterface
 
 # Indices for 2-lists.
-Last = 0
-Now = 1
+Last = -2
+Now = -1
 
 
 class AntennaDevice:
@@ -60,13 +61,12 @@ class AntennaDevice:
         self.azel = azel.lower()
 
         self.cmd_speed = [None, None]
-        self.time = [None, None]
+        self.time = [None, None] * 25  # Keep 50 histories for error integral.
         self.cmd_coord = [None, None]
         self.enc_coord = [None, None]
-        self.error = [None, None]
-        self.error_integ = [None, None]
-        # There's no need for `error_integ` to keep `Last` value. It's kept just for
-        # compatibility with other parameters.
+        self.error = [None, None] * 25  # Keep 50 histories for error integral.
+        # Time interval of error integral varies according to PID calculation frequency.
+        # This may cause optimal PID parameters to change according to the frequency.
 
     @classmethod
     def with_configuration(
@@ -112,12 +112,11 @@ class AntennaDevice:
             self.driver.command(int(rate), self.azel)
         self._update("cmd_speed", int(rate) / self.SPEED2RATE)
 
-    def _update(self, param_name: str, new_value: Any) -> None:
-        """Drop old parameters, then assign new parameters."""
-        parameter = getattr(self, param_name)
-        parameter = parameter[1:]
-        parameter.append(new_value)
-        setattr(self, param_name, parameter)
+    @staticmethod
+    def _update(param: List[Any], new_value: Any) -> None:
+        """Drop old parameter and assign new one, preserving array length."""
+        param.pop(0)
+        param.append(new_value)
 
     @staticmethod
     def _clip(value: float, minimum: float, maximum: float) -> float:
@@ -129,6 +128,15 @@ class AntennaDevice:
         """Time interval of PID calculation."""
         return self.time[Now] - self.time[Last]
 
+    @property
+    def error_integ(self) -> float:
+        _time = np.array(self.time)
+        _error = np.array(self.error)
+        dt = _time[1:] - _time[:-1]
+        error_interpolated = (_error[1:] + _error[:-1]) / 2
+        error_integ = (error_interpolated * dt).sum()
+        return error_integ
+
     def initialize(self, cmd_coord: float, enc_coord: float) -> None:
         """Set initial parameters."""
         self._update("cmd_speed", 0)
@@ -136,7 +144,6 @@ class AntennaDevice:
         self._update("cmd_coord", cmd_coord)
         self._update("enc_coord", enc_coord)
         self._update("error", 0)
-        self._update("error_integ", 0)
 
     def drive(
         self,
@@ -188,7 +195,6 @@ class AntennaDevice:
         self._update("cmd_coord", cmd_coord)
         self._update("enc_coord", enc_coord)
         self._update("error", cmd_coord - enc_coord)
-        self._update("error_integ", self.error_integ[Now] + self.error[Now] * self.dt)
 
         # Calculate and validate drive speed.
         speed = self.calc_pid()
@@ -209,12 +215,12 @@ class AntennaDevice:
         return {
             "speed": self.cmd_speed[Now] * 3600,
             "p_term": self.K_p * self.error[Now] * 3600,
-            "i_term": self.K_i * self.error_integ[Now] * 3600 * self.dt,
+            "i_term": self.K_i * self.error_integ * 3600 * self.dt,
             "d_term": self.K_d * (self.error[Now] - self.error[Last]) * 3600 / self.dt,
             "cmd_coord": self.cmd_coord[Now] * 3600,
             "enc_coord": self.enc_coord[Now] * 3600,
             "error_last": self.error[Last] * 3600,
-            "error_integ": self.error_integ[Now] * 3600,
+            "error_integ": self.error_integ * 3600,
             "enc_coord_last": self.enc_coord[Last] * 3600,
             "t_now": self.time[Now],
             "t_last": self.time[Last],
@@ -223,25 +229,23 @@ class AntennaDevice:
     def calc_pid(self) -> float:
         """PID feedback calculator."""
         error_derivative = (self.error[Now] - self.error[Last]) / self.dt
+        error_integral = self.error_integ
 
         # Speed of the move of commanded coordinate. This includes sidereal motion, scan
         # speed, and other non-static component of commanded value.
         target_speed = (self.cmd_coord[Now] - self.cmd_coord[Last]) / self.dt
 
-        # When commanded coordinate is too far from current position, reset integration
-        # of the error.
-        threshold = 50  # arcsec
-        if abs(self.error[Now]) > threshold / 3600:
-            self.error_integ[Now] = 0
-        # When time derivative of the error is too large, ignore the D-term.
-        threshold = 1.5 / self.dt  # 1.5deg/s
+        # When sudden change of commanded coordinate is detected, ignore erroneous terms
+        # since the change may indicate non-continuous drive.
+        threshold = 2.5 / self.dt  # 2.5deg/s
         if abs(error_derivative) > threshold:
+            error_integral = 0
             error_derivative = 0
 
         speed = (
             target_speed
             + self.K_p * self.error[Now]
-            + self.K_i * self.error_integ[Now]
+            + self.K_i * error_integral
             + self.K_d * error_derivative
         )
         return speed
@@ -343,7 +347,7 @@ class antenna_device:
         self.enc_before = [self._az.enc_coord[Last], self._el.enc_coord[Last]]
         self.pre_hensa = [self._az.error[Last], self._el.error[Last]]
         self.pre_arcsec = [self._az.cmd_coord[Last], self._el.cmd_coord[Last]]
-        self.ihensa = [self._az.error_integ[Now], self._el.error_integ[Now]]
+        self.ihensa = [self._az.error_integ, self._el.error_integ]
         self.t_past = self.t_now
 
         self.az_rate_d = int(ret_az["speed"])
@@ -403,8 +407,8 @@ def calc_pid(
 
     return [
         speed,
-        calculator.error_integ[Now],
+        calculator.error_integ,
         calculator.K_p * calculator.error[Now],
-        calculator.K_i * calculator.error_integ[Now] * calculator.dt,
+        calculator.K_i * calculator.error_integ * calculator.dt,
         calculator.K_d * error_diff / calculator.dt,
     ]
