@@ -60,11 +60,11 @@ class AntennaDevice:
             self.driver = AntennaDriver(board_model, rsw_id)
         self.azel = azel.lower()
 
-        self.cmd_speed = [None, None]
-        self.time = [None, None] * 25  # Keep 50 histories for error integral.
-        self.cmd_coord = [None, None]
-        self.enc_coord = [None, None]
-        self.error = [None, None] * 25  # Keep 50 histories for error integral.
+        self.cmd_speed = [np.nan, np.nan]
+        self.time = [np.nan, np.nan] * 25  # Keep 50 histories for error integral.
+        self.cmd_coord = [np.nan, np.nan]
+        self.enc_coord = [np.nan, np.nan]
+        self.error = [np.nan, np.nan] * 25  # Keep 50 histories for error integral.
         # Time interval of error integral varies according to PID calculation frequency.
         # This may cause optimal PID parameters to change according to the frequency.
 
@@ -134,7 +134,7 @@ class AntennaDevice:
         _error = np.array(self.error)
         dt = _time[1:] - _time[:-1]
         error_interpolated = (_error[1:] + _error[:-1]) / 2
-        error_integ = (error_interpolated * dt).sum()
+        error_integ = np.nansum(error_interpolated * dt)
         return error_integ
 
     def initialize(self, cmd_coord: float, enc_coord: float) -> None:
@@ -171,7 +171,7 @@ class AntennaDevice:
         elif unit.lower() != "deg":
             raise ValueError("Unit other than 'deg' or 'arcsec' isn't supported.")
 
-        if self.time[Now] is None:
+        if np.isnan(self.time[Now]):
             self.initialize(cmd_coord, enc_coord)  # Set default values.
             # This will give too small `self.dt` later, but that won't propose any
             # problem, since `current_speed` goes to 0, and too large D-term 1) will be
