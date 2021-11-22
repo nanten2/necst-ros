@@ -9,7 +9,7 @@ import pyinterface
 # Indices for 2-lists.
 Last = -2
 Now = -1
-
+# Default of 2-lists.
 DefaultTwoList = [np.nan, np.nan]
 
 
@@ -138,12 +138,13 @@ class AntennaDevice:
         error_integ = np.nansum(error_interpolated * dt)
         return error_integ
 
-    def initialize_parameters(
-        self, cmd_coord: float, enc_coord: float, reset: bool = False
-    ) -> None:
+    @property
+    def error_derivative(self) -> float:
+        return (self.error[Now] - self.error[Last]) / self.dt
+
+    def set_initial_parameters(self, cmd_coord: float, enc_coord: float) -> None:
         """Set initial parameters."""
-        if reset:
-            self.initialize()
+        self.initialize()
 
         self._update(self.cmd_speed, 0)
         self._update(self.time, time.time())
@@ -184,12 +185,15 @@ class AntennaDevice:
         elif unit.lower() != "deg":
             raise ValueError("Unit other than 'deg' or 'arcsec' isn't supported.")
 
-        if np.isnan(self.time[Now]):
-            self.initialize_parameters(cmd_coord, enc_coord)  # Set default values.
+        current_speed = self.cmd_speed[Now]
+        threshold = 2.5 / self.dt  # 2.5deg/s
+        if (abs(self.error_derivative) > threshold) or np.isnan(self.time[Now]):
+            self.set_initial_parameters(cmd_coord, enc_coord)
+            # Set default values on initial run or on detection of sudden jump of error,
+            # which may indicate a change of commanded coordinate.
             # This will give too small `self.dt` later, but that won't propose any
-            # problem, since `current_speed` goes to 0, and too large D-term 1) will be
-            # ignored in `self.calc_pid` and also 2) the contribution from that term
-            # will be suppressed by speed and acceleration limit.
+            # problem, since `current_speed` goes to 0, and too large D-term will be
+            # suppressed by speed and acceleration limit.
 
         # Avoid over-180deg drive for Az control. For valid El control, the conditions
         # will never be satisfied, so this functionality is safely placed here without
@@ -215,7 +219,7 @@ class AntennaDevice:
             speed, -1 * self.MAX_SPEED, self.MAX_SPEED
         )  # Limit the speed.
         max_diff = self.MAX_ACCELERATION * self.dt
-        # Encoder readings cannot be used, because of the lack of stability.
+        # Encoder readings cannot be used, due to the lack of stability.
         speed = self._clip(
             speed, current_speed - max_diff, current_speed + max_diff
         )  # Limit the acceleration.
@@ -245,21 +249,11 @@ class AntennaDevice:
         # speed, and other non-static component of commanded value.
         target_speed = (self.cmd_coord[Now] - self.cmd_coord[Last]) / self.dt
 
-        # When sudden change of commanded coordinate is detected, ignore erroneous terms
-        # since the change may indicate non-continuous drive.
-        error_derivative = (self.error[Now] - self.error[Last]) / self.dt
-        threshold = 2.5 / self.dt  # 2.5deg/s
-        if abs(error_derivative) > threshold:
-            self.initialize_parameters(
-                self.cmd_coord[Now], self.enc_coord[Now], reset=True
-            )
-            error_derivative = 0
-
         speed = (
             target_speed
             + self.K_p * self.error[Now]
             + self.K_i * self.error_integ
-            + self.K_d * error_derivative
+            + self.K_d * self.error_derivative
         )
         return speed
 
