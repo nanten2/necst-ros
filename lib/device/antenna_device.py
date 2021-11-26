@@ -13,7 +13,7 @@ Now = -1
 DefaultTwoList = [np.nan, np.nan]
 
 
-class AntennaDevice:
+class PIDController:
     """Controller of telescope antenna drive.
 
     Parameters
@@ -36,8 +36,8 @@ class AntennaDevice:
     K_i: float = 0.5
     K_d: float = 0.3
 
-    MAX_SPEED: int = 2  # deg/s
-    MAX_ACCELERATION: int = 2  # deg/s^2
+    MAX_SPEED: float = 2  # deg/s
+    MAX_ACCELERATION: float = 2  # deg/s^2
 
     SPEED2RATE = (7 / 12) * 10000  # Speed [deg/s] to servomotor rate.
     # 5250r of motor corresponds to 1r of antenna.
@@ -78,7 +78,7 @@ class AntennaDevice:
         max_speed: float = None,
         max_acceleration: float = None,
         **kwargs,
-    ) -> "AntennaDevice":
+    ) -> "PIDController":
         """Initialize `AntennaDevice` class with properly configured parameters.
 
         Examples
@@ -150,14 +150,16 @@ class AntennaDevice:
         self._update(self.time, time.time())
         self._update(self.cmd_coord, cmd_coord)
         self._update(self.enc_coord, enc_coord)
-        self._update(self.error, 0)
+        self._update(self.error, cmd_coord - enc_coord)
 
     def initialize(self) -> None:
-        self.cmd_speed = DefaultTwoList
-        self.time = DefaultTwoList * int(self.ERROR_INTEG_COUNT / 2)
-        self.cmd_coord = DefaultTwoList
-        self.enc_coord = DefaultTwoList
-        self.error = DefaultTwoList * int(self.ERROR_INTEG_COUNT / 2)
+        self.cmd_speed = DefaultTwoList.copy()
+        self.time = DefaultTwoList.copy() * int(self.ERROR_INTEG_COUNT / 2)
+        self.cmd_coord = DefaultTwoList.copy()
+        self.enc_coord = DefaultTwoList.copy()
+        self.error = DefaultTwoList.copy() * int(self.ERROR_INTEG_COUNT / 2)
+        # Without `copy()`, updating one of them updates all its shared (not copied)
+        # objects.
 
     def drive(
         self,
@@ -185,9 +187,8 @@ class AntennaDevice:
         elif unit.lower() != "deg":
             raise ValueError("Unit other than 'deg' or 'arcsec' isn't supported.")
 
-        current_speed = self.cmd_speed[Now]
         threshold = 2.5 / self.dt  # 2.5deg/s
-        if (abs(self.error_derivative) > threshold) or np.isnan(self.time[Now]):
+        if np.isnan(self.time[Now]) or (abs(self.error_derivative) > threshold):
             self.set_initial_parameters(cmd_coord, enc_coord)
             # Set default values on initial run or on detection of sudden jump of error,
             # which may indicate a change of commanded coordinate.
@@ -207,6 +208,7 @@ class AntennaDevice:
             cmd_coord -= 360
 
         current_speed = self.cmd_speed[Now]
+        # Encoder readings cannot be used, due to the lack of stability.
 
         self._update(self.time, time.time())
         self._update(self.cmd_coord, cmd_coord)
@@ -215,14 +217,13 @@ class AntennaDevice:
 
         # Calculate and validate drive speed.
         speed = self.calc_pid()
-        speed = self._clip(
-            speed, -1 * self.MAX_SPEED, self.MAX_SPEED
-        )  # Limit the speed.
         max_diff = self.MAX_ACCELERATION * self.dt
-        # Encoder readings cannot be used, due to the lack of stability.
         speed = self._clip(
             speed, current_speed - max_diff, current_speed + max_diff
         )  # Limit the acceleration.
+        speed = self._clip(
+            speed, -1 * self.MAX_SPEED, self.MAX_SPEED
+        )  # Limit the speed.
 
         if stop:
             self.command(0)
@@ -294,14 +295,14 @@ class AntennaDriver:
         elif azel.lower() == "el":
             target = "OUT17_32"
 
-        bitnum = 16
-        cmd = bin(value)[2:].zfill(bitnum)[::-1]  # [::-1] for little endian.
+        n_bits = 16
+        cmd = bin(value)[2:].zfill(n_bits)[::-1]  # [::-1] for little endian.
         cmd = [int(char) for char in cmd]
         self.dio.output_word(target, cmd)
 
 
 class antenna_device:
-    """Alias of `AntennaDevice`, for backward compatibility."""
+    """Alias of `PIDController`, for backward compatibility."""
 
     command_az_speed = command_el_speed = 0
     az_rate_d = el_rate_d = 0
@@ -316,8 +317,8 @@ class antenna_device:
     dir_name = ""
 
     def __init__(self, simulator: bool = False) -> None:
-        self._az = AntennaDevice("az", simulator=simulator)
-        self._el = AntennaDevice("el", simulator=simulator)
+        self._az = PIDController("az", simulator=simulator)
+        self._el = PIDController("el", simulator=simulator)
         if not simulator:
             self.dio = self._az.device.dio  # No difference if `self._el` is used.
 
@@ -390,7 +391,7 @@ def calc_pid(
         issue. Please use `AntennaDevice.calc_pid`.
 
     """
-    calculator = AntennaDevice.with_configuration(
+    calculator = PIDController.with_configuration(
         "az", pid_param=[p_coeff, i_coeff, d_coeff]
     )  # No difference if `"el"` is passed.
 
