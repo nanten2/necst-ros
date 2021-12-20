@@ -209,6 +209,7 @@ class PIDController:
         current *= factor
         target *= factor
         limits = [lim * factor for lim in limits]
+        margin *= factor
 
         # Avoid 360deg motion.
         safety_margin = margin  # deg
