@@ -166,9 +166,9 @@ class PIDController:
         speed = utils.clip(speed, -1 * self.MAX_SPEED, self.MAX_SPEED)  # Limit speed.
 
         if stop:
-            utils.update_list(self.cmd_coord, 0)
+            utils.update_list(self.cmd_speed, 0)
         else:
-            utils.update_list(self.cmd_coord, speed)
+            utils.update_list(self.cmd_speed, speed)
 
         return self.cmd_speed[Now] * utils.angle_conversion_factor("deg", unit)
 
@@ -186,7 +186,11 @@ class PIDController:
 
     @staticmethod
     def suitable_angle(
-        current: float, target: float, limits: Tuple[float, float], unit: str = "deg"
+        current: float,
+        target: float,
+        limits: Tuple[float, float],
+        margin: float = 40,
+        unit: str = "deg",
     ) -> float:
         """Find suitable unwrapped angle.
 
@@ -207,7 +211,7 @@ class PIDController:
         limits = [lim * factor for lim in limits]
 
         # Avoid 360deg motion.
-        safety_margin = 40  # deg
+        safety_margin = margin  # deg
         target_min_candidate = target - 360 * ((target - limits[0]) // 360)
         target_candidates = [
             angle + (target_min_candidate % 1)
