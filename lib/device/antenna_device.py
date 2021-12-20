@@ -134,7 +134,9 @@ class antenna_device:
         elif m_bStop == "TRUE":
             stop = True
 
-        az_arcsec = self._az.suitable_angle(enc_az, az_arcsec, self.LIMITS, "arcsec")
+        az_arcsec = self._az.suitable_angle(
+            enc_az, az_arcsec, self.LIMITS, margin=40 * 3600, unit="arcsec"
+        )
 
         speed_az = self._az.get_speed(az_arcsec, enc_az, stop=stop, unit="arcsec")
         speed_el = self._el.get_speed(el_arcsec, enc_el, stop=stop, unit="arcsec")
