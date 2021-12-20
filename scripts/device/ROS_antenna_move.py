@@ -8,8 +8,8 @@ import numpy
 import time
 import threading
 
-sys.path.append("/home/necst/ros/src/necst/lib/device")
-sys.path.append("/home/amigos/ros/src/necst/lib/device")
+sys.path.append("/home/necst/ros/src/necst/")
+sys.path.append("/home/amigos/ros/src/necst/")
 from datetime import datetime as dt
 
 # ROS/import field
@@ -23,9 +23,9 @@ from necst.msg import Status_pid_msg
 node_name = "antenna_move"
 mode = sys.argv[1]  #'Actual/Simulator'
 if mode in ["Actual", "Simulator"]:
-    import antenna_device
+    from lib.device import antenna_device
 elif mode == "Actual_reverse":
-    import antenna_device_reverse as antenna_device
+    from lib.device import antenna_device_reverse as antenna_device
 else:
     rospy.logwarn("Launch this node with launch file")
 
