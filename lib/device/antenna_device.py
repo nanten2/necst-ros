@@ -146,8 +146,8 @@ class antenna_device:
         self.t_now = self._az.time[Now]
         # May slightly different from `self._el.time[Now]`.
 
-        self.az_rate_d = int(speed_az * 3600)  # Not rate, but speed in [arcsec/s].
-        self.el_rate_d = int(speed_el * 3600)
+        self.az_rate_d = int(speed_az)  # Not rate, but speed in [arcsec/s].
+        self.el_rate_d = int(speed_el)
         self.command_az_speed = self.az_rate_d
         self.command_el_speed = self.el_rate_d
 
