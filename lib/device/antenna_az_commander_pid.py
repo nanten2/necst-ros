@@ -84,7 +84,10 @@ class antenna_az_feedback:
         }
 
     def antenna_az_feedback(self, command: Float64):
-        speed = self.controller.get_speed(command.data, self.enc_coord, unit="deg")
+        cmd_coord = self.controller.suitable_angle(
+            self.enc_coord, command.data, [0, 360], margin=0, unit="deg"
+        )
+        speed = self.controller.get_speed(cmd_coord, self.enc_coord, unit="deg")
         self.current_speed = self.controller.cmd_speed[Now]
         speed = utils.clip(
             speed,
