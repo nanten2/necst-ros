@@ -1,290 +1,40 @@
 #!/usr/bin/env python3
 
+"""
+
+..Design Policy::
+
+   This script will be executed in high frequency with no vectorization, and there are
+   many arrays updated frequently. These mean that the use of Numpy may not be the best
+   choice to speed up the calculation. Measure the execution time first, then implement.
+
+"""
+
 import time
-from typing import Any, Dict, List, Tuple
+from typing import Dict, Tuple
 
-import numpy as np
-import pyinterface
+from .antenna_pid import PIDController
 
-# Indices for 2-lists.
+# Indices for 2-lists (mutable version of so-called 2-tuple).
 Last = -2
 Now = -1
-# Default of 2-lists.
-DefaultTwoList = [np.nan, np.nan]
-
-
-class PIDController:
-    """Controller of telescope antenna drive.
-
-    Parameters
-    ----------
-    azel
-        "Az" or "el", case insensitive.
-    board_model
-        Model number of Interface DIO board.
-    rsw_id
-
-    Notes
-    -----
-    - The NANTEN2 telescope is powered by servomotors.
-    - This class should be integrated with ROS, instead of returning numerous parameters
-    in `drive` method.
-
-    """
-
-    K_p: float = 1.0
-    K_i: float = 0.5
-    K_d: float = 0.3
-
-    MAX_SPEED: float = 2  # deg/s
-    MAX_ACCELERATION: float = 2  # deg/s^2
-
-    SPEED2RATE = (7 / 12) * 10000  # Speed [deg/s] to servomotor rate.
-    # 5250r of motor corresponds to 1r of antenna.
-    # 1500rpm of motor corresponds to 1500/5250rpm = 2/7rpm = 12/7[deg/s] of antenna.
-    # Command (we call it 'rate') for the servomotor is ratio of motor speed you desire
-    # to the motor's max speed in permyriad.
-    # e.g.) The rate corresponds to 0.3deg/s drive of antenna will be (7/12)*0.3*10000.
-    # Here (7/12)*10000 is the conversion factor `SPEED2RATE`.
-    # *1: Unit 'r' is rotation.
-    # *2: 5250 is the gear ratio for the NANTEN2 antenna drive.
-    # *3: 1500rpm is max speed of the servomotor installed on the NANTEN2.
-
-    ERROR_INTEG_COUNT = 50  # Keep 50 data for error integration.
-    # Time interval of error integral varies according to PID calculation frequency.
-    # This may cause optimal PID parameters to change according to the frequency.
-
-    def __init__(
-        self,
-        azel: str,
-        board_model: int = 2724,
-        rsw_id: int = 0,
-        simulator: bool = False,
-    ) -> None:
-        self.simulator = simulator
-        if not simulator:
-            self.driver = AntennaDriver(board_model, rsw_id)
-        self.azel = azel.lower()
-
-        # Initialize parameters.
-        self.initialize()
-
-    @classmethod
-    def with_configuration(
-        cls,
-        azel: str,
-        *,  # Positional arguments are not allowed hereafter.
-        pid_param: Tuple[float, float, float] = None,
-        max_speed: float = None,
-        max_acceleration: float = None,
-        **kwargs,
-    ) -> "PIDController":
-        """Initialize `AntennaDevice` class with properly configured parameters.
-
-        Examples
-        --------
-        >>> AntennaDevice.with_configuration("az", pid_param=[2.2, 0, 0])
-
-        """
-        inst = cls(azel, **kwargs)
-        if pid_param is not None:
-            inst.K_p, inst.K_i, inst.K_d = pid_param
-        if max_speed is not None:
-            inst.MAX_SPEED = max_speed
-        if max_acceleration is not None:
-            inst.MAX_ACCELERATION = max_acceleration
-        return inst
-
-    def init_speed(self) -> None:
-        self.command(0)
-
-    def command(self, rate: int) -> None:
-        """Send rate command to DIO.
-
-        Parameters
-        ----------
-        rate
-            Command to servomotor, which follows the formula
-            $command[rpm] = 1500rpm * (rate / 100)\\%$ hence $0 <= |rate| <= 10000$.
-            1500rpm is the max speed of the motor installed on the NANTEN2.
-
-        """
-        if not self.simulator:
-            self.driver.command(int(rate), self.azel)
-        self._update(self.cmd_speed, int(rate) / self.SPEED2RATE)
-
-    @staticmethod
-    def _update(param: List[Any], new_value: Any) -> None:
-        """Drop old parameter and assign new one, preserving array length."""
-        param.pop(0)
-        param.append(new_value)
-
-    @staticmethod
-    def _clip(value: float, minimum: float, maximum: float) -> float:
-        """Limit the `value` to the range [`minimum`, `maximum`]."""
-        return min(max(minimum, value), maximum)
-
-    @property
-    def dt(self) -> float:
-        """Time interval of PID calculation."""
-        return self.time[Now] - self.time[Last]
-
-    @property
-    def error_integ(self) -> float:
-        _time = np.array(self.time)
-        _error = np.array(self.error)
-        dt = _time[1:] - _time[:-1]
-        error_interpolated = (_error[1:] + _error[:-1]) / 2
-        error_integ = np.nansum(error_interpolated * dt)
-        return error_integ
-
-    @property
-    def error_derivative(self) -> float:
-        return (self.error[Now] - self.error[Last]) / self.dt
-
-    def set_initial_parameters(self, cmd_coord: float, enc_coord: float) -> None:
-        """Set initial parameters."""
-        self.initialize()
-
-        self._update(self.cmd_speed, 0)
-        self._update(self.time, time.time())
-        self._update(self.cmd_coord, cmd_coord)
-        self._update(self.enc_coord, enc_coord)
-        self._update(self.error, cmd_coord - enc_coord)
-
-    def initialize(self) -> None:
-        self.cmd_speed = DefaultTwoList.copy()
-        self.time = DefaultTwoList.copy() * int(self.ERROR_INTEG_COUNT / 2)
-        self.cmd_coord = DefaultTwoList.copy()
-        self.enc_coord = DefaultTwoList.copy()
-        self.error = DefaultTwoList.copy() * int(self.ERROR_INTEG_COUNT / 2)
-        # Without `copy()`, updating one of them updates all its shared (not copied)
-        # objects.
-
-    def drive(
-        self,
-        cmd_coord: float,
-        enc_coord: float,
-        stop: bool = False,
-        unit: str = "arcsec",
-    ) -> Dict[str, float]:
-        """Calculates valid drive speed.
-
-        Parameters
-        ----------
-        cmd_coord
-            In arcsec.
-        enc_coord
-            In arcsec.
-        stop
-            If `True`, the telescope won't move.
-
-        """
-        if unit.lower() == "arcsec":
-            # Convert to deg.
-            cmd_coord /= 3600
-            enc_coord /= 3600
-        elif unit.lower() != "deg":
-            raise ValueError("Unit other than 'deg' or 'arcsec' isn't supported.")
-
-        threshold = 2.5 / self.dt  # 2.5deg/s
-        if np.isnan(self.time[Now]) or (abs(self.error_derivative) > threshold):
-            self.set_initial_parameters(cmd_coord, enc_coord)
-            # Set default values on initial run or on detection of sudden jump of error,
-            # which may indicate a change of commanded coordinate.
-            # This will give too small `self.dt` later, but that won't propose any
-            # problem, since `current_speed` goes to 0, and too large D-term will be
-            # suppressed by speed and acceleration limit.
-
-        # Avoid over-180deg drive for Az control. For valid El control, the conditions
-        # will never be satisfied, so this functionality is safely placed here without
-        # any conditional context like `if azel == "az":`.
-        # The value range of `enc_coord` is -270deg ~ 0deg ~ +270deg. The origin of the
-        # following magic number `40` is unknown.
-        magic = 40
-        if (enc_coord > magic) and (cmd_coord + 360 < (180 + magic)):
-            cmd_coord += 360
-        elif (enc_coord < -1 * magic) and (cmd_coord - 360 > -1 * (180 + magic)):
-            cmd_coord -= 360
-
-        current_speed = self.cmd_speed[Now]
-        # Encoder readings cannot be used, due to the lack of stability.
-
-        self._update(self.time, time.time())
-        self._update(self.cmd_coord, cmd_coord)
-        self._update(self.enc_coord, enc_coord)
-        self._update(self.error, cmd_coord - enc_coord)
-
-        # Calculate and validate drive speed.
-        speed = self.calc_pid()
-        max_diff = self.MAX_ACCELERATION * self.dt
-        speed = self._clip(
-            speed, current_speed - max_diff, current_speed + max_diff
-        )  # Limit the acceleration.
-        speed = self._clip(
-            speed, -1 * self.MAX_SPEED, self.MAX_SPEED
-        )  # Limit the speed.
-
-        if stop:
-            self.command(0)
-        else:
-            self.command(int(speed * self.SPEED2RATE))
-
-        return {
-            "speed": self.cmd_speed[Now] * 3600,
-            "p_term": self.K_p * self.error[Now] * 3600,
-            "i_term": self.K_i * self.error_integ * 3600 * self.dt,
-            "d_term": self.K_d * (self.error[Now] - self.error[Last]) * 3600 / self.dt,
-            "cmd_coord": self.cmd_coord[Now] * 3600,
-            "enc_coord": self.enc_coord[Now] * 3600,
-            "error_last": self.error[Last] * 3600,
-            "error_integ": self.error_integ * 3600,
-            "enc_coord_last": self.enc_coord[Last] * 3600,
-            "t_now": self.time[Now],
-            "t_last": self.time[Last],
-        }  # All angle-related parameters are in arcsec.
-
-    def calc_pid(self) -> float:
-        """PID feedback calculator."""
-        # Speed of the move of commanded coordinate. This includes sidereal motion, scan
-        # speed, and other non-static component of commanded value.
-        target_speed = (self.cmd_coord[Now] - self.cmd_coord[Last]) / self.dt
-
-        speed = (
-            target_speed
-            + self.K_p * self.error[Now]
-            + self.K_i * self.error_integ
-            + self.K_d * self.error_derivative
-        )
-        return speed
-
-    def emergency_stop(self) -> None:
-        """Stop the antenna immediately.
-
-        Notes
-        -----
-        This method isn't recommended to use. The instruction of sudden stop can harm
-        the devices.
-
-        """
-        for _ in range(5):
-            self.command(0)
-            time.sleep(0.05)
-            self._update(self.cmd_speed, 0)
 
 
 class AntennaDriver:
+    """Hardware command layer.
+
+    Parameters
+    ----------
+    board_model
+        Model of Interface DIO board.
+    rsw_id
+        Rotary SWitch ID.
+
+    """
+
     def __init__(self, board_model: int, rsw_id: int) -> None:
-        """
+        import pyinterface
 
-        Parameters
-        ----------
-        board_model
-            Model of Interface DIO board.
-        rsw_id
-            Rotary SWitch ID.
-
-        """
         self.dio = pyinterface.open(board_model, rsw_id)
         self.dio.initialize()
 
@@ -302,7 +52,16 @@ class AntennaDriver:
 
 
 class antenna_device:
-    """Alias of `PIDController`, for backward compatibility."""
+    """For the NANTEN2 telescope.
+
+    Parameters
+    ----------
+    board_model
+        Model number of Interface Digital I/O board.
+    rsw_id
+        Rotary Switch ID.
+
+    """
 
     command_az_speed = command_el_speed = 0
     az_rate_d = el_rate_d = 0
@@ -316,15 +75,43 @@ class antenna_device:
     d_coeff = [0, 0]
     dir_name = ""
 
-    def __init__(self, simulator: bool = False) -> None:
-        self._az = PIDController("az", simulator=simulator)
-        self._el = PIDController("el", simulator=simulator)
-        if not simulator:
-            self.dio = self._az.device.dio  # No difference if `self._el` is used.
+    SPEED2RATE: float = (7 / 12) * (10000 / 3600)
+    # Speed [arcsec/s] to servomotor rate.
+    # 5250r of motor corresponds to 1r of antenna.
+    # 1500rpm of motor corresponds to 1500/5250rpm = 2/7rpm = 12/7[deg/s] of antenna.
+    # Command (we call it 'rate') for the servomotor is ratio of motor speed you desire
+    # to the motor's max speed in permyriad.
+    # e.g.) The rate corresponds to 100arcsec/s drive of antenna will be
+    # (7/12)*100*(10000/3600).
+    # Here (7/12)*(10000/3600) is the conversion factor `SPEED2RATE`.
+    # *1: Unit 'r' is rotation.
+    # *2: 5250 is the gear ratio for the NANTEN2 antenna drive.
+    # *3: 1500rpm is max speed of the servomotor installed on the NANTEN2.
+    LIMITS = [-270 * 3600, 270 * 3600]  # arcsec
+
+    def __init__(
+        self, board_model: int = 2724, rsw_id: int = 0, simulator: bool = False
+    ) -> None:
+        self._az = PIDController.with_configuration(
+            pid_param=[self.p_coeff[0], self.i_coeff[0], self.d_coeff[0]]
+        )
+        self._el = PIDController.with_configuration(
+            pid_param=[self.p_coeff[1], self.i_coeff[1], self.d_coeff[1]]
+        )
+        self.simulator = simulator
+        if not self.simulator:
+            self.driver = AntennaDriver(board_model, rsw_id)
+
+    def _command(self, value: int, azel: str) -> None:
+        if not self.simulator:
+            self.driver.command(value, azel)
 
     def init_speed(self) -> None:
-        self._az.init_speed()
-        self._el.init_speed()
+        dummy = 0
+        self._az.get_speed(dummy, dummy, stop=True)
+        self._el.get_speed(dummy, dummy, stop=True)
+        self._command(0, "az")
+        self._command(0, "el")
 
     def set_pid_param(self, param: Dict[str, Tuple[float, float, float]]) -> None:
         self._az.K_p, self._az.K_i, self._az.K_d = param["az"]
@@ -347,28 +134,58 @@ class antenna_device:
         elif m_bStop == "TRUE":
             stop = True
 
-        ret_az = self._az.drive(az_arcsec, enc_az, stop=stop, unit="arcsec")
-        ret_el = self._el.drive(el_arcsec, enc_el, stop=stop, unit="arcsec")
+        az_arcsec = self._az.suitable_angle(enc_az, az_arcsec, self.LIMITS, "arcsec")
+
+        speed_az = self._az.get_speed(az_arcsec, enc_az, stop=stop, unit="arcsec")
+        speed_el = self._el.get_speed(el_arcsec, enc_el, stop=stop, unit="arcsec")
+        self._command(int(speed_az * self.SPEED2RATE), "az")
+        self._command(int(speed_el * self.SPEED2RATE), "el")
 
         self.t_now = self._az.time[Now]
         # May slightly different from `self._el.time[Now]`.
 
-        self.enc_before = [self._az.enc_coord[Last], self._el.enc_coord[Last]]
-        self.pre_hensa = [self._az.error[Last], self._el.error[Last]]
-        self.pre_arcsec = [self._az.cmd_coord[Last], self._el.cmd_coord[Last]]
-        self.ihensa = [self._az.error_integ, self._el.error_integ]
-        self.t_past = self.t_now
-
-        self.az_rate_d = int(ret_az["speed"])
-        self.el_rate_d = int(ret_el["speed"])
+        self.az_rate_d = int(speed_az * 3600)  # Not rate, but speed in [arcsec/s].
+        self.el_rate_d = int(speed_el * 3600)
         self.command_az_speed = self.az_rate_d
-        self.command_el_speed = self.el_rate_d  # Cannot understand what's done here.
+        self.command_el_speed = self.el_rate_d
 
-        return list(ret_az.values())[:-2] + list(ret_el.values())
+        return (
+            self._az.cmd_speed[Now] * 3600,
+            self._az.K_p * self._az.error[Now] * 3600,
+            self._az.K_i * self._az.error_integ * 3600 * self._az.dt,
+            self._az.K_d
+            * (self._az.error[Now] - self._az.error[Last])
+            * 3600
+            / self._az.dt,
+            self._az.cmd_coord[Now] * 3600,
+            self._az.enc_coord[Now] * 3600,
+            self._az.error[Last] * 3600,
+            self._az.error_integ * 3600,
+            self._az.enc_coord[Last] * 3600,
+            self._az.cmd_speed[Now] * 3600,
+            self._el.K_p * self._az.error[Now] * 3600,
+            self._el.K_i * self._az.error_integ * 3600 * self._az.dt,
+            self._el.K_d
+            * (self._az.error[Now] - self._az.error[Last])
+            * 3600
+            / self._az.dt,
+            self._el.cmd_coord[Now] * 3600,
+            self._el.enc_coord[Now] * 3600,
+            self._el.error[Last] * 3600,
+            self._el.error_integ * 3600,
+            self._el.enc_coord[Last] * 3600,
+            self._el.time[Now],
+            self._el.time[Last],
+        )  # All angle-related parameters are in arcsec.
 
     def emergency_stop(self) -> None:
-        self._az.emergency_stop()
-        self._el.emergency_stop()
+        dummy = 0
+        for _ in range(5):
+            self._command(0, "az")
+            self._command(0, "el")
+            _ = self._az.get_speed(dummy, dummy, stop=True)
+            _ = self._el.get_speed(dummy, dummy, stop=True)
+            time.sleep(0.05)
 
 
 def calc_pid(
@@ -391,9 +208,7 @@ def calc_pid(
         issue. Please use `AntennaDevice.calc_pid`.
 
     """
-    calculator = PIDController.with_configuration(
-        "az", pid_param=[p_coeff, i_coeff, d_coeff]
-    )  # No difference if `"el"` is passed.
+    calculator = PIDController.with_configuration(pid_param=[p_coeff, i_coeff, d_coeff])
 
     # Set `Last` parameters.
     calculator._update(calculator.time, t_past)
@@ -414,10 +229,10 @@ def calc_pid(
     if abs(error_diff) * 3600 > 1:
         error_diff = 0
 
-    return [
+    return (
         speed,
         calculator.error_integ,
         calculator.K_p * calculator.error[Now],
         calculator.K_i * calculator.error_integ * calculator.dt,
         calculator.K_d * error_diff / calculator.dt,
-    ]
+    )
