@@ -152,7 +152,7 @@ class antenna_device:
         return (
             self._az.cmd_speed[Now] * 3600,
             self._az.K_p * self._az.error[Now] * 3600,
-            self._az.K_i * self._az.error_integ * 3600 * self._az.dt,
+            self._az.K_i * self._az.error_integral * 3600 * self._az.dt,
             self._az.K_d
             * (self._az.error[Now] - self._az.error[Last])
             * 3600
@@ -160,11 +160,11 @@ class antenna_device:
             self._az.cmd_coord[Now] * 3600,
             self._az.enc_coord[Now] * 3600,
             self._az.error[Last] * 3600,
-            self._az.error_integ * 3600,
+            self._az.error_integral * 3600,
             self._az.enc_coord[Last] * 3600,
             self._az.cmd_speed[Now] * 3600,
             self._el.K_p * self._az.error[Now] * 3600,
-            self._el.K_i * self._az.error_integ * 3600 * self._az.dt,
+            self._el.K_i * self._az.error_integral * 3600 * self._az.dt,
             self._el.K_d
             * (self._az.error[Now] - self._az.error[Last])
             * 3600
@@ -172,7 +172,7 @@ class antenna_device:
             self._el.cmd_coord[Now] * 3600,
             self._el.enc_coord[Now] * 3600,
             self._el.error[Last] * 3600,
-            self._el.error_integ * 3600,
+            self._el.error_integral * 3600,
             self._el.enc_coord[Last] * 3600,
             self._el.time[Now],
             self._el.time[Last],
@@ -221,7 +221,7 @@ def calc_pid(
     calculator._update(calculator.cmd_coord, target_arcsec / 3600)
     calculator._update(calculator.enc_coord, encoder_arcsec / 3600)
     calculator._update(calculator.error, (target_arcsec - encoder_arcsec) / 3600)
-    calculator._update(calculator.error_integ, ihensa / 3600)
+    calculator._update(calculator.error_integral, ihensa / 3600)
 
     speed = calculator.calc_pid()
 
@@ -231,8 +231,8 @@ def calc_pid(
 
     return (
         speed,
-        calculator.error_integ,
+        calculator.error_integral,
         calculator.K_p * calculator.error[Now],
-        calculator.K_i * calculator.error_integ * calculator.dt,
+        calculator.K_i * calculator.error_integral * calculator.dt,
         calculator.K_d * error_diff / calculator.dt,
     )
