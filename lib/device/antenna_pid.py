@@ -210,8 +210,8 @@ class PIDController:
         safety_margin = 40  # deg
         target_min_candidate = target - 360 * ((target - limits[0]) // 360)
         target_candidates = [
-            angle
-            for angle in range(target_min_candidate, limits[1], 360)
+            angle + (target_min_candidate % 1)
+            for angle in range(int(target_min_candidate), int(limits[1]), 360)
             if (limits[0] + safety_margin) < angle < (limits[1] - safety_margin)
         ]
         if len(target_candidates) == 1:
