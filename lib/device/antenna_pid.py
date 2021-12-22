@@ -91,9 +91,7 @@ class PIDController:
     def set_initial_parameters(self, cmd_coord: float, enc_coord: float) -> None:
         self.initialize()
         utils.update_list(self.cmd_speed, 0)
-        # Set past time to avoid sudden unintended acceleration caused by small dt.
-        default_dt = 0.1
-        utils.update_list(self.time, time.time() - default_dt)
+        utils.update_list(self.time, time.time())
         utils.update_list(self.cmd_coord, cmd_coord)
         utils.update_list(self.enc_coord, enc_coord)
         utils.update_list(self.error, cmd_coord - enc_coord)
@@ -123,14 +121,14 @@ class PIDController:
         enc_coord
             AzEl encoder reading.
         stop
-            If `True`, the telescope won't move.
+            If `True`, the telescope won't move regardless of the inputs.
         unit
             Unit in which `cmd_coord` and `enc_coord` are given. One of ["deg",
             "arcmin", "arcsec"]
 
         Returns
         -------
-        float
+        speed
             Speed which will be commanded to motor, in original unit.
 
         """
@@ -195,6 +193,11 @@ class PIDController:
         unit: str = "deg",
     ) -> float:
         """Find suitable unwrapped angle.
+
+        Returns
+        -------
+        angle
+            Unwrapped angle in the same unit as the input.
 
         Notes
         -----
