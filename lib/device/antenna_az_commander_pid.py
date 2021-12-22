@@ -5,7 +5,6 @@ from typing import Tuple
 import rospy
 from std_msgs.msg import Float64
 
-from . import utils
 from .antenna_pid import PIDController
 
 node_name = "antenna_az_commander_pid"
@@ -89,11 +88,6 @@ class antenna_az_feedback:
         )
         speed = self.controller.get_speed(cmd_coord, self.enc_coord, unit="deg")
         self.current_speed = self.controller.cmd_speed[Now]
-        speed = utils.clip(
-            speed,
-            self.current_speed - self.MOTOR_MAX_STEP,
-            self.current_speed + self.MOTOR_MAX_STEP,
-        )
         rate = speed * self.SPEED2RATE
         if self.lock:
             rate = 0
