@@ -91,7 +91,9 @@ class PIDController:
     def set_initial_parameters(self, cmd_coord: float, enc_coord: float) -> None:
         self.initialize()
         utils.update_list(self.cmd_speed, 0)
-        utils.update_list(self.time, time.time())
+        # Set past time to avoid sudden unintended acceleration caused by small dt.
+        default_dt = 0.1
+        utils.update_list(self.time, time.time() - default_dt)
         utils.update_list(self.cmd_coord, cmd_coord)
         utils.update_list(self.enc_coord, enc_coord)
         utils.update_list(self.error, cmd_coord - enc_coord)
@@ -129,7 +131,7 @@ class PIDController:
         Returns
         -------
         float
-            Speed which is commanded to motor, in [deg/s].
+            Speed which will be commanded to motor, in original unit.
 
         """
         # Convert to deg.
@@ -143,8 +145,8 @@ class PIDController:
             # Set default values on initial run or on detection of sudden jump of error,
             # which may indicate a change of commanded coordinate.
             # This will give too small `self.dt` later, but that won't propose any
-            # problem, since `current_speed` goes to 0, and too large D-term will be
-            # suppressed by speed and acceleration limit.
+            # problem, since `current_speed` goes to 0, and too large target_speed will
+            # be suppressed by speed and acceleration limit.
 
         current_speed = self.cmd_speed[Now]
         # Encoder readings cannot be used, due to the lack of stability.
@@ -156,7 +158,7 @@ class PIDController:
 
         # Calculate and validate drive speed.
         speed = self.calc_pid()
-        if self.error[Now] > 0.1:  # 0.1deg
+        if abs(self.error[Now]) > (20 / 3600):  # 20arcsec
             # When error is small, smooth control delays the convergence of drive.
             # When error is large, smooth control can avoid overshooting.
             max_diff = self.MAX_ACCELERATION * self.dt
