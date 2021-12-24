@@ -13,7 +13,10 @@ from typing import Tuple
 
 import numpy as np
 
-from . import utils
+if __name__ == "__main__":  # If this module is included in ROS1 package.
+    import utils
+else:
+    from . import utils
 
 # Indices for 2-lists (mutable version of so-called 2-tuple).
 Last = -2
@@ -59,7 +62,7 @@ class PIDController:
 
         Examples
         --------
-        >>> AntennaDevice.with_configuration("az", pid_param=[2.2, 0, 0])
+        >>> AntennaDevice.with_configuration(pid_param=[2.2, 0, 0])
 
         """
         if pid_param is not None:
@@ -90,14 +93,16 @@ class PIDController:
 
     def set_initial_parameters(self, cmd_coord: float, enc_coord: float) -> None:
         self.initialize()
-        utils.update_list(self.cmd_speed, 0)
+        if getattr(self, "cmd_speed", None) is None:
+            utils.update_list(self.cmd_speed, 0)
         utils.update_list(self.time, time.time())
         utils.update_list(self.cmd_coord, cmd_coord)
         utils.update_list(self.enc_coord, enc_coord)
         utils.update_list(self.error, cmd_coord - enc_coord)
 
     def initialize(self) -> None:
-        self.cmd_speed = DefaultTwoList.copy()
+        if getattr(self, "cmd_speed", None) is None:
+            self.cmd_speed = DefaultTwoList.copy()
         self.time = DefaultTwoList.copy() * int(self.ERROR_INTEG_COUNT / 2)
         self.cmd_coord = DefaultTwoList.copy()
         self.enc_coord = DefaultTwoList.copy()
@@ -137,8 +142,9 @@ class PIDController:
         cmd_coord *= factor
         enc_coord *= factor
 
-        threshold = 2.5 / self.dt  # 2.5deg/s
-        if np.isnan(self.time[Now]) or (abs(self.error_derivative) > threshold):
+        threshold = 100 / 3600  # 100arcsec
+        delta_cmd_coord = cmd_coord - self.cmd_coord[Now]
+        if np.isnan(self.time[Now]) or (abs(delta_cmd_coord) > threshold):
             self.set_initial_parameters(cmd_coord, enc_coord)
             # Set default values on initial run or on detection of sudden jump of error,
             # which may indicate a change of commanded coordinate.
@@ -159,7 +165,8 @@ class PIDController:
         if abs(self.error[Now]) > (20 / 3600):  # 20arcsec
             # When error is small, smooth control delays the convergence of drive.
             # When error is large, smooth control can avoid overshooting.
-            max_diff = self.MAX_ACCELERATION * self.dt
+            max_diff = utils.clip(self.MAX_ACCELERATION * self.dt, -0.2, 0.2)
+            # 0.2 clipping is to avoid large acceleration caused by large dt.
             speed = utils.clip(
                 speed, current_speed - max_diff, current_speed + max_diff
             )  # Limit acceleration.
@@ -176,6 +183,9 @@ class PIDController:
         # Speed of the move of commanded coordinate. This includes sidereal motion, scan
         # speed, and other non-static component of commanded value.
         target_speed = (self.cmd_coord[Now] - self.cmd_coord[Last]) / self.dt
+        threshold = 1  # 1deg/s
+        if target_speed > threshold:
+            target_speed = 0
 
         return (
             target_speed
@@ -217,12 +227,11 @@ class PIDController:
         margin *= factor
 
         # Avoid 360deg motion.
-        safety_margin = margin  # deg
         target_min_candidate = target - 360 * ((target - limits[0]) // 360)
         target_candidates = [
             angle
             for angle in utils.frange(target_min_candidate, limits[1], 360)
-            if (limits[0] + safety_margin) < angle < (limits[1] - safety_margin)
+            if (limits[0] + margin) < angle < (limits[1] - margin)
         ]
         if len(target_candidates) == 1:
             return target_candidates[0] * utils.angle_conversion_factor("deg", unit)
