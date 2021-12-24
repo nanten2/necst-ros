@@ -99,6 +99,7 @@ class PIDController:
         utils.update_list(self.cmd_coord, cmd_coord)
         utils.update_list(self.enc_coord, enc_coord)
         utils.update_list(self.error, cmd_coord - enc_coord)
+        utils.update_list(self.target_speed, 0)
 
     def initialize(self) -> None:
         if getattr(self, "cmd_speed", None) is None:
@@ -107,6 +108,7 @@ class PIDController:
         self.cmd_coord = DefaultTwoList.copy()
         self.enc_coord = DefaultTwoList.copy()
         self.error = DefaultTwoList.copy() * int(self.ERROR_INTEG_COUNT / 2)
+        self.target_speed = DefaultTwoList.copy()
         # Without `copy()`, updating one of them updates all its shared (not copied)
         # objects.
 
@@ -159,6 +161,9 @@ class PIDController:
         utils.update_list(self.cmd_coord, cmd_coord)
         utils.update_list(self.enc_coord, enc_coord)
         utils.update_list(self.error, cmd_coord - enc_coord)
+        utils.update_list(
+            self.target_speed, (cmd_coord - self.cmd_coord[Now]) / self.dt
+        )
 
         # Calculate and validate drive speed.
         speed = self.calc_pid()
@@ -182,13 +187,15 @@ class PIDController:
     def calc_pid(self) -> float:
         # Speed of the move of commanded coordinate. This includes sidereal motion, scan
         # speed, and other non-static component of commanded value.
-        target_speed = (self.cmd_coord[Now] - self.cmd_coord[Last]) / self.dt
-        threshold = 1  # 1deg/s
-        if target_speed > threshold:
-            target_speed = 0
+        target_acceleration = (
+            self.target_speed[Now] - self.target_speed[Last]
+        ) / self.dt
+        threshold = 2  # 2deg/s^2
+        if abs(target_acceleration) > threshold:
+            self.target_speed[Now] = 0
 
         return (
-            target_speed
+            self.target_speed[Now]
             + self.K_p * self.error[Now]
             + self.K_i * self.error_integral
             + self.K_d * self.error_derivative
