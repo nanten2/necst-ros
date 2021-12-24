@@ -87,6 +87,9 @@ class antenna_el_feedback:
         }
 
     def antenna_el_feedback(self, command: Float64):
+        # cmd_coord = self.controller.suitable_angle(
+        #     self.enc_coord, command.data, [0, 360], margin=0, unit="deg"
+        # )
         speed = self.controller.get_speed(
             command.data, self.enc_coord, unit="deg", stop=self.lock
         )
