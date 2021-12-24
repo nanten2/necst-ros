@@ -5,7 +5,10 @@ from typing import Tuple
 import rospy
 from std_msgs.msg import Float64
 
-from .antenna_pid import PIDController
+if __name__ == "__main__":  # ROS1 may use this. That's why we should run `chmod +x`.
+    from antenna_pid import PIDController
+else:  # For redundancy considering package name conflict. ROS2 will use this.
+    from .antenna_pid import PIDController
 
 node_name = "antenna_az_commander_pid"
 
@@ -57,6 +60,7 @@ class antenna_az_feedback:
         self.hensa_stock = self.controller.error  # Alias.
 
         self.init_ros()
+        # Aliases.
         self.topic_to = self.Publisher["calculated_rate"]
         self.topic_cur = self.Publisher["current_speed"]
         self.topic_tar = self.Publisher["target_speed"]
@@ -86,12 +90,12 @@ class antenna_az_feedback:
         cmd_coord = self.controller.suitable_angle(
             self.enc_coord, command.data, [0, 360], margin=0, unit="deg"
         )
-        speed = self.controller.get_speed(cmd_coord, self.enc_coord, unit="deg")
-        self.current_speed = self.controller.cmd_speed[Now]
+        speed = self.controller.get_speed(
+            cmd_coord, self.enc_coord, unit="deg", stop=self.lock
+        )
+        self.current_speed = self.controller.cmd_speed[Now]  # Alias.
         rate = speed * self.SPEED2RATE
-        if self.lock:
-            rate = 0
-        self.speed_d = rate
+        self.speed_d = rate  # Alias.
         self.Publisher["calculated_rate"].publish(rate)
         target_speed = (
             self.controller.cmd_coord[Now] - self.controller.cmd_coord[Last]
@@ -100,6 +104,7 @@ class antenna_az_feedback:
         self.Publisher["current_speed"].publish(self.current_speed)
         self.Publisher["error"].publish(self.controller.error[Now])
 
+        # Aliases.
         self.t_past = self.controller.time[Last]
         self.t_now = self.controller.time[Now]
         self.pre_hensa = self.controller.error[Last]
