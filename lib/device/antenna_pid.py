@@ -13,10 +13,10 @@ from typing import Tuple
 
 import numpy as np
 
-if __name__ == "__main__":  # If this module is included in ROS1 package.
-    import utils
-else:
+if __name__.endswith(".antenna_pid"):
     from . import utils
+else:
+    import utils
 
 # Indices for 2-lists (mutable version of so-called 2-tuple).
 Last = -2
