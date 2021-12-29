@@ -36,7 +36,7 @@ class PIDController:
 
     K_p: float = 1.0
     K_i: float = 0.5
-    K_p: float = 0.3
+    K_d: float = 0.3
 
     MAX_SPEED: float = 2  # deg/s
     MAX_ACCELERATION: float = 2  # deg/s^2
