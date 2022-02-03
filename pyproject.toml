@@ -11,6 +11,7 @@ matplotlib = "^3.3"
 n_const = "^0.3"
 numpy = "^1.19"
 # nasco_system = { git="https://github.com/ogawa-ros/nasco_system.git", branch="master" }
+typing-extensions = { version = "^3.10.0", python = "<3.8" }
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
