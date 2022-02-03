@@ -13,7 +13,12 @@
 import time
 from typing import Dict, Tuple
 
-from .antenna_pid import PIDController
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
+
+from antenna_pid import PIDController
 
 # Indices for 2-lists (mutable version of so-called 2-tuple).
 Last = -2
@@ -124,7 +129,7 @@ class antenna_device:
         enc_az: float,
         enc_el: float,
         pid_param: Dict[str, Tuple[float, float, float]] = None,
-        m_bStop: str = "FALSE",
+        m_bStop: Literal["FALSE", "TRUE"] = "FALSE",
     ) -> Tuple[float, ...]:
         if pid_param is not None:
             self.set_pid_param(pid_param)
