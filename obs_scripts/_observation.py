@@ -64,7 +64,7 @@ class Observation:
     def fileconfig(self) -> None:
         _spectra = self.obs.get("MOLECULE_1", "")
         _target = self.obs.get("OBJECT", "")
-        db_name = "n" + self.now.strftime("%Y%m%d%H%M%S") + _spectra + _target
+        db_name = f"n{self.now.strftime('%Y%m%d%H%M%S')}_{_spectra}_{_target}"
 
         db_path = self.DataDir / db_name
         self.log.info(f"mkdir {db_path}")
