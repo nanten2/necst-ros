@@ -11,7 +11,7 @@ if ! type poetry > /dev/null 2>&1
 then
     # Install poetry
     echo -e "\033[46mInstalling poetry\033[0m"
-    curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 -
+    curl -sSL https://install.python-poetry.org | python3 -
 
     # Set path to poetry command if not done
     if grep '.poetry/bin' ${rc_path} > /dev/null 2>&1
