@@ -43,8 +43,8 @@ class Observation:
         self.DataDir = self.DataBaseDir / self.ObservationType
 
         self.con = ROS_controller.controller()
-        self.obsfile_path = self.ObsfileDir / obsfile
-        self.obs = ObsParams.from_file(self.obsfile_path)
+        self._obsfile_path = self.ObsfileDir / obsfile
+        self.obs = ObsParams.from_file(self._obsfile_path)
 
         signal.signal(signal.SIGINT, self.handler)
 
@@ -73,7 +73,7 @@ class Observation:
 
         xffts_datapath = db_path / "xffts.ndf"
 
-        self.log.debug(f"obsdir : {self.obsfile_path}")
+        self.log.debug(f"obsdir : {self._obsfile_path}")
         self.log.debug(f"log_path : {self.log_path}")
         self.log.debug(f"dirname : {db_name}")
         self.log.debug(f"xffts : {xffts_datapath}")
@@ -100,7 +100,7 @@ class Observation:
 
     @property
     def obsfile_path(self):
-        return self.obsfile_path
+        return self._obsfile_path
 
 
 if __name__ == "__main__":
