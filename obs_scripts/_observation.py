@@ -56,7 +56,7 @@ class Observation:
         self.log_path = self.LogDir / f"{self.now.strftime('%Y%m%d')}.txt"
 
         self.logger = logger.logger(__name__, filename=self.log_path)
-        self.log = logger.setup_logger()
+        self.log = self.logger.setup_logger()
         logger.obslog(sys.argv)
 
         self.start_time = time.time()
