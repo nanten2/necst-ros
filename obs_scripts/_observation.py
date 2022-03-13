@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import ClassVar
 
-from n_const import ObsParam
+from n_const import ObsParams
 from neclib.typing import PathLike
 
 sys.path.append("/home/amigos/ros/src/necst/lib")
@@ -44,7 +44,7 @@ class Observation:
 
         self.con = ROS_controller.controller()
         self.obsfile_path = self.ObsfileDir / obsfile
-        self.obs = ObsParam.from_file(self.obsfile_path)
+        self.obs = ObsParams.from_file(self.obsfile_path)
 
         signal.signal(signal.SIGINT, self.handler)
 
@@ -88,20 +88,22 @@ class Observation:
         self.pub_loggerflag("")
         time.sleep(2)
         logger.obslog("STOP OBSERVATION", lv=1)
-        time.sleep(1.0)
+        time.sleep(1)
         sys.exit()
 
     def run(self):
         raise NotImplementedError
 
     @property
-    def obsfileparams(self):
+    def obsfile_params(self):
         return self.obs
 
     @property
-    def inspect_obsfile_path(self):
+    def obsfile_path(self):
         return self.obsfile_path
 
 
 if __name__ == "__main__":
-    pass
+    raise RuntimeError(
+        "This script cannot be executed as this is base class definition."
+    )
