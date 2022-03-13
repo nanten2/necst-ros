@@ -57,7 +57,7 @@ class Observation:
 
         self.logger = logger.logger(__name__, filename=self.log_path)
         self.log = self.logger.setup_logger()
-        logger.obslog(sys.argv)
+        self.logger.obslog(sys.argv)
 
         self.start_time = time.time()
 
@@ -69,7 +69,7 @@ class Observation:
         db_path = self.DataDir / db_name
         self.log.info(f"mkdir {db_path}")
         os.makedirs(db_path)
-        logger.obslog(f"savedir : {db_path}", lv=1)
+        self.logger.obslog(f"savedir : {db_path}", lv=1)
 
         xffts_datapath = db_path / "xffts.ndf"
 
@@ -87,7 +87,7 @@ class Observation:
         self.xffts_publish_flag(obs_mode="", scan_nun=self.scan_num)
         self.pub_loggerflag("")
         time.sleep(2)
-        logger.obslog("STOP OBSERVATION", lv=1)
+        self.logger.obslog("STOP OBSERVATION", lv=1)
         time.sleep(1)
         sys.exit()
 
