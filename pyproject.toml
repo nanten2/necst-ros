@@ -5,12 +5,12 @@ description = "NEw Control System for Telescope"
 authors = ["NANTEN2 Software Team"]
 
 [tool.poetry.dependencies]
-python = "^3.6"
-astropy = "^4.1"
+python = ">=3.6, <3.10"
+astropy = "^3.0"
 matplotlib = "^3.3"
-n_const = "^0.3"
+n_const = "^1.0"
+neclib = "^0.1"
 numpy = "^1.19"
-# nasco_system = { git="https://github.com/ogawa-ros/nasco_system.git", branch="master" }
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
