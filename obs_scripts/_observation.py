@@ -46,7 +46,7 @@ class Observation:
         self._obsfile_path = self.ObsfileDir / obsfile
         self.obs = ObsParams.from_file(self._obsfile_path)
 
-        signal.signal(signal.SIGINT, self.handler)
+        signal.signal(signal.SIGINT, self.signal_handler)
 
         self.now = datetime.utcnow()
         self.init_logger()
@@ -78,7 +78,7 @@ class Observation:
         self.log.debug(f"dirname : {db_name}")
         self.log.debug(f"xffts : {xffts_datapath}")
 
-    def Handler(self):
+    def signal_handler(self):
         self.log.warn("!! ctrl + C !!")
         self.log.warn("STOP DRIVE")
         self.con.move_stop()
