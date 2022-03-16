@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import time
@@ -21,14 +21,14 @@ class data_server(object):
     _stop_loop = False
 
     def __init__(self):
-        self.obs = sys.argv[1] # 'edge' or 'cross' or 'otf'
-        rospy.init_node('XFFTS_data_server')
-        rospy.Subscriber('XFFTS_DB_flag', xffts_flag_msg, self.flag, queue_size = 100)
+        self.obs = sys.argv[1]  # 'edge' or 'cross' or 'otf'
+        rospy.init_node("XFFTS_data_server")
+        rospy.Subscriber("XFFTS_DB_flag", xffts_flag_msg, self.flag, queue_size=100)
         self.sample_rate = 30
         self.timestamp = 0
-        self.newdb_name = ''
-        self.obs_mode = ''
-        self.scan_num = ''
+        self.newdb_name = ""
+        self.obs_mode = ""
+        self.scan_num = ""
         self.lamdel = 0
         self.betdel = 0
         self.data = 0
@@ -38,26 +38,30 @@ class data_server(object):
         self.ind_list_on = 0
         self.ind_list_hot = 0
         self.ind_list_off = 0
-        if self.obs == 'cross':
-            self.hdu1 = fits.open('/home/amigos/backup/radio_pointing_9/n20181202010453_12CO_2-1_cross_OriKL_pointing/n20181202010453_12CO_2-1_cross_OriKL_pointing.fits')
-            self.hdu2 = fits.open('/home/amigos/backup/radio_pointing_9/n20181202010453_12CO_2-1_cross_OriKL_pointing/n20181202010453_13CO_2-1_cross_OriKL_pointing.fits')
+        if self.obs == "cross":
+            self.hdu1 = fits.open(
+                "/home/amigos/backup/radio_pointing_9/n20181202010453_12CO_2-1_cross_OriKL_pointing/n20181202010453_12CO_2-1_cross_OriKL_pointing.fits"
+            )
+            self.hdu2 = fits.open(
+                "/home/amigos/backup/radio_pointing_9/n20181202010453_12CO_2-1_cross_OriKL_pointing/n20181202010453_13CO_2-1_cross_OriKL_pointing.fits"
+            )
             self.integ_time = 10
-        elif self.obs == 'edge':
-            self.hdu1 = fits.open('')
-            self.hdu2 = fits.open('')
+        elif self.obs == "edge":
+            self.hdu1 = fits.open("")
+            self.hdu2 = fits.open("")
             self.integ_time = 1
-        elif self.obs == 'otf':
-            self.hdu1 = fits.open('')
-            self.hdu2 = fits.open('')
+        elif self.obs == "otf":
+            self.hdu1 = fits.open("")
+            self.hdu2 = fits.open("")
             self.integ_time = 0.6
         self.data1 = self.hdu1[1].data["DATA"]
         self.data2 = self.hdu1[1].data["DATA"]
         self.pre_dataindex()
-        print(self.ind_list_hot,self.ind_list_off,self.ind_list_on)
+        print(self.ind_list_hot, self.ind_list_off, self.ind_list_on)
         pass
 
     def pre_dataindex(self):
-        sobsmode = self.hdu1[1].data['SOBSMODE']
+        sobsmode = self.hdu1[1].data["SOBSMODE"]
 
         onmask = sobsmode == "ON"
         hotmask = sobsmode == "HOT"
@@ -72,8 +76,7 @@ class data_server(object):
         ind_off = np.where(offmask == True)
         self.ind_list_off = [ind_off[0][i] for i in range(len(ind_off[0]))]
         return
-        
-    
+
     def flag(self, req):
         self.timestamp = req.timestamp
         self.newdb_name = req.newdb_name
@@ -82,16 +85,16 @@ class data_server(object):
         self.lamdel = req.lamdel
         self.betdel = req.betdel
         if self.timestamp == 1:
-            if self.obs_mode == 'ON':
+            if self.obs_mode == "ON":
                 self.on_count += 1
-            elif self.obs_mode == 'OFF':
+            elif self.obs_mode == "OFF":
                 self.off_count += 1
-            elif self.obs_mode == 'HOT':
+            elif self.obs_mode == "HOT":
                 self.hot_count += 1
         else:
             pass
         return
-    
+
     def stop_loop(self):
         """
         DESCRIPTION
@@ -113,34 +116,33 @@ class data_server(object):
     # Master function
     # ---------------
 
-
-    def pre_data(self, mode , data):
+    def pre_data(self, mode, data):
         whitenoise = np.random.randn(16384)
         _d = []
-        if mode == 'ON':
-            d = data[self.ind_list_on[self.on_count-1]]
+        if mode == "ON":
+            d = data[self.ind_list_on[self.on_count - 1]]
             for i in range(16383):
-                dd = (d[i]+d[i+1])/2
+                dd = (d[i] + d[i + 1]) / 2
                 _d.append(d[i])
-                _d.append(dd+whitenoise[i])
+                _d.append(dd + whitenoise[i])
             _d.append(d[16383])
-            _d.append((d[16383]+d[0])/2)
-                
-        elif mode == 'HOT':
-            d = data[self.ind_list_hot[self.hot_count-1]]
+            _d.append((d[16383] + d[0]) / 2)
+
+        elif mode == "HOT":
+            d = data[self.ind_list_hot[self.hot_count - 1]]
             for i in range(16383):
-                dd = (d[i]+d[i+1])/2
+                dd = (d[i] + d[i + 1]) / 2
                 _d.append(d[i])
-                _d.append(dd+whitenoise[i])
+                _d.append(dd + whitenoise[i])
             _d.append(d[16383])
-            _d.append((d[16383]+d[0])/2)
-            
+            _d.append((d[16383] + d[0]) / 2)
+
             if self.hot_count == len(self.ind_list_hot):
                 self.hot_count = 0
             else:
                 pass
-            
-            '''
+
+            """
             elif self.hot_count > len(self.ind_list_hot):
                 d = data[self.ind_list_hot[len(self.ind_list_hot)-(self.hot_count)]]
                 for i in range(16383):
@@ -149,39 +151,38 @@ class data_server(object):
                     _d.append(dd+whitenoise[i])
                 _d.append(d[16383])
                 _d.append((d[16383]+d[0])/2)
-            '''
-            
-        elif mode == 'OFF':
-            d = data[self.ind_list_off[self.off_count-1]]
+            """
+
+        elif mode == "OFF":
+            d = data[self.ind_list_off[self.off_count - 1]]
             for i in range(16383):
-                dd = (d[i]+d[i+1])/2
+                dd = (d[i] + d[i + 1]) / 2
                 _d.append(d[i])
-                _d.append(dd+whitenoise[i])
+                _d.append(dd + whitenoise[i])
             _d.append(d[16383])
-            _d.append((d[16383]+d[0])/2)
+            _d.append((d[16383] + d[0]) / 2)
         d_ = np.array(_d)
         _d = []
         return d_
 
     def make_data(self, obs_mode, data):
         integ_data = np.zeros(32768)
-        
-        if obs_mode == 'ON' and self.timestamp == 1:
-            #whitenoise = numpy.random.randn(32768)
-            integ_data = self.pre_data('ON', data) #+ whitedata
-                
-        elif obs_mode == 'OFF' and self.timestamp == 1:
-            #Whitenoise = numpy.random.randn(32768)
-            integ_data = self.pre_data('OFF', data) #+ whitedata
-                
-        elif obs_mode == 'HOT' and self.timestamp == 1:
-            #whitenoise = numpy.random.randn(32768)
-            integ_data = self.pre_data('HOT', data) #+ whitedata
-                
-        data_ = integ_data / self.sample_rate
-        
-        return data_
 
+        if obs_mode == "ON" and self.timestamp == 1:
+            # whitenoise = numpy.random.randn(32768)
+            integ_data = self.pre_data("ON", data)  # + whitedata
+
+        elif obs_mode == "OFF" and self.timestamp == 1:
+            # Whitenoise = numpy.random.randn(32768)
+            integ_data = self.pre_data("OFF", data)  # + whitedata
+
+        elif obs_mode == "HOT" and self.timestamp == 1:
+            # whitenoise = numpy.random.randn(32768)
+            integ_data = self.pre_data("HOT", data)  # + whitedata
+
+        data_ = integ_data / self.sample_rate
+
+        return data_
 
     def data_relaying_loop(self):
         """
@@ -214,25 +215,29 @@ class data_server(object):
         """
         # Print Welcome Massage
         # ---------------------
-        print('\n\n'
-              '  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n'
-              '   Start : XFFTS Data Relaying Loop \n'
-              '  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-'
-              '\n\n')
+        print(
+            "\n\n"
+            "  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"
+            "   Start : XFFTS Data Relaying Loop \n"
+            "  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
+            "\n\n"
+        )
 
         # ROS setting
         # -----------
-        pub = rospy.Publisher('XFFTS_SPEC', XFFTS_msg, queue_size=10)
-        pub2 = rospy.Publisher('XFFTS_PM', XFFTS_pm_msg, queue_size=10)             # PM = Power Meter
+        pub = rospy.Publisher("XFFTS_SPEC", XFFTS_msg, queue_size=10)
+        pub2 = rospy.Publisher(
+            "XFFTS_PM", XFFTS_pm_msg, queue_size=10
+        )  # PM = Power Meter
         XFFTS_SPEC = XFFTS_msg()
         XFFTS_PM = XFFTS_pm_msg()
 
-    
         # data making loop
         # ------------------
         while True:
 
-            if self._stop_loop: break
+            if self._stop_loop:
+                break
 
             # get data
             # --------
@@ -242,11 +247,13 @@ class data_server(object):
 
             tdatetime = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%fPC ")
             BE_num = header.BE_num
-            time_int = int(tdatetime.strftime('%s'))
-            time_decimal = float(tdatetime.strftime('%s.%f')) - int(tdatetime.strftime('%s'))
-            print(float(tdatetime.strftime('%s.%f')), BE_num)
-            
-            #make data
+            time_int = int(tdatetime.strftime("%s"))
+            time_decimal = float(tdatetime.strftime("%s.%f")) - int(
+                tdatetime.strftime("%s")
+            )
+            print(float(tdatetime.strftime("%s.%f")), BE_num)
+
+            # make data
             if self.timestamp == 1:
                 spec1 = self.make_data(self.obs_mode, self.data1)
                 spec2 = self.make_data(self.obs_mode, self.data2)
@@ -272,7 +279,7 @@ class data_server(object):
                 XFFTS_SPEC.SPEC_BE18 = spec2
                 XFFTS_SPEC.SPEC_BE19 = spec1
                 XFFTS_SPEC.SPEC_BE20 = spec2
-                
+
                 XFFTS_PM.POWER_BE1 = pow1
                 XFFTS_PM.POWER_BE2 = pow2
                 XFFTS_PM.POWER_BE3 = pow1
@@ -293,7 +300,7 @@ class data_server(object):
                 XFFTS_PM.POWER_BE18 = pow2
                 XFFTS_PM.POWER_BE19 = pow1
                 XFFTS_PM.POWER_BE20 = pow2
-            
+
             else:
                 spec = np.random.normal(5000, 2000, (header.BE_num, 32768))
                 pow = np.sum(spec, axis=1)
@@ -338,7 +345,7 @@ class data_server(object):
                 XFFTS_PM.POWER_BE18 = pow[17]
                 XFFTS_PM.POWER_BE19 = pow[18]
                 XFFTS_PM.POWER_BE20 = pow[19]
-                
+
             # ROS Data Trans
             # --------------
             # Spectrum
@@ -355,11 +362,13 @@ class data_server(object):
 
         # Print Shut Down Massage
         # -----------------------
-        print('\n\n'
-              '  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n'
-              '   Shut Down : XFFTS Data Relaying Loop \n'
-              '  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-'
-              '\n\n')
+        print(
+            "\n\n"
+            "  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\n"
+            "   Shut Down : XFFTS Data Relaying Loop \n"
+            "  =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
+            "\n\n"
+        )
         return
 
     def temp_relaying_loop(self):
@@ -373,19 +382,20 @@ class data_server(object):
         ARGUMENTS
         =========
         Nothing.
-        
+
         """
-        
+
         header = data_header()
 
         # ROS setting
         # -----------
-        pub3 = rospy.Publisher('XFFTS_TEMP', XFFTS_temp_msg_du, queue_size=10)
+        pub3 = rospy.Publisher("XFFTS_TEMP", XFFTS_temp_msg_du, queue_size=10)
         XFFTS_TEMP = XFFTS_temp_msg_du()
 
         while True:
 
-            if self._stop_loop: break
+            if self._stop_loop:
+                break
 
             # get data
             # --------
@@ -432,25 +442,28 @@ class data_server(object):
 
 class data_header(object):
     header_size = 64
+
     def __init__(self):
-        self.ieee= "EEEI"
+        self.ieee = "EEEI"
         self.data_format = "F   "
         self.package_length = int(262224)
         self.BE_name = "XFFTS"
-        self.timestamp = (datetime.now()).strftime('%Y-%m-%dT%H:%M:%S.%fPC  ')
+        self.timestamp = (datetime.now()).strftime("%Y-%m-%dT%H:%M:%S.%fPC  ")
         self.integration_time = 998993
         self.phase_number = int(1)
-        self.BE_num = int(20)   #BEの数を変えれる
+        self.BE_num = int(20)  # BEの数を変えれる
         self.blocking = int(1)
         return
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     serv = data_server()
     # Signal handler
     # --------------
     def signal_handler(num, flame):
         serv.stop_loop()
         sys.exit()
+
     signal.signal(signal.SIGINT, signal_handler)
 
     serv.start_thread()
