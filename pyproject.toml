@@ -11,6 +11,7 @@ matplotlib = "^3.3"
 n_const = "^1.0"
 neclib = "^0.1"
 numpy = "^1.19"
+pandas = ">=0.25"
 scipy = "^1.5"
 
 [tool.poetry.dev-dependencies]
