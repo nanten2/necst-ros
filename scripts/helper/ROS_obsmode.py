@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 import time
 from necst.msg import xffts_flag_msg
@@ -7,9 +7,11 @@ rospy.init_node("obsmode")
 
 data = ""
 
+
 def callback(req):
     global data
     data = req
+
 
 sub = rospy.Subscriber("XFFTS_DB_flag", xffts_flag_msg, callback, queue_size=10)
 pub = rospy.Publisher("obsmode", xffts_flag_msg, queue_size=10)

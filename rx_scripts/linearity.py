@@ -1,8 +1,8 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # linearity.py
 # -*- coding: utf-8 -*-
 
-'''
+"""
 === About this script ====
 
 * [Purpose and Abstract]
@@ -66,7 +66,7 @@ necctrl:
 2016/08/10~13 T.Inaba : add statistics
 2016/08/09    T.Inaba : beta version
 =========================
-'''
+"""
 
 
 import time, sys, os
@@ -96,29 +96,31 @@ datetime = time.strftime("%Y/%m/%d - %H:%M:%S", time.gmtime())
 
 # Making save directory
 # ------
-#workdir = "/home/amigos/RX/linearity/"
+# workdir = "/home/amigos/RX/linearity/"
 workdir = "/home/amigos/data/linearity/"
-os.mkdir(workdir+ydatetime+"_IF1")
-os.mkdir(workdir+ydatetime+"_IF2")
-filename1 = workdir+ydatetime+"_IF1"+"/"+ydatetime
-filename2 = workdir+ydatetime+"_IF2"+"/"+ydatetime
+os.mkdir(workdir + ydatetime + "_IF1")
+os.mkdir(workdir + ydatetime + "_IF2")
+filename1 = workdir + ydatetime + "_IF1" + "/" + ydatetime
+filename2 = workdir + ydatetime + "_IF2" + "/" + ydatetime
 
 # Devices
 # ------
-#sys.path.append('/home/amigos/NECRX_system/base_param/')
-sys.path.append('/home/amigos/rx/lib/base_param')
+# sys.path.append('/home/amigos/NECRX_system/base_param/')
+sys.path.append("/home/amigos/rx/lib/base_param")
 import IF
-#sys.path.append('/home/amigos/NECRX_system/device_cntrl/')
-#import TR72W
-#import ac240
-#import equipment_nanten
+
+# sys.path.append('/home/amigos/NECRX_system/device_cntrl/')
+# import TR72W
+# import ac240
+# import equipment_nanten
 att = IF.prog_att()
-#dfs = equipment_nanten.dfs()
-#m4 = equipment_nanten.m4()
-#hot = equipment_nanten.hot_load()
+# dfs = equipment_nanten.dfs()
+# m4 = equipment_nanten.m4()
+# hot = equipment_nanten.hot_load()
 # ond = TR72W.tr72w()
 
 import ROS_controller
+
 con = ROS_controller.controller()
 
 # Main
@@ -127,7 +129,7 @@ con = ROS_controller.controller()
 # Making save array
 # ------
 freq = np.linspace(0, 16383, 16384)
-sa1 = np.array([freq])   #sa means "spec array"
+sa1 = np.array([freq])  # sa means "spec array"
 sa2 = np.array([freq])
 sa1_log = np.array([freq])
 sa2_log = np.array([freq])
@@ -135,23 +137,23 @@ sa2_log = np.array([freq])
 # check M4, HOT and attenuator
 # ------
 status = con.read_status()
-#hot_status = hot.get_status()
-#m4_status = m4.get_status()
+# hot_status = hot.get_status()
+# m4_status = m4.get_status()
 hot_status = status.Current_Hot
 m4_status = status.Current_M4
 if hot_status == "OUT":
-    con.move_hot('in')
-    #hot.move_r()
+    con.move_hot("in")
+    # hot.move_r()
 if m4_status == "OUT":
-    con.move_m4('in')
-    #m4.m4_in()
+    con.move_m4("in")
+    # m4.m4_in()
 
 
-while True:#waiting m4&hot IN                               
+while True:  # waiting m4&hot IN
     status = con.read_status()
-    hot_status = status.Current_Hot#v2                                                                   
-    m4_status = status.Current_M4#v2                                                                      
-    if not hot_status == 'IN' and not m4_status == 'IN':
+    hot_status = status.Current_Hot  # v2
+    m4_status = status.Current_M4  # v2
+    if not hot_status == "IN" and not m4_status == "IN":
         time.sleep(0.5)
         continue
     else:
@@ -159,15 +161,15 @@ while True:#waiting m4&hot IN
 
 status = con.read_status()
 
-#hot_status = hot.get_status()
-#m4_status = m4.get_status()
+# hot_status = hot.get_status()
+# m4_status = m4.get_status()
 hot_status = status.Current_Hot
 m4_status = status.Current_M4
 att_status = att.get_att()
 print(" ")
 print("M4 " + m4_status)
 print("HOT " + hot_status)
-print("IF1: "+str(att_status[0])+" [dB]  IF2: "+str(att_status[1])+" [dB]")
+print("IF1: " + str(att_status[0]) + " [dB]  IF2: " + str(att_status[1]) + " [dB]")
 print(" ")
 
 # Start Measurement
@@ -175,19 +177,19 @@ print(" ")
 for i in range(12):
     att.set_att(i, i)
     time.sleep(1)
-    #data = dfs.oneshot(1, integtime, 0)
-    data = con.oneshot_achilles(repeat = 1, exposure=integtime, stime=0)
+    # data = dfs.oneshot(1, integtime, 0)
+    data = con.oneshot_achilles(repeat=1, exposure=integtime, stime=0)
     print(sa1.shape)
-    print("###",np.array(data['dfs1'][0]).shape)
-    sa1 = np.r_[sa1[0], np.array(data['dfs1'][0])]
-    sa2 = np.r_[sa2[0], np.array(data['dfs2'][0])]
-    #sa1 = np.r_[sa1, data[0]]
-    #sa2 = np.r_[sa2, data[1]]
-    sa1_log = np.r_[sa1_log[0], 10*np.log10(data['dfs1'][0])]
-    sa2_log = np.r_[sa2_log[0], 10*np.log10(data['dfs2'][0])]
-    print(str(i)+"dB finished")
-np.savetxt(filename1+".csv", sa1, delimiter=",")
-np.savetxt(filename2+".csv", sa2, delimiter=",")
+    print("###", np.array(data["dfs1"][0]).shape)
+    sa1 = np.r_[sa1[0], np.array(data["dfs1"][0])]
+    sa2 = np.r_[sa2[0], np.array(data["dfs2"][0])]
+    # sa1 = np.r_[sa1, data[0]]
+    # sa2 = np.r_[sa2, data[1]]
+    sa1_log = np.r_[sa1_log[0], 10 * np.log10(data["dfs1"][0])]
+    sa2_log = np.r_[sa2_log[0], 10 * np.log10(data["dfs2"][0])]
+    print(str(i) + "dB finished")
+np.savetxt(filename1 + ".csv", sa1, delimiter=",")
+np.savetxt(filename2 + ".csv", sa2, delimiter=",")
 
 print(" ")
 print("Finish measurement")
@@ -201,79 +203,79 @@ print("Now plotting...")
 fig12 = plt.figure()
 ax1 = fig12.add_subplot(1, 1, 1)
 for i in range(12):
-    ax1.plot(sa1[0], sa1[i+1], label=str(i)+"[dB]")
+    ax1.plot(sa1[0], sa1[i + 1], label=str(i) + "[dB]")
 ax1.set_xlabel("Ch")
 ax1.set_ylabel("Count")
-ax1.set_title(ydatetime+"_IF1: raw data")
+ax1.set_title(ydatetime + "_IF1: raw data")
 ax1.set_xlim([0, 16383])
-ax1.set_ylim([0, 3*np.mean(sa1[2])])
+ax1.set_ylim([0, 3 * np.mean(sa1[2])])
 ax1.grid()
-ax1.legend(bbox_to_anchor=(1.01, 1.012), loc='upper left', prop={'size': 13})
+ax1.legend(bbox_to_anchor=(1.01, 1.012), loc="upper left", prop={"size": 13})
 plt.subplots_adjust(left=0.1, right=0.8)
-plt.savefig(filename1+"_IF1_raw_data_plot.png")
+plt.savefig(filename1 + "_IF1_raw_data_plot.png")
 
 fig13 = plt.figure()
 ax2 = fig13.add_subplot(1, 1, 1)
 for i in range(12):
-    ax2.plot(sa2[0], sa2[i+1], label=str(i)+"[dB]")
+    ax2.plot(sa2[0], sa2[i + 1], label=str(i) + "[dB]")
 ax2.set_xlabel("Ch")
 ax2.set_ylabel("Count")
-ax2.set_title(ydatetime+"_IF2: raw data")
+ax2.set_title(ydatetime + "_IF2: raw data")
 ax2.set_xlim([0, 16383])
-ax2.set_ylim([0, 3*np.mean(sa2[2])])
+ax2.set_ylim([0, 3 * np.mean(sa2[2])])
 ax2.grid()
-ax2.legend(bbox_to_anchor=(1.01, 1.012), loc='upper left', prop={'size': 13})
+ax2.legend(bbox_to_anchor=(1.01, 1.012), loc="upper left", prop={"size": 13})
 plt.subplots_adjust(left=0.1, right=0.8)
-plt.savefig(filename2+"_IF2_raw_data_plot.png")
+plt.savefig(filename2 + "_IF2_raw_data_plot.png")
 
 fig12 = plt.figure()
 ax1 = fig12.add_subplot(1, 1, 1)
 for i in range(12):
-    ax1.plot(sa1[0], sa1_log[i+1], label=str(i)+"[dB]")
+    ax1.plot(sa1[0], sa1_log[i + 1], label=str(i) + "[dB]")
 ax1.set_xlabel("Ch")
 ax1.set_ylabel("10*log10(count)")
-ax1.set_title(ydatetime+"_IF1: raw data")
+ax1.set_title(ydatetime + "_IF1: raw data")
 ax1.set_xlim([0, 16383])
-#ax1.set_ylim([0, 6000])
+# ax1.set_ylim([0, 6000])
 ax1.grid()
-ax1.legend(bbox_to_anchor=(1.01, 1.012), loc='upper left', prop={'size': 13})
+ax1.legend(bbox_to_anchor=(1.01, 1.012), loc="upper left", prop={"size": 13})
 plt.subplots_adjust(left=0.1, right=0.8)
-plt.savefig(filename1+"_IF1_raw_data_plot_log.png")
+plt.savefig(filename1 + "_IF1_raw_data_plot_log.png")
 
 fig13 = plt.figure()
 ax2 = fig13.add_subplot(1, 1, 1)
 for i in range(12):
-    ax2.plot(sa2[0], sa2_log[i+1], label=str(i)+"[dB]")
+    ax2.plot(sa2[0], sa2_log[i + 1], label=str(i) + "[dB]")
 ax2.set_xlabel("Ch")
 ax2.set_ylabel("10*log10(count)")
-ax2.set_title(ydatetime+"_IF2: raw data")
+ax2.set_title(ydatetime + "_IF2: raw data")
 ax2.set_xlim([0, 16383])
-#ax2.set_ylim([0, 6000])
+# ax2.set_ylim([0, 6000])
 ax2.grid()
-ax2.legend(bbox_to_anchor=(1.01, 1.012), loc='upper left', prop={'size': 13})
+ax2.legend(bbox_to_anchor=(1.01, 1.012), loc="upper left", prop={"size": 13})
 plt.subplots_adjust(left=0.1, right=0.8)
-plt.savefig(filename2+"_IF2_raw_data_plot_log.png")
+plt.savefig(filename2 + "_IF2_raw_data_plot_log.png")
 
 
-#plot linearity measurement
+# plot linearity measurement
 # ------
 results1 = []
-for i in range(1, 12):   #sa[1]-[11] = 0-10 [dB]
+for i in range(1, 12):  # sa[1]-[11] = 0-10 [dB]
     fig = plt.figure()
     ax1 = fig.add_subplot(1, 1, 1)
-    for k in range(i+1, 13):  #i+1-12
-        ax1.plot(sa1[0], sa1_log[k]-sa1_log[i], label=str(k-1)+"[dB]")
+    for k in range(i + 1, 13):  # i+1-12
+        ax1.plot(sa1[0], sa1_log[k] - sa1_log[i], label=str(k - 1) + "[dB]")
     ax1.set_xlabel("Ch")
     ax1.set_ylabel("dB scale count variation against reference")
-    ax1.set_title(ydatetime+"_IF1: ref = "+str(i-1)+"[dB]")
+    ax1.set_title(ydatetime + "_IF1: ref = " + str(i - 1) + "[dB]")
     ax1.set_xlim([0, 16383])
     ax1.set_ylim([-6.5, 0.25])
     ax1.grid()
     for j in range(40):
-        plt.axhline(y=-j*0.25, lw=0.5, linestyle="--", color='black')
-    ax1.legend(bbox_to_anchor=(1.01, 1.012), loc='upper left', prop={'size': 13})
+        plt.axhline(y=-j * 0.25, lw=0.5, linestyle="--", color="black")
+    ax1.legend(bbox_to_anchor=(1.01, 1.012), loc="upper left", prop={"size": 13})
     plt.subplots_adjust(left=0.1, right=0.8)
-    plt.savefig(filename1+"_IF1_"+str(i-1)+"dB.png")
+    plt.savefig(filename1 + "_IF1_" + str(i - 1) + "dB.png")
 """
     ave = np.average(sa1[i+1]-sa1[1])
     results1.extend([ave, ave+i])
@@ -281,22 +283,22 @@ for i in range(1, 12):   #sa[1]-[11] = 0-10 [dB]
 """
 
 results2 = []
-for i in range(1, 12):   #sa[1]-[11] = 0-10 [dB]
+for i in range(1, 12):  # sa[1]-[11] = 0-10 [dB]
     fig = plt.figure()
     ax1 = fig.add_subplot(1, 1, 1)
-    for k in range(i+1, 13):  #i+1-12
-        ax1.plot(sa1[0], sa2_log[k]-sa2_log[i], label=str(k-1)+"[dB]")
+    for k in range(i + 1, 13):  # i+1-12
+        ax1.plot(sa1[0], sa2_log[k] - sa2_log[i], label=str(k - 1) + "[dB]")
     ax1.set_xlabel("Ch")
     ax1.set_ylabel("dB scale count variation against reference")
-    ax1.set_title(ydatetime+"_IF2: ref = "+str(i-1)+"[dB]")
+    ax1.set_title(ydatetime + "_IF2: ref = " + str(i - 1) + "[dB]")
     ax1.set_xlim([0, 16383])
     ax1.set_ylim([-6.5, 0.25])
     ax1.grid()
     for j in range(40):
-        plt.axhline(y=-j*0.25, lw=0.5, linestyle="--", color='black')
-    ax1.legend(bbox_to_anchor=(1.01, 1.012), loc='upper left', prop={'size': 13})
+        plt.axhline(y=-j * 0.25, lw=0.5, linestyle="--", color="black")
+    ax1.legend(bbox_to_anchor=(1.01, 1.012), loc="upper left", prop={"size": 13})
     plt.subplots_adjust(left=0.1, right=0.8)
-    plt.savefig(filename2+"_IF2_"+str(i-1)+"dB.png")
+    plt.savefig(filename2 + "_IF2_" + str(i - 1) + "dB.png")
 """
     ave = np.average(sa2[i+1]-sa2[1])
     results2.extend([ave, ave+i])
@@ -376,77 +378,88 @@ for i in range(0, 9):  # reference att = 0--6 dB
 # fit plot
 # ------
 x = np.linspace(0, 12, 12)
-y = - x
+y = -x
 for i in range(0, 9):
     fig = plt.figure(figsize=(12, 12))
-    patt = np.linspace(1, 11-i, 11-i)
+    patt = np.linspace(1, 11 - i, 11 - i)
 
     for j in range(5, 13, 2):  # j * 1000 = channel
         pow = []
         var = []
 
-        for k in range(i+1, 12):  # Making data array
-            pow.append(np.median(sa1_log[k+1, j*1000-5:j*1000+5] - sa1_log[i+1, j*1000-5:j*1000+5]))
-#            var.append(np.var(sa1_log[k+1, j*1000-5:j*1000+5] - sa1_log[i+1, j*1000-5:j*1000+5]))
+        for k in range(i + 1, 12):  # Making data array
+            pow.append(
+                np.median(
+                    sa1_log[k + 1, j * 1000 - 5 : j * 1000 + 5]
+                    - sa1_log[i + 1, j * 1000 - 5 : j * 1000 + 5]
+                )
+            )
+        #            var.append(np.var(sa1_log[k+1, j*1000-5:j*1000+5] - sa1_log[i+1, j*1000-5:j*1000+5]))
 
-        ax1 = fig.add_subplot(2, 2, (j-3)/2)
+        ax1 = fig.add_subplot(2, 2, (j - 3) / 2)
         ax2 = ax1.twinx()
-#        plt.errorbar(patt, pow, yerr=var, fmt='ro', ecolor='r')
+        #        plt.errorbar(patt, pow, yerr=var, fmt='ro', ecolor='r')
         ax1.plot(patt, pow, "bo", label="power")
-        ax1.plot(x, y, 'r-')
-        ax1.set_title("IF1: (ref, ch) = ("+str(i)+" dB, "+str(j*1000)+" ch)", )
+        ax1.plot(x, y, "r-")
+        ax1.set_title(
+            "IF1: (ref, ch) = (" + str(i) + " dB, " + str(j * 1000) + " ch)",
+        )
         ax1.set_xlabel("Prog ATT [dB]")
-        if (j-3)/2 == 1 or (j-3)/2 == 3:
+        if (j - 3) / 2 == 1 or (j - 3) / 2 == 3:
             ax1.set_ylabel("dB scale count variation against reference")
-        ax1.set_xlim([0, patt[-1]+0.5])
-        ax1.set_ylim([-patt[-1]-0.5, 0])
+        ax1.set_xlim([0, patt[-1] + 0.5])
+        ax1.set_ylim([-patt[-1] - 0.5, 0])
 
         ax2.plot(patt, pow + patt, "go", label="difference from linear")
-        if (j-3)/2 == 2 or (j-3)/2 == 4:
+        if (j - 3) / 2 == 2 or (j - 3) / 2 == 4:
             ax2.set_ylabel("difference from linear")
         ax2.set_ylim([-0.25, 0.25])
-        ax1.hlines(y=-x, lw=0.5, linestyle="--", color='black', xmin=0, xmax=11)
-        plt.vlines(x=x, lw=0.5, linestyle="--", color='black', ymin=-10, ymax=0)
+        ax1.hlines(y=-x, lw=0.5, linestyle="--", color="black", xmin=0, xmax=11)
+        plt.vlines(x=x, lw=0.5, linestyle="--", color="black", ymin=-10, ymax=0)
         ax1.grid()
-        #plt.legend(numpoints=1)
-    plt.savefig(filename1+"_IF1_fit_"+str(i)+"dB.png")
+        # plt.legend(numpoints=1)
+    plt.savefig(filename1 + "_IF1_fit_" + str(i) + "dB.png")
 
 for i in range(0, 9):
     fig = plt.figure(figsize=(12, 12))
-    patt = np.linspace(1, 11-i, 11-i)
+    patt = np.linspace(1, 11 - i, 11 - i)
 
     for j in range(5, 13, 2):  # j * 1000 = channel
         pow2 = []
         var2 = []
 
-        for k in range(i+1, 12):  # Making data array
-            pow2.append(np.median(sa2_log[k+1, j*1000-5:j*1000+5] - sa2_log[i+1, j*1000-5:j*1000+5]))
-#            var2.append(np.var(sa2_log[k+1, j*1000-5:j*1000+5] - sa2_log[i+1, j*1000-5:j*1000+5]))
+        for k in range(i + 1, 12):  # Making data array
+            pow2.append(
+                np.median(
+                    sa2_log[k + 1, j * 1000 - 5 : j * 1000 + 5]
+                    - sa2_log[i + 1, j * 1000 - 5 : j * 1000 + 5]
+                )
+            )
+        #            var2.append(np.var(sa2_log[k+1, j*1000-5:j*1000+5] - sa2_log[i+1, j*1000-5:j*1000+5]))
 
-        ax1 = fig.add_subplot(2, 2, (j-3)/2)
+        ax1 = fig.add_subplot(2, 2, (j - 3) / 2)
         ax2 = ax1.twinx()
-#       plt.errorbar(patt, pow2, yerr=var2, fmt='ro', ecolor='r')
+        #       plt.errorbar(patt, pow2, yerr=var2, fmt='ro', ecolor='r')
         ax1.plot(patt, pow2, "bo", label="power")
-        ax1.plot(x, y, 'r-')
-        ax1.set_title("IF2: (ref, ch) = ("+str(i)+" dB, "+str(j*1000)+" ch)", )
+        ax1.plot(x, y, "r-")
+        ax1.set_title(
+            "IF2: (ref, ch) = (" + str(i) + " dB, " + str(j * 1000) + " ch)",
+        )
         ax1.set_xlabel("Prog ATT [dB]")
-        if (j-3)/2 == 1 or (j-3)/2 == 3:
+        if (j - 3) / 2 == 1 or (j - 3) / 2 == 3:
             ax1.set_ylabel("dB scale count variation against reference")
-        ax1.set_xlim([0, patt[-1]+0.5])
-        ax1.set_ylim([-patt[-1]-0.5, 0])
+        ax1.set_xlim([0, patt[-1] + 0.5])
+        ax1.set_ylim([-patt[-1] - 0.5, 0])
 
         ax2.plot(patt, pow2 + patt, "go", label="difference from linear")
-        if (j-3)/2 == 2 or (j-3)/2 == 4:
+        if (j - 3) / 2 == 2 or (j - 3) / 2 == 4:
             ax2.set_ylabel("difference from linear")
         ax2.set_ylim([-0.25, -0.25])
-        ax1.hlines(y=-x, lw=0.5, linestyle="--", color='black', xmin=0, xmax=11)
-        plt.vlines(x=x, lw=0.5, linestyle="--", color='black', ymin=-10, ymax=0)
+        ax1.hlines(y=-x, lw=0.5, linestyle="--", color="black", xmin=0, xmax=11)
+        plt.vlines(x=x, lw=0.5, linestyle="--", color="black", ymin=-10, ymax=0)
         ax1.grid()
-        #plt.legend(numpoints=1)
-    plt.savefig(filename2+"_IF2_fit_"+str(i)+"dB.png")
-
-
-
+        # plt.legend(numpoints=1)
+    plt.savefig(filename2 + "_IF2_fit_" + str(i) + "dB.png")
 
 
 print("Finish plotting")
@@ -456,4 +469,4 @@ time.sleep(1)
 att_status_2 = att.get_att()
 
 print("P ATT setting")
-print("IF1: "+str(att_status_2[0])+" [dB]  IF2: "+str(att_status_2[1])+" [dB]")
+print("IF1: " + str(att_status_2[0]) + " [dB]  IF2: " + str(att_status_2[1]) + " [dB]")

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 import sys
 import time
@@ -10,12 +10,17 @@ from std_msgs.msg import String
 from nascorx_xffts.msg import XFFTS_msg
 from necst.msg import xffts_flag_msg
 
-class xffts_logger():
+
+class xffts_logger:
     def __init__(self):
         self.queue = queue.Queue()
         ###register subscriber
-        self.sub1 = rospy.Subscriber("XFFTS_SPEC", XFFTS_msg, self.save_to_queue, queue_size = 1000)
-        self.sub2 = rospy.Subscriber("XFFTS_DB_flag", xffts_flag_msg, self.update_flag, queue_size = 1)
+        self.sub1 = rospy.Subscriber(
+            "XFFTS_SPEC", XFFTS_msg, self.save_to_queue, queue_size=1000
+        )
+        self.sub2 = rospy.Subscriber(
+            "XFFTS_DB_flag", xffts_flag_msg, self.update_flag, queue_size=1
+        )
         ###parameter
         self.obs_mode = ""
         self.scan_num = 0
@@ -24,7 +29,6 @@ class xffts_logger():
         ###path
         self.path = ""
         pass
-
 
     def update_flag(self, req):
         if not req.newdb_name == "":
@@ -37,13 +41,22 @@ class xffts_logger():
         self.betdel = req.betdel
         self.path = req.newdb_name
         pass
-    
+
     def save_to_queue(self, req):
         if not self.path == "":
             tmp_list = []
             for i in range(20):
-                tmp_list += list(eval("req.SPEC_BE{}".format(i+1)))
-            self.queue.put([req.timestamp, tmp_list, str(self.obs_mode), int(self.scan_num), int(self.lamdel), int(self.betdel)])
+                tmp_list += list(eval("req.SPEC_BE{}".format(i + 1)))
+            self.queue.put(
+                [
+                    req.timestamp,
+                    tmp_list,
+                    str(self.obs_mode),
+                    int(self.scan_num),
+                    int(self.lamdel),
+                    int(self.betdel),
+                ]
+            )
         else:
             pass
 
@@ -56,21 +69,24 @@ class xffts_logger():
             tmp_list = [float(ret[0]), [*ret[1]], ret[2], ret[3], ret[4], ret[5]]
             self.n.write(tmp_list)
             time.sleep(0.001)
-            print("save")#for debug will be deleted            
-            
+            print("save")  # for debug will be deleted
+
     def pub_status(self):
-        pub = rospy.Publisher("xffts_logger_status", String, queue_size = 1)
+        pub = rospy.Publisher("xffts_logger_status", String, queue_size=1)
         while not rospy.is_shutdown():
-            pub.publish("qsize : {}, datapath : {}".format(self.queue.qsize(), self.path))#
+            pub.publish(
+                "qsize : {}, datapath : {}".format(self.queue.qsize(), self.path)
+            )  #
             time.sleep(0.5)
+
 
 if __name__ == "__main__":
     rospy.init_node("xffts_logger")
     xffts = xffts_logger()
-    s1 = threading.Thread(target = xffts.save_data)
+    s1 = threading.Thread(target=xffts.save_data)
     s1.setDaemon(True)
     s1.start()
-    s2 = threading.Thread(target = xffts.pub_status)
+    s2 = threading.Thread(target=xffts.pub_status)
     s2.setDaemon(True)
     s2.start()
     rospy.spin()
