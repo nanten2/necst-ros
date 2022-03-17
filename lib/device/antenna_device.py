@@ -1,21 +1,14 @@
-#!/usr/bin/env python3
-
-"""
-
-..Design Policy::
-
-   This script will be executed in high frequency with no vectorization, and there are
-   many arrays updated frequently. These mean that the use of Numpy may not be the best
-   choice to speed up the calculation. Measure the execution time first, then implement.
-
-"""
-
 import time
 from typing import Dict, Tuple
 
-from .antenna_pid import PIDController
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
 
-# Indices for 2-lists (mutable version of so-called 2-tuple).
+from neclib import PIDController, optimum_angle
+
+# Indices for parameter lists.
 Last = -2
 Now = -1
 
@@ -38,7 +31,7 @@ class AntennaDriver:
         self.dio = pyinterface.open(board_model, rsw_id)
         self.dio.initialize()
 
-    def command(self, value: int, azel: str) -> None:
+    def command(self, value: int, azel: Literal["az", "el"]) -> None:
         # Specify which pins to use.
         if azel.lower() == "az":
             target = "OUT1_16"
@@ -92,17 +85,18 @@ class antenna_device:
     def __init__(
         self, board_model: int = 2724, rsw_id: int = 0, simulator: bool = False
     ) -> None:
-        self._az = PIDController.with_configuration(
+        PIDController.ANGLE_UNIT = "arcsec"
+        self._az = PIDController(
             pid_param=[self.p_coeff[0], self.i_coeff[0], self.d_coeff[0]]
         )
-        self._el = PIDController.with_configuration(
+        self._el = PIDController(
             pid_param=[self.p_coeff[1], self.i_coeff[1], self.d_coeff[1]]
         )
         self.simulator = simulator
         if not self.simulator:
             self.driver = AntennaDriver(board_model, rsw_id)
 
-    def _command(self, value: int, azel: str) -> None:
+    def _command(self, value: int, azel: Literal["az", "el"]) -> None:
         if not self.simulator:
             self.driver.command(value, azel)
 
@@ -113,9 +107,11 @@ class antenna_device:
         self._command(0, "az")
         self._command(0, "el")
 
-    def set_pid_param(self, param: Dict[str, Tuple[float, float, float]]) -> None:
-        self._az.K_p, self._az.K_i, self._az.K_d = param["az"]
-        self._el.K_p, self._el.K_i, self._el.K_d = param["el"]
+    def set_pid_param(
+        self, param: Dict[Literal["az", "el"], Tuple[float, float, float]]
+    ) -> None:
+        self._az.k_p, self._az.k_i, self._az.k_d = param["az"]
+        self._el.k_p, self._el.k_i, self._el.k_d = param["el"]
 
     def move_azel(
         self,
@@ -124,7 +120,7 @@ class antenna_device:
         enc_az: float,
         enc_el: float,
         pid_param: Dict[str, Tuple[float, float, float]] = None,
-        m_bStop: str = "FALSE",
+        m_bStop: Literal["FALSE", "TRUE"] = "FALSE",
     ) -> Tuple[float, ...]:
         if pid_param is not None:
             self.set_pid_param(pid_param)
@@ -134,12 +130,12 @@ class antenna_device:
         elif m_bStop == "TRUE":
             stop = True
 
-        az_arcsec = self._az.suitable_angle(
+        az_arcsec = optimum_angle(
             enc_az, az_arcsec, self.LIMITS, margin=40 * 3600, unit="arcsec"
         )
 
-        speed_az = self._az.get_speed(az_arcsec, enc_az, stop=stop, unit="arcsec")
-        speed_el = self._el.get_speed(el_arcsec, enc_el, stop=stop, unit="arcsec")
+        speed_az = self._az.get_speed(az_arcsec, enc_az, stop=stop)
+        speed_el = self._el.get_speed(el_arcsec, enc_el, stop=stop)
         self._command(int(speed_az * self.SPEED2RATE), "az")
         self._command(int(speed_el * self.SPEED2RATE), "el")
 
@@ -153,9 +149,9 @@ class antenna_device:
 
         return (
             self._az.cmd_speed[Now] * 3600,
-            self._az.K_p * self._az.error[Now] * 3600,
-            self._az.K_i * self._az.error_integral * 3600 * self._az.dt,
-            self._az.K_d
+            self._az.k_p * self._az.error[Now] * 3600,
+            self._az.k_i * self._az.error_integral * 3600 * self._az.dt,
+            self._az.k_d
             * (self._az.error[Now] - self._az.error[Last])
             * 3600
             / self._az.dt,
@@ -165,9 +161,9 @@ class antenna_device:
             self._az.error_integral * 3600,
             self._az.enc_coord[Last] * 3600,
             self._az.cmd_speed[Now] * 3600,
-            self._el.K_p * self._az.error[Now] * 3600,
-            self._el.K_i * self._az.error_integral * 3600 * self._az.dt,
-            self._el.K_d
+            self._el.k_p * self._az.error[Now] * 3600,
+            self._el.k_i * self._az.error_integral * 3600 * self._az.dt,
+            self._el.k_d
             * (self._az.error[Now] - self._az.error[Last])
             * 3600
             / self._az.dt,
@@ -210,22 +206,21 @@ def calc_pid(
         issue. Please use `AntennaDevice.calc_pid`.
 
     """
-    calculator = PIDController.with_configuration(pid_param=[p_coeff, i_coeff, d_coeff])
+    calculator = PIDController(pid_param=[p_coeff, i_coeff, d_coeff])
 
     # Set `Last` parameters.
-    calculator._update(calculator.time, t_past)
-    calculator._update(calculator.cmd_coord, pre_arcsec / 3600)
-    calculator._update(calculator.enc_coord, enc_before / 3600)
-    calculator._update(calculator.error, pre_hensa / 3600)
+    calculator.time.push(t_past)
+    calculator.cmd_coord.push(pre_arcsec / 3600)
+    calculator.enc_coord.push(enc_before / 3600)
+    calculator.error.push(pre_hensa / 3600)
 
-    # Set `Now` parameters.
-    calculator._update(calculator.time, t_now)
-    calculator._update(calculator.cmd_coord, target_arcsec / 3600)
-    calculator._update(calculator.enc_coord, encoder_arcsec / 3600)
-    calculator._update(calculator.error, (target_arcsec - encoder_arcsec) / 3600)
-    calculator._update(calculator.error_integral, ihensa / 3600)
+    # Set new parameters.
+    calculator.time.push(t_now)
+    calculator.cmd_coord.push(target_arcsec / 3600)
+    calculator.enc_coord.push(encoder_arcsec / 3600)
+    calculator.error.push((target_arcsec - encoder_arcsec) / 3600)
 
-    speed = calculator.calc_pid()
+    speed = calculator._calc_pid()
 
     error_diff = (calculator.error[Now] - calculator.error[Last]) / calculator.dt
     if abs(error_diff) * 3600 > 1:
@@ -234,7 +229,7 @@ def calc_pid(
     return (
         speed,
         calculator.error_integral,
-        calculator.K_p * calculator.error[Now],
-        calculator.K_i * calculator.error_integral * calculator.dt,
-        calculator.K_d * error_diff / calculator.dt,
+        calculator.k_p * calculator.error[Now],
+        calculator.k_i * calculator.error_integral * calculator.dt,
+        calculator.k_d * error_diff / calculator.dt,
     )
