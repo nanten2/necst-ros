@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
 
-"""
-
-..Design Policy::
-
-   This script will be executed in high frequency with no vectorization, and there are
-   many arrays updated frequently. These mean that the use of Numpy may not be the best
-   choice to speed up the calculation. Measure the execution time first, then implement.
-
-"""
-
 import time
 from typing import Dict, Tuple
 
@@ -18,9 +8,9 @@ try:
 except ImportError:
     from typing_extensions import Literal
 
-from antenna_pid import PIDController
+from neclib import PIDController
 
-# Indices for 2-lists (mutable version of so-called 2-tuple).
+# Indices for parameter lists.
 Last = -2
 Now = -1
 
