@@ -85,6 +85,7 @@ class antenna_device:
     def __init__(
         self, board_model: int = 2724, rsw_id: int = 0, simulator: bool = False
     ) -> None:
+        PIDController.ANGLE_UNIT = "arcsec"
         self._az = PIDController(
             pid_param=[self.p_coeff[0], self.i_coeff[0], self.d_coeff[0]]
         )
@@ -133,8 +134,8 @@ class antenna_device:
             enc_az, az_arcsec, self.LIMITS, margin=40 * 3600, unit="arcsec"
         )
 
-        speed_az = self._az.get_speed(az_arcsec, enc_az, stop=stop, unit="arcsec")
-        speed_el = self._el.get_speed(el_arcsec, enc_el, stop=stop, unit="arcsec")
+        speed_az = self._az.get_speed(az_arcsec, enc_az, stop=stop)
+        speed_el = self._el.get_speed(el_arcsec, enc_el, stop=stop)
         self._command(int(speed_az * self.SPEED2RATE), "az")
         self._command(int(speed_el * self.SPEED2RATE), "el")
 
