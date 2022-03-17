@@ -1,8 +1,8 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 # linearity.py
 # -*- coding: utf-8 -*-
 
-'''
+"""
 === About this script ====
 
 * [Purpose and Abstract]
@@ -66,7 +66,7 @@ necctrl:
 2016/08/10~13 T.Inaba : add statistics
 2016/08/09    T.Inaba : beta version
 =========================
-'''
+"""
 
 
 import time, sys, os
@@ -96,29 +96,31 @@ datetime = time.strftime("%Y/%m/%d - %H:%M:%S", time.gmtime())
 
 # Making save directory
 # ------
-#workdir = "/home/amigos/RX/linearity/"
+# workdir = "/home/amigos/RX/linearity/"
 workdir = "/home/amigos/data/linearity/"
-os.mkdir(workdir+ydatetime)
+os.mkdir(workdir + ydatetime)
 
-dir_name = workdir+ydatetime+"/"
-direname2 = workdir+ydatetime+"_IF2"+"/"
+dir_name = workdir + ydatetime + "/"
+direname2 = workdir + ydatetime + "_IF2" + "/"
 
 # Devices
 # ------
-#sys.path.append('/home/amigos/NECRX_system/base_param/')
-sys.path.append('/home/amigos/rx/lib/base_param')
+# sys.path.append('/home/amigos/NECRX_system/base_param/')
+sys.path.append("/home/amigos/rx/lib/base_param")
 import IF
-#sys.path.append('/home/amigos/NECRX_system/device_cntrl/')
-#import TR72W
-#import ac240
-#import equipment_nanten
+
+# sys.path.append('/home/amigos/NECRX_system/device_cntrl/')
+# import TR72W
+# import ac240
+# import equipment_nanten
 att = IF.prog_att()
-#dfs = equipment_nanten.dfs()
-#m4 = equipment_nanten.m4()
-#hot = equipment_nanten.hot_load()
+# dfs = equipment_nanten.dfs()
+# m4 = equipment_nanten.m4()
+# hot = equipment_nanten.hot_load()
 # ond = TR72W.tr72w()
 
 import ROS_controller
+
 con = ROS_controller.controller()
 
 # Main
@@ -127,7 +129,7 @@ con = ROS_controller.controller()
 # Making save array
 # ------
 freq = np.linspace(0, 16383, 16384)
-sa1 = np.array([freq])   #sa means "spec array"
+sa1 = np.array([freq])  # sa means "spec array"
 sa2 = np.array([freq])
 sa1_log = np.array([freq])
 sa2_log = np.array([freq])
@@ -135,23 +137,23 @@ sa2_log = np.array([freq])
 # check M4, HOT and attenuator
 # ------
 status = con.read_status()
-#hot_status = hot.get_status()
-#m4_status = m4.get_status()
+# hot_status = hot.get_status()
+# m4_status = m4.get_status()
 hot_status = status.Current_Hot
 m4_status = status.Current_M4
 if hot_status == "OUT":
-    con.move_hot('in')
-    #hot.move_r()
+    con.move_hot("in")
+    # hot.move_r()
 if m4_status == "OUT":
-    con.move_m4('in')
-    #m4.m4_in()
+    con.move_m4("in")
+    # m4.m4_in()
 
 
-while True:#waiting m4&hot IN                               
+while True:  # waiting m4&hot IN
     status = con.read_status()
-    hot_status = status.Current_Hot#v2
-    m4_status = status.Current_M4#v2                                                                      
-    if not hot_status == 'IN' and not m4_status == 'IN':
+    hot_status = status.Current_Hot  # v2
+    m4_status = status.Current_M4  # v2
+    if not hot_status == "IN" and not m4_status == "IN":
         time.sleep(0.5)
         continue
     else:
@@ -159,15 +161,15 @@ while True:#waiting m4&hot IN
 
 status = con.read_status()
 
-#hot_status = hot.get_status()
-#m4_status = m4.get_status()
+# hot_status = hot.get_status()
+# m4_status = m4.get_status()
 hot_status = status.Current_Hot
 m4_status = status.Current_M4
 att_status = att.get_att()
 print(" ")
 print("M4 " + m4_status)
 print("HOT " + hot_status)
-print("IF1: "+str(att_status[0])+" [dB]  IF2: "+str(att_status[1])+" [dB]")
+print("IF1: " + str(att_status[0]) + " [dB]  IF2: " + str(att_status[1]) + " [dB]")
 print(" ")
 
 # Start Measurement
@@ -175,13 +177,13 @@ print(" ")
 for i in range(12):
     att.set_att(i, i)
     time.sleep(1)
-    data = con.oneshot_achilles(repeat = 1, exposure=integtime, stime=0)
-    #print(sa1.shape)
-    #print("###",np.array(data['dfs1'][0]).shape)
-    d1 = data['dfs1'][0]
-    d2 = data['dfs2'][0]
-    np.savez('{}att_{}dB.npz'.format(dir_name,str(i).zfill(2)), dfs1 = d1, dfs2 = d2)
-    print(str(i)+"dB finished")
+    data = con.oneshot_achilles(repeat=1, exposure=integtime, stime=0)
+    # print(sa1.shape)
+    # print("###",np.array(data['dfs1'][0]).shape)
+    d1 = data["dfs1"][0]
+    d2 = data["dfs2"][0]
+    np.savez("{}att_{}dB.npz".format(dir_name, str(i).zfill(2)), dfs1=d1, dfs2=d2)
+    print(str(i) + "dB finished")
 
 print(" ")
 print("Finish measurement")

@@ -1,10 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import math
 import os
 import time
 import datetime
 import sys
+
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 import opt_analy
@@ -14,14 +15,19 @@ import shutil
 
 import sys
 import ccd
+
 ccd = ccd.ccd_controller()
-from astropy.coordinates import SkyCoord,EarthLocation
+from astropy.coordinates import SkyCoord, EarthLocation
 from astropy.time import Time
 from datetime import datetime as dt
 import astropy.units as u
-sys.path.append('/home/amigos/ros/src/necst/lib')
+
+sys.path.append("/home/amigos/ros/src/necst/lib")
 import calc_coord
-nanten2 = EarthLocation(lat=-22.9699511*u.deg, lon=-67.60308139*u.deg, height=4863.84*u.m)
+
+nanten2 = EarthLocation(
+    lat=-22.9699511 * u.deg, lon=-67.60308139 * u.deg, height=4863.84 * u.m
+)
 import hosei_fit
 import logger
 
@@ -32,24 +38,29 @@ opt_point.py is used for optical pointing.
 From the pointing list(pointing.list), select an observable object and move the antenna there with equatorial coordinate(J2000/FK5)
 """
 
+
 class opt_point_controller(object):
-    #reference : ccd.py, imageppm.cpp, imagepgm.cpp
-    
-    
-    #pointing_list = "/home/amigos/NECST/soft/core/pointing.list"
+    # reference : ccd.py, imageppm.cpp, imagepgm.cpp
+
+    # pointing_list = "/home/amigos/NECST/soft/core/pointing.list"
     pointing_list = "/home/amigos/ros/src/necst/lib/pointing.list"
     pointing_list2 = "/home/necst/ros/src/necst/lib/pointing.list"
-    tai_utc = 36.0 # tai_utc=TAI-UTC  2015 July from ftp://maia.usno.navy.mil/ser7/tai-utc.dat
+    tai_utc = 36.0  # tai_utc=TAI-UTC  2015 July from ftp://maia.usno.navy.mil/ser7/tai-utc.dat
     dut1 = 0.14708
-    
-    
+
     def __init__(self):
         self.ctrl = ROS_controller.controller()
-        #self.calc = azel_calc.azel_calc()
+        # self.calc = azel_calc.azel_calc()
         self.calc = calc_coord.azel_calc()
-        self.ctrl.obs_status(active=True, obsmode="All_sky_shot", obs_script="all_sky_shot.py", obs_file="", target="fourth magnitude star")
+        self.ctrl.obs_status(
+            active=True,
+            obsmode="All_sky_shot",
+            obs_script="all_sky_shot.py",
+            obs_file="",
+            target="fourth magnitude star",
+        )
         return
-    
+
     def handler(self, num, flame):
         print("!!ctrl+C!!")
         print("STOP MOVING")
@@ -58,12 +69,11 @@ class opt_point_controller(object):
         self.ctrl.obs_status(active=False)
         self.logger.obslog("STOP OBSERVATION", lv=1)
         try:
-            shutil.copy('/home/amigos/ros/src/necst/lib/hosei_opt.txt', self.param_dir)
+            shutil.copy("/home/amigos/ros/src/necst/lib/hosei_opt.txt", self.param_dir)
         except Exception as e:
             print(e)
-        time.sleep(3.)
+        time.sleep(3.0)
         sys.exit()
-
 
     """
     def calc_star_azel(self, ra, dec, mjd):
@@ -81,7 +91,7 @@ class opt_point_controller(object):
         return [real_az, real_el]
         """
 
-    def create_table(self,sort = 'az'):
+    def create_table(self, sort="az"):
         """
         Returns
         -------
@@ -95,58 +105,83 @@ class opt_point_controller(object):
         [4] : azimuth
         """
 
-        #create target_list
+        # create target_list
         try:
             f = open(self.pointing_list)
         except:
             f = open(self.pointing_list2)
         line = f.readline()
         target_list = []
-        
-        #calculate mjd(now) and mjd(2000)
+
+        # calculate mjd(now) and mjd(2000)
         now = dt.now()
         _date = Time(now).mjd
-        status = self.ctrl.read_status()        
+        status = self.ctrl.read_status()
         while line:
             _list = []
             line = line.replace(";", " ")
             line = line.split()
-            
-            #number(FK6)
+
+            # number(FK6)
             _list.append(line[0])
-            
-            #ra,dec(degree)
+
+            # ra,dec(degree)
             now = dt.utcnow()
             _date = Time(now).mjd
-            coord = SkyCoord(str(line[1])+'h'+ str(line[2]) +'m'+ str(line[3]) +'s',str(line[5]) + str(line[6]) + 'd' + str(line[7]) + 'm' + str(line[8]) + 's', frame='icrs')
-            ra = coord.ra.deg + float(line[4])*(360./24.)/3600.*(_date - 51544)/36525.
-            dec = coord.dec.deg + float(line[9])/3600.*(_date - 51544)/36525.
-            
+            coord = SkyCoord(
+                str(line[1]) + "h" + str(line[2]) + "m" + str(line[3]) + "s",
+                str(line[5])
+                + str(line[6])
+                + "d"
+                + str(line[7])
+                + "m"
+                + str(line[8])
+                + "s",
+                frame="icrs",
+            )
+            ra = (
+                coord.ra.deg
+                + float(line[4]) * (360.0 / 24.0) / 3600.0 * (_date - 51544) / 36525.0
+            )
+            dec = coord.dec.deg + float(line[9]) / 3600.0 * (_date - 51544) / 36525.0
+
             _list.append(ra)
             _list.append(dec)
-            _list.append(line[21]) #magnitude
-            
-            #store parameters in lists to use self.calc.coordinate_calc
-            ra = [ra*3600.]
-            dec = [dec*3600.]
+            _list.append(line[21])  # magnitude
+
+            # store parameters in lists to use self.calc.coordinate_calc
+            ra = [ra * 3600.0]
+            dec = [dec * 3600.0]
             now = [now]
-            print(ra,dec,now)
+            print(ra, dec, now)
 
-            #status = self.ctrl.read_status()
-            ret = self.calc.coordinate_calc(ra, dec, now, 'fk5', 0, 0, 'hosei_opt.txt', lamda=0.5, press=status.Press, temp=status.OutTemp, humi=status.OutHumi/100)
-            _list.append(ret[0][0]) #az arcsec
+            # status = self.ctrl.read_status()
+            ret = self.calc.coordinate_calc(
+                ra,
+                dec,
+                now,
+                "fk5",
+                0,
+                0,
+                "hosei_opt.txt",
+                lamda=0.5,
+                press=status.Press,
+                temp=status.OutTemp,
+                humi=status.OutHumi / 100,
+            )
+            _list.append(ret[0][0])  # az arcsec
             _list.append(ret[1][0])
-            #list = [number, ra, dec, magnitude, az]
-            #print(str(ra)+"  "+str(dec))
-            if _list[4] > 3600*180:#
-                _list[4] = _list[4] -3600*360
+            # list = [number, ra, dec, magnitude, az]
+            # print(str(ra)+"  "+str(dec))
+            if _list[4] > 3600 * 180:  #
+                _list[4] = _list[4] - 3600 * 360
 
-            if sort == 'az' or sort == "r_az":
-                if ret[1][0]/3600. >= 30 and ret[1][0]/3600. < 80:
+            if sort == "az" or sort == "r_az":
+                if ret[1][0] / 3600.0 >= 30 and ret[1][0] / 3600.0 < 80:
                     print("============")
                     num = len(target_list)
                     if num == 0:
-                        target_list.append(_list) 
+                        target_list.append(_list)
                     elif num == 1:
                         if target_list[0][4] < _list[4]:
                             target_list.append(_list)
@@ -157,16 +192,16 @@ class opt_point_controller(object):
                             if target_list[i][4] > _list[4]:
                                 target_list.insert(i, _list)
                                 break
-                            if i == num-1:
+                            if i == num - 1:
                                 target_list.insert(num, _list)
                                 pass
 
-            elif sort == 'line_az':
-                if ret[1][0]/3600. >= 35 and ret[1][0]/3600. <= 55:
+            elif sort == "line_az":
+                if ret[1][0] / 3600.0 >= 35 and ret[1][0] / 3600.0 <= 55:
                     print("============")
                     num = len(target_list)
                     if num == 0:
-                        target_list.append(_list) 
+                        target_list.append(_list)
                     elif num == 1:
                         if target_list[0][4] < _list[4]:
                             target_list.append(_list)
@@ -177,18 +212,18 @@ class opt_point_controller(object):
                             if target_list[i][4] > _list[4]:
                                 target_list.insert(i, _list)
                                 break
-                            if i == num-1:
+                            if i == num - 1:
                                 target_list.insert(num, _list)
-                                pass                            
-                            
-            elif sort == 'line_el':
-                if not (-10*3600. <= _list[4] <= +10*3600.):
+                                pass
+
+            elif sort == "line_el":
+                if not (-10 * 3600.0 <= _list[4] <= +10 * 3600.0):
                     pass
-                elif ret[1][0]/3600. >= 30 and ret[1][0]/3600. < 80:
+                elif ret[1][0] / 3600.0 >= 30 and ret[1][0] / 3600.0 < 80:
                     print("============")
                     num = len(target_list)
                     if num == 0:
-                        target_list.append(_list) 
+                        target_list.append(_list)
                     elif num == 1:
                         if target_list[0][5] < _list[5]:
                             target_list.append(_list)
@@ -199,16 +234,16 @@ class opt_point_controller(object):
                             if target_list[i][5] > _list[5]:
                                 target_list.insert(i, _list)
                                 break
-                            if i == num-1:
+                            if i == num - 1:
                                 target_list.insert(num, _list)
                                 pass
 
-            else:#el_sort
-                if ret[1][0]/3600. >= 30 and ret[1][0]/3600. < 80:
+            else:  # el_sort
+                if ret[1][0] / 3600.0 >= 30 and ret[1][0] / 3600.0 < 80:
                     print("============")
                     num = len(target_list)
                     if num == 0:
-                        target_list.append(_list) 
+                        target_list.append(_list)
                     elif num == 1:
                         if target_list[0][5] < _list[5]:
                             target_list.append(_list)
@@ -219,91 +254,136 @@ class opt_point_controller(object):
                             if target_list[i][5] > _list[5]:
                                 target_list.insert(i, _list)
                                 break
-                            if i == num-1:
+                            if i == num - 1:
                                 target_list.insert(num, _list)
-                                pass                            
-            
+                                pass
+
             line = f.readline()
-            
+
         if sort == "r_az":
             re_az = [i for i in reversed(target_list)]
             target_list = re_az
         f.close()
         return target_list
-    
-    def start_observation(self, sort = 'az'):
-        #setup logger
-        #===========
+
+    def start_observation(self, sort="az"):
+        # setup logger
+        # ===========
         now = datetime.datetime.utcnow()
-        log_path = '/home/amigos/log/{}.txt'.format(now.strftime('%Y%m%d'))
+        log_path = "/home/amigos/log/{}.txt".format(now.strftime("%Y%m%d"))
         self.logger = logger.logger(__name__, filename=log_path)
         log = self.logger.setup_logger()
         self.logger.obslog(sys.argv)
         start_time = time.time()
-        
+
         signal.signal(signal.SIGINT, self.handler)
-        table = self.create_table(sort = sort)
-        print("#################",table)
-        num = len(table)        
+        table = self.create_table(sort=sort)
+        print("#################", table)
+        num = len(table)
         self.ctrl.dome_track()
 
         stime = dt.utcnow()
-        photo_dir = stime.strftime("/home/amigos/data/all_sky_shot/photo/opt_%Y%m%d%H%M%S/normal/") # photo
-        param_dir = stime.strftime("/home/amigos/data/all_sky_shot/parameter/opt_%Y%m%d%H%M%S/") # hosei & process.log
+        photo_dir = stime.strftime(
+            "/home/amigos/data/all_sky_shot/photo/opt_%Y%m%d%H%M%S/normal/"
+        )  # photo
+        param_dir = stime.strftime(
+            "/home/amigos/data/all_sky_shot/parameter/opt_%Y%m%d%H%M%S/"
+        )  # hosei & process.log
         self.logger.obslog("photo_dir : {}".format(photo_dir), lv=1)
         self.logger.obslog("param_dir : {}".format(param_dir), lv=1)
         self.param_dir = param_dir
-        
+
         for _tbl in table:
-            print("table",table)
+            print("table", table)
             now = dt.utcnow()
-            
-             #store parameters in lists to use self.calc.coordinate_calc
-            __ra = [_tbl[1]*3600.]
-            __dec = [_tbl[2]*3600.]
+
+            # store parameters in lists to use self.calc.coordinate_calc
+            __ra = [_tbl[1] * 3600.0]
+            __dec = [_tbl[2] * 3600.0]
             __now = [now]
 
             status = self.ctrl.read_status()
-            ret = self.calc.coordinate_calc(__ra, __dec, __now, 'fk5', 0, 0, 'hosei_opt.txt', lamda=0.5, press=status.Press, temp=status.OutTemp, humi=status.OutHumi/100)
-            real_el = ret[1][0]/3600.
-            print('#L161',ret)
-            if real_el >= 30. and real_el < 79.5:
+            ret = self.calc.coordinate_calc(
+                __ra,
+                __dec,
+                __now,
+                "fk5",
+                0,
+                0,
+                "hosei_opt.txt",
+                lamda=0.5,
+                press=status.Press,
+                temp=status.OutTemp,
+                humi=status.OutHumi / 100,
+            )
+            real_el = ret[1][0] / 3600.0
+            print("#L161", ret)
+            if real_el >= 30.0 and real_el < 79.5:
 
                 """ moving... """
-                self.ctrl.onepoint_move(_tbl[1], _tbl[2],"fk5",hosei="hosei_opt.txt",lamda = 0.5, rotation = False)#lamda = 0.5 => 500
+                self.ctrl.onepoint_move(
+                    _tbl[1],
+                    _tbl[2],
+                    "fk5",
+                    hosei="hosei_opt.txt",
+                    lamda=0.5,
+                    rotation=False,
+                )  # lamda = 0.5 => 500
                 self.ctrl.antenna_tracking_check()
                 self.ctrl.dome_tracking_check()
 
                 """ ccd oneshot """
                 __now = dt.utcnow()
-                data_name = __now.strftime("%Y%m%d%H%M%S")                
+                data_name = __now.strftime("%Y%m%d%H%M%S")
                 status = self.ctrl.read_status()
-                ret = self.calc.coordinate_calc(__ra, __dec, [__now], 'fk5', 0, 0, 'hosei_opt.txt', lamda=0.5, press=status.Press, temp=status.OutTemp, humi=status.OutHumi/100)                
+                ret = self.calc.coordinate_calc(
+                    __ra,
+                    __dec,
+                    [__now],
+                    "fk5",
+                    0,
+                    0,
+                    "hosei_opt.txt",
+                    lamda=0.5,
+                    press=status.Press,
+                    temp=status.OutTemp,
+                    humi=status.OutHumi / 100,
+                )
                 self.ctrl.ccd_oneshot(data_name, photo_dir)
 
                 self.ctrl.move_stop()
 
                 """analysis"""
                 try:
-                    xx,yy = ccd.ccd_analysis(data_name, photo_dir)
-                    if isinstance(xx,str):
+                    xx, yy = ccd.ccd_analysis(data_name, photo_dir)
+                    if isinstance(xx, str):
                         print(xx, yy)
 
                     else:
-                        ccd.save_status(xx, yy, _tbl[0], _tbl[3],  ret[0][0]/3600., ret[1][0]/3600., param_dir, data_name, status)
+                        ccd.save_status(
+                            xx,
+                            yy,
+                            _tbl[0],
+                            _tbl[3],
+                            ret[0][0] / 3600.0,
+                            ret[1][0] / 3600.0,
+                            param_dir,
+                            data_name,
+                            status,
+                        )
                 except Exception as e:
                     print(e)
             else:
-                #out of range(El)
+                # out of range(El)
                 pass
-            
+
         self.ctrl.move_stop()
-        time.sleep(3.)
+        time.sleep(3.0)
 
         ###plot Qlook
         ###==========
         try:
-            print('Analysis ...')
+            print("Analysis ...")
             hosei_fit.hosei_point(param_dir)
         except Exception as e:
             print(e)
@@ -312,26 +392,28 @@ class opt_point_controller(object):
             opt_analy.opt_plot([param_dir], savefig=True, interactive=True)
         except Exception as e:
             print(e)
-            
+
         try:
             import glob
+
             date = param_dir[:-11]
-            file_list = glob.glob('{}*'.format(date))
+            file_list = glob.glob("{}*".format(date))
             file_list2 = [i for i in file_list if "process.log" in os.listdir(i)]
-            opt_analy.opt_plot(file_list2, savefig=True, interactive=True)     
+            opt_analy.opt_plot(file_list2, savefig=True, interactive=True)
             pass
         except Exception as e:
             print(e)
             pass
         ###==========
-        
+
         ###copy hosei file
 
-        shutil.copy('/home/amigos/ros/src/necst/lib/hosei_opt.txt', param_dir)
+        shutil.copy("/home/amigos/ros/src/necst/lib/hosei_opt.txt", param_dir)
 
-        
-        self.logger.obslog("OBSERVATION END : observation time : {:.2f} [min]".format((time.time() - start_time)/60))
+        self.logger.obslog(
+            "OBSERVATION END : observation time : {:.2f} [min]".format(
+                (time.time() - start_time) / 60
+            )
+        )
         self.ctrl.obs_status(active=False)
         return
-    
-    
