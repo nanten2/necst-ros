@@ -39,11 +39,14 @@ class Observation:
     DataBaseDir: PathLike = HomeDir / "data" / "observation"
     """Parent directory into which observation database is saved."""
 
-    def __init__(self, obsfile: PathLike) -> None:
+    def __init__(self, obsfile: PathLike = None) -> None:
         self.DataDir = self.DataBaseDir / self.ObservationType
 
         self.con = ROS_controller.controller()
-        self._obsfile_path = self.ObsfileDir / obsfile
+        if obsfile is not None:
+            self._obsfile_path = self.ObsfileDir / obsfile
+        else:
+            pass
         self.obs = ObsParams.from_file(self._obsfile_path)
 
         signal.signal(signal.SIGINT, self.signal_handler)
