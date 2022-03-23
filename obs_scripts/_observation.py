@@ -29,7 +29,7 @@ class Observation:
 
     """
 
-    ObservationType: ClassVar[str] = ""
+    ObservationType: ClassVar[str]
     """Kind of this observation."""
 
     ObsfileDir: PathLike = HomeDir / "necst-obsfiles"
@@ -44,7 +44,7 @@ class Observation:
 
         self.con = ROS_controller.controller()
         self._obsfile_path = self.ObsfileDir / obsfile
-        self.obs = ObsParams.from_file(self._obsfile_path)
+        self.params = ObsParams.from_file(self._obsfile_path)
 
         signal.signal(signal.SIGINT, self.signal_handler)
 
@@ -62,8 +62,8 @@ class Observation:
         self.start_time = time.time()
 
     def fileconfig(self) -> None:
-        _spectra = self.obs.get("MOLECULE_1", "")
-        _target = self.obs.get("OBJECT", "")
+        _spectra = self.params.get("MOLECULE_1", "")
+        _target = self.params.get("OBJECT", "")
         db_name = f"n{self.now.strftime('%Y%m%d%H%M%S')}_{_spectra}_{_target}"
 
         db_path = self.DataDir / db_name
@@ -83,9 +83,10 @@ class Observation:
         self.log.warn("STOP DRIVE")
         self.con.move_stop()
         self.con.dome_stop()
-        self.obs_status(active=False)
-        self.xffts_publish_flag(obs_mode="", scan_nun=self.scan_num)
-        self.pub_loggerflag("")
+        self.con.obs_status(active=False)
+        _scan_num = getattr(self, "scan_num", -1)
+        self.con.xffts_publish_flag(obs_mode="", scan_num=_scan_num)
+        self.con.pub_loggerflag("")
         time.sleep(2)
         self.logger.obslog("STOP OBSERVATION", lv=1)
         time.sleep(1)
@@ -96,7 +97,7 @@ class Observation:
 
     @property
     def obsfile_params(self):
-        return self.obs
+        return self.params
 
     @property
     def obsfile_path(self):
