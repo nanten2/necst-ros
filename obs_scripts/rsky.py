@@ -10,9 +10,12 @@ class RSky(Observation):
     measurement toward (az, el)=(45, 70))
     """
 
-    def __init__(self):
+    ObservationType = "R-SKY"
 
-        ObservationType = "R-SKY"
+    def __init__(self):
+        # __init__ does not take any arguments(c.f., obsfile) beacause in the R-SKY
+        # observation module, all observation params are included in this module.
+
         super().__init__()
 
     def run(self, integ_time):
@@ -48,19 +51,14 @@ class RSky(Observation):
         time.sleep(integ_time)
         self.con.xffts_publish_flag()
 
-        self.logger.obslog(
-            "Observation End : observation time : {:.2f} [min]".format(
-                (time.time() - self.start_time) / 60
-            ),
-            lv=1,
-        )
-        self.log.info(
-            "Observation End : observation time : {:.2f} [min]".format(
-                (time.time() - self.start_time) / 60
-            )
+        log_contents = (
+            "Observation End : observation time : "
+            f"{(time.time() - self.start_time) / 60:.2f} [min]"
         )
 
-        # con.move_hot('in')
+        self.logger.obslog(log_contents, lv=1)
+        self.log.info(log_contents)
+
         self.con.pub_loggerflag("")
         # self.con.pub_analyexec(savedir2, "rsky")
 
