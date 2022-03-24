@@ -4,7 +4,7 @@ import time
 from _observation import Observation
 
 
-class Rsky(Observation):
+class RSky(Observation):
     """
     An observing module for R-SKY observation, which provides Tsys
     measurement toward (az, el)=(45, 70))
@@ -12,7 +12,7 @@ class Rsky(Observation):
 
     def __init__(self):
 
-        self.ObservationType = "RSKY"
+        ObservationType = "R-SKY"
         super().__init__()
 
     def run(self, integ_time):
@@ -66,5 +66,5 @@ class Rsky(Observation):
 
 
 if __name__ == "__main__":
-    rsky = Rsky()
+    rsky = RSky()
     rsky.run(integ_time=2)
