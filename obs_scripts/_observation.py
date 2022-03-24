@@ -72,6 +72,7 @@ class Observation:
         self.logger.obslog(f"savedir : {db_path}", lv=1)
 
         xffts_datapath = db_path / "xffts.ndf"
+        self.con.pub_loggerflag(str(db_path))
 
         self.log.debug(f"obsdir : {self._obsfile_path}")
         self.log.debug(f"log_path : {self.log_path}")
