@@ -45,9 +45,9 @@ class Observation:
         self.con = ROS_controller.controller()
         if obsfile is not None:
             self._obsfile_path = self.ObsfileDir / obsfile
+            self.obs = ObsParams.from_file(self._obsfile_path)
         else:
-            pass
-        self.obs = ObsParams.from_file(self._obsfile_path)
+            self.obs = None
 
         signal.signal(signal.SIGINT, self.signal_handler)
 
@@ -65,9 +65,12 @@ class Observation:
         self.start_time = time.time()
 
     def fileconfig(self) -> None:
-        _spectra = self.obs.get("MOLECULE_1", "")
-        _target = self.obs.get("OBJECT", "")
-        db_name = f"n{self.now.strftime('%Y%m%d%H%M%S')}_{_spectra}_{_target}"
+        if self.obs is not None:
+            _spectra = self.obs.get("MOLECULE_1", "")
+            _target = self.obs.get("OBJECT", "")
+            db_name = f"n{self.now.strftime('%Y%m%d%H%M%S')}_{_spectra}_{_target}"
+        else:
+            db_name = f"n{self.now.strftime('%Y%m%d%H%M%S')}_{self.ObservationType}"
 
         db_path = self.DataDir / db_name
         self.log.info(f"mkdir {db_path}")

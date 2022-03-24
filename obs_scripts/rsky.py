@@ -5,14 +5,20 @@ from _observation import Observation
 
 
 class Rsky(Observation):
+    """
+    An observing module for R-SKY observation, which provides Tsys
+    measurement toward (az, el)=(45, 70))
+    """
+
     def __init__(self):
 
-        ObservationType = "Rsky"
-        super().__init__(ObservationType=ObservationType)
+        self.ObservationType = "RSKY"
+        super().__init__()
 
     def run(self, integ_time):
-        print("Start R SKY observation")
 
+        print("Start R SKY observation")
+        self.con.onepoint_move(x=45, y=70)
         self.con.move_chopper("in")
         time.sleep(3)  # Temporarily
 
@@ -61,7 +67,4 @@ class Rsky(Observation):
 
 if __name__ == "__main__":
     rsky = Rsky()
-    rsky.init_logger()
-    rsky.fileconfig()
-    rsky.signal_handler()
     rsky.run(integ_time=2)
