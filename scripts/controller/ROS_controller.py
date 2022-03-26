@@ -194,7 +194,7 @@ class controller(object):
                 #rospy.logwarn("This node don't have authority...")
                 self.log.warn("This node don't have authority...")
                 print("current authority : ", self.auth)
-                raise NECSTAuthorityError(f"This node doesn't have authority. Current authority is at {self.auth}")
+                raise NECSTAuthorityError(f"This node doesn't have authority. Current authority is at '{self.auth}'")
             return ret
         return wrapper
     
