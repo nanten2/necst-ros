@@ -47,7 +47,7 @@ class controller(object):
     dome_tracking_flag = False
     access_authority = "no_data"
 
-    status = ""
+    status = None
 
     auth = ""
     frame = "controller"
@@ -950,12 +950,11 @@ class controller(object):
         self.read_sub = rospy.Subscriber("read_status", Read_status_msg, self._write_status)
         
         while not rospy.is_shutdown():
-            if self.status:
+            if self.status is not None:
                 status = self.status
-                self.status = ""
+                self.status = None
                 break
             else:
-                status = ""
                 time.sleep(0.1)
 
         return status
@@ -963,7 +962,6 @@ class controller(object):
     def _write_status(self, req):
         self.status = req
         self.read_sub.unregister()
-        return
 
     # ===================
     # others
