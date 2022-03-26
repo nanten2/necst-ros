@@ -1,16 +1,18 @@
-#! /usr/bin/env python3
-# coding:utf-8
+#!/usr/bin/env python3
 
+import atexit
+import functools
 import os
 import sys
 import time
-import atexit
-import functools
-from datetime import datetime as dt
+from datetime import datetime
+
 import rospy
 import rosnode
+from neclib.utils import NECSTAuthorityError
+from std_msgs.msg import String
+
 import logger
-from datetime import datetime
 from necst.msg import Move_mode_msg
 from necst.msg import Otf_mode_msg
 from necst.msg import Dome_msg
@@ -36,14 +38,9 @@ from necst.srv import ac240_srv
 from necst.srv import ac240_srvResponse
 from necst.srv import Bool_srv
 from necst.srv import Bool_srvResponse
-from std_msgs.msg import String
 
 
-class NECSTAuthorityError(Exception):
-    pass
-
-
-class controller(object):
+class controller:
 
     task_flag = False
     antenna_tracking_flag = False
@@ -75,7 +72,7 @@ class controller(object):
     current_line = 0
     current_position = ""
 
-    """ps parameter"""
+    # ps parameter
     num_on = 0
     num_seq = 0
     
