@@ -38,6 +38,11 @@ from necst.srv import Bool_srv
 from necst.srv import Bool_srvResponse
 from std_msgs.msg import String
 
+
+class NECSTAuthorityError(Exception):
+    pass
+
+
 class controller(object):
 
     task_flag = False
@@ -186,11 +191,10 @@ class controller(object):
             elif self.auth == self.node_name:
                 ret = func(self, *args,**kwargs)
             else:
-                ret = ""
                 #rospy.logwarn("This node don't have authority...")
                 self.log.warn("This node don't have authority...")
                 print("current authority : ", self.auth)
-                pass
+                raise NECSTAuthorityError(f"This node doesn't have authority. Current authority is at {self.auth}")
             return ret
         return wrapper
     
