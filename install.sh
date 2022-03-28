@@ -4,7 +4,7 @@
 if ! type pipenv > /dev/null 2>&1
 then
     # Install Pipenv
-    echo -e "\033[46mInstalling poetry\033[0m"
+    echo -e "\033[46mInstalling pipenv\033[0m"
     curl https://raw.githubusercontent.com/pypa/pipenv/master/get-pipenv.py | python3
     if type pipenv > /dev/null 2>&1
     then

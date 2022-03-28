@@ -192,8 +192,8 @@ class controller:
                 err_msg_base = "This node doesn't have authority. "
                 err_msg_1 = f"Current authority : '{self.auth}'"
                 err_msg_2 = (
-                    "This is caused by software/network lag. "
-                    "Wait for a moment and retry."
+                    "This might be caused by software/network lag. "
+                    "Wait a moment and retry."
                 )
 
                 self.log.warn(err_msg_base)
