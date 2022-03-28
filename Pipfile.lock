@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "9c2484cd61b2ba65d423d69dcc799cccc60edbbb78f512d0132da577af8409bb"
+            "sha256": "b445002503d67c769dd7056918a02ea7803c49bf091b907d39a964014d40e4fe"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -67,7 +67,7 @@
                 "sha256:1208431ca90a8cca1a6b8af391bb53c1a2db74e5d1cef6ddced95d4b2062edc6",
                 "sha256:ea4c597ebf37142f827b8f39299579e31685c31d3a438b59f469406afd0f2539"
             ],
-            "markers": "python_version == '3.7'",
+            "markers": "python_version < '3.8'",
             "version": "==4.11.3"
         },
         "kiwisolver": {
@@ -537,7 +537,7 @@
                 "sha256:1208431ca90a8cca1a6b8af391bb53c1a2db74e5d1cef6ddced95d4b2062edc6",
                 "sha256:ea4c597ebf37142f827b8f39299579e31685c31d3a438b59f469406afd0f2539"
             ],
-            "markers": "python_version == '3.7'",
+            "markers": "python_version < '3.8'",
             "version": "==4.11.3"
         },
         "ipykernel": {

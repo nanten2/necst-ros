@@ -11,7 +11,7 @@ neclib = ">=0.3.1, <1.0"
 numpy = ">=1.19, <2.0"
 pandas = ">=0.25, <2.0"
 scipy = ">=1.5, <2.0"
-typing-extensions = { version = ">=3.10, <4.0", markers="python_version < '3.8'" }
+typing-extensions = { version = ">=3.10.0.1, <4.0", markers="python_version < '3.8'" }  # https://github.com/python/typing/pull/808
 
 [dev-packages]
 pytest = ">=5.2, <6.0"
