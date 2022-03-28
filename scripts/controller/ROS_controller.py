@@ -189,11 +189,18 @@ class controller:
                 ret = func(self, *args,**kwargs)
             else:
                 #rospy.logwarn("This node don't have authority...")
-                self.log.warn("This node don't have authority...")
-                print("current authority : ", self.auth)
+                err_msg_base = "This node doesn't have authority. "
+                err_msg_1 = f"Current authority : '{self.auth}'"
+                err_msg_2 = (
+                    "This is caused by software/network lag. "
+                    "Wait for a moment and retry."
+                )
+
+                self.log.warn(err_msg_base)
+                print(err_msg_1)
+
                 raise NECSTAuthorityError(
-                    "This node doesn't have authority."
-                    f"Current authority is at '{self.auth}'"
+                    err_msg_base + (err_msg_1 if self.auth else err_msg_2)
                 )
             return ret
         return wrapper
