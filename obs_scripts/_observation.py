@@ -79,7 +79,7 @@ class Observation:
 
         xffts_datapath = db_path / "xffts.ndf"
 
-        self.log.debug(f"obsdir : {self._obsfile_path}")
+        self.log.debug(f"obsdir : {self.obsfile_path}")
         self.log.debug(f"log_path : {self.log_path}")
         self.log.debug(f"dirname : {db_name}")
         self.log.debug(f"xffts : {xffts_datapath}")
@@ -89,9 +89,9 @@ class Observation:
         self.log.warn("STOP DRIVE")
         self.con.move_stop()
         self.con.dome_stop()
-        self.obs_status(active=False)
-        self.xffts_publish_flag(obs_mode="", scan_nun=self.scan_num)
-        self.pub_loggerflag("")
+        self.con.obs_status(active=False)
+        self.con.xffts_publish_flag(obs_mode="", scan_num=self.scan_num)
+        self.con.pub_loggerflag("")
         time.sleep(2)
         self.logger.obslog("STOP OBSERVATION", lv=1)
         time.sleep(1)
@@ -106,7 +106,7 @@ class Observation:
 
     @property
     def obsfile_path(self):
-        return self._obsfile_path
+        return getattr(self, "_obsfile_path", "")
 
 
 if __name__ == "__main__":

@@ -3,6 +3,8 @@
 import time
 from _observation import Observation
 
+import argparse
+
 
 class RSky(Observation):
     """
@@ -13,7 +15,7 @@ class RSky(Observation):
     ObservationType = "R-SKY"
 
     def __init__(self):
-        # __init__ does not take any arguments(c.f., obsfile) beacause in the R-SKY
+        # __init__ does not take any arguments(cf., obsfile) beacause in the R-SKY
         # observation module, all observation params are included in this module.
 
         super().__init__()
@@ -21,12 +23,17 @@ class RSky(Observation):
     def run(self, integ_time):
 
         print("Start R SKY observation")
-        self.con.onepoint_move(x=45, y=70)
         self.con.move_chopper("in")
         time.sleep(3)  # Temporarily
-
         status = self.con.read_status()
         hot_status = status.Current_Hot
+        current_Az = status.Current_Az
+
+        self.con.onepoint_move(x=current_Az, y=70)
+        self.con.dome_tracking_check()
+        self.log.info("dome track OK")
+        self.concon.antenna_tracking_check()
+        self.log.info("antenna track OK")
 
         print("HOT")
         print("hot_status ### ", hot_status)
@@ -64,5 +71,15 @@ class RSky(Observation):
 
 
 if __name__ == "__main__":
+    description = "R sky Observation"
+    p = argparse.ArgumentParser(description=description)
+    p.add_argument(
+        "--integ_time",
+        type=float,
+        help="Integration time for the R-sky obs.",
+        default=2,
+    )
+    args = p.parse_args()
+
     rsky = RSky()
-    rsky.run(integ_time=2)
+    rsky.run(integ_time=args.integ_time)
