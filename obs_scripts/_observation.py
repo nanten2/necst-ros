@@ -50,7 +50,7 @@ class Observation:
             self.obs = None
 
         signal.signal(signal.SIGINT, self.signal_handler)
-
+        self.con.get_authority()
         self.now = datetime.utcnow()
         self.init_logger()
         self.fileconfig()
