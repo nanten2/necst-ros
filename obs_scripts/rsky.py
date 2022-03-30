@@ -30,6 +30,7 @@ class RSky(Observation):
         current_Az = status.Current_Az
 
         self.con.onepoint_move(x=current_Az, y=70)
+        self.con.dome_track()
         self.con.dome_tracking_check()
         self.log.info("dome track OK")
         self.con.antenna_tracking_check()
