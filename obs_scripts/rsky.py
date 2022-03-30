@@ -32,7 +32,7 @@ class RSky(Observation):
         self.con.onepoint_move(x=current_Az, y=70)
         self.con.dome_tracking_check()
         self.log.info("dome track OK")
-        self.concon.antenna_tracking_check()
+        self.con.antenna_tracking_check()
         self.log.info("antenna track OK")
 
         print("HOT")
