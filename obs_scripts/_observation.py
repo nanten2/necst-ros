@@ -39,15 +39,18 @@ class Observation:
     DataBaseDir: PathLike = HomeDir / "data" / "observation"
     """Parent directory into which observation database is saved."""
 
-    def __init__(self, obsfile: PathLike) -> None:
+    def __init__(self, obsfile: PathLike = None) -> None:
         self.DataDir = self.DataBaseDir / self.ObservationType
 
         self.con = ROS_controller.controller()
-        self._obsfile_path = self.ObsfileDir / obsfile
-        self.obs = ObsParams.from_file(self._obsfile_path)
+        if obsfile is not None:
+            self._obsfile_path = self.ObsfileDir / obsfile
+            self.obs = ObsParams.from_file(self._obsfile_path)
+        else:
+            self.obs = None
 
         signal.signal(signal.SIGINT, self.signal_handler)
-
+        self.con.get_authority()
         self.now = datetime.utcnow()
         self.init_logger()
         self.fileconfig()
@@ -62,9 +65,12 @@ class Observation:
         self.start_time = time.time()
 
     def fileconfig(self) -> None:
-        _spectra = self.obs.get("MOLECULE_1", "")
-        _target = self.obs.get("OBJECT", "")
-        db_name = f"n{self.now.strftime('%Y%m%d%H%M%S')}_{_spectra}_{_target}"
+        if self.obs is not None:
+            _spectra = self.obs.get("MOLECULE_1", "")
+            _target = self.obs.get("OBJECT", "")
+            db_name = f"n{self.now.strftime('%Y%m%d%H%M%S')}_{_spectra}_{_target}"
+        else:
+            db_name = f"n{self.now.strftime('%Y%m%d%H%M%S')}_{self.ObservationType}"
 
         db_path = self.DataDir / db_name
         self.log.info(f"mkdir {db_path}")
@@ -73,7 +79,7 @@ class Observation:
 
         xffts_datapath = db_path / "xffts.ndf"
 
-        self.log.debug(f"obsdir : {self._obsfile_path}")
+        self.log.debug(f"obsdir : {self.obsfile_path}")
         self.log.debug(f"log_path : {self.log_path}")
         self.log.debug(f"dirname : {db_name}")
         self.log.debug(f"xffts : {xffts_datapath}")
@@ -83,9 +89,9 @@ class Observation:
         self.log.warn("STOP DRIVE")
         self.con.move_stop()
         self.con.dome_stop()
-        self.obs_status(active=False)
-        self.xffts_publish_flag(obs_mode="", scan_nun=self.scan_num)
-        self.pub_loggerflag("")
+        self.con.obs_status(active=False)
+        self.con.xffts_publish_flag(obs_mode="", scan_num=self.scan_num)
+        self.con.pub_loggerflag("")
         time.sleep(2)
         self.logger.obslog("STOP OBSERVATION", lv=1)
         time.sleep(1)
@@ -100,7 +106,7 @@ class Observation:
 
     @property
     def obsfile_path(self):
-        return self._obsfile_path
+        return getattr(self, "_obsfile_path", "")
 
 
 if __name__ == "__main__":
