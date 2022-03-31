@@ -64,14 +64,14 @@ class OnTheFly(_observation.Observation):
     def Scan_direction(self):
         sample_spacing = self.obs["scan_velocity"] * self.obs["integ_on"]
         scan_spacing = self.obs["scan_spacing"]  # [arcsec]
-        return sample_spacing.value, scan_spacing, 0, 0
+        return sample_spacing, scan_spacing, 0 * u.arcsec, 0 * u.arcsec
 
     def run_onepoint(self, current_position: str, current_num, num, kwparams):
         kwparams_onepoint = {
-            "x": self.obs["LambdaOff"],
-            "y": self.obs["BetaOff"],
-            "off_x": self.obs["deltaLambda"],
-            "off_y": self.obs["deltaBeta"],
+            "x": self.obs["LambdaOff"].value,
+            "y": self.obs["BetaOff"].value,
+            "off_x": self.obs["deltaLambda"].value,
+            "off_y": self.obs["deltaBeta"].value,
         }
 
         self.con.onepoint_move(**kwparams, **kwparams_onepoint)
@@ -117,14 +117,14 @@ class OnTheFly(_observation.Observation):
 
     def RampStart(self, num):
         ramp_start_x = (
-            (self.sx + num * self.scan_space_x)
-            - float(self.dx) / float(self.obs["integ_on"]) * self.ramp_time
-            - float(self.dx) / 2.0
+            (self.start_x + num * self.scan_space_x)
+            - self.dx / self.obs["integ_on"] * self.ramp_time
+            - self.dx / 2.0
         )  # ramp start position
         ramp_start_y = (
-            (self.sy + num * self.scan_space_y)
-            - float(self.dy) / float(self.obs["integ_on"]) * self.ramp_time
-            - float(self.dy) / 2.0
+            (self.start_y + num * self.scan_space_y)
+            - self.dy / self.obs["integ_on"] * self.ramp_time
+            - self.dy / 2.0
         )  # ramp start position
         # dx/2 : for Nyquist sampling
         return ramp_start_x, ramp_start_y
@@ -132,8 +132,8 @@ class OnTheFly(_observation.Observation):
     def ScanStart(self, ctime, delay, num):
         start_on = self.mjd(ctime + self.ramp_time + delay)
         end_scan = start_on + (self.obs["scan_length"] + self.ramp_time) / 24.0 / 3600.0
-        off_x = self.sx + num * self.scan_space_x
-        off_y = self.sy + num * self.scan_space_y
+        off_x = self.start_x + num * self.scan_space_x
+        off_y = self.start_y + num * self.scan_space_y
         return start_on, end_scan, off_x, off_y
 
     def mjd(self, time_sec):
@@ -145,10 +145,10 @@ class OnTheFly(_observation.Observation):
 
         self.log.info("ramp_start tracking")
         kwparams_onepoint = {
-            "x": self.obs["LambdaOn"],
-            "y": self.obs["BetaOn"],
-            "off_x": ramp_start_x,
-            "off_y": ramp_start_y,
+            "x": self.obs["LambdaOn"].value,
+            "y": self.obs["BetaOn"].value,
+            "off_x": ramp_start_x.value,
+            "off_y": ramp_start_y.value,
         }
         self.con.onepoint_move(**kwparams, **kwparams_onepoint)
         self.con.dome_track()  # temp
@@ -172,19 +172,19 @@ class OnTheFly(_observation.Observation):
             active=True, current_num=self.scan_point * num, current_position="ON"
         )
         kwparams_scan = {
-            "x": self.obs["LambdaOn"],
-            "y": self.obs["BetaOn"],
-            "dx": self.dx,
-            "dy": self.dy,
-            "dt": self.obs["integ_on"],
+            "x": self.obs["LambdaOn"].value,
+            "y": self.obs["BetaOn"].value,
+            "dx": self.dx.value,
+            "dy": self.dy.value,
+            "dt": self.obs["integ_on"].value,
             "num": self.scan_point,
-            "rampt": self.ramp_time,
+            "rampt": self.ramp_time.value,
             "delay": delay,
             "current_time": current_time,
-            "off_x": off_x,
-            "off_y": off_y,
+            "off_x": off_x.value,
+            "off_y": off_y.value,
             "hosei": "hosei_230.txt",
-            "lamda": self.lamda,
+            "lamda": self.lamda.value,
             "limit": True,
         }
         self.con.otf_scan(**kwparams, **kwparams_scan)
@@ -218,13 +218,13 @@ class OnTheFly(_observation.Observation):
                 obsscript,
                 str(self.obsfile_path),
                 self.obs["OBJECT"],
-                self.scan_point,
+                self.scan_point.value,
                 self.total_count,
-                self.dx,
-                self.scan_space_y,
-                self.obs["integ_hot"],
-                self.obs["integ_off"],
-                self.obs["integ_on"],
+                self.dx.value,
+                self.scan_space_y.value,
+                self.obs["integ_hot"].value,
+                self.obs["integ_off"].value,
+                self.obs["integ_on"].value,
                 self.obs["SCAN_DIRECTION"],
             ]
         elif self.obs["SCAN_DIRECTION"] == "Y":
@@ -234,13 +234,13 @@ class OnTheFly(_observation.Observation):
                 obsscript,
                 str(self.obsfile_path),
                 self.obs["OBJECT"],
-                self.scan_point,
-                self.total_count,
-                self.scan_space_x,
-                self.dy,
-                self.obs["integ_hot"],
-                self.obs["integ_off"],
-                self.obs["integ_on"],
+                self.scan_point.value,
+                self.total_count.value,
+                self.scan_space_x.value,
+                self.dy.value,
+                self.obs["integ_hot"].value,
+                self.obs["integ_off"].value,
+                self.obs["integ_on"].value,
                 self.obs["SCAN_DIRECTION"],
             ]
         self.con.obs_status(*params_obs)
