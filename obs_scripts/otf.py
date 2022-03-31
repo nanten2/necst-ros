@@ -130,7 +130,7 @@ class OnTheFly(_observation.Observation):
         return ramp_start_x, ramp_start_y
 
     def ScanStart(self, ctime, delay, num):
-        start_on = self.mjd(ctime + self.ramp_time + delay)
+        start_on = self.mjd(ctime + self.ramp_time.value + delay)
         end_scan = start_on + (self.obs["scan_length"] + self.ramp_time) / 24.0 / 3600.0
         off_x = self.start_x + num * self.scan_space_x
         off_y = self.start_y + num * self.scan_space_y
