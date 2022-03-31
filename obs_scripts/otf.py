@@ -1,11 +1,8 @@
-from importlib.util import decode_source
-from os import PathLike
+#!/usr/bin/env python3
+
 from shutil import register_unpack_format
 import _observation
 
-# import calc_coordinate
-import numpy as np
-import sys
 import time
 import n_const
 import argparse
