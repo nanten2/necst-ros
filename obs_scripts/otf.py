@@ -3,6 +3,7 @@
 from shutil import register_unpack_format
 import _observation
 
+
 import time
 import n_const
 import argparse
@@ -17,7 +18,7 @@ class OnTheFly(_observation.Observation):
             self.obs["LambdaOff"] + self.obs["StartPositionX"]
         )  # Start position x[arcsec]
         start_y = (
-            self.obs["betdel_off"] + self.obs["StartPositionY"]
+            self.obs["deltaBeta"] + self.obs["StartPositionY"]
         )  # Start position y[arcsec]
 
         if self.obs["SCAN_DIRECTION"] == "X":
