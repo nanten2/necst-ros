@@ -103,10 +103,10 @@ class OnTheFly(_observation.Observation):
         )
         self.log.info("get spectrum...")
         # temp = float(status.CabinTemp1)
-        self.xffts_publish_flag(num=num, obs_mode=current_position)
+        self.ger_spectrum(num=num, current_position=current_position)
         return time.time()
 
-    def xffts_publish_flag(self, num, current_position):
+    def ger_spectrum(self, num, current_position):
         self.con.xffts_publish_flag(scan_num=num, obs_mode=current_position)
         time.sleep(self.obs["integ_off"])
         self.con.xffts_publish_flag(scan_num=num, obs_mode="")
