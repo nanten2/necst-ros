@@ -108,7 +108,7 @@ class OnTheFly(_observation.Observation):
 
     def ger_spectrum(self, num, current_position):
         self.con.xffts_publish_flag(scan_num=num, obs_mode=current_position)
-        time.sleep(self.obs["integ_off"])
+        time.sleep(self.obs["integ_off"].value)
         self.con.xffts_publish_flag(scan_num=num, obs_mode="")
 
     def timecheck(self, now, latest_calibtime, interval) -> bool:
