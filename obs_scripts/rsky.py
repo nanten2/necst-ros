@@ -9,27 +9,28 @@ import argparse
 class RSky(Observation):
     """
     An observing module for R-SKY observation, which provides Tsys
-    measurement toward (az, el)=(45, 70))
+    measurement toward an elevation of 80 deg.)
     """
 
     ObservationType = "R-SKY"
 
     def __init__(self):
-        # __init__ does not take any arguments(cf., obsfile) beacause in the R-SKY
-        # observation module, all observation params are included in this module.
+        # __init__ does not take any arguments(cf., obsfile) because in the R-SKY
+        # All the observation params are included in this module.
 
         super().__init__()
 
     def run(self, integ_time):
 
         print("Start R SKY observation")
+        print(f"Integration time {integ_time}")
         self.con.move_chopper("in")
         time.sleep(3)  # Temporarily
         status = self.con.read_status()
         hot_status = status.Current_Hot
         current_Az = status.Current_Az
 
-        self.con.onepoint_move(x=current_Az, y=70)
+        self.con.onepoint_move(x=current_Az, y=80)
         self.con.dome_track()
         self.con.dome_tracking_check()
         self.log.info("dome track OK")
