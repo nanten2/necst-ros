@@ -62,11 +62,9 @@ class OnTheFly(_observation.Observation):
         self.dcos = dcos
 
     def Scan_direction(self):
-        point = float(self.obs["scan_velocity"]) * float(
-            self.obs["integ_on"]
-        )  # [arcsec]
+        sample_spacing = self.obs["scan_velocity"] * self.obs["integ_on"]
         scan_spacing = self.obs["scan_spacing"]  # [arcsec]
-        return point, scan_spacing, 0, 0
+        return sample_spacing.value, scan_spacing, 0, 0
 
     def run_onepoint(self, current_position: str, current_num, num, kwparams):
         kwparams_onepoint = {
