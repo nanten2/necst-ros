@@ -1,191 +1,235 @@
-#!/usr/bin/env python3
-
-import pyinterface
-import struct
-import numpy
-import math
 import time
+from typing import Dict, Tuple
+
+try:
+    from typing import Literal
+except ImportError:
+    from typing_extensions import Literal
+
+from neclib import PIDController, optimum_angle
+
+# Indices for parameter lists.
+Last = -2
+Now = -1
 
 
-class antenna_device(object):
+class AntennaDriver:
+    """Hardware command layer.
 
-    command_az_speed = 0
-    command_el_speed = 0
+    Parameters
+    ----------
+    board_model
+        Model of Interface DIO board.
+    rsw_id
+        Rotary SWitch ID.
 
-    #count = [0, 0]
-    #target_array = [[0], [0]]
+    """
 
-    az_rate_d = el_rate_d = 0
-    pre_hensa = [0, 0]
-    ihensa = [0.0, 0.0]
+    def __init__(self, board_model: int, rsw_id: int) -> None:
+        import pyinterface
 
-    enc_before = [0, 0]
-    pre_arcsec = [0, 0]
-
-    t_now = t_past = 0.0
-
-    #PID parameter
-    p_coeff = [2.2, 2.2]
-    i_coeff = [0.0, 0.0]
-    d_coeff = [0, 0]
-    dir_name = ''
-    
-    def __init__(self):
-        board_name = 2724
-        rsw_id = 0 #rotary switch id
-        self.dio = pyinterface.open(board_name, rsw_id)
+        self.dio = pyinterface.open(board_model, rsw_id)
         self.dio.initialize()
 
+    def command(self, value: int, azel: Literal["az", "el"]) -> None:
+        # Specify which pins to use.
+        if azel.lower() == "az":
+            target = "OUT1_16"
+        elif azel.lower() == "el":
+            target = "OUT17_32"
 
-    def init_speed(self):
-        self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#az
-        self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])#el
-        self.command_az_speed = 0
-        self.command_el_speed = 0
-        return
+        n_bits = 16
+        cmd = bin(value)[2:].zfill(n_bits)[::-1]  # [::-1] for little endian.
+        cmd = [int(char) for char in cmd]
+        self.dio.output_word(target, cmd)
 
-    """                                                                       
-    def set_pid_param(self, param):                                            
-        self.p_coeff[0] = param["az"][0]                                               self.i_coeff[0] = param["az"][1]                                       
-        self.d_coeff[0] = param["az"][2]                                       
-        self.p_coeff[1] = param["el"][0]                                       
-        self.i_coeff[1] = param["el"][1]                                               self.d_coeff[1] = param["el"][2]                                               return                                                                 
+
+class antenna_device:
+    """For the NANTEN2 telescope.
+
+    Parameters
+    ----------
+    board_model
+        Model number of Interface Digital I/O board.
+    rsw_id
+        Rotary Switch ID.
+
     """
 
-    def move_azel(self, az_arcsec, el_arcsec, enc_az, enc_el, pid_param=None, m_bStop = 'FALSE'):
-        MOTOR_MAXSTEP = 300#original 1000 [changed by shiotani for avoiding antenna servo error]
-        MOTOR_AZ_MAXRATE = 5000#original 10000 [changed by shiotani for avoiding antenna servo error]
-        MOTOR_EL_MAXRATE = 10000
-        rate_to_arcsec = (12/7)*(3600/10000)
-        #self.set_pid_param(pid_param)
+    command_az_speed = command_el_speed = 0
+    az_rate_d = el_rate_d = 0
+    pre_hensa = [0, 0]
+    ihensa = [0, 0]
+    enc_before = [0, 0]
+    pre_arcsec = [0, 0]
+    t_now = t_past = 0
+    p_coeff = [2.2, 2.2]
+    i_coeff = [0, 0]
+    d_coeff = [0, 0]
+    dir_name = ""
 
-        #for az >= 180*3600 and az <= -180*3600
-        if enc_az > 40*3600 and az_arcsec+360*3600 < 220*3600:
-            az_arcsec += 360*3600
-        elif enc_az < -40*3600 and az_arcsec-360*3600 > -220*3600:
-            az_arcsec -= 360*3600
-            
-        if self.t_past == 0.0:
-            self.t_past = time.time()
-        else:
-            pass
-        self.t_now = time.time()
+    SPEED2RATE: float = (7 / 12) * (10000 / 3600)
+    # Speed [arcsec/s] to servomotor rate.
+    # 5250r of motor corresponds to 1r of antenna.
+    # 1500rpm of motor corresponds to 1500/5250rpm = 2/7rpm = 12/7[deg/s] of antenna.
+    # Command (we call it 'rate') for the servomotor is ratio of motor speed you desire
+    # to the motor's max speed in permyriad.
+    # e.g.) The rate corresponds to 100arcsec/s drive of antenna will be
+    # (7/12)*100*(10000/3600).
+    # Here (7/12)*(10000/3600) is the conversion factor `SPEED2RATE`.
+    # *1: Unit 'r' is rotation.
+    # *2: 5250 is the gear ratio for the NANTEN2 antenna drive.
+    # *3: 1500rpm is max speed of the servomotor installed on the NANTEN2.
+    LIMITS = [-270 * 3600, 270 * 3600]  # arcsec
 
-        ret_az = calc_pid(az_arcsec, enc_az, self.pre_arcsec[0], self.pre_hensa[0], self.ihensa[0], self.enc_before[0], self.t_now, self.t_past, self.p_coeff[0], self.i_coeff[0], self.d_coeff[0])
-        az_rate_ref = ret_az[0]
-        ret_el = calc_pid(el_arcsec, enc_el, self.pre_arcsec[1], self.pre_hensa[1], self.ihensa[1], self.enc_before[1], self.t_now, self.t_past, self.p_coeff[1], self.i_coeff[1], self.d_coeff[1])
-        el_rate_ref = ret_el[0]
+    def __init__(
+        self, board_model: int = 2724, rsw_id: int = 0, simulator: bool = False
+    ) -> None:
+        PIDController.ANGLE_UNIT = "arcsec"
+        self._az = PIDController(
+            pid_param=[self.p_coeff[0], self.i_coeff[0], self.d_coeff[0]]
+        )
+        self._el = PIDController(
+            pid_param=[self.p_coeff[1], self.i_coeff[1], self.d_coeff[1]]
+        )
+        self.simulator = simulator
+        if not self.simulator:
+            self.driver = AntennaDriver(board_model, rsw_id)
 
-        #update
-        self.enc_before = [enc_az, enc_el]
-        self.pre_hensa = [az_arcsec - enc_az, el_arcsec - enc_el]
-        self.pre_arcsec = [az_arcsec, el_arcsec]
-        self.ihensa = [ret_az[1], ret_el[1]]
-        self.t_past = self.t_now
+    def _command(self, value: int, azel: Literal["az", "el"]) -> None:
+        if not self.simulator:
+            self.driver.command(value, azel)
 
-        #limit of acc         
-        if abs(az_rate_ref - self.az_rate_d) < MOTOR_MAXSTEP*rate_to_arcsec:
-            self.az_rate_d = az_rate_ref
-        else:
-            if (az_rate_ref - self.az_rate_d) < 0:
-                a = -1
-            else:
-                a = 1
-            self.az_rate_d += a*MOTOR_MAXSTEP*rate_to_arcsec
-        if abs(el_rate_ref - self.el_rate_d) < MOTOR_MAXSTEP*rate_to_arcsec:
-            self.el_rate_d = el_rate_ref
-        else:
-            if (el_rate_ref - self.el_rate_d) < 0:
-                a = -1
-            else:
-                a = 1
-            self.el_rate_d += a*MOTOR_MAXSTEP*rate_to_arcsec
-            
-        #limit of max v
-        if self.az_rate_d > MOTOR_AZ_MAXRATE*rate_to_arcsec:
-            self.az_rate_d = MOTOR_AZ_MAXRATE*rate_to_arcsec
-        if self.az_rate_d < -MOTOR_AZ_MAXRATE*rate_to_arcsec:
-            self.az_rate_d = -MOTOR_AZ_MAXRATE*rate_to_arcsec
-        if self.el_rate_d > MOTOR_EL_MAXRATE*rate_to_arcsec:
-            self.el_rate_d = MOTOR_EL_MAXRATE*rate_to_arcsec
-        if self.el_rate_d < -MOTOR_EL_MAXRATE*rate_to_arcsec:
-            self.el_rate_d = -MOTOR_EL_MAXRATE*rate_to_arcsec
+    def init_speed(self) -> None:
+        dummy = 0
+        self._az.get_speed(dummy, dummy, stop=True)
+        self._el.get_speed(dummy, dummy, stop=True)
+        self._command(0, "az")
+        self._command(0, "el")
 
-        # output to port
-        if m_bStop == 'TRUE':
-            dummy = 0
-        else:
-            dummy = int(self.az_rate_d)
+    def set_pid_param(
+        self, param: Dict[Literal["az", "el"], Tuple[float, float, float]]
+    ) -> None:
+        self._az.k_p, self._az.k_i, self._az.k_d = param["az"]
+        self._el.k_p, self._el.k_i, self._el.k_d = param["el"]
 
-        self.command_az_speed = dummy
-        scaling_dummy = int(self.az_rate_d / rate_to_arcsec)
-        dummy_byte = list(map(int,  ''.join([format(b, '08b')[::-1] for b in struct.pack('<h', scaling_dummy)])))
-        self.dio.output_word('OUT1_16', dummy_byte)
-        self.az_rate_d = dummy
+    def move_azel(
+        self,
+        az_arcsec: float,
+        el_arcsec: float,
+        enc_az: float,
+        enc_el: float,
+        pid_param: Dict[str, Tuple[float, float, float]] = None,
+        m_bStop: Literal["FALSE", "TRUE"] = "FALSE",
+    ) -> Tuple[float, ...]:
+        if pid_param is not None:
+            self.set_pid_param(pid_param)
 
-        if m_bStop == 'TRUE':
-            dummy = 0
-        else:
-            dummy = int(self.el_rate_d)
-            
-        self.command_el_speed = dummy
-        scaling_dummy = int(self.el_rate_d / rate_to_arcsec) 
-        dummy_byte = list(map(int,  ''.join([format(b, '08b')[::-1] for b in struct.pack('<h', scaling_dummy)])))
-        self.dio.output_word('OUT17_32', dummy_byte)
-        self.el_rate_d = dummy
-         
+        if m_bStop == "FALSE":
+            stop = False
+        elif m_bStop == "TRUE":
+            stop = True
 
-        return [ret_az[0], ret_az[2], ret_az[3], ret_az[4], az_arcsec, enc_az, self.pre_hensa[0], self.ihensa[0], self.enc_before[0], ret_el[0], ret_el[2], ret_el[3], ret_el[4], el_arcsec, enc_el, self.pre_hensa[1], self.ihensa[1], self.enc_before[1], self.t_now, self.t_past]
-    
-    """                                                                         
-    def medi_calc(self, target_speed, i):                                      
-        target_num = 13 # number of median array                               
-        self.target_array[i].insert(0, target_speed)                           
-        if self.count[i] < target_num:                                         
-            self.count[i] += 1
-        else:                                                                 
-            self.target_array[i].pop(13)                                       
-                                                                             
-        median = numpy.median(self.target_array[i])                            
-        return median                                                          
-    """
+        az_arcsec = optimum_angle(
+            enc_az, az_arcsec, self.LIMITS, margin=40 * 3600, unit="arcsec"
+        )
 
-    def emergency_stop(self):
-        for i in range(5):
-            self.dio.output_word('OUT1_16', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
-            self.dio.output_word('OUT17_32', [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+        speed_az = self._az.get_speed(az_arcsec, enc_az, stop=stop)
+        speed_el = self._el.get_speed(el_arcsec, enc_el, stop=stop)
+        self._command(int(speed_az * self.SPEED2RATE), "az")
+        self._command(int(speed_el * self.SPEED2RATE), "el")
+
+        self.t_now = self._az.time[Now]
+        # May slightly different from `self._el.time[Now]`.
+
+        self.az_rate_d = int(speed_az)  # Not rate, but speed in [arcsec/s].
+        self.el_rate_d = int(speed_el)
+        self.command_az_speed = self.az_rate_d
+        self.command_el_speed = self.el_rate_d
+
+        return (
+            self._az.cmd_speed[Now] * 3600,
+            self._az.k_p * self._az.error[Now] * 3600,
+            self._az.k_i * self._az.error_integral * 3600 * self._az.dt,
+            self._az.k_d
+            * (self._az.error[Now] - self._az.error[Last])
+            * 3600
+            / self._az.dt,
+            self._az.cmd_coord[Now] * 3600,
+            self._az.enc_coord[Now] * 3600,
+            self._az.error[Last] * 3600,
+            self._az.error_integral * 3600,
+            self._az.enc_coord[Last] * 3600,
+            self._az.cmd_speed[Now] * 3600,
+            self._el.k_p * self._az.error[Now] * 3600,
+            self._el.k_i * self._az.error_integral * 3600 * self._az.dt,
+            self._el.k_d
+            * (self._az.error[Now] - self._az.error[Last])
+            * 3600
+            / self._az.dt,
+            self._el.cmd_coord[Now] * 3600,
+            self._el.enc_coord[Now] * 3600,
+            self._el.error[Last] * 3600,
+            self._el.error_integral * 3600,
+            self._el.enc_coord[Last] * 3600,
+            self._el.time[Now],
+            self._el.time[Last],
+        )  # All angle-related parameters are in arcsec.
+
+    def emergency_stop(self) -> None:
+        dummy = 0
+        for _ in range(5):
+            self._command(0, "az")
+            self._command(0, "el")
+            _ = self._az.get_speed(dummy, dummy, stop=True)
+            _ = self._el.get_speed(dummy, dummy, stop=True)
             time.sleep(0.05)
-            self.command_az_speed = 0
-            self.command_el_speed = 0
-            return
 
-def calc_pid(target_arcsec, encoder_arcsec, pre_arcsec, pre_hensa, ihensa, enc_before, t_now, t_past, p_coeff, i_coeff, d_coeff):
-    """                                                                         
-    DESCRIPTION                                                                 
-    ===========                                                                 
-    This function determine az&el speed for antenna                             
+
+def calc_pid(
+    target_arcsec: float,
+    encoder_arcsec: float,
+    pre_arcsec: float,
+    pre_hensa: float,
+    ihensa: float,
+    enc_before: float,
+    t_now: float,
+    t_past: float,
+    p_coeff: float,
+    i_coeff: float,
+    d_coeff: float,
+) -> Tuple[float, ...]:
+    """PID calculation.
+
+    ..deprecated:: v2.1.0
+        This function will be removed in v4.0.0, because of implementation structure
+        issue. Please use `AntennaDevice.calc_pid`.
+
     """
+    calculator = PIDController(pid_param=[p_coeff, i_coeff, d_coeff])
 
-    #calculate ichi_hensa
-    hensa = target_arcsec - encoder_arcsec
+    # Set `Last` parameters.
+    calculator.time.push(t_past)
+    calculator.cmd_coord.push(pre_arcsec / 3600)
+    calculator.enc_coord.push(enc_before / 3600)
+    calculator.error.push(pre_hensa / 3600)
 
-    dhensa = hensa - pre_hensa
-    if math.fabs(dhensa) > 1:
-        dhensa = 0
+    # Set new parameters.
+    calculator.time.push(t_now)
+    calculator.cmd_coord.push(target_arcsec / 3600)
+    calculator.enc_coord.push(encoder_arcsec / 3600)
+    calculator.error.push((target_arcsec - encoder_arcsec) / 3600)
 
-    if (encoder_arcsec - enc_before) != 0.0:
-        current_speed = (encoder_arcsec - enc_before) / (t_now-t_past)
-            
-    if pre_arcsec == 0: # for first move
-        target_speed = 0
-    else:
-        target_speed = (target_arcsec - pre_arcsec)/(t_now - t_past)
+    speed = calculator._calc_pid()
 
-    ihensa += (hensa + pre_hensa)/2
-    if math.fabs(hensa) > 50:
-        ihensa = 0.0
+    error_diff = (calculator.error[Now] - calculator.error[Last]) / calculator.dt
+    if abs(error_diff) * 3600 > 1:
+        error_diff = 0
 
-        #PID
-    rate = target_speed + p_coeff*hensa + i_coeff*ihensa*(t_now-t_past) + d_coeff*dhensa/(t_now-t_past)
-    #print(p_coeff*hensa, i_coeff*ihensa*(t_now-t_past),i_coeff, hensa, rate)
-    return [rate, ihensa, p_coeff*hensa, i_coeff*ihensa*(t_now-t_past), d_coeff*dhensa/(t_now-t_past)]
+    return (
+        speed,
+        calculator.error_integral,
+        calculator.k_p * calculator.error[Now],
+        calculator.k_i * calculator.error_integral * calculator.dt,
+        calculator.k_d * error_diff / calculator.dt,
+    )

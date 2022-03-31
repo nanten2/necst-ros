@@ -1,9 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 from std_msgs.msg import String
 from necst.msg import Status_obs_msg
 from datetime import datetime
 import sys
+
 sys.path.append("/home/amigos/git")
 import n2lite
 import time
@@ -14,29 +15,39 @@ a = n2lite.N2lite(path_to_db)
 b = n2lite.N2lite(path_to_db2)
 before_req = 0
 
+
 def save(callback):
     now = datetime.utcnow()
     data = callback.data.split("#")
-    a.write("log2","",[time.time(),data[0],data[1],data[2]])
+    a.write("log2", "", [time.time(), data[0], data[1], data[2]])
     a.commit_data()
     print("write")
 
+
 def save_obs_status(req):
     global before_req
-    print('subscrlibe!')
+    print("subscrlibe!")
     now = datetime.now()
-    time_ = now.strftime('%Y/%m/%d %H:%M:%S')
+    time_ = now.strftime("%Y/%m/%d %H:%M:%S")
     if before_req == 0:
         pass
-    #elif not (before_req.active == req.active and before_req.obs_script == req.obs_script):
+    # elif not (before_req.active == req.active and before_req.obs_script == req.obs_script):
     #    pass
-    #else:
+    # else:
     #    return
-    
+
     if req.active == True:
-        b.write("observation_log", "", [time_, req.target, req.obs_script, req.obs_file, "START"])
+        b.write(
+            "observation_log",
+            "",
+            [time_, req.target, req.obs_script, req.obs_file, "START"],
+        )
     else:
-        b.write("observation_log", "", [time_, req.target, req.obs_script, req.obs_file, "END"])
+        b.write(
+            "observation_log",
+            "",
+            [time_, req.target, req.obs_script, req.obs_file, "END"],
+        )
     before_req = req
     b.commit_data()
     print(time_, " commit data")
@@ -55,12 +66,23 @@ def save_obs_status(req):
         print('pub!2')
         before_active = False
     """
-    
-    
+
+
 if __name__ == "__main__":
-    a.make_table("log2",{"time":"float", "log1":"str", "log2":"str", "log3":"str"})
-    b.make_table("observation_log",{"time":"str", "target":"str", "obs_script":"str", "obs_file":"str", "status":"str"})
+    a.make_table("log2", {"time": "float", "log1": "str", "log2": "str", "log3": "str"})
+    b.make_table(
+        "observation_log",
+        {
+            "time": "str",
+            "target": "str",
+            "obs_script": "str",
+            "obs_file": "str",
+            "status": "str",
+        },
+    )
     rospy.init_node("save_log_db")
-    sub1 = rospy.Subscriber("logging_ctrl", String,save, queue_size=10)
-    sub2 = rospy.Subscriber("obs_status", Status_obs_msg, save_obs_status, queue_size=10)
+    sub1 = rospy.Subscriber("logging_ctrl", String, save, queue_size=10)
+    sub2 = rospy.Subscriber(
+        "obs_status", Status_obs_msg, save_obs_status, queue_size=10
+    )
     rospy.spin()

@@ -15,7 +15,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/
 lib64/
 parts/
 sdist/
@@ -93,3 +93,7 @@ ENV/
 
 # Mac
 .DS_Store
+
+# editor
+.vscode/
+*.code-workspace

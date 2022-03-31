@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 import os
 from necst.msg import List_coord_msg
@@ -6,7 +6,8 @@ from std_msgs.msg import String
 
 rospy.init_node("save_wclist")
 
-class save_wclist():
+
+class save_wclist:
     home_path = "/home/amigos/hdd/data/"
     data_path = ""
     save_flag = False
@@ -21,8 +22,16 @@ class save_wclist():
             if not os.path.exists(self.data_path):
                 os.makedirs(self.data_path)
             with open(os.path.join(self.data_path, "wc_list.txt"), "a") as f:
-                f.write("{}#{}#{}#{}#{}#{}#{}#{}#{}\n".format(*req.x_list, *req.y_list, *req.time_list, req.coord,
-                        req.off_az, req.off_el))
+                f.write(
+                    "{}#{}#{}#{}#{}#{}#{}#{}#{}\n".format(
+                        *req.x_list,
+                        *req.y_list,
+                        *req.time_list,
+                        req.coord,
+                        req.off_az,
+                        req.off_el
+                    )
+                )
             print(req)
         else:
             print("not saving")
