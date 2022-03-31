@@ -253,7 +253,7 @@ class OnTheFly(_observation.Observation):
 
             kwparams = {
                 "coord": self.obs["COORD_SYS"],
-                "off_coord": self.obs["COORD_SYS"],
+                "offcoord": self.obs["COORD_SYS"],
                 "dcos": self.dcos,
             }
 
