@@ -11,7 +11,7 @@ from astropy import units as u
 
 
 class OnTheFly(_observation.Observation):
-    ObservationType = "OTF"
+    ObservationType = "LINEOTF"
 
     def ScanParameters(self):
         start_x = (
@@ -214,7 +214,7 @@ class OnTheFly(_observation.Observation):
         if self.obs["SCAN_DIRECTION"] == "X":
             params_obs = [
                 True,
-                self.obs["obsmode"],
+                self.ObservationType,
                 obsscript,
                 str(self.obsfile_path),
                 self.obs["object"],
@@ -230,7 +230,7 @@ class OnTheFly(_observation.Observation):
         elif self.obs["SCAN_DIRECTION"] == "Y":
             params_obs = [
                 True,
-                self.obs["obsmode"],
+                self.ObservationType,
                 obsscript,
                 str(self.obsfile_path),
                 self.obs["object"],
