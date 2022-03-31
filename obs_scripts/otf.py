@@ -113,7 +113,7 @@ class OnTheFly(_observation.Observation):
 
     def timecheck(self, now, latest_calibtime, interval) -> bool:
         actual_interval = now - latest_calibtime
-        return actual_interval > interval
+        return actual_interval > interval.value
 
     def RampStart(self, num):
         ramp_start_x = (
@@ -262,7 +262,7 @@ class OnTheFly(_observation.Observation):
             if self.timecheck(
                 now=current_time,
                 latest_calibtime=latest_calibtime,
-                interval=60 * self.obs["load_interval"],
+                interval=self.obs["load_interval"],
             ):
                 _ = self.run_onepoint(
                     current_position="HOT",
