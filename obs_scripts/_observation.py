@@ -25,22 +25,22 @@ class Observation:
 
     Notes
     -----
-    Databases are saved under ``DataBaseDir / ObservationType``.
+    Databases are saved under ``DatabaseDir / ObservationType``.
 
     """
 
     ObservationType: ClassVar[str]
     """Kind of this observation."""
 
-    ObsfileDir: PathLike = HomeDir / "necst-obsfiles"
+    ObsfileDir: Path = HomeDir / "necst-obsfiles"
     """Directory which contain observation spec files."""
-    LogDir: PathLike = HomeDir / "log"
+    LogDir: Path = HomeDir / "log"
     """Directory into which observation command log are saved."""
-    DataBaseDir: PathLike = HomeDir / "data" / "observation"
+    DatabaseDir: Path = HomeDir / "data" / "observation"
     """Parent directory into which observation database is saved."""
 
-    def __init__(self, obsfile: PathLike = None) -> None:
-        self.DataDir = self.DataBaseDir / self.ObservationType
+    def __init__(self, obsfile: str = None) -> None:
+        self.DataDir = self.DatabaseDir / self.ObservationType
 
         self.con = ROS_controller.controller()
         if obsfile is not None:
