@@ -96,7 +96,9 @@ class Observation(abc.ABC):
         if params is None:
             return DataClass()
 
-        converted = neclib.utils.quantity2builtin(params, unit=cls.ParameterUnits)
+        converted = neclib.utils.quantity2builtin(
+            params.__dict__, unit=cls.ParameterUnits
+        )  # TODO: Make DataClass dict compatible.
         return DataClass(**converted)
 
     def init_logger(self) -> None:
