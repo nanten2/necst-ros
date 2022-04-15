@@ -135,7 +135,7 @@ class RadioPointing(Observation):
             for i, (x_offset, y_offset) in enumerate(offset_x_scan + offset_y_scan):
                 pt_idx = n * self.params.METHOD + i + 1
 
-                if self.check_interval(calib_time, self.params.integ_hot):
+                if self.check_interval(calib_time, self.params.load_interval):
                     calib_time = self.run_calibration("hot", pt_idx, x_offset, y_offset)
                     _ = self.run_calibration("off", pt_idx, x_offset, y_offset)
 
