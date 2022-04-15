@@ -63,7 +63,7 @@ class RadioPointing(Observation):
 
     def run_calibration(
         self, mode: Literal["hot", "off"], num: int, x_offset: float, y_offset: float
-    ) -> None:
+    ) -> float:
         """Run calibration observation."""
         chopper_position = {"hot": "in", "off": "out"}
 
@@ -90,6 +90,8 @@ class RadioPointing(Observation):
         self.log.info(f"Temperature: {status.CabinTemp1}")
 
         self.get_spectra(self.params.integ_hot, mode, num, x_offset, y_offset)
+
+        return time.time()  # return the time of the last calibration
 
     def run(self, n_observations: int = None) -> None:
         """Run the observation.
