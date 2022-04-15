@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 
+import abc
 import os
 import signal
 import sys
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import ClassVar
+from typing import ClassVar, Dict, List, Union
 
+import astropy.units as u
+import neclib
 from n_const import ObsParams
-from neclib.typing import PathLike
+from n_const.data_format import DataClass
 
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
@@ -19,55 +22,96 @@ import ROS_controller  # noqa: E402
 
 HomeDir = Path.home()
 
+UnitType = Union[str, u.Unit]
 
-class Observation:
+
+class Observation(abc.ABC):
     """Base class for observation scripts.
 
     Notes
     -----
     Databases are saved under ``DatabaseDir / ObservationType``.
 
+    Attributes
+    ----------
+    ctrl
+        ``ROSController`` instance, to which any instructions to devices are passed.
+    params
+        ``ObsParams`` instance, which contains the parameters of the observation.
+    log
+        ``logging.Logger`` instance, which prints the log messages to the terminal via
+        ``[debug|info|warning|error|critical]`` methods.
+    logger
+        ``logger`` instance, which saves the log messages to the log file via ``obslog``
+        method.
+    start_time
+        UNIX time the observation was initialized (not the time ``run`` is called).
+
     """
 
     ObservationType: ClassVar[str]
     """Kind of this observation."""
+    ParameterUnits: ClassVar[Union[Dict[str, UnitType], Dict[UnitType, List[str]]]] = {}
 
-    ObsfileDir: Path = HomeDir / "necst-obsfiles"
+    ObsfileDir: ClassVar[Path] = HomeDir / "necst-obsfiles"
     """Directory which contain observation spec files."""
-    LogDir: Path = HomeDir / "log"
+    LogDir: ClassVar[Path] = HomeDir / "log"
     """Directory into which observation command log are saved."""
-    DatabaseDir: Path = HomeDir / "data" / "observation"
+    DatabaseDir: ClassVar[Path] = HomeDir / "data" / "observation"
     """Parent directory into which observation database is saved."""
 
     def __init__(self, obsfile: str = None) -> None:
         self.DataDir = self.DatabaseDir / self.ObservationType
 
-        self.con = ROS_controller.controller()
+        self.ctrl = ROS_controller.controller()
+        """``ROSController`` instance, which handles any instructions to any devices."""
+
+        _params = {}
         if obsfile is not None:
             self._obsfile_path = self.ObsfileDir / obsfile
-            self.obs = ObsParams.from_file(self._obsfile_path)
-        else:
-            self.obs = None
+            _params = ObsParams.from_file(self._obsfile_path)
+        self.params = self.convert_parameter_type(_params)
+        """``ObsParams`` instance, which contains the parameters of the observation."""
 
         signal.signal(signal.SIGINT, self.signal_handler)
-        self.con.get_authority()
+        self.ctrl.get_authority()
         self.now = datetime.utcnow()
         self.init_logger()
         self.fileconfig()
+
+        # Backwards compatible aliases.
+        self.con = self.ctrl
+        """``ROSController`` instance, which handles any instructions to any devices."""
+        self.obs = self.params
+        """``ObsParams`` instance, which contains the parameters of the observation."""
+
+        # Variable annotation
+        self.logger = self.logger
+        """Save log messages to the log file via ``obslog`` method."""
+        self.log = self.log
+        """Print message to terminal. Method: ``[debug|info|warning|error|critical]``"""
+
+    @classmethod
+    def convert_parameter_type(cls, params: DataClass) -> DataClass:
+        if params is None:
+            return DataClass()
+
+        converted = neclib.utils.quantity2builtin(params, unit=cls.ParameterUnits)
+        return DataClass(**converted)
 
     def init_logger(self) -> None:
         self.log_path = self.LogDir / f"{self.now.strftime('%Y%m%d')}.txt"
 
         self.logger = logger.logger(__name__, filename=self.log_path)
         self.log = self.logger.setup_logger()
-        self.logger.obslog(sys.argv)
 
+        self.logger.obslog(sys.argv)
         self.start_time = time.time()
 
     def fileconfig(self) -> None:
-        if self.obs is not None:
-            _spectra = self.obs.get("MOLECULE_1", "")
-            _target = self.obs.get("OBJECT", "")
+        if self.params is not None:
+            _spectra = self.params.get("MOLECULE_1", "")
+            _target = self.params.get("OBJECT", "")
             db_name = f"n{self.now.strftime('%Y%m%d%H%M%S')}_{_spectra}_{_target}"
         else:
             db_name = f"n{self.now.strftime('%Y%m%d%H%M%S')}_{self.ObservationType}"
@@ -78,27 +122,28 @@ class Observation:
         self.logger.obslog(f"savedir : {db_path}", lv=1)
 
         xffts_datapath = db_path / "xffts.ndf"
-        self.con.pub_loggerflag(str(db_path))
+        self.ctrl.pub_loggerflag(str(db_path))
 
-        self.log.debug(f"obsdir : {self.obsfile_path}")
-        self.log.debug(f"log_path : {self.log_path}")
-        self.log.debug(f"dirname : {db_name}")
-        self.log.debug(f"xffts : {xffts_datapath}")
+        self.log.debug("obsdir :", self.obsfile_path)
+        self.log.debug("log_path :", self.log_path)
+        self.log.debug("dirname :", db_name)
+        self.log.debug("xffts :", xffts_datapath)
 
     def signal_handler(self):
         self.log.warn("!! ctrl + C !!")
         self.log.warn("STOP DRIVE")
-        self.con.move_stop()
-        self.con.dome_stop()
-        self.con.obs_status(active=False)
+        self.ctrl.move_stop()
+        self.ctrl.dome_stop()
+        self.ctrl.obs_status(active=False)
         _scan_num = getattr(self, "scan_num", -1)
-        self.con.xffts_publish_flag(obs_mode="", scan_num=_scan_num)
-        self.con.pub_loggerflag("")
+        self.ctrl.xffts_publish_flag(obs_mode="", scan_num=_scan_num)
+        self.ctrl.pub_loggerflag("")
         time.sleep(2)
         self.logger.obslog("STOP OBSERVATION", lv=1)
         time.sleep(1)
         sys.exit()
 
+    @abc.abstractmethod
     def run(self):
         raise NotImplementedError
 
