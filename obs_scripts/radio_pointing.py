@@ -72,7 +72,7 @@ class RadioPointing(Observation):
         self.wait_for_chopper_move()
 
         self.ctrl.onepoint_move(
-            *(self.params.LamdaOff, self.params.BetaOff, self.params.COORDSYS),
+            *(self.params.LamdaOff, self.params.BetaOff, self.params.COORD_SYS),
             off_x=self.params.OffsetAz,
             off_y=self.params.OffsetEl,
             dcos=self.need_x_to_az_conversion,
@@ -140,7 +140,7 @@ class RadioPointing(Observation):
                     _ = self.run_calibration("off", pt_idx, x_offset, y_offset)
 
                 self.ctrl.onepoint_move(
-                    *(self.params.LamdaOn, self.params.BetaOn, self.params.COORDSYS),
+                    *(self.params.LamdaOn, self.params.BetaOn, self.params.COORD_SYS),
                     off_x=self.params.OffsetAz + x_offset,
                     off_y=self.params.OffsetEl + y_offset,
                     offcoord="horizontal",
