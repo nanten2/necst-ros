@@ -175,7 +175,7 @@ class RadioPointing(Observation):
             current_position=mode.upper(),
         )
         status = self.ctrl.read_status()
-        self.log.debug(f"Temperature: {status.CabinTemp1}")
+        self.log.info(f"Temperature: {status.CabinTemp1}")
 
         self.get_spectra(self.params.val.integ_hot, mode, pt_idx, x_offset, y_offset)
 
