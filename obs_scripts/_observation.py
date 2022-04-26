@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import abc
+import logging
 import os
 import signal
 import sys
@@ -10,15 +11,14 @@ from pathlib import Path
 from typing import ClassVar, Dict, List, Union
 
 import astropy.units as u
-import neclib
-from n_const import ObsParams
-from n_const.data_format import DataClass
+from neclib.parameters import ObsParams
 
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 
 import logger  # noqa: E402
 import ROS_controller  # noqa: E402
+
 
 HomeDir = Path.home()
 
@@ -28,15 +28,20 @@ UnitType = Union[str, u.Unit]
 class Observation(abc.ABC):
     """Base class for observation scripts.
 
+    Parameters
+    ----------
+    obsfile
+        File name (not path) of observation spec file.
+
     Notes
     -----
     Databases are saved under ``DatabaseDir / ObservationType``.
 
     Attributes
     ----------
-    ctrl
+    ctrl, con
         ``ROSController`` instance, to which any instructions to devices are passed.
-    params
+    params, obs
         ``ObsParams`` instance, which contains the parameters of the observation.
     log
         ``logging.Logger`` instance, which prints the log messages to the terminal via
@@ -66,11 +71,11 @@ class Observation(abc.ABC):
         self.ctrl = ROS_controller.controller()
         """``ROSController`` instance, which handles any instructions to any devices."""
 
-        _params = {}
-        if obsfile is not None:
-            self._obsfile_path = self.ObsfileDir / obsfile
-            _params = ObsParams.from_file(self._obsfile_path)
-        self.params = self.convert_parameter_type(_params)
+        self._obsfile_path = None if obsfile is None else self.ObsfileDir / obsfile
+        ObsParams.ParameterUnit = self.ParameterUnits
+        self.params = (
+            ObsParams() if obsfile is None else ObsParams.from_file(self._obsfile_path)
+        )
         """``ObsParams`` instance, which contains the parameters of the observation."""
 
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -88,18 +93,8 @@ class Observation(abc.ABC):
         # Variable annotation
         self.logger = self.logger
         """Save log messages to the log file via ``obslog`` method."""
-        self.log = self.log
+        self.log: logging.Logger = self.log
         """Print message to terminal. Method: ``[debug|info|warning|error|critical]``"""
-
-    @classmethod
-    def convert_parameter_type(cls, params: DataClass) -> DataClass:
-        if params is None:
-            return DataClass()
-
-        converted = neclib.utils.quantity2builtin(
-            params.__dict__, unit=cls.ParameterUnits
-        )  # TODO: Make DataClass dict compatible.
-        return DataClass(**converted)
 
     def init_logger(self) -> None:
         self.log_path = self.LogDir / f"{self.now.strftime('%Y%m%d')}.txt"
@@ -155,7 +150,7 @@ class Observation(abc.ABC):
 
     @property
     def obsfile_path(self):
-        return getattr(self, "_obsfile_path", "")
+        return self._obsfile_path
 
 
 if __name__ == "__main__":
