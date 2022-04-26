@@ -8,6 +8,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
+from types import FrameType
 from typing import ClassVar, Dict, List, Union
 
 import astropy.units as u
@@ -126,7 +127,7 @@ class Observation(abc.ABC):
         self.log.debug("dirname :", db_name)
         self.log.debug("xffts :", xffts_datapath)
 
-    def signal_handler(self):
+    def signal_handler(self, number: int, frame: FrameType):
         self.log.warn("!! ctrl + C !!")
         self.log.warn("STOP DRIVE")
         self.ctrl.move_stop()
