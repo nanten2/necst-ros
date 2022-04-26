@@ -122,10 +122,10 @@ class Observation(abc.ABC):
         xffts_datapath = db_path / "xffts.ndf"
         self.ctrl.pub_loggerflag(str(db_path))
 
-        self.log.debug("obsdir :", self.obsfile_path)
-        self.log.debug("log_path :", self.log_path)
-        self.log.debug("dirname :", db_name)
-        self.log.debug("xffts :", xffts_datapath)
+        self.log.debug(f"obsdir : {self.obsfile_path}")
+        self.log.debug(f"log_path : {self.log_path}")
+        self.log.debug(f"dirname : {db_name}")
+        self.log.debug(f"xffts : {xffts_datapath}")
 
     def signal_handler(self, number: int, frame: FrameType):
         self.log.warn("!! ctrl + C !!")
