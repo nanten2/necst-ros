@@ -91,7 +91,7 @@ class RadioPointing(Observation):
         method to be removed ASAP.
 
         """
-        if sum(self._used_angular_units) > 1:
+        if len(self._used_angular_units) > 1:
             raise ValueError("Using multiple angular units isn't supported.")
         if isinstance(value, u.Quantity) and (not value.unit.is_unity()):
             raise ValueError("Quantity with physical dimension isn't supported.")
