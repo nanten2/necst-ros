@@ -9,7 +9,7 @@ from datetime import datetime
 
 import rospy
 import rosnode
-from neclib.utils import NECSTAuthorityError
+from neclib import NECSTAuthorityError
 from std_msgs.msg import String
 
 import logger

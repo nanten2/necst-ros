@@ -6,7 +6,7 @@ try:
 except ImportError:
     from typing_extensions import Literal
 
-from neclib.controller import PIDController
+from neclib.controllers import PIDController
 from neclib.utils import optimum_angle
 
 # Indices for parameter lists.
