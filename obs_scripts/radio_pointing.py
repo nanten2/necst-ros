@@ -12,8 +12,8 @@ from neclib.utils import counter
 
 from _observation import Observation
 
-PossibleAngleUnits = [unit.to_string() for unit in u.deg.find_equivalent_units] + [
-    unit for unit in u.deg.find_equivalent_units
+PossibleAngleUnits = [unit.to_string() for unit in u.deg.find_equivalent_units()] + [
+    unit for unit in u.deg.find_equivalent_units()
 ]
 
 
