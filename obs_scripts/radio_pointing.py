@@ -151,7 +151,7 @@ class RadioPointing(Observation):
         self.ctrl.onepoint_move(*to, **offset_kw, dcos=int(not lonlat_applied))
         self.ctrl.antenna_tracking_check()
         self.ctrl.dome_tracking_check()
-        self.log.info("Tracking OK")
+        self.log.debug("Tracking OK")
 
     def run_calibration(
         self, mode: Literal["hot", "off"], pt_idx: int, x_offset: float, y_offset: float
@@ -175,7 +175,7 @@ class RadioPointing(Observation):
             current_position=mode.upper(),
         )
         status = self.ctrl.read_status()
-        self.log.info(f"Temperature: {status.CabinTemp1}")
+        self.log.debug(f"Temperature: {status.CabinTemp1}")
 
         self.get_spectra(self.params.val.integ_hot, mode, pt_idx, x_offset, y_offset)
 
@@ -245,6 +245,9 @@ class RadioPointing(Observation):
                     offset_az,
                     offset_el,
                 )
+
+        self.ctrl.move_stop()
+        self.log.info(f"{self.ObservationType.capitalize()} observation finished.")
 
 
 if __name__ == "__main__":
