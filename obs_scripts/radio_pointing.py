@@ -260,3 +260,4 @@ if __name__ == "__main__":
     args = p.parse_args()
 
     observer = RadioPointing(args.obsfile)
+    observer.run()
