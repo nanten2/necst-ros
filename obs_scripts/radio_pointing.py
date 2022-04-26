@@ -48,7 +48,7 @@ class RadioPointing(Observation):
     ) -> None:
         super().__init__(*args, **kwargs)
 
-        self.num_points_per_axis = math.ceil(self.params.METHOD / 2)
+        self.num_points_per_axis = math.ceil(self.params.val.METHOD / 2)
         self._used_angular_units = [
             unit for unit in self.ParameterUnits.values() if unit in PossibleAngleUnits
         ] + [unit for unit in self.ParameterUnits.keys() if unit in PossibleAngleUnits]
@@ -65,7 +65,7 @@ class RadioPointing(Observation):
         self.on_point_coord = (
             self.params.val.LamdaOn,
             self.params.val.BetaOn,
-            self.params.COORD_SYS,
+            self.params.val.COORD_SYS,
         )
         self.lonlat_applied = True  # Already converted above.
 
@@ -177,7 +177,7 @@ class RadioPointing(Observation):
         status = self.ctrl.read_status()
         self.log.info(f"Temperature: {status.CabinTemp1}")
 
-        self.get_spectra(self.params.integ_hot, mode, pt_idx, x_offset, y_offset)
+        self.get_spectra(self.params.val.integ_hot, mode, pt_idx, x_offset, y_offset)
 
         self.last_calib_point[mode] = self.point_count
         self.last_calib_time[mode] = time.time()
@@ -211,7 +211,7 @@ class RadioPointing(Observation):
             exposure_on=self.params.val.integ_on,
         )
 
-        for _ in counter(self.params.N):
+        for _ in counter(self.params.val.N):
             args_az = (self.params.val.GridAz, self.num_points_per_axis)
             obs_point_offset_az = list(
                 map(lambda offset: (offset, 0), self.grid_offset(*args_az))
