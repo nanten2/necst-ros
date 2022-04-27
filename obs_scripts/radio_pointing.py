@@ -182,6 +182,8 @@ class RadioPointing(Observation):
         self.last_calib_point[mode] = self.point_count
         self.last_calib_time[mode] = time.time()
 
+        self.ctrl.move_chopper("out")
+
     def run(self) -> None:
         """Run the observation.
 
