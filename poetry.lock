@@ -495,6 +495,18 @@ numpy = ">=1.19,<2.0"
 typing-extensions = {version = ">=3.0,<5.0", markers = "python_version < \"3.8\""}
 
 [[package]]
+name = "necstdb"
+version = "0.2.6"
+description = "Database for NECST."
+category = "main"
+optional = false
+python-versions = ">=3.6.1,<3.10"
+
+[package.dependencies]
+numpy = ">=1.19,<2.0"
+pandas = ">=1.1,<2.0"
+
+[[package]]
 name = "nest-asyncio"
 version = "1.5.5"
 description = "Patch asyncio to allow nested event loops"
@@ -1023,7 +1035,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.6.1, <3.10"
-content-hash = "fb7105af12f53a9acd7f217747a64427c316a20eb7344eef453b195c4a5c22a2"
+content-hash = "103aee91911be22c00dca0f4a888295e72431ab7c1a3008158b73a90395516ee"
 
 [metadata.files]
 alabaster = [
@@ -1357,6 +1369,10 @@ n-const = [
 neclib = [
     {file = "neclib-0.5.4-py3-none-any.whl", hash = "sha256:161c711428f20b397af9ae8999812d92102745eef1adac68f569b4469264a8ae"},
     {file = "neclib-0.5.4.tar.gz", hash = "sha256:3e819bf83f3aa8d5c3dc0e0e8ba88cb397644dd7285cecc3aa07363b9293b67f"},
+]
+necstdb = [
+    {file = "necstdb-0.2.6-py3-none-any.whl", hash = "sha256:f181ed9bb1d858f50e5bd0323a8038623065004785e09d5eccecedb0efd279a9"},
+    {file = "necstdb-0.2.6.tar.gz", hash = "sha256:2851c0a69a66c185bec7a76455293cef185dc1e4f5df1e59d6b65040d77f50cf"},
 ]
 nest-asyncio = [
     {file = "nest_asyncio-1.5.5-py3-none-any.whl", hash = "sha256:b98e3ec1b246135e4642eceffa5a6c23a3ab12c82ff816a92c612d68205813b2"},
