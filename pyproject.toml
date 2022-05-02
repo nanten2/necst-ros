@@ -12,7 +12,7 @@ astropy = [
 ]
 matplotlib = "^3.3"
 n_const = "^1.0.4"
-neclib = "^0.5.4"
+neclib = "^0.6.1"
 necstdb = "^0.2.5"
 numpy = "^1.19"
 pandas = ">=0.25, <2.0"
