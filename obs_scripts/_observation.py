@@ -68,23 +68,9 @@ class Observation(abc.ABC):
     """Parent directory into which observation database is saved."""
 
     def __init__(self, obsfile: str = None, verbose: int = 20) -> None:
-        self.DataDir = self.DatabaseDir / self.ObservationType
-
-        self.ctrl = ROS_controller.controller()
-        """``ROSController`` instance, which handles any instructions to any devices."""
-
-        self._obsfile_path = None if obsfile is None else self.ObsfileDir / obsfile
-        ObsParams.ParameterUnit = self.ParameterUnits
-        self.params = (
-            ObsParams() if obsfile is None else ObsParams.from_file(self._obsfile_path)
-        )
-        """``ObsParams`` instance, which contains the parameters of the observation."""
-
-        signal.signal(signal.SIGINT, self.signal_handler)
-        self.ctrl.get_authority()
-
         self.start_time = time.time()
         self.str_now = datetime.utcfromtimestamp(self.start_time)
+        self.DataDir = self.DatabaseDir / self.ObservationType
 
         # Logger and database set-up.
         self.logger = self.init_logger(verbose)
@@ -92,6 +78,20 @@ class Observation(abc.ABC):
         self.fileconfig()
 
         self.logger.obslog(str(sys.argv))
+
+        # Set up controller.
+        self.ctrl = ROS_controller.controller()
+        """``ROSController`` instance, which handles any instructions to any devices."""
+        self.ctrl.get_authority()
+        signal.signal(signal.SIGINT, self.signal_handler)
+
+        # Get observation parameters.
+        self._obsfile_path = None if obsfile is None else self.ObsfileDir / obsfile
+        ObsParams.ParameterUnit = self.ParameterUnits
+        self.params = (
+            ObsParams() if obsfile is None else ObsParams.from_file(self._obsfile_path)
+        )
+        """``ObsParams`` instance, which contains the parameters of the observation."""
 
         # Backwards compatible aliases.
         self.con = self.ctrl
@@ -103,7 +103,9 @@ class Observation(abc.ABC):
 
     def init_logger(self, verbose: int) -> console_logger.ConsoleLogger:
         self.log_path = self.LogDir / f"{self.str_now.strftime('%Y%m%d')}.txt"
-        obslog_path = self.log_path.parent / ("obs_" + {self.log_path.name})
+        obslog_path = (
+            self.log_path.parent / f"{self.log_path.stem}_summary{self.log_path.suffix}"
+        )
 
         logger = console_logger.getLogger(
             __name__,
@@ -122,17 +124,18 @@ class Observation(abc.ABC):
             db_name = f"n{self.str_now.strftime('%Y%m%d%H%M%S')}_{self.ObservationType}"
 
         db_path = self.DataDir / db_name
-        self.logger.info(f"mkdir {db_path}")
+        self.logger.debug(f"mkdir {db_path}")
         db_path.mkdir(parents=True, exist_ok=False)
-        self.logger.obslog(f"savedir : {db_path}", 1)
 
         xffts_datapath = db_path / "xffts.ndf"
         self.ctrl.pub_loggerflag(str(db_path))
 
-        self.logger.debug(f"obsfile : {self.obsfile_path}")
+        self.logger.info(f"obsfile : {self.obsfile_path}")
         self.logger.debug(f"log_path : {self.log_path}")
-        self.logger.debug(f"dirname : {db_name}")
+        self.logger.info(f"database : {db_name}")
         self.logger.debug(f"xffts : {xffts_datapath}")
+
+        self.logger.obslog(f"savedir : {db_path}", 1)
 
     def signal_handler(self, number: int, frame: FrameType) -> NoReturn:
         self.logger.warn("!! ctrl + C !!")
