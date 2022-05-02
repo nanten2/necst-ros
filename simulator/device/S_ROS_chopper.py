@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """Chopper device simulator.
 
 Original implementation is ogawa-ros/pci_boards_driver/scripts/cpz7415v.py
