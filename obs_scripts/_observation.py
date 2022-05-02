@@ -74,6 +74,14 @@ class Observation(abc.ABC):
         self.start_time = time.time()
         self.str_now = datetime.utcfromtimestamp(self.start_time)
 
+        # Get observation parameters.
+        self._obsfile_path = None if obsfile is None else self.ObsfileDir / obsfile
+        ObsParams.ParameterUnit = self.ParameterUnits
+        self.params = (
+            ObsParams() if obsfile is None else ObsParams.from_file(self._obsfile_path)
+        )
+        """``ObsParams`` instance, which contains the parameters of the observation."""
+
         # Logger and database set-up.
         self.logger = self.init_logger(verbose)
         """Print messages to terminal. ``[debug|info|warning|error|critical|obslog]``"""
@@ -86,14 +94,6 @@ class Observation(abc.ABC):
         """``ROSController`` instance, which handles any instructions to any devices."""
         self.ctrl.get_authority()
         signal.signal(signal.SIGINT, self.signal_handler)
-
-        # Get observation parameters.
-        self._obsfile_path = None if obsfile is None else self.ObsfileDir / obsfile
-        ObsParams.ParameterUnit = self.ParameterUnits
-        self.params = (
-            ObsParams() if obsfile is None else ObsParams.from_file(self._obsfile_path)
-        )
-        """``ObsParams`` instance, which contains the parameters of the observation."""
 
         # Backwards compatible aliases.
         self.con = self.ctrl
