@@ -80,7 +80,9 @@ class Chopper:
 
         if self.last_position["u"] != step[3]:
             self.pub_step_u.publish(step[3])
-            self.pub_status_hot.publish("in" if step[3] == 0 else "out")
+            self.pub_status_hot.publish(
+                "in" if step[3] == 0 else "out", self.node_name, time.time()
+            )
             self.last_position["u"] = step[3]
 
         # Attempt to ensure TCP socket communication to properly be framed.
