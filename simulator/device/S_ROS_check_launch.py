@@ -2,7 +2,6 @@
 
 import time
 import xml.etree.ElementTree as ET
-from pathlib import Path
 
 import rospy
 import rosnode
@@ -22,7 +21,7 @@ def node_check():
     while not rospy.is_shutdown():
         names = rosnode.get_node_names()
         no_alive = [i for i in launch if not "/" + str(i) in names]
-        if no_alive == [] and flag == True:
+        if (no_alive == []) and (flag is True):
             print("all node is move")
             pub.publish(no_alive, node_name, time.time())
             flag = False
