@@ -249,20 +249,18 @@ class RadioPointing(Observation):
                 )
 
         self.ctrl.move_stop()
-        self.log.info(f"{self.ObservationType.capitalize()} observation finished.")
+        self.log.info(f"{self.ObservationType.upper()} observation finished.")
 
 
 if __name__ == "__main__":
     import argparse
 
-    p = argparse.ArgumentParser(description="Radio Pointing, line observation")
+    p = argparse.ArgumentParser(description="Radio line pointing observation")
     p.add_argument(
-        "--obsfile",
-        type=str,
-        help="Name of observation file, 'line_*pt_*.obs.toml'",
-        required=True,
+        "obsfile", type=str, help="Name of observation file, 'line_*pt_*.obs.toml'"
     )
+    p.add_argument("-v", "--verbose", action="count", default=0)
     args = p.parse_args()
 
-    observer = RadioPointing(args.obsfile)
+    observer = RadioPointing(args.obsfile, verbose=args.verbose * 10)
     observer.run()
