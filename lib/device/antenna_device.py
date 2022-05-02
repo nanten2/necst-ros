@@ -88,10 +88,12 @@ class antenna_device:
     ) -> None:
         PIDController.ANGLE_UNIT = "arcsec"
         self._az = PIDController(
-            pid_param=[self.p_coeff[0], self.i_coeff[0], self.d_coeff[0]]
+            pid_param=[self.p_coeff[0], self.i_coeff[0], self.d_coeff[0]],
+            max_speed="1.5deg/s",
         )
         self._el = PIDController(
-            pid_param=[self.p_coeff[1], self.i_coeff[1], self.d_coeff[1]]
+            pid_param=[self.p_coeff[1], self.i_coeff[1], self.d_coeff[1]],
+            max_speed="1.5deg/s",
         )
         self.simulator = simulator
         if not self.simulator:
