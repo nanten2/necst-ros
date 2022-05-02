@@ -45,14 +45,17 @@ class Observation(abc.ABC):
         ``ROSController`` instance, to which any instructions to devices are passed.
     params, obs
         ``ObsParams`` instance, which contains the parameters of the observation.
-    log
-        ``logging.Logger`` instance, which prints the log messages to the terminal via
-        ``[debug|info|warning|error|critical]`` methods.
-    logger
-        ``logger`` instance, which saves the log messages to the log file via ``obslog``
-        method.
+    logger, log
+        ``ConsoleLogger`` instance, which prints the log messages on the terminal via
+        ``[debug|info|warning|error|critical|obslog]`` methods.
     start_time
         UNIX time the observation was initialized (not the time ``run`` was called).
+    log_path
+        Path to a file which contains log messages.
+    obslog_path
+        Path to a file which contains observation summary.
+    db_path
+        Path to a directory which contains observation and drive data.
 
     """
 
@@ -70,7 +73,6 @@ class Observation(abc.ABC):
     def __init__(self, obsfile: str = None, verbose: int = 20) -> None:
         self.start_time = time.time()
         self.str_now = datetime.utcfromtimestamp(self.start_time)
-        self.DataDir = self.DatabaseDir / self.ObservationType
 
         # Logger and database set-up.
         self.logger = self.init_logger(verbose)
@@ -103,14 +105,14 @@ class Observation(abc.ABC):
 
     def init_logger(self, verbose: int) -> console_logger.ConsoleLogger:
         self.log_path = self.LogDir / f"{self.str_now.strftime('%Y%m%d')}.txt"
-        obslog_path = (
+        self.obslog_path = (
             self.log_path.parent / f"{self.log_path.stem}_summary{self.log_path.suffix}"
         )
 
         logger = console_logger.getLogger(
             __name__,
             file_path=self.log_path,
-            obslog_file_path=obslog_path,
+            obslog_file_path=self.obslog_path,
             min_level=int(utils.clip(50 - verbose, 0, 50)),
         )
         return logger
@@ -123,19 +125,17 @@ class Observation(abc.ABC):
         else:
             db_name = f"n{self.str_now.strftime('%Y%m%d%H%M%S')}_{self.ObservationType}"
 
-        db_path = self.DataDir / db_name
-        self.logger.debug(f"mkdir {db_path}")
-        db_path.mkdir(parents=True, exist_ok=False)
+        self.db_path = self.DatabaseDir / self.ObservationType / db_name
+        self.logger.debug(f"mkdir {self.db_path}")
+        self.db_path.mkdir(parents=True, exist_ok=False)
 
-        xffts_datapath = db_path / "xffts.ndf"
-        self.ctrl.pub_loggerflag(str(db_path))
+        self.ctrl.pub_loggerflag(str(self.db_path))
 
         self.logger.info(f"obsfile : {self.obsfile_path}")
         self.logger.debug(f"log_path : {self.log_path}")
         self.logger.info(f"database : {db_name}")
-        self.logger.debug(f"xffts : {xffts_datapath}")
 
-        self.logger.obslog(f"savedir : {db_path}", 1)
+        self.logger.obslog(f"savedir : {self.db_path}", 1)
 
     def signal_handler(self, number: int, frame: FrameType) -> NoReturn:
         self.logger.warn("!! ctrl + C !!")
