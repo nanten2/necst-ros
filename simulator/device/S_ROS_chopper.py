@@ -55,27 +55,25 @@ class Chopper:
         rospy.Subscriber(topic_step_u_cmd, Int64, self._step_clbk, callback_args="u")
 
         self._cmd_recv_timestamp = {"x": 0, "y": 0, "z": 0, "u": 0}
+        self._device_response = {"x": 0, "y": 0, "z": 0, "u": 0}
 
     def _step_clbk(self, msg, axis: Literal["x", "y", "z", "u"]) -> None:
-        if self.motion[axis]["step"] != msg.data:
-            self._changed_time = time.time()
         self.motion[axis]["step"] = msg.data
-        self.step_mode = True
 
         self._cmd_recv_timestamp[axis] = time.time()
 
     def _simulate_response_step(self) -> None:
         now = time.time()
         fluctuation = random.random()
-        drive_duration = 3 + fluctuation
+        drive_duration = 2 + fluctuation  # sec
 
         for axis in "xyzu":
             if self.motion[axis]["step"] != self.last_position[axis]:
                 if now - self._cmd_recv_timestamp[axis] > drive_duration:
-                    self.last_position[axis] = self.motion[axis]["step"]
+                    self._device_response[axis] = self.motion[axis]["step"]
 
     def _get_step(self) -> None:
-        step = [self.last_position[axis] for axis in "xyzu"]
+        step = [self._device_response[axis] for axis in "xyzu"]
 
         if self.last_position["u"] != step[3]:
             self.pub_step_u.publish(step[3])
@@ -88,11 +86,6 @@ class Chopper:
         while not rospy.is_shutdown():
             self._simulate_response_step()
             self._get_step()
-
-    # def start_thread_ROS(self):
-    #     th = threading.Thread(target=self._main_thread)
-    #     th.setDaemon(True)
-    #     th.start()
 
 
 if __name__ == "__main__":
