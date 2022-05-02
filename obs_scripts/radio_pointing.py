@@ -259,8 +259,18 @@ if __name__ == "__main__":
     p.add_argument(
         "obsfile", type=str, help="Name of observation file, 'line_*pt_*.obs.toml'"
     )
-    p.add_argument("-v", "--verbose", action="count", default=0)
+    p.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help=(
+            "Verbosity level of log messages appear on terminal."
+            "To show all messages, use '-vvv'."
+        ),
+    )
     args = p.parse_args()
 
-    observer = RadioPointing(args.obsfile, verbose=args.verbose * 10)
+    observer = RadioPointing(args.obsfile, verbose=20 + args.verbose * 10)
     observer.run()
+    observer.ctrl.release_authority()
