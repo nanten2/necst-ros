@@ -82,18 +82,18 @@ class Observation(abc.ABC):
         )
         """``ObsParams`` instance, which contains the parameters of the observation."""
 
+        # Set up controller.
+        self.ctrl = ROS_controller.controller()
+        """``ROSController`` instance, which handles any instructions to any devices."""
+        self.ctrl.get_authority()
+        signal.signal(signal.SIGINT, self.signal_handler)
+
         # Logger and database set-up.
         self.logger = self.init_logger(verbose)
         """Print messages to terminal. ``[debug|info|warning|error|critical|obslog]``"""
         self.fileconfig()
 
         self.logger.obslog(str(sys.argv))
-
-        # Set up controller.
-        self.ctrl = ROS_controller.controller()
-        """``ROSController`` instance, which handles any instructions to any devices."""
-        self.ctrl.get_authority()
-        signal.signal(signal.SIGINT, self.signal_handler)
 
         # Backwards compatible aliases.
         self.con = self.ctrl
