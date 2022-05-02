@@ -29,4 +29,5 @@
   <node pkg="necst" name="hosei_parameter" type="ROS_hosei_parameter.py"/>
   <node pkg="necst" name="scanotf_planet" type="ROS_scan_otf_planet.py"/>
   <node pkg="necst" name="scanotf_horizontal" type="ROS_scan_otf_horizontal.py"/>
+  <node pkg="necst" name="chopper" type="S_ROS_chopper.py"/>
 </launch>
