@@ -44,7 +44,7 @@ class Chopper:
 
     def __init__(self):
         self.node_name = "cpz7415v"
-        self.rsw_id = "0"
+        self.rsw_id = 0
 
         topic_step_u = f"/{self.node_name}_{self.rsw_id + 1}_rsw{self.rsw_id}_u_step"
         topic_step_u_cmd = (
