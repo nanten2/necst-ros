@@ -41,20 +41,20 @@ class Observation(abc.ABC):
 
     Attributes
     ----------
-    ctrl, con
-        ``ROSController`` instance, to which any instructions to devices are passed.
-    params, obs
+    ctrl, con: ROS_controller.controller
+        ``controller`` instance, to which any instructions to devices are passed.
+    params, obs: neclib.parameters.ObsParams
         ``ObsParams`` instance, which contains the parameters of the observation.
-    logger, log
+    logger, log: neclib.interfaces.ConsoleLogger
         ``ConsoleLogger`` instance, which prints the log messages on the terminal via
         ``[debug|info|warning|error|critical|obslog]`` methods.
-    start_time
+    start_time: float
         UNIX time the observation was initialized (not the time ``run`` was called).
-    log_path
+    log_path: pathlib.Path
         Path to a file which contains log messages.
-    obslog_path
+    obslog_path: pathlib.Path
         Path to a file which contains observation summary.
-    db_path
+    db_path: pathlib.Path
         Path to a directory which contains observation and drive data.
 
     """
@@ -154,10 +154,6 @@ class Observation(abc.ABC):
     @abc.abstractmethod
     def run(self) -> None:
         raise NotImplementedError
-
-    @property
-    def obsfile_params(self) -> ObsParams:
-        return self.params
 
     @property
     def obsfile_path(self) -> Path:
