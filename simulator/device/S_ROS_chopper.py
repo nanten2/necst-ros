@@ -80,9 +80,6 @@ class Chopper:
 
         if self.last_position["u"] != step[3]:
             self.pub_step_u.publish(step[3])
-            self.pub_status_hot.publish(
-                "in" if step[3] == 0 else "out", self.node_name, time.time()
-            )
             self.last_position["u"] = step[3]
 
         # Attempt to ensure TCP socket communication to properly be framed.
@@ -92,6 +89,11 @@ class Chopper:
         while not rospy.is_shutdown():
             self._simulate_response_step()
             self._get_step()
+            self.pub_status_hot.publish(
+                "IN" if self.last_position["u"] == 0 else "OUT",
+                self.node_name,
+                time.time(),
+            )
 
 
 if __name__ == "__main__":
