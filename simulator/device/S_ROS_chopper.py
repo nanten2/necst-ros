@@ -16,6 +16,8 @@ from neclib.typing import Literal
 import rospy
 from std_msgs.msg import Int64
 
+from necst.msg import String_necst
+
 
 class Chopper:
 
@@ -52,6 +54,7 @@ class Chopper:
         )
 
         self.pub_step_u = rospy.Publisher(topic_step_u, Int64, queue_size=1)
+        self.pub_status_hot = rospy.Publisher("/status_hot", String_necst, queue_size=1)
         rospy.Subscriber(topic_step_u_cmd, Int64, self._step_clbk, callback_args="u")
 
         self._cmd_recv_timestamp = {"x": 0, "y": 0, "z": 0, "u": 0}
@@ -77,6 +80,7 @@ class Chopper:
 
         if self.last_position["u"] != step[3]:
             self.pub_step_u.publish(step[3])
+            self.pub_status_hot.publish("in" if step[3] == 0 else "out")
             self.last_position["u"] = step[3]
 
         # Attempt to ensure TCP socket communication to properly be framed.
