@@ -64,9 +64,9 @@ class antenna_device:
     enc_before = [0, 0]
     pre_arcsec = [0, 0]
     t_now = t_past = 0
-    p_coeff = [2.2, 2.2]
-    i_coeff = [0, 0]
-    d_coeff = [0, 0]
+    p_coeff = [3.0, 3.0]
+    i_coeff = [0.7, 0.7]
+    d_coeff = [0.1, 0.1]
     dir_name = ""
 
     SPEED2RATE: float = (7 / 12) * (10000 / 3600)
