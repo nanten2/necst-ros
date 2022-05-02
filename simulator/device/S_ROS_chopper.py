@@ -46,8 +46,10 @@ class Chopper:
         self.node_name = "cpz7415v"
         self.rsw_id = "0"
 
-        topic_step_u = f"/{self.node_name}_rsw{self.rsw_id}_u_step"
-        topic_step_u_cmd = f"/{self.node_name}_rsw{self.rsw_id}_u_step_cmd"
+        topic_step_u = f"/{self.node_name}_{self.rsw_id + 1}_rsw{self.rsw_id}_u_step"
+        topic_step_u_cmd = (
+            f"/{self.node_name}_{self.rsw_id + 1}_rsw{self.rsw_id}_u_step_cmd"
+        )
 
         self.pub_step_u = rospy.Publisher(topic_step_u, Int64, queue_size=1)
         rospy.Subscriber(topic_step_u_cmd, Int64, self._step_clbk, callback_args="u")
