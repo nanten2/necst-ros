@@ -22,8 +22,8 @@ class RSky(Observation):
 
     def run(self, integ_time):
 
-        print("Start R SKY observation")
-        print(f"Integration time {integ_time}")
+        self.logger.info("Start R SKY observation")
+        self.logger.debug(f"Integration time {integ_time}")
         self.con.move_chopper("in")
         time.sleep(3)  # Temporarily
         status = self.con.read_status()
@@ -37,9 +37,9 @@ class RSky(Observation):
         self.con.antenna_tracking_check()
         self.log.info("antenna track OK")
 
-        print("HOT")
-        print("hot_status ### ", hot_status)
-        print("get spectrum...")
+        self.logger.debug("HOT")
+        self.logger.debug(f"hot_status ### {hot_status}")
+        self.logger.debug("get spectrum...")
 
         self.con.pub_loggerflag(self.DataDir)
         self.con.xffts_publish_flag(obs_mode="HOT")
@@ -52,9 +52,9 @@ class RSky(Observation):
         status = self.con.read_status()
         hot_status = status.Current_Hot
 
-        print("SKY")
-        print("hot_status ### ", hot_status)
-        print("get spectrum...")
+        self.logger.debug("SKY")
+        self.logger.debug(f"hot_status ### {hot_status}")
+        self.logger.debug("get spectrum...")
 
         self.con.xffts_publish_flag(obs_mode="SKY")
         time.sleep(integ_time)
@@ -81,7 +81,17 @@ if __name__ == "__main__":
         help="Integration time for the R-sky obs.",
         default=2,
     )
+    p.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help=(
+            "Verbosity level of log messages appear on terminal."
+            "To show all messages, use '-vvv'."
+        ),
+    )
     args = p.parse_args()
 
-    rsky = RSky()
+    rsky = RSky(verbose=20 + args.verbose * 10)
     rsky.run(integ_time=args.integ_time)
