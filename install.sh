@@ -1,9 +1,48 @@
 #!/bin/bash
 
 
-# Get path to shell run-command file (i.e. ~/.bashrc, ~/.zshrc, etc.)
-IFS='/' read -r -a array <<< "$SHELL"
-rc_path="$HOME/.${array[-1]}rc"
+# if ! type pipenv > /dev/null 2>&1
+# then
+#     # Install Pipenv
+#     echo -e "\033[46mInstalling pipenv\033[0m"
+#     curl -sSL https://raw.githubusercontent.com/pypa/pipenv/master/get-pipenv.py | python3 -
+#     if type pipenv > /dev/null 2>&1
+#     then
+#         echo -e "\033[46;1mPipenv successfully installed\033[0m"
+#     else
+#         echo -e "\033[41;1mInstallation failed\033[0m"
+#         exit 1
+#     fi
+# fi
+
+# # Change-directory to the current package
+# # *In case this script is executed from other directory, Pipfile won't be found
+# package_dir=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+# cd ${package_dir}
+
+# # Try pipenv sync command
+# if pipenv sync --system --dev
+# then
+#     echo -e "\033[46;1m===========================================\033[0m"
+#     echo -e "\033[46;1m= Successfully installed the dependencies =\033[0m"
+#     echo -e "\033[46;1m===========================================\033[0m"
+# else
+#     echo -e "\033[46;1m======================================\033[0m"
+#     echo -e "\033[46;1m= Installation failed, trying update =\033[0m"
+#     echo -e "\033[46;1m======================================\033[0m"
+
+#     # If pipenv sync failed, run pipenv update (= pipenv lock && pipenv sync)
+#     if pipenv lock && pipenv sync --system --dev
+#     then
+#         echo -e "\033[46;1m=========================================\033[0m"
+#         echo -e "\033[46;1m= Successfully updated the dependencies =\033[0m"
+#         echo -e "\033[46;1m=========================================\033[0m"
+#     else
+#         echo -e "\033[41;1m=========================================\033[0m"
+#         echo -e "\033[41;1m= poetry failed to resolve dependencies =\033[0m"
+#         echo -e "\033[41;1m=========================================\033[0m"
+#     fi
+# fi
 
 
 # Check if poetry command available or not
@@ -13,18 +52,12 @@ then
     echo -e "\033[46mInstalling poetry\033[0m"
     curl -sSL https://install.python-poetry.org | python3 -
 
-    # Set path to poetry command if not done
-    if grep '.poetry/bin' ${rc_path} > /dev/null 2>&1
+    if type poetry > /dev/null 2>&1
     then
-        echo -e "\033[46mPoetry path has already been set\033[0m"
-    else
-        echo -e "\033[46mSetting path in ${rc_path}\033[0m"
-        echo '' >> ${rc_path}
-        echo '# poetry' >> ${rc_path}
-        echo 'export PATH="$HOME/.poetry/bin:$PATH"' >> ${rc_path}
         echo -e "\033[46;1mPoetry successfully installed\033[0m"
-        export PATH="$HOME/.poetry/bin:$PATH"
-        echo -e "\033[46mRestart the shell to use poetry\033[0m"
+    else
+        echo -e "\033[41;1mInstallation failed\033[0m"
+        exit 1
     fi
 fi
 
@@ -68,9 +101,9 @@ else
         echo -e "\033[46;1m= Successfully updated the dependencies =\033[0m"
         echo -e "\033[46;1m=========================================\033[0m"
     else
-        echo -e "\033[46;1m=========================================\033[0m"
-        echo -e "\033[46;1m= poetry failed to resolve dependencies =\033[0m"
-        echo -e "\033[46;1m=========================================\033[0m"
+        echo -e "\033[41;1m=========================================\033[0m"
+        echo -e "\033[41;1m= poetry failed to resolve dependencies =\033[0m"
+        echo -e "\033[41;1m=========================================\033[0m"
     fi
 fi
 

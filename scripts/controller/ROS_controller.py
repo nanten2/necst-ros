@@ -1,16 +1,18 @@
-#! /usr/bin/env python3
-# coding:utf-8
+#!/usr/bin/env python3
 
+import atexit
+import functools
 import os
 import sys
 import time
-import atexit
-import functools
-from datetime import datetime as dt
+from datetime import datetime
+
 import rospy
 import rosnode
+from neclib import NECSTAuthorityError
+from std_msgs.msg import String
+
 import logger
-from datetime import datetime
 from necst.msg import Move_mode_msg
 from necst.msg import Otf_mode_msg
 from necst.msg import Dome_msg
@@ -36,9 +38,9 @@ from necst.srv import ac240_srv
 from necst.srv import ac240_srvResponse
 from necst.srv import Bool_srv
 from necst.srv import Bool_srvResponse
-from std_msgs.msg import String
 
-class controller(object):
+
+class controller:
 
     task_flag = False
     antenna_tracking_flag = False
@@ -47,7 +49,7 @@ class controller(object):
     dome_tracking_flag = False
     access_authority = "no_data"
 
-    status = ""
+    status = None
 
     auth = ""
     frame = "controller"
@@ -70,7 +72,7 @@ class controller(object):
     current_line = 0
     current_position = ""
 
-    """ps parameter"""
+    # ps parameter
     num_on = 0
     num_seq = 0
     
@@ -186,11 +188,20 @@ class controller(object):
             elif self.auth == self.node_name:
                 ret = func(self, *args,**kwargs)
             else:
-                ret = ""
                 #rospy.logwarn("This node don't have authority...")
-                self.log.warn("This node don't have authority...")
-                print("current authority : ", self.auth)
-                pass
+                err_msg_base = "This node doesn't have authority. "
+                err_msg_1 = f"Current authority : '{self.auth}'"
+                err_msg_2 = (
+                    "This might be caused by software/network lag. "
+                    "Wait a moment and retry."
+                )
+
+                self.log.warn(err_msg_base)
+                print(err_msg_1)
+
+                raise NECSTAuthorityError(
+                    err_msg_base + (err_msg_1 if self.auth else err_msg_2)
+                )
             return ret
         return wrapper
     
@@ -950,12 +961,11 @@ class controller(object):
         self.read_sub = rospy.Subscriber("read_status", Read_status_msg, self._write_status)
         
         while not rospy.is_shutdown():
-            if self.status:
+            if self.status is not None:
                 status = self.status
-                self.status = ""
+                self.status = None
                 break
             else:
-                status = ""
                 time.sleep(0.1)
 
         return status
@@ -963,7 +973,6 @@ class controller(object):
     def _write_status(self, req):
         self.status = req
         self.read_sub.unregister()
-        return
 
     # ===================
     # others
