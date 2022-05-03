@@ -324,14 +324,24 @@ class OnTheFly(_observation.Observation):
 if __name__ == "__main__":
     description = "On The Fly Observation"
     p = argparse.ArgumentParser(description=description)
-    p.add_argument("--obsfile", type=str, help="absolute path for obsfile")
+    p.add_argument("obsfile", type=str, help="Name of obsfile")
     p.add_argument(
         "--delay",
         type=float,
         help="expected duration of coordinate calcuration",
         default=3.0,
     )
+    p.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help=(
+            "Verbosity level of log messages appear on terminal."
+            "To show all messages, use '-vvv'."
+        ),
+    )
     args = p.parse_args()
 
-    otf = OnTheFly(obsfile=args.obsfile)
+    otf = OnTheFly(obsfile=args.obsfile, verbose=20 + args.verbose * 10)
     otf.run(delay=args.delay)
