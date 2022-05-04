@@ -10,7 +10,7 @@ import rospy
 
 from necst.msg import Status_antenna_msg, Status_encoder_msg
 
-sys.path.append("../../scripts/device")
+sys.path.append("/home/amigos/ros/src/necst/scripts/device")
 import ROS_encoder  # noqa: E402
 
 
