@@ -23,6 +23,7 @@ class EncoderControllerSimulator(ROS_encoder.enc_controller):
 
         AntennaEncoderEmulator.ANGLE_UNIT = "arcsec"
         self.encoder = AntennaEncoderEmulator()
+        self.encoder.position.az = 0
 
         rospy.Subscriber(
             "/status_antenna", Status_antenna_msg, self._pid_clbk, queue_size=1
