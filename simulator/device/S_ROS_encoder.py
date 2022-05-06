@@ -35,6 +35,9 @@ class EncoderControllerSimulator(ROS_encoder.enc_controller):
         self.speed.az = msg.command_azspeed
         self.speed.el = msg.command_elspeed
 
+        self.encoder.command(self.speed.az, "az")
+        self.encoder.command(self.speed.el, "el")
+
     def pub_status(self) -> None:
         self.rate = rospy.Rate(100)  # Hz
 
