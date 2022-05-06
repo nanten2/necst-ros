@@ -3,7 +3,7 @@
 
 # Define installer for additional package Poetry cannot handle
 install_additional_packages(){
-    pip3 install -qU git+https://github.com/ars096/pyinterface2.git; sys_platform == 'linux'
+    pip3 install -qU "git+https://github.com/ars096/pyinterface2.git; sys_platform == 'linux'"
 }
 
 # Check if poetry command available or not
