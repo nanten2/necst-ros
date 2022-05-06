@@ -47,7 +47,7 @@ fi
 # Try poetry install command
 if poetry install
 then
-    install_additional_packages()
+    install_additional_packages
     echo -e "\033[46;1m===========================================\033[0m"
     echo -e "\033[46;1m= Successfully installed the dependencies =\033[0m"
     echo -e "\033[46;1m===========================================\033[0m"
@@ -59,7 +59,7 @@ else
     # If poetry install failed, run poetry update
     if poetry update
     then
-        install_additional_packages()
+        install_additional_packages
         echo -e "\033[46;1m=========================================\033[0m"
         echo -e "\033[46;1m= Successfully updated the dependencies =\033[0m"
         echo -e "\033[46;1m=========================================\033[0m"
