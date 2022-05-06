@@ -477,7 +477,7 @@ typing-extensions = {version = ">=3.0,<5.0", markers = "python_version < \"3.9\"
 
 [[package]]
 name = "neclib"
-version = "0.6.1"
+version = "0.6.2"
 description = "Pure Python tools for NECST."
 category = "main"
 optional = false
@@ -1035,7 +1035,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.6.1, <3.10"
-content-hash = "0a6f8db3c491ba015dcd6443934287f8a1b00025ba38ba2b3365d6acb592b2a7"
+content-hash = "a710d9122f734b9bfd434fbae25ff8c8e25ea674347f7d40e30b858fdbdee162"
 
 [metadata.files]
 alabaster = [
@@ -1367,8 +1367,8 @@ n-const = [
     {file = "N_CONST-1.0.5-py3-none-any.whl", hash = "sha256:e819bd0623523b1d507a95501f52e9b8ac972d53144b3bd87f6e95e53e6e40ab"},
 ]
 neclib = [
-    {file = "neclib-0.6.1-py3-none-any.whl", hash = "sha256:0129952944289ef802a9bda67de7ce334a60e3e2a6c02bdd4ff6fc60948637c2"},
-    {file = "neclib-0.6.1.tar.gz", hash = "sha256:fb7c9a1bfc57bc5efd493e6678e7e862a53aaae817d95182fcdb6c8ba8f8c9a8"},
+    {file = "neclib-0.6.2-py3-none-any.whl", hash = "sha256:f032dd6bc044a2082168629c1579d4d724d2b6264d8b5f344bdd855e5dd6acbb"},
+    {file = "neclib-0.6.2.tar.gz", hash = "sha256:4f27b28d99e8d8e0c47fa3547ca3ef8a7299ef0ec1a1da8fe992327199766dac"},
 ]
 necstdb = [
     {file = "necstdb-0.2.6-py3-none-any.whl", hash = "sha256:f181ed9bb1d858f50e5bd0323a8038623065004785e09d5eccecedb0efd279a9"},
