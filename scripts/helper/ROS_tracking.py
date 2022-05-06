@@ -1,132 +1,159 @@
 #!/usr/bin/env python3
 
 import time
-import threading
+from concurrent.futures import ThreadPoolExecutor
+
+from neclib import utils
+from neclib.utils import AzElData
+
 import rospy
-from necst.msg import Status_antenna_msg
-from necst.msg import Status_encoder_msg
-from necst.msg import Move_mode_msg
-from necst.msg import Bool_necst
 
-node_name = 'tracking'
+from necst.msg import Bool_necst, Move_mode_msg, Status_antenna_msg, Status_encoder_msg
 
-class tracking_check(object):
-    enc_param = {
-        'enc_az' : 0,
-        'enc_el' : 0
-        }
-    antenna_param = {
-        'command_az' : 200,
-        'command_el' : 200
-        }
-    tracking = False
-    track_falseflag = False
-    
-    def __init__(self):
-        self.start_thread()
-        pass
 
-    def start_thread(self):
-        th = threading.Thread(target = self.pub_tracking)
-        th.setDaemon(True)
-        th.start()
-        check = threading.Thread(target = self.check_track)
-        check.setDaemon(True)
-        check.start()
-        th3 = threading.Thread(target = self.pub_movestop)
-        th3.setDaemon(True)
-        th3.start()
-        
+class TrackingCheck:
+    """Ensure tracking accuracy.
 
-    def set_ant_param(self, req):
-        self.antenna_param['command_az'] = req.command_az
-        self.antenna_param['command_el'] = req.command_el
-        return
+    .. note::
 
-    def set_enc_param(self, req):
-        self.enc_param['enc_az'] = req.enc_az
-        self.enc_param['enc_el'] = req.enc_el
-        return
+       Reason for suspension of checking (subscribing /onepoint_command,
+       /linear_command and /planet_command) and interaction with /move_stop topic are
+       currently unknown.
 
-    def set_command1(self, req):
-        self.command = req
-        self.track_falseflag = True
+    """
 
-    def set_command2(self, req):
-        self.track_falseflag = True
-        
-    def set_command3(self, req):
-        self.track_falseflag = True
+    node_name = "tracking"
+    ANGLE_UNIT = "arcsec"
 
-    def check_track(self):
-        track_count = 0
+    def __init__(self) -> None:
+        rospy.init_node(self.node_name)
+
+        rospy.Subscriber("/status_antenna", Status_antenna_msg, self.command_clbk)
+        rospy.Subscriber("/status_encoder", Status_encoder_msg, self.encoder_clbk)
+        rospy.Subscriber(
+            "/onepoint_command", Move_mode_msg, self.onepoint_cmd_clbk, queue_size=1
+        )
+        rospy.Subscriber(
+            "/linear_command", Move_mode_msg, self.linear_cmd_clbk, queue_size=1
+        )
+        rospy.Subscriber(
+            "/planet_command", Move_mode_msg, self.planet_cmd_clbk, queue_size=1
+        )
+
+        self.PUB_tracking_status = rospy.Publisher(
+            "/tracking_check", Bool_necst, queue_size=1
+        )
+        self.PUB_move_stop = rospy.Publisher("/move_stop", Bool_necst, queue_size=1)
+
+        self.pid_command = AzElData()
+        self.encoder_reading = AzElData()
+
+        self.tracking_check_disabled = False
+        """If True, temporarily disable tracking check."""
+        self.tracking_check_disable_duration = 5  # sec
+        """Duration of temporal stop of tracking check."""
+        self.tracking_ok = False
+        """If True, tracking error is smaller than threshold."""
+
+    def command_clbk(self, msg: Status_antenna_msg) -> None:
+        self.pid_command.az = msg.command_az
+        self.pid_command.el = msg.command_el
+
+    def encoder_clbk(self, msg: Status_encoder_msg) -> None:
+        self.encoder_reading.az = msg.enc_az
+        self.encoder_reading.el = msg.enc_el
+
+    def onepoint_cmd_clbk(self, msg: Move_mode_msg) -> None:
+        # TODO: Infer the intention of this implementation.
+        self.command = msg
+        self.tracking_check_disabled = True
+
+    def linear_cmd_clbk(self, msg: Move_mode_msg) -> None:
+        # TODO: Infer the intention of this implementation.
+        self.tracking_check_disabled = True
+
+    def planet_cmd_clbk(self, msg: Move_mode_msg) -> None:
+        # TODO: Infer the intention of this implementation.
+        self.tracking_check_disabled = True
+
+    def _approx_separation(self, error_x: float, error_y: float) -> float:
+        return (error_x ** 2 + error_y ** 2) ** 0.5
+
+    def tracking_check(self) -> None:
+        _360deg = 360 * utils.angle_conversion_factor("deg", self.ANGLE_UNIT)
+        tracking_ok_start = None  # Time current passing checks streak started.
+
+        rate = rospy.Rate(10)
+
         while not rospy.is_shutdown():
-            if self.track_falseflag:
-                self.tracking = False
-                time.sleep(3) # waiting until antenna moving
-                self.track_falseflag = False
-            command_az = self.antenna_param['command_az']
-            command_el = self.antenna_param['command_el']
+            if self.tracking_check_disabled:
+                self.tracking_ok = False
+                time.sleep(self.tracking_check_disable_duration)
+                self.tracking_check_disabled = False
 
-            """ start checking track """
-            enc_az = self.enc_param['enc_az']
-            enc_el = self.enc_param['enc_el']            
-            
-            if command_az < 0:
-                command_az += 360*3600
-            if enc_az <0:
-                enc_az += 360*3600
-            d_az = abs(command_az - enc_az)
-            d_el = abs(command_el - enc_el)
+            error_az = abs(self.pid_command.az - self.encoder_reading.az)
+            error_el = abs(self.pid_command.az - self.encoder_reading.az)
 
-            if d_az <= 3 and d_el <=3:
-                track_count += 1
+            dx = utils.dAz2dx(error_az, self.encoder_reading.el, self.ANGLE_UNIT)
+            approx_separation = self._approx_separation(
+                dx % _360deg, error_el % _360deg
+            )
+
+            _3arcsec = 3 * utils.angle_conversion_factor("arcsec", self.ANGLE_UNIT)
+            if approx_separation < _3arcsec:
+                if tracking_ok_start is None:
+                    tracking_ok_start = time.time()
+                    self.tracking_ok = False
+                if time.time() - tracking_ok_start > 0.5:
+                    self.tracking_ok = True
             else:
-                track_count = 0
-            if track_count >= 5:# if tracking is True for 0.5[sec]
-                self.tracking = True
-            else:
-                self.tracking = False
-            print(self.tracking)
-            time.sleep(0.1)
-        return self.tracking
+                tracking_ok_start = None
+                self.tracking_ok = False
 
-    def pub_tracking(self):
-        pub = rospy.Publisher('tracking_check', Bool_necst, queue_size = 10, latch = True)
-        track_status = Bool_necst()
-        while not rospy.is_shutdown():
-            track_status.data = self.tracking
-            track_status.from_node = node_name
-            track_status.timestamp = time.time()
-            pub.publish(track_status)
-            time.sleep(0.01)
+            rate.sleep()
 
-    def pub_movestop(self):
-        pub = rospy.Publisher("move_stop", Bool_necst, queue_size = 1)
-        flag = 0
-        while not hasattr(self, "command"):
-            time.sleep(0.5)
-            continue
+    def publish_tracking_status(self) -> None:
+        rate = rospy.Rate(100)
         while not rospy.is_shutdown():
-            command = self.command
-            timestamp = command.timestamp
-            if not flag == timestamp:
-                if not command.coord.lower() == "altaz":
-                    flag = timestamp
+            msg = Bool_necst()
+            msg.data = self.tracking_ok
+            msg.from_node = self.node_name
+            msg.timestamp = time.time()
+            self.PUB_tracking_status.publish(msg)
+
+            rate.sleep()
+
+    def publish_movestop_flag(self) -> None:
+        # TODO: Infer the intention of this implementation.
+        rate = rospy.Rate(2)
+        _flag = 0  # Unknown parameter.
+        while not rospy.is_shutdown():
+            if not hasattr(self, "command"):
+                rate.sleep()
+                continue
+
+            timestamp = self.command.timestamp
+            if not _flag == timestamp:
+                if not self.command.coord.lower() == "altaz":
+                    _flag = timestamp
                     continue
-                else:
-                    time.sleep(3)#waiting antenna moving
-                if self.tracking:
-                    pub.publish(False, __file__, time.time())
-                    flag = timestamp
-            time.sleep(0.5)
+                # Wait for antenna drive.
+                time.sleep(self.tracking_check_disable_duration)
+                if self.tracking_ok:
+                    self.PUB_move_stop.publish(False, __file__, time.time())
+                    _flag = timestamp
+            rate.sleep()
 
-if __name__ == '__main__':
-    rospy.init_node(node_name)
-    t = tracking_check()
-    sub1 = rospy.Subscriber('status_antenna', Status_antenna_msg, t.set_ant_param)
-    sub2 = rospy.Subscriber('status_encoder',Status_encoder_msg, t.set_enc_param)
-    sub3 = rospy.Subscriber('onepoint_command', Move_mode_msg, t.set_command1, queue_size=1)
-    sub4 = rospy.Subscriber('linear_command', Move_mode_msg, t.set_command2, queue_size=1)
-    sub5 = rospy.Subscriber('planet_command', Move_mode_msg, t.set_command3, queue_size=1)
-    rospy.spin()
+    def start_thread(self) -> None:
+        with ThreadPoolExecutor() as executor:
+            threads = [
+                self.tracking_check,
+                self.publish_tracking_status,
+                self.publish_movestop_flag,
+            ]
+            _ = [executor.submit(target) for target in threads]
+
+
+if __name__ == "__main__":
+    node = TrackingCheck()
+    node.start_thread()
