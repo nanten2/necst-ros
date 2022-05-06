@@ -16,7 +16,6 @@ neclib = "^0.6.1"
 necstdb = "^0.2.5"
 numpy = "^1.19"
 pandas = ">=0.25, <2.0"
-pyinterface = { git = "https://github.com/ars096/pyinterface2.git", rev = "7532ee7", markers = "sys_platform == 'linux'" }
 scipy = "^1.5"
 typing-extensions = { version = "^3.10", python = "<3.8" }
 

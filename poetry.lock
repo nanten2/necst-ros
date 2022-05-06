@@ -611,14 +611,6 @@ dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
-name = "portio"
-version = "0.5"
-description = "PortIO, python low level port I/O for Linux x86"
-category = "main"
-optional = false
-python-versions = "*"
-
-[[package]]
 name = "prompt-toolkit"
 version = "3.0.19"
 description = "Library for building powerful interactive command lines in Python"
@@ -704,25 +696,6 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
-name = "pyinterface"
-version = "1.0.3"
-description = "driver for Interface PCI board"
-category = "main"
-optional = false
-python-versions = "*"
-develop = false
-
-[package.dependencies]
-portio = "*"
-pypci = "*"
-
-[package.source]
-type = "git"
-url = "https://github.com/ars096/pyinterface2.git"
-reference = "7532ee7"
-resolved_reference = "7532ee7f1c64e1b273192206093bd4b0104d33b2"
-
-[[package]]
 name = "pyparsing"
 version = "3.0.7"
 description = "Python parsing module"
@@ -732,17 +705,6 @@ python-versions = ">=3.6"
 
 [package.extras]
 diagrams = ["jinja2", "railroad-diagrams"]
-
-[[package]]
-name = "pypci"
-version = "0.1.3"
-description = "PCI driver for python"
-category = "main"
-optional = false
-python-versions = "*"
-
-[package.dependencies]
-portio = "*"
 
 [[package]]
 name = "pytest"
@@ -1073,7 +1035,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.6.1, <3.10"
-content-hash = "d5f362a6532abf001c5f1e3126006ff0c6d3c0d38b5b3a1931d4333011f7cd95"
+content-hash = "0a6f8db3c491ba015dcd6443934287f8a1b00025ba38ba2b3365d6acb592b2a7"
 
 [metadata.files]
 alabaster = [
@@ -1545,9 +1507,6 @@ pluggy = [
     {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},
     {file = "pluggy-1.0.0.tar.gz", hash = "sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159"},
 ]
-portio = [
-    {file = "portio-0.5.tar.gz", hash = "sha256:af612dc9c1513fbb349b80ae29b2ea6dcb61028fe92986d67e214d119376fe44"},
-]
 prompt-toolkit = [
     {file = "prompt_toolkit-3.0.19-py3-none-any.whl", hash = "sha256:7089d8d2938043508aa9420ec18ce0922885304cddae87fb96eebca942299f88"},
     {file = "prompt_toolkit-3.0.19.tar.gz", hash = "sha256:08360ee3a3148bdb5163621709ee322ec34fc4375099afa4bbf751e9b7b7fa4f"},
@@ -1611,13 +1570,9 @@ pygments = [
     {file = "Pygments-2.12.0-py3-none-any.whl", hash = "sha256:dc9c10fb40944260f6ed4c688ece0cd2048414940f1cea51b8b226318411c519"},
     {file = "Pygments-2.12.0.tar.gz", hash = "sha256:5eb116118f9612ff1ee89ac96437bb6b49e8f04d8a13b514ba26f620208e26eb"},
 ]
-pyinterface = []
 pyparsing = [
     {file = "pyparsing-3.0.7-py3-none-any.whl", hash = "sha256:a6c06a88f252e6c322f65faf8f418b16213b51bdfaece0524c1c1bc30c63c484"},
     {file = "pyparsing-3.0.7.tar.gz", hash = "sha256:18ee9022775d270c55187733956460083db60b37d0d0fb357445f3094eed3eea"},
-]
-pypci = [
-    {file = "pypci-0.1.3.tar.gz", hash = "sha256:0a1fa226b42bbf0e90b55a53d38288469412f4f92a74113659e56a313be8bfe3"},
 ]
 pytest = [
     {file = "pytest-6.2.5-py3-none-any.whl", hash = "sha256:7310f8d27bc79ced999e760ca304d69f6ba6c6649c0b60fb0e04a4a77cacc134"},
