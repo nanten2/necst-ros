@@ -182,6 +182,8 @@ class RadioPointing(Observation):
         self.last_calib_point[mode] = self.point_count
         self.last_calib_time[mode] = time.time()
 
+        self.ctrl.move_chopper("out")
+
     def run(self) -> None:
         """Run the observation.
 
@@ -247,20 +249,28 @@ class RadioPointing(Observation):
                 )
 
         self.ctrl.move_stop()
-        self.log.info(f"{self.ObservationType.capitalize()} observation finished.")
+        self.log.info(f"{self.ObservationType.upper()} observation finished.")
 
 
 if __name__ == "__main__":
     import argparse
 
-    p = argparse.ArgumentParser(description="Radio Pointing, line observation")
+    p = argparse.ArgumentParser(description="Radio line pointing observation")
     p.add_argument(
-        "--obsfile",
-        type=str,
-        help="Name of observation file, 'line_*pt_*.obs.toml'",
-        required=True,
+        "obsfile", type=str, help="Name of observation file, 'line_*pt_*.obs.toml'"
+    )
+    p.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help=(
+            "Verbosity level of log messages appear on terminal."
+            "To show all messages, use '-vvv'."
+        ),
     )
     args = p.parse_args()
 
-    observer = RadioPointing(args.obsfile)
+    observer = RadioPointing(args.obsfile, verbose=20 + args.verbose * 10)
     observer.run()
+    observer.ctrl.release_authority()

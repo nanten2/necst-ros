@@ -7,7 +7,7 @@
   <node pkg="necst" name="ping_check" type="ROS_ping.py"/>      
   <node pkg="necst" name="encoder_status" type="S_ROS_encoder.py"/>
   <node pkg='necst' name='dome' type='S_ROS_dome.py'/>
-  <node pkg='necst' name='abs_controller' type='S_ROS_abs.py'/>
+  <!-- <node pkg='necst' name='abs_controller' type='S_ROS_abs.py'/> -->
   <node pkg='necst' name='m4_controller' type='S_ROS_m4.py'/>
   <node pkg='necst' name='m2_controller' type='S_ROS_m2.py'/>
   <node pkg='necst' name='drive' type='S_ROS_drive.py'/>
@@ -29,4 +29,5 @@
   <node pkg="necst" name="hosei_parameter" type="ROS_hosei_parameter.py"/>
   <node pkg="necst" name="scanotf_planet" type="ROS_scan_otf_planet.py"/>
   <node pkg="necst" name="scanotf_horizontal" type="ROS_scan_otf_horizontal.py"/>
+  <node pkg="necst" name="chopper" type="S_ROS_chopper.py"/>
 </launch>

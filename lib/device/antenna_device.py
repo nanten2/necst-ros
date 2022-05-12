@@ -64,9 +64,9 @@ class antenna_device:
     enc_before = [0, 0]
     pre_arcsec = [0, 0]
     t_now = t_past = 0
-    p_coeff = [2.2, 2.2]
-    i_coeff = [0, 0]
-    d_coeff = [0, 0]
+    p_coeff = [3.0, 3.0]
+    i_coeff = [0.7, 0.7]
+    d_coeff = [0.1, 0.1]
     dir_name = ""
 
     SPEED2RATE: float = (7 / 12) * (10000 / 3600)
@@ -88,10 +88,12 @@ class antenna_device:
     ) -> None:
         PIDController.ANGLE_UNIT = "arcsec"
         self._az = PIDController(
-            pid_param=[self.p_coeff[0], self.i_coeff[0], self.d_coeff[0]]
+            pid_param=[self.p_coeff[0], self.i_coeff[0], self.d_coeff[0]],
+            max_speed="1.5deg/s",
         )
         self._el = PIDController(
-            pid_param=[self.p_coeff[1], self.i_coeff[1], self.d_coeff[1]]
+            pid_param=[self.p_coeff[1], self.i_coeff[1], self.d_coeff[1]],
+            max_speed="1.5deg/s",
         )
         self.simulator = simulator
         if not self.simulator:
