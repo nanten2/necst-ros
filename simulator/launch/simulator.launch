@@ -1,10 +1,10 @@
 <launch>
   <node pkg="necst" name="check_node" type="ROS_check_node.py"/>
-  <node pkg="necst" name="check_launch" type="S_ROS_check_launch.py"/>  
+  <node pkg="necst" name="check_launch" type="S_ROS_check_launch.py"/>
   <node pkg="necst" name="timer" type="ROS_timer.py"/>
   <node pkg="necst" name="antenna_move" type="ROS_antenna_move.py" output="screen" args="Simulator"/>
   <node pkg='necst' name='authority_check' type='ROS_authority_check.py'/>
-  <node pkg="necst" name="ping_check" type="ROS_ping.py"/>      
+  <node pkg="necst" name="ping_check" type="ROS_ping.py"/>
   <node pkg="necst" name="encoder_status" type="S_ROS_encoder.py"/>
   <node pkg='necst' name='dome' type='S_ROS_dome.py'/>
   <!-- <node pkg='necst' name='abs_controller' type='S_ROS_abs.py'/> -->
@@ -18,16 +18,17 @@
   <node pkg="necst" name="worldcoordinate_onepoint" type="ROS_scan_onepoint.py"/>
   <node pkg="necst" name="worldcoordinate_otf" type="ROS_scan_otf.py"/>
   <node pkg="necst" name="worldcoordinate_planet" type="ROS_scan_planet.py"/>
-  <node pkg="necst" name="worldcoordinate_linear" type="ROS_scan_linear.py"/>  
+  <node pkg="necst" name="worldcoordinate_linear" type="ROS_scan_linear.py"/>
   <node pkg="necst" name="azel_list" type="ROS_azel_list.py"/>
   <node pkg='necst' name='check_alert' type='ROS_check_alert.py' output='screen'/>
   <node pkg='necst' name='alert_sun' type='ROS_alert_sun.py'/>
   <node pkg='necst' name='alert_weather' type='ROS_alert_weather.py'/>
   <node pkg='necst' name='alert_encoder' type='ROS_alert_encoder.py'/>
-  <node pkg='necst' name='alert_ping' type='ROS_alert_ping.py'/>  
+  <node pkg='necst' name='alert_ping' type='ROS_alert_ping.py'/>
   <node pkg='necst' name='achilles' type='S_ROS_oneshot_achilles.py'/>
   <node pkg="necst" name="hosei_parameter" type="ROS_hosei_parameter.py"/>
   <node pkg="necst" name="scanotf_planet" type="ROS_scan_otf_planet.py"/>
   <node pkg="necst" name="scanotf_horizontal" type="ROS_scan_otf_horizontal.py"/>
   <node pkg="necst" name="chopper" type="S_ROS_chopper.py"/>
+  <node pkg="necst" name="obsmode" type="ROS_obsmode.py"/>
 </launch>
