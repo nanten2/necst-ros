@@ -40,10 +40,12 @@ class TrackingCheck:
             "/planet_command", Move_mode_msg, self.planet_cmd_clbk, queue_size=1
         )
 
-        self.PUB_tracking_status = rospy.Publisher(
-            "/tracking_check", Bool_necst, queue_size=1
-        )
-        self.PUB_move_stop = rospy.Publisher("/move_stop", Bool_necst, queue_size=1)
+        self.publisher = {
+            "tracking_status": rospy.Publisher(
+                "/tracking_check", Bool_necst, queue_size=1
+            ),
+            "move_stop": rospy.Publisher("/move_stop", Bool_necst, queue_size=1),
+        }
 
         self.pid_command = AzElData()
         self.encoder_reading = AzElData()
@@ -81,7 +83,7 @@ class TrackingCheck:
 
     def tracking_check(self) -> None:
         _360deg = 360 * utils.angle_conversion_factor("deg", self.ANGLE_UNIT)
-        tracking_ok_start = None  # Time current passing checks streak started.
+        tracking_ok_start = None  # Time current streak of passing checks started.
 
         rate = rospy.Rate(10)
 
@@ -115,11 +117,12 @@ class TrackingCheck:
     def publish_tracking_status(self) -> None:
         rate = rospy.Rate(100)
         while not rospy.is_shutdown():
-            msg = Bool_necst()
-            msg.data = self.tracking_ok
-            msg.from_node = self.node_name
-            msg.timestamp = time.time()
-            self.PUB_tracking_status.publish(msg)
+            msg = Bool_necst(
+                data=self.tracking_ok,
+                from_node=self.node_name,
+                timestamp=time.time(),
+            )
+            self.publisher["tracking_status"].publish(msg)
 
             rate.sleep()
 
@@ -140,7 +143,12 @@ class TrackingCheck:
                 # Wait for antenna drive.
                 time.sleep(self.tracking_check_disable_duration)
                 if self.tracking_ok:
-                    self.PUB_move_stop.publish(False, __file__, time.time())
+                    msg = Bool_necst(
+                        data=False,
+                        from_node=__file__,  # TODO: Infer reason not being node name.
+                        timestamp=time.time(),
+                    )
+                    self.publisher["move_stop"].publish(msg)
                     _flag = timestamp
             rate.sleep()
 
