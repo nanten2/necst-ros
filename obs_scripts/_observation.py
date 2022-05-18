@@ -62,6 +62,7 @@ class Observation(abc.ABC):
     ObservationType: ClassVar[str]
     """Kind of this observation."""
     ParameterUnits: ClassVar[Union[Dict[str, UnitType], Dict[UnitType, List[str]]]] = {}
+    """Units to use, for each observation parameters."""
 
     ObsfileDir: ClassVar[Path] = HomeDir / "necst-obsfiles"
     """Directory which contain observation spec files."""
