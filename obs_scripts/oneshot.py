@@ -4,61 +4,76 @@ import time
 import os
 import sys
 import argparse
+
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
 sys.path.append("/home/amigos/ros/src/necst/scripts/device")
+import n_const
 import ROS_controller
-from astropy.coordinates import get_body,EarthLocation, SkyCoord
+from astropy.coordinates import get_body, EarthLocation, SkyCoord
 from datetime import datetime as dt
 from astropy.time import Time
 import astropy.units as u
-nanten2 = EarthLocation(lat=-22.9699511*u.deg, lon=-67.60308139*u.deg, height=4863.84*u.m)
+
+nanten2 = n_const.LOC_NANTEN2
 
 import signal
+
+
 def handler(num, flame):
     ctrl.move_stop()
     ctrl.obs_status(active=False)
     print("!!ctrl + c!!")
     print("Stop antenna")
     sys.exit()
+
+
 signal.signal(signal.SIGINT, handler)
 
 
 # Info
 # ----
 
-name = 'oneshot'
-description = 'Get oneshot data'
+name = "oneshot"
+description = "Get oneshot data"
 
 # Default parameters
 # ------------------
 
-star = ''
-filename = ''
+star = ""
+filename = ""
 
 # Argument handler
 # ================
 
 p = argparse.ArgumentParser(description=description)
-p.add_argument('--star', type=str,
-               help='Name of 1st magnitude star.(No space)')
-p.add_argument('--name', type=str,
-               help='save file name')
-p.add_argument('--triming',action="store_true",
-               help='show a triming image')
+p.add_argument("--star", type=str, help="Name of 1st magnitude star.(No space)")
+p.add_argument("--name", type=str, help="save file name")
+p.add_argument("--triming", action="store_true", help="show a triming image")
 
 args = p.parse_args()
 
 if args.star is None:
-    print('!!Star name is None!!')
+    print("!!Star name is None!!")
     sys.exit()
 else:
     star = args.star
-if args.name is not None: filename = args.name
+if args.name is not None:
+    filename = args.name
 
 # Main
 # ====
-planet_list = {"MERCURY":1, "VENUS":2, "MARS":4, "JUPITER":5, "SATURN":6, "URANUS":7, "NEPTUNE":8, "MOON":10, "SUN":11}
+planet_list = {
+    "MERCURY": 1,
+    "VENUS": 2,
+    "MARS": 4,
+    "JUPITER": 5,
+    "SATURN": 6,
+    "URANUS": 7,
+    "NEPTUNE": 8,
+    "MOON": 10,
+    "SUN": 11,
+}
 try:
     f = open("/home/amigos/ros/src/necst/lib/1st_star_list.txt")
 except:
@@ -78,12 +93,14 @@ if len(target) == 0:
         planet = star
         pass
     else:
-        print('!!Can not find the name of star!!')
+        print("!!Can not find the name of star!!")
         sys.exit()
 
-# observation        
+# observation
 ctrl = ROS_controller.controller()
-ctrl.obs_status(active=True, obsmode="Oneshot", obs_script="oneshot.py", obs_file="", target=star)
+ctrl.obs_status(
+    active=True, obsmode="Oneshot", obs_script="oneshot.py", obs_file="", target=star
+)
 ctrl.dome_track()
 ctrl.move_stop()
 
@@ -92,24 +109,49 @@ if planet:
     cplanet = get_body(planet, Time(now))
     cplanet.location = nanten2
     altaz = cplanet.altaz
-    azelcoord = SkyCoord(altaz.az.deg, altaz.alt.deg, frame="altaz", unit="deg",obstime=Time(now), location=nanten2)
+    azelcoord = SkyCoord(
+        altaz.az.deg,
+        altaz.alt.deg,
+        frame="altaz",
+        unit="deg",
+        obstime=Time(now),
+        location=nanten2,
+    )
     radec = azelcoord.fk5
 
-    ctrl.onepoint_move(radec.ra.deg, radec.dec.deg, 'fk5', 0, 0, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)        
+    ctrl.onepoint_move(
+        radec.ra.deg,
+        radec.dec.deg,
+        "fk5",
+        0,
+        0,
+        offcoord="altaz",
+        hosei="hosei_opt.txt",
+        lamda=0.5,
+    )
     pass
 else:
-    coord = SkyCoord(target[0],target[1], frame="fk5", unit="deg")
+    coord = SkyCoord(target[0], target[1], frame="fk5", unit="deg")
     coord.location = nanten2
     coord.obstime = Time(now)
     altaz = coord.altaz
-    ctrl.onepoint_move(target[0], target[1], 'fk5', 0, 0, offcoord="altaz", hosei='hosei_opt.txt', lamda = 0.5)
+    ctrl.onepoint_move(
+        target[0],
+        target[1],
+        "fk5",
+        0,
+        0,
+        offcoord="altaz",
+        hosei="hosei_opt.txt",
+        lamda=0.5,
+    )
     pass
 
 ctrl.dome_tracking_check()
 ctrl.antenna_tracking_check()
 
 if not filename:
-    filename = now.strftime("%Y%m%d_%H%M%S_"+star)
+    filename = now.strftime("%Y%m%d_%H%M%S_" + star)
 dirname = "/home/amigos/data/oneshot/" + now.strftime("%Y%m%d") + "/"
 
 ctrl.ccd_oneshot(filename, dirname)
@@ -128,7 +170,7 @@ for j in range(5):
 """
 
 while True:
-    if os.path.exists(dirname + filename + '.jpg') == True:
+    if os.path.exists(dirname + filename + ".jpg") == True:
         break
     time.sleep(0.01)
 print("###end###")
@@ -140,14 +182,15 @@ ctrl.move_stop()
 ###show image
 try:
     from PIL import Image, ImageDraw
-    im = Image.open(dirname+filename+".jpg")#from ccd_old.py
+
+    im = Image.open(dirname + filename + ".jpg")  # from ccd_old.py
     if args.triming:
         trim_im = im.crop((2080.0, 1360.0, 2720.0, 1840.0))
         trim_im.show()
     else:
-        small_im = im.resize((int(im.width/5),int(im.height/5))) #display size
-        draw = ImageDraw.Draw(small_im)        
-        draw.rectangle([(416,272), (544, 368)],outline="red") #triming range
+        small_im = im.resize((int(im.width / 5), int(im.height / 5)))  # display size
+        draw = ImageDraw.Draw(small_im)
+        draw.rectangle([(416, 272), (544, 368)], outline="red")  # triming range
         small_im.show()
 except Exception as e:
     print(e)
@@ -157,4 +200,3 @@ ctrl.obs_status(active=False)
 time.sleep(1.5)
 
 print("Finish observation")
-

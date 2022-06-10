@@ -11,8 +11,8 @@ astropy = [
     { version = "^5.0.3", python = ">=3.8" }
 ]
 matplotlib = "^3.3"
-n_const = "^1.0.4"
-neclib = "^0.6.1"
+n_const = "^1.1"
+neclib = "^0.7.1"
 necstdb = "^0.2.5"
 numpy = "^1.19"
 pandas = ">=0.25, <2.0"
