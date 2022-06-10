@@ -8,6 +8,7 @@ import sys
 
 sys.path.append("/home/amigos/ros/src/necst/lib")
 sys.path.append("/home/amigos/ros/src/necst/scripts/controller")
+import n_const
 import opt_analy
 import ROS_controller
 import signal
@@ -25,9 +26,7 @@ import astropy.units as u
 sys.path.append("/home/amigos/ros/src/necst/lib")
 import calc_coord
 
-nanten2 = EarthLocation(
-    lat=-22.9699511 * u.deg, lon=-67.60308139 * u.deg, height=4863.84 * u.m
-)
+nanten2 = n_const.LOC_NANTEN2
 import hosei_fit
 import logger
 
@@ -320,7 +319,7 @@ class opt_point_controller(object):
             print("#L161", ret)
             if real_el >= 30.0 and real_el < 79.5:
 
-                """ moving... """
+                """moving..."""
                 self.ctrl.onepoint_move(
                     _tbl[1],
                     _tbl[2],
