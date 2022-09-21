@@ -82,6 +82,7 @@ log.debug("xffts : {}".format(xffts_datapath))
 # ====
 dp = doppler_nanten.doppler_nanten()
 con = ROS_controller.controller()
+#con.pub_loggerflag("")
 con.pub_loggerflag(savedir)#logger start
 con.dome_track()
 con.move_stop()

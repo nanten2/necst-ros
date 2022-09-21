@@ -198,7 +198,7 @@ latest_hottime = 0
 start_m2 = con.read_status()
 
 print("moving m2...")
-dist = -400*int(n/2)
+dist = -40*int(n/2)#original 400
 con.move_m2(dist)
 print("*** m2 move : ",  dist, " [ um ] ***")
 now = con.read_status()
@@ -214,11 +214,11 @@ while num < n:
     if num == 0:
         dist = 0
     else:
-        dist = 400
+        dist = 40#original 400
     con.move_m2(dist)
     print("*** m2 move : ",  dist, " [ um ] ***")
     now = con.read_status()
-    while abs(now.Current_M2 - (start_m2.Current_M2 +(-400*int(n/2))/1000 + dist*num/1000)) > 0.03:
+    while abs(now.Current_M2 - (start_m2.Current_M2 +(-40*int(n/2))/1000 + dist*num/1000)) > 0.03:#original 400
         print("moving m2...")
         time.sleep(0.1)
         now = con.read_status()        
@@ -407,7 +407,7 @@ while num < n:
     continue
 
 print("moving m2...")
-dist = -400*int(n/2)
+dist = -40*int(n/2)#400
 con.move_m2(dist)
 print("*** m2 move : ", dist,  " [um] ***")
 now = con.read_status()

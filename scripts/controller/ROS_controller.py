@@ -104,7 +104,8 @@ class controller(object):
         self.pub_planet = rospy.Publisher("planet_command", Move_mode_msg, queue_size=1)        
         self.pub_stop = rospy.Publisher("move_stop", Bool_necst, queue_size = 1)
         self.pub_otf = rospy.Publisher("antenna_otf", Otf_mode_msg, queue_size = 1)
-        self.pub_planet_scan = rospy.Publisher("planet_otf", Otf_mode_msg, queue_size = 1)        
+        self.pub_planet_scan = rospy.Publisher("planet_otf", Otf_mode_msg, queue_size = 1)
+        self.pub_horizontal_scan = rospy.Publisher("horizontal_otf", Otf_mode_msg, queue_size = 1)        
         self.pub_dome = rospy.Publisher("dome_move", Dome_msg, queue_size = 1)
         self.pub_dome_move = rospy.Publisher("dome_move_az", Dome_msg, queue_size = 1)
         self.pub_m4 = rospy.Publisher('m4', String_necst, queue_size = 1)
@@ -374,7 +375,18 @@ class controller(object):
                              current_time)
         
         return
-    
+
+
+    @logger
+    @deco_check
+    def horizontal_scan(self, x, y, coord, dx, dy, dt, num, rampt, delay, current_time,  off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., limit=True):
+        self.log.info("start OTF scan!!")
+        self.pub_horizontal_scan.publish(x, y, coord, dx, dy, dt, num, rampt,
+                                         delay, off_x, off_y, offcoord,
+                                         dcos, hosei, lamda, limit, self.node_name,
+                                         current_time)
+        return
+        
     @logger
     @deco_check
     def planet_scan(self, planet, dx, dy, dt, num, rampt, delay, current_time,  off_x=0, off_y=0, offcoord="j2000", dcos=0, hosei="hosei_230.txt", lamda=2600., limit=True):
@@ -993,7 +1005,7 @@ class controller(object):
         self.pub_encdb.publish(encflag)        
 
     @logger
-    def xffts_publish_flag(self, obs_mode="Non", scan_num=0, lamdel=0, betdel=0):
+    def xffts_publish_flag(self, obs_mode="Non", scan_num=999999, lamdel=999999, betdel=999999):
         xffts_flag = xffts_flag_msg()
         xffts_flag.scan_num = scan_num
         xffts_flag.obs_mode = obs_mode
